@@ -1,0 +1,266 @@
+[![VF 6](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw86a3d171/reserves/VF6/logo-vf6.png)](https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf6.html#)
+
+- [Giá bán](https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf6.html#price-block)
+- [Thiết kế](https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf6.html#introduce-block)
+- [Thông số](https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf6.html#specs-block)
+- [Hình ảnh](https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf6.html#album-block-vf6)
+
+Giá bán
+
+Nhận ưu đãi
+
+-->
+
+
+![banner-VF6](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwd77c2afa/reserves/VF6/2026/VF6-banner.webp)
+
+59,6 kWDung lượng pin
+
+485 km/lần sạcQuãng đường (NEDC)\*
+VF 6 Eco
+
+150 kW/201 hpCông suất tối đa
+VF 6 Plus
+
+310 NmMô men xoắn cực đại
+VF 6 Plus
+
+Nhận ưu đãi
+
+Nhận ưu đãi
+
+![bottom-banner-VF6](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw0690a10d/reserves/VF6/bottom-banner.webp)
+
+### VF 6 Eco
+
+### VF 6 Plus
+
+Giá bán từ
+
+613.700.000
+VNĐ\*
+
+646.000.000
+VNĐ\*
+
+Giá bán từ
+
+664.050.000
+VNĐ\*
+
+699.000.000
+VNĐ
+
+[Đặt cọc](https://shop.vinfastauto.com/vn_vi/dat-coc-o-to-dien-vinfast.html?modelId=Products-Car-VF6)
+
+(\*) Mức giá ưu đãi mang tính chất tham khảo. Chương trình áp dụng theo điều khoản & điều kiện.
+
+Cùng VF 6 ghi dấu từng khoảnh khắc,
+
+
+khởi đầu mọi hành trình.
+
+![image-style](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwb2ebd3e3/reserves/VF6/2026/VF6-Lifestyle-00.webp)
+
+## Triết lý thiết kế “Cặp đối lập tự nhiên”
+
+VF 6 là tuyệt tác nghệ thuật được thiết kế dựa trên triết lý “Cặp đối lập tự nhiên”, tạo nên sự cân bằng hoàn hảo giữa các yếu tố tưởng chừng như đối lập: thú vị - tinh tế, công nghệ - con người.
+
+![exterior-VF6](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw8498e74a/reserves/VF6/2026/exterior-3.webp)
+
+![exterior-VF6](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw947744f9/reserves/VF6/2026/exterior-1.webp)
+
+![exterior-VF6](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwa0e019a1/reserves/VF6/2026/exterior-2.webp)
+
+![exterior-VF6](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw8498e74a/reserves/VF6/2026/exterior-3.webp)
+
+![exterior-VF6](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw947744f9/reserves/VF6/2026/exterior-1.webp)
+
+### Ngoại thất
+
+Thiết kế ngoại thất được khởi tạo từ những đường nét tinh tế đến từng chi tiết cùng vẻ ngoài năng động, ấn tượng ngay từ ánh nhìn đầu tiên.
+
+Nhận ưu đãi
+
+![interior-VF6](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw5e97d502/reserves/VF6/interior-vf6-2.jpg)
+
+![interior-VF6](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw3cec264f/reserves/VF6/interior-vf6-1.jpg)
+
+![interior-VF6](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw5e97d502/reserves/VF6/interior-vf6-2.jpg)
+
+![interior-VF6](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw3cec264f/reserves/VF6/interior-vf6-1.jpg)
+
+### Nội thất
+
+Thiết kế nội thất lấy cảm hứng từ ngôi nhà thứ hai của gia đình với không gian rộng rãi, thoải mái cùng hai màu nội thất và chất liệu tự nhiên, thân thiện với người dùng.
+
+![technology-VF6](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwff8bee22/reserves/VF6/technology-vf6-4.jpg)
+
+![technology-VF6](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw85404d6b/reserves/VF6/technology-vf6-3.jpg)
+
+![technology-VF6](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwff8bee22/reserves/VF6/technology-vf6-4.jpg)
+
+![technology-VF6](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw85404d6b/reserves/VF6/technology-vf6-3.jpg)
+
+### Công nghệ
+
+VF 6 mang đến cho người dùng cả “thế giới công nghệ” với trợ lý ảo VinFast cùng nhiều tính năng an toàn, giải trí và tiện ích đẳng cấp.
+
+![logo-car-VF6](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw491b34ed/reserves/VF6/logo-car-VF6-2.png)
+
+Khả năng vận hành vượt trội
+
+Với sức mạnh của động cơ điện tương đương với những mẫu xe thuộc phân khúc C-SUV,
+VF 6chắc chắn sẽ thỏa mãn niềm đam mê cầm lái của chủ sở hữu, tự tin chinh phục mọi địa hình.
+
+VF 6 Eco
+
+VF 6 Plus
+
+Dài x Rộng x Cao (mm)
+
+4.241 x 1.834 x 1.580
+
+4.241 x 1.834 x 1.580
+
+Chiều dài cơ sở
+
+2.730 mm
+
+2.730 mm
+
+Quãng đường di chuyển (NEDC)\*
+
+485 km/lần sạc
+
+460 km/lần sạc
+
+Công suất tối đa
+
+130 kW/174 hp
+
+150 kW/201 hp
+
+Mô men xoắn cực đại
+
+250 Nm
+
+310 Nm
+
+Kích thước La-zăng
+
+17 inch
+
+18 inch
+
+[Nhận tư vấn](https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf6.html#register-block) [xem chi tiết](https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf)
+
+### So sánh giữa xe VinFast VF 6 và xe động cơ đốt trong
+
+Vui lòng nhập thông tin xe động cơ đốt trong cần so sánh:
+
+Loại nhiên liệu sử dụng
+
+XăngDầu
+
+Mức tiêu thụ nhiên liệu/100km
+\*
+
+lít
+
+Vui lòng nhập quãng đường di chuyển mỗi tháng:
+
+Quãng đường di chuyển/tháng
+\*
+
+km
+
+(\*) Nhập số (phân cách bằng dấu phẩy “,”). Ví dụ: 6,5 lít.
+
+SO SÁNH
+
+![VF 6](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwd1f6c90c/reserves/VF6/2026/naturel.webp) Lợi thế chi phí nhiên liệu của VF 6
+
+![VF 6](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw867b134f/reserves/VF6/2026/xe.webp)
+
+Chi phí nhiên liệu/tháng
+
+
+của VF 6
+
+
+0VNĐ
+
+(Theo chương trình miễn phí sạc từ V-Green, áp dụng kèm điều kiện và điều khoản. Vui lòng liên hệ đại lý để biết thông tin chi tiết)
+
+(\*) Chưa có dữ liệu so sánh. Vui lòng nhập thông tin!
+
+Chi phí nhiên liệu tiết kiệm/tháng
+
+
+0VNĐ
+
+Chi phí nhiên liệu tiết kiệm/năm
+
+
+0VNĐ
+
+Chi phí nhiên liệu tiết kiệm tới 10/02/2029
+
+
+(Thời điểm kết thúc Miễn phí sạc V-Green)
+
+
+0VNĐ
+
+(\*) Lưu ý: Các thông số, đơn giá và giả định sử dụng để tính chi phí nhiên liệu có thể thay đổi. Công cụ trên dựa vào một số thông tin cập nhật sau:
+
+- Giá xăng E10 RON 95-III cập nhật gần nhất ngày 11/06/2026: 22.060 VNĐ/lít
+- Giá dầu Diesel 0,001S-V cập nhật gần nhất ngày 11/06/2026: 27.130 VNĐ/lít
+
+![VF6 Life Style](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw1eceafe6/reserves/VF6/2026/VF6-Lifestyle-13.webp)
+
+![VF6 Life Style](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw5d078c13/reserves/VF6/2026/VF6-Lifestyle-10.webp)
+
+![VF6 Life Style](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw6389adef/reserves/VF6/2026/VF6-Lifestyle-11.webp)
+
+![VF6 Life Style](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw8ee0628c/reserves/VF6/2026/VF6-Lifestyle-12.webp)
+
+![VF6 Life Style](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw1eceafe6/reserves/VF6/2026/VF6-Lifestyle-13.webp)
+
+![VF6 Life Style](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw5d078c13/reserves/VF6/2026/VF6-Lifestyle-10.webp)
+
+ĐĂNG KÝ TƯ VẤNĐăng ký ngay hôm nay để nhận thông tin chính thức và tư vấn từ VinFast
+
+Họ và tên
+
+Nhập Email
+
+Nhập số điện thoại
+
+Quý khách cần hỗ trợ thêm thông tin gì?
+0/300
+
+Tôi đồng ý cho phép Công ty TNHH Kinh doanh Thương mại và Dịch vụ VinFast xử lý dữ liệu cá nhân của tôi và các thông tin khác do tôi cung cấp cho mục đích và theo phương thức được mô tả chi tiết tại [Chính sách Bảo vệ Dữ liệu cá nhân](https://vinfastauto.com/vn_vi/privacy-policy).
+
+
+Đăng ký
+
+(\*)Lưu ý:
+
+- Một số tính năng sẽ chưa có sẵn hoặc chưa được kích hoạt tại thời điểm giao xe cho Khách hàng. Những tính năng này sẽ được cập nhật sau thông qua phương thức cập nhật phần mềm từ xa qua kết nối không dây hoặc cập nhật tại xưởng dịch vụ VinFast. Các thông tin sản phẩm có thể thay đổi mà không cần báo trước.
+- Quãng đường di chuyển được tính toán dựa trên kết quả kiểm định theo quy chuẩn toàn cầu (NEDC hoặc WLTP). Quãng đường di chuyển thực tế có thể giảm so với kết quả kiểm định, phụ thuộc vào tốc độ lái xe, nhiệt độ, địa hình, thói quen sử dụng của người lái, chế độ lái được cài đặt, số lượng hành khách, và các điều kiện giao thông khác.
+
+Về đầu trang
+
+reCAPTCHA
+
+Hình xác thực lại yêu cầu xác minh.
+
+được bảo vệ bằng **reCAPTCHA**
+
+reCAPTCHA
+
+Hình xác thực lại yêu cầu xác minh.
+
+được bảo vệ bằng **reCAPTCHA**
