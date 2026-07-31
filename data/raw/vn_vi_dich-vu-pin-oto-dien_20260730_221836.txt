@@ -1,0 +1,451 @@
+# Nguồn: https://vinfastauto.com/vn_vi/dich-vu-pin-oto-dien
+# Crawl lúc: 2026-07-30T22:18:36
+# Loại: html
+# Selector: (toàn trang / N/A với PDF)
+
+================================================================================
+
+Đăng nhập / Đăng ký
+Thông báo dịch vụ
+Kể từ ngày 01/03/2025, VinFast chính thức dừng cung cấp dịch vụ cho thuê pin đối với ô tô điện. Các khách hàng hiện đang sử dụng dịch vụ thuê pin vẫn có thể tiếp tục sử dụng theo nhu cầu. Đồng thời, kể từ ngày 01/05/2026, VinFast chấm dứt hỗ trợ chương trình chuyển đổi từ hình thức thuê pin sang mua pin (bao gồm cả trả thẳng và trả góp). Các khách hàng đang tham gia chương trình trả góp mua pin sẽ không bị ảnh hưởng bởi thay đổi này.
+###### Tiết kiệm chi phí
+## Thuê pin ô tô điện linh hoạt
+Với phương châm luôn đặt lợi ích Khách hàng lên hàng đầu, VinFast áp dụng chính sách cho thuê pin độc đáo, ưu việt và khác biệt với tất cả các mô hình cho thuê pin từ trước tới nay trên thế giới.
+Chính sách thuê pin
+###### Thuận tiện
+## Đa dạng giải pháp sạc
+VinFast cung cấp đa dạng giải pháp sạc để đáp ứng nhu cầu sử dụng của Khách hàng một cách thuận tiện nhất.
+Trạm sạc công cộng thiết bị sạc di động
+## Lợi ích của thuê pin
+Khách hàng không tốn tiền sửa chữa, bảo dưỡng Pin.
+Khách hàng sử dụng điều hòa, sưởi bằng điện với chi phí rẻ hơn chạy xăng.
+Nếu Khách hàng di chuyển nhiều hàng tháng thì chi phí thuê pin theo gói cố định và tiền sạc điện sẽ rẻ hơn tiền xăng hàng tháng khi dùng xe xăng cùng hạng.
+## Chính sách thuê pin
+#### Phí thuê pin hàng tháng
+Chu kỳ tính cước: Từ ngày 26 của tháng trước đến ngày 25 của tháng hiện tại.
+Chi tiết cách lấy dữ liệu ODO để chốt cước thuê pin:
+Thời điểm lấy dữ liệu ODO: 22h00 ngày 25 hàng tháng. Dữ liệu ODO ghi nhận sau thời điểm này sẽ được tính vào kỳ cước của tháng tiếp theo.
+Trường hợp đặc biệt: Nếu xe không có kết nối, nằm trong vùng không có sóng, hoặc dữ liệu cuối cùng trong ngày được gửi lên hệ thống trước 22h00 (ví dụ lúc 20h00), thì dữ liệu ODO tại thời điểm cập nhật cuối cùng (ví dụ 20h00) sẽ được sử dụng để chốt cước. Các dữ liệu ODO phát sinh sau thời điểm này sẽ được tính vào kỳ cước kế tiếp.
+Lưu ý: Quý khách có thể kiểm tra thời gian chốt dữ liệu ODO chi tiết trong phần Hóa đơn thuê pin trên ứng dụng VinFast.
+Khách hàng có thể thuê pin trọn đời đến khi Khách hàng hết nhu cầu sử dụng xe. Trường hợp chuyển nhượng xe thì Khách hàng mới chỉ cần ký xác nhận tiếp tục thực hiện hợp đồng thuê pin.
+Giá thuê pin được cố định suốt vòng đời sản phẩm theo giá thuê pin thời điểm khách hàng nhận xe, không phụ thuộc vào chủ sở hữu. (Áp dụng với các Khách hàng ký Hợp đồng thuê pin trước ngày 01.11.2023).
+### Chính sách thuê pin từ 01/01/2025 cho các dòng xe Ô tô điện cho tới khi có thông báo mới
+Lưu ý: Đối với mốc thuê pin ≤ 1.500 km/tháng, Khách hàng đang sử dụng các gói cũ có thể được chuyển sang gói mới và miễn phí chuyển đổi (bao gồm cả các gói cho Khách hàng tiên phong, gói linh hoạt/cố định (*). Các gói thuê pin cũ Khách hàng đang được hưởng sẽ hết hiệu lực sau khi Khách hàng đăng kí chuyển đổi sang gói mới và Khách hàng không được lựa chọn sử dụng lại các gói cũ.
+* Những Khách hàng dùng gói Thuê pin cũ trước đây thuộc gói cước tiên phong/cố định/linh hoạt đang không phải cọc thuê pin thì sẽ phải đóng bổ sung cọc thuê pin. (nếu chuyển lên chính sách thuê pin mới)
+| Dòng xe | Thuê pin Từ 1.500 km trở xuống | Thuê pin Từ trên 1.500 km tới 2.500 km | Thuê pin Trên 2.500 km | Phí cọc thuê pin |
+| --- | --- | --- | --- | --- |
+| VF 3 | 1.100.000 | 1.400.000 | 3.000.000 | 7.000.000 |
+
+| Dòng xe | Thuê pin Từ 1.500 km trở xuống | Thuê pin Từ trên 1.500 km tới 3.000 km | Thuê pin Trên 3.000 km | Phí cọc thuê pin |
+| --- | --- | --- | --- | --- |
+| VF 5 | 1.400.000 | 1.900.000 | 3.200.000 | 15.000.000 |
+| VF 6 | 1.700.000 | 2.200.000 | 3.600.000 | 25.000.000 |
+| VF 7 | 2.000.000 | 3.500.000 | 5.800.000 | 41.000.000 |
+| VF 8 | 2.300.000 | 3.500.000 | 5.800.000 | 41.000.000 |
+
+| Dòng xe | Thuê pin Từ 1.500 km trở xuống | Thuê pin Từ trên 1.500 km tới 3.500 km | Thuê pin Trên 3.500 km | Phí cọc thuê pin |
+| --- | --- | --- | --- | --- |
+| VF 9 | 3.200.000 | 5.400.000 | 8.300.000 | 60.000.000 |
+
+### Chính sách thuê pin VF 3 từ 18/08/2024 cho tới khi có thông báo mới
+| Dòng xe | Thuê pin Từ 1.500 km trở xuống | Thuê pin Từ trên 1.500 km tới 2.500 km | Thuê pin Trên 2.500 km | Phí cọc thuê pin |
+| --- | --- | --- | --- | --- |
+| VF 3 | 900.000 | 1.200.000 | 2.500.000 | 7.000.000 |
+
+### Chính sách thuê pin từ 05/06/2024 cho các dòng xe Ô tô điện tới khi có thông báo mới
+(Chính sách cọc pin cho các dòng xe giữ nguyên)
+| Dòng xe | Thuê pin Từ 1.500 km trở xuống | Thuê pin Từ trên 1.500 km tới 2.500 km | Thuê pin Trên 2.500 km | Phí cọc thuê pin |
+| --- | --- | --- | --- | --- |
+| VF 3 | 900.000 | 1.200.000 | 2.000.000 | 7.000.000 |
+
+| Dòng xe | Thuê pin Từ 1.500 km trở xuống | Thuê pin Từ trên 1.500 km tới 3.000 km | Thuê pin Trên 3.000 km | Phí cọc thuê pin |
+| --- | --- | --- | --- | --- |
+| VF 5 | 1.200.000 | 1.600.000 | 2.700.000 | 15.000.000 |
+| VF 6 | 1.400.000 | 1.800.000 | 3.000.000 | 25.000.000 |
+| VF 7 | 1.700.000 | 2.900.000 | 4.800.000 | 41.000.000 |
+| VF 8 | 1.900.000 | 2.900.000 | 4.800.000 | 41.000.000 |
+
+| Dòng xe | Thuê pin Từ 3.000 km trở xuống | Thuê pin Trên 3.000 km | Phí cọc thuê pin |
+| --- | --- | --- | --- |
+| Nerio Green | 2.100.000 | 3.500.000 | 30.000.000 |
+
+### Chính sách thuê pin dòng xe điện VF 9 thị trường Việt Nam áp dụng từ ngày 01/06/2024 cho đến khi có thông báo mới như sau:
+(Chỉ áp dụng cho Khách hàng mua xe/đổi xe và được xuất hóa đơn từ ngày 01/06/2024 trở đi)
+(Chính sách cọc pin cho các dòng xe giữ nguyên)
+| Dòng xe | Thuê pin Từ 1.500 km trở xuống | Thuê pin Từ trên 1.500km tới 3.500km | Thuê pin Trên 3.500km | Phí cọc thuê pin |
+| --- | --- | --- | --- | --- |
+
+### Chính sách thuê pin dòng xe điện VF 5 thị trường Việt Nam áp dụng từ ngày 22/04/2024 cho đến khi có thông báo mới như sau:
+| Dòng xe | Phí dịch vụ cho quãng đường đi trong 01 tháng (*) | Phí cọc thuê pin |
+| --- | --- | --- |
+|   | Dưới 1.500 km | Từ 1.500 km tới dưới 3.000 km | Từ 3.000 km trở lên |   |
+| VF 5 | 1.200.000 VNĐ | 1.600.000 VNĐ | 2.700.000 VNĐ | 15.000.000 VNĐ |
+
+### Chính sách thuê pin dòng xe điện VF 9 thị trường Việt Nam áp dụng từ ngày 01/03/2024 cho đến khi có thông báo mới như sau:
+| Dòng xe | Phí dịch vụ cho quãng đường đi trong 01 tháng (*) | Phí cọc thuê pin |
+| --- | --- | --- |
+| Dưới 3.500 km | Từ 3.500 km trở lên |
+| VF 9 | 6.000.000 VNĐ | 8.400.000 VNĐ | 60.000.000 VNĐ |
+
+### Chính sách bán hàng tri ân ngày Nhà Giáo Việt Nam 20/11:
+Áp dụng cho KH đặt cọc mua xe từ 01/11/2023 tới 31/12/2023
+| STT | Dòng xe | Quà tặng cho KH |
+| --- | --- | --- |
+| 1 | VF 5 | 01 năm thuê pin (Tối đa 19.2 triệu) |
+| 2 | VF 6 | 01 năm thuê pin (Tối đa 21.6 triệu) |
+| 3 | Nerio Green | 01 năm thuê pin (Tối đa 25.2 triệu) |
+| 4 | VF 8 | 01 năm thuê pin (Tối đa 34.8 triệu) |
+| 5 | VF 9 | 01 năm thuê pin (Tối đa 82.8 triệu) |
+
+Điều kiện áp dụng: Phí thuê pin được khuyến mại tối đa trong 1 tháng là phí dịch vụ cho quãng đường đi dưới 3.000 km, hoặc 3.500 km với VF 9.
+### Chính sách thuê pin các dòng xe điện thị trường Việt Nam áp dụng từ ngày 01/11/2023 cho đến khi có thông báo mới như sau:
+| Dòng xe | Phí dịch vụ cho quãng đường đi trong 01 tháng (*) | Phí cọc thuê pin |
+| --- | --- | --- |
+| Dưới 3.000 km | Từ 3.000 km trở lên |
+| VF 5 | 1.600.000 VNĐ | 2.700.000 VNĐ | 15.000.000 VNĐ |
+| VF 6 | 1.800.000 VNĐ | 3.000.000 VNĐ | 25.000.000 VNĐ |
+| Nerio Green | 2.100.000 VNĐ | 3.500.000 VNĐ | 30.000.000 VNĐ |
+| VF 7 | 2.900.000 VNĐ | 4.800.000 VNĐ | 41.000.000 VNĐ |
+| VF 8 | 2.900.000 VNĐ | 4.800.000 VNĐ | 41.000.000 VNĐ |
+
+| Dòng xe | Phí dịch vụ cho quãng đường đi trong 01 tháng (*) | Phí cọc thuê pin |
+| --- | --- | --- |
+| Dưới 3.500 km | Từ 3.500 km trở lên |
+| VF 9 | 4.100.000 VNĐ | 6.500.000 VNĐ | 60.000.000 VNĐ |
+
+*Giá đã bao gồm VAT
+### Với các Khách hàng cọc mua xe từ ngày 01/09/2023 đến 31/10/2023:
+Khách hàng được áp dụng tặng quà đặc biệt riêng cho mỗi dòng xe (kèm pin và thuê pin):
+| STT | Loại xe | Quà tặng cho khách hàng |
+| --- | --- | --- |
+| 1 | Nerio Green | 01 năm thuê pin (Tối đa 22.8 triệu) |
+| 2 | VF 6 | 1 năm sạc pin miễn phí cho KH đặt cọc từ ngày 20/10/2023 tới hết ngày 30/10/2023 (Tối đa 9 triệu) |
+| 3 | VF 8 | 02 năm thuê pin (Tối đa 64.8 triệu) |
+| 4 | VF 9 | 02 năm thuê pin (Tối đa 84 triệu) |
+
+Điều kiện áp dụng:
+- Chỉ được áp dụng đồng thời với Chính sách Hỗ trợ ưu đãi lãi suất cho Khách hàng vay mua xe ô tô điện và Quy định thanh toán bằng Voucher Vinhomes & Voucher Sống xanh.
+- Không áp dụng với Khách hàng đã có các ưu đãi khác.
+- Phí thuê pin được khuyến mại tối đa trong tháng là phần chi phí tối thiểu của gói Linh hoạt theo từng dòng xe.
+- KH sẽ phải thanh toán thêm chi phí thuê pin nếu đi quá định mức của gói Linh hoạt.
+
+##### Với các Khách hàng cọc mua xe từ ngày 01/07/2023 tới hết ngày 30/10/2023:
+| STT | Dòng xe | Phí dịch vụ tối thiểu cho quãng đường giới hạn | Đơn giá tính phí phụ trội cho quãng đường vượt quá (VNĐ/km) |
+| --- | --- | --- | --- |
+| Phí dịch vụ tối thiểu (VNĐ) | Số km giới hạn |
+| 1 | VF 5 | 1.600.000 | 1.500 | 1.070 |
+| 2 | VF 6 | 1.800.000 cho quãng đường dưới 3.000 km, 3.000.000 cho quãng đường từ 3.000 km trở lên. Phí đặt cọc pin: 30.000.000 (Miễn phí 1 năm sạc pin cho các Khách hàng đặt cọc xe VF6 từ 20/10/2023 tới 30/10/2023) |
+| 3 | Nerio Green | 1.900.000 | 1.500 | 1.265 |
+| 4 | VF 8 | 2.700.000 | 1.800 | 1.800 |
+| 5 | VF 9 | 3.500.000 | 2.000 | 2.350 |
+
+* Giá đã bao gồm VAT
+##### Với các Khách hàng cọc mua xe từ ngày 01/05/2023 đến 30/06/2023:
+Các Khách hàng chỉ có 01 lựa chọn là gói thuê pin cố định sử dụng không giới hạn số km/tháng như sau:
+| STT | Dòng xe | Giá gói thuê pin cố định * |
+| --- | --- | --- |
+| 1 | VF 5 | 1.600.000 VNĐ |
+| 2 | Nerio Green | 1.900.000 VNĐ |
+| 3 | VF 8 | 2.700.000 VNĐ |
+| 4 | VF 9 | 3.500.000 VNĐ |
+
+* Giá đã bao gồm VAT * Khách hàng được cố định giá thuê pin suốt vòng đời sản phẩm.
+##### Với các Khách hàng không được cố định giá thuê pin (thay đổi vào ngày 01 tháng 12 hàng năm):
+Các Khách hàng mua xe Nerio Green trong năm 2022, nếu không thực hiện ký thỏa thuận bổ sung áp dụng chính sách cố định giá thuê pin với VinFast thì sẽ bị áp dụng chính sách này. Giá thuê pin áp dụng cho năm 2024 như sau:
+###### Gói linh hoạt
+Khách hàng trả phí thuê bao pin hàng tháng cho quãng đường 500 km/tháng, nếu Khách hàng sử dụng nhiều hơn 500 km/tháng thì Khách hàng trả thêm số tiền bằng quãng đường vượt nhân với đơn giá thuê pin/km. Cụ thể:
+| STT | Dòng xe | Phí thuê bao tối thiểu/tháng (500 km)* | Đơn giá thuê pin/km* |
+| --- | --- | --- | --- |
+| 1 | Nerio Green | 649.000 VNĐ | 1.298 VNĐ |
+
+* Giá đã bao gồm VAT
+###### Gói cố định
+Hàng tháng Khách hàng chỉ cần trả tổng tiền của gói này là sử dụng không giới hạn số km/tháng. Cụ thể:
+| STT | Dòng xe | Phí thuê bao tối thiểu/tháng* |
+| --- | --- | --- |
+| 1 | Nerio Green | 1.782.000 VNĐ |
+
+* Giá đã bao gồm VAT
+##### Với các Khách hàng cọc mua xe từ ngày 01/09/2022 đến ngày 30/04/2023:
+Các Khách hàng chỉ có 01 lựa chọn là gói thuê pin cố định sử dụng không giới hạn số km/tháng như sau:
+| STT | Dòng xe | Giá gói thuê pin cố định * |
+| --- | --- | --- |
+| 1 | Nerio Green * | 2.900.000 VNĐ |
+| 2 | VF 8 | 4.950.000 VNĐ |
+| 3 | VF 9 | 6.490.000 VNĐ |
+
+* Giá đã bao gồm VAT * Với xe VinFast Nerio Green, bắt đầu áp dụng từ ngày 14/11/2022
+##### Với các Khách hàng cọc mua xe trước ngày 01/09/2022:
+VinFast có 2 gói thuê bao pin cho Khách hàng tùy chọn (Giá thuê pin được cố định suốt vòng đời sản phẩm theo giá thuê pin thời điểm Khách hàng nhận xe, mà không phụ thuộc vào chủ sở hữu):
+###### Gói linh hoạt - từ 657.500 VNĐ
+Khách hàng trả phí thuê bao pin hàng tháng cho quãng đường 500 km/tháng, nếu Khách hàng sử dụng nhiều hơn 500 km/tháng thì Khách hàng trả thêm số tiền bằng quãng đường vượt nhân với đơn giá thuê pin/km. Cụ thể:
+| STT | Dòng xe | Phí thuê bao tối thiểu/tháng (500 km)* | Đơn giá thuê pin/km* |
+| --- | --- | --- | --- |
+| 1 | Nerio Green | 657.500 VNĐ | 1.315 VNĐ |
+| 2 | VF 8 | 990.000 VNĐ | 1.980 VNĐ |
+| 3 | VF 9 | 1.100.000 VNĐ | 2.200 VNĐ |
+
+* Giá đã bao gồm VAT
+###### Gói cố định - từ 1.805.000 VNĐ
+Hàng tháng Khách hàng chỉ cần trả tổng tiền của gói này là sử dụng không giới hạn số km/tháng. Cụ thể:
+| STT | Dòng xe | Phí thuê bao tối thiểu/tháng* |
+| --- | --- | --- |
+| 1 | Nerio Green | 1.805.000 VNĐ |
+| 2 | VF 8 | 2.189.000 VNĐ |
+| 3 | VF 9 | 3.091.000 VNĐ |
+
+* Giá đã bao gồm VAT
+#### Thời hạn hợp đồng thuê pin & đặt cọc
+- Thời hạn Hợp Đồng thuê pin là vô thời hạn đến khi Khách hàng hết nhu cầu hoặc hủy xe.
+- Khách hàng không phải đặt cọc khi thuê pin (Áp dụng với Khách hàng ký Hợp đồng thuê pin trước ngày 01.11.2023)
+- Các Khách hàng ký Hợp đồng thuê pin từ ngày 01.11.2023 trở đi cần đặt cọc thuê pin, phí đặt cọc áp dụng theo từng dòng xe.
+
+#### Phí chuyển đổi gói cước: 4.120.000 VNĐ/lần (đã bao gồm VAT)
+#### Phí trả chậm
+Tỷ lệ phí thanh toán chậm là 10%/năm, áp dụng cho phí thuê pin và phí đền bù pin hỏng (nếu có - trong trường hợp Khách hàng làm hỏng pin thuê) mà Khách hàng quá hạn thanh toán.
+#### Chế tài khi Khách hàng nợ phí thuê pin
+- VinFast sẽ chặn sạc pin của Khách hàng 50% cho tháng đầu, từ tháng 2 chặn 70% dung lượng pin (SOC).
+- Khi Khách hàng thanh toán xong công nợ, hệ thống sẽ tự động mở khóa và Khách hàng có thể sạc bình thường.
+
+#### Thay thế/sửa chữa/bảo dưỡng pin cho Khách hàng
+##### 1. Pin cho thuê sẽ được thay thế/sửa chữa/bảo dưỡng miễn phí trong các trường hợp:
+- Pin hỏng/lỗi do Nhà sản xuất.
+- Bảo dưỡng (nếu có) miễn phí.
+- Trạng thái tiếp nhận sạc của pin xuống dưới 70%.
+
+##### 2. Nếu pin hỏng do lỗi Khách hàng thì Khách hàng sẽ phải đền bù chi phí sửa chữa/thay thế pin. Chi phí sửa chữa/thay thế sẽ được niêm yết trên Website và các xưởng dịch vụ VinFast.
+## Hướng dẫn thanh toán
+Chi phí thuê pin sẽ được thanh toán trả sau, trước ngày 15 của tháng tiếp theo cho toàn bộ phí thuê pin của tháng trước đó.
+Thanh toán trực tiếp tại các Điểm Cung Cấp Dịch Vụ bằng các phương thức thanh toán mà Điểm Cung Cấp Dịch Vụ chấp nhận
+Thanh toán online thông qua ứng dụng VinFast
+## Hướng dẫn thuê & sạc PIN
+Với hệ thống trạm sạc phủ sóng toàn quốc, Khách hàng có thể dễ dàng sử dụng dịch vụ sạc ô tô điện VinFast ở bất cứ đâu. Hãy cùng chúng tôi tìm hiểu hướng dẫn sạc và thuê pin Ô tô điện VinFast.
+Hướng dẫn thuê pin Hướng dẫn sạc pin
+## Quy định sử dụng pin
+#### Quy định chung
+- Không tự ý tháo rời, sửa chữa hoặc thay thế các bộ phận, dây cáp hoặc đầu nối điện áp cao.
+- Chỉ được sử dụng nguồn sạc theo khuyến cáo của nhà sản xuất được công bố trên Website https://vinfastauto.com.
+- Không sử dụng Pin làm nguồn điện để vận hành các thiết bị khác.
+- Không tự ý can thiệp hoặc cập nhật phần mềm trái phép mà không được sự cho phép của nhà sản xuất.
+- Không để Xe ở những nơi có thể ngập lụt, vì ngập lụt có thể làm hỏng Pin hoặc Xe.
+- Tránh để Xe tiếp xúc với nhiệt độ môi trường trên 55°C hoặc dưới -20°C quá 24 giờ tại một điểm. Không tuân theo khuyến nghị nhiệt độ này có thể làm giảm vĩnh viễn hiệu suất vận hành của Pin.
+- Nếu dung lượng Pin còn lại thấp hơn 5% (dung lượng hiển thị màu đỏ trên màn hình), Pin cần được sạc ngay lập tức. Không thực hiện điều này có thể gây ra hỏng Pin vĩnh viễn và có thể dẫn đến trách nhiệm bồi thường thiệt hại của Khách Hàng.
+- Tuân thủ hướng dẫn sử dụng Xe và Pin của nhà sản xuất.
+- Thông báo ngay cho VinFast Trading khi phát hiện bất cứ lỗi, hỏng hóc, sự cố nào liên quan đến Pin và chịu trách nhiệm tự bảo quản Pin cho đến khi bàn giao lại Pin cho VinFast.
+- Nếu Xe gặp phải một tai nạn có khả năng ảnh hưởng đến Pin, Khách Hàng cần yêu cầu xưởng dịch vụ của VinFast Trading kiểm tra tổng quát hệ thống Pin.
+
+### THÔNG BÁO VỀ CHÍNH SÁCH BỒI THƯỜNG PIN THUÊ/MƯỢN
+Sửa chữa, thay thế/đền bù pin lỗi hỏng do Khách hàng.​​​​​​​​​​​​​​
+​​​​​​​​​​​​​​Áp dụng đối với pin của VinFast trong các trường hợp:
+- Pin thuê/mượn bị hư hỏng không thể sửa chữa do lỗi người sử dụng.
+- Pin thuê/mượn bị mất/thất lạc.
+
+Nguyên tắc tính phí:
+​​​​​​​Đối với trường hợp pin hỏng hoàn toàn trong quá trình thuê pin của VinFast và lỗi xác định do khách hàng, Khách hàng cần bồi thường mức phí theo công thức sau:
+B=A×(1−T1/T2​)
+Trong đó:
+- B: giá trị bồi thường.
+- A: Giá pin công bố trên website VinFast tại thời điểm xảy ra sự cố.
+- T1: Thời gian sử dụng (tính tròn theo tháng) (Thời gian hình thành tài sản đến thời gian sảy ra sự cố).
+- T2:Thời gian bảo hành (theo chính sách bảo hành VFT công bố tại thời điểm hình thành tài sản của Pin).
+
+​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​Quy định: Mức bồi thường (B) không được thấp hơn 10% giá công bố (A) tại thờ điểm xảy ra sự cố
+- Có thể sửa chữa: Thanh toán theo chi phí sửa chữa thực tế (theo báo giá kỹ thuật tại XDV).
+
+## Quy hoạch trạm sạc
+Nhằm khuyến khích người dân sử dụng xe điện, dần thay thế phương tiện sử dụng xăng dầu nhằm giảm khối lượng khí phát thải vào môi trường. VinFast phát triển hệ thống trạm sạc với hơn 150.000 cổng sạc cho xe máy điện và ô tô điện, trải dài rộng khắp 63 tỉnh thành tại Việt Nam.
+63 Tỉnh thành
+150.000 Cổng sạc
+Xem bản đồ trạm sạc
+## Quy hoạch trạm sạc VinFast
+Trạm sạc dành cho ô tô và xe máy điện VinFast có thể lắp đặt tại khu vực đỗ xe hiện có mà không làm thay đổi công năng của bãi đỗ xe, thiết bị sạc là do VinFast sản xuất, chế tạo với hình thức đẹp, hiện đại, tuân thủ theo tiêu chuẩn của Châu Âu về an toàn điện.
+Bãi đỗ xe Bến xe
+Trạm dừng nghỉ Trạm xăng dầu
+Trung tâm thương mại
+Chung cư, tòa văn phòng
+Cao tốc Quốc lộ
+Địa điểm phù hợp khác
+#### Chính sách sạc pin
+VinFast cung cấp đơn giá sạc ô tô điện, xe máy điện và hình thức thanh toán áp dụng tại các trạm sạccông cộng như sau:
+- Đơn giá sạc: 3.858 VNĐ/kWh (áp dụng từ ngày 19/03/2024).
+- Phí sử dụng dịch vụ trạm sạc bổ sung sau khi hoàn thành phiên sạc:
+  - Miễn phí từ phút thứ 1 đến phút thứ 10
+  - 1.000 đồng/phút từ phút thứ 11 đến phút thứ 60
+  - 2.000 đồng/phút từ phút thứ 61 đến phút thứ 120
+  - 4.000 đồng/phút từ phút thứ 121 trở đi
+
+(*) Mức tối đa cho một lần Phí sử dụng dịch vụ trạm sạc bổ sung không quá 1 triệu đồng/lần .
+Phí sử dụng dịch vụ trạm sạc bổ sung không áp dụng cho các dòng xe máy điện và với các trụ sạc thường ô tô loại AC11kW.
+Thời hạn thanh toán: Thanh toán trước ngày 15 của tháng tiếp theo cho toàn bộ phí sạc pin và Phí sử dụng dịch vụ trạm sạc bổ sung của tháng trước đó.
+Ghi chú:
+- Đơn giá sạc nêu trên đã bao gồm VAT.
+- Đơn giá áp dụng từ ngày ban hành cho đến khi có thông báo mới.
+
+Liên hệ tư vấn về trạm sạc và thiết bị sạc cho xe điện qua Hotline: 1900 23 23 89, bấm phím 5.
+hướng dẫn sử dụng
+## Các loại trụ sạc công cộng cho Ô tô điện
+VinFast cung cấp đa dạng giải pháp sạc để đáp ứng nhu cầu sử dụng của Khách hàng một cách thuận tiện nhất.
+#### Trụ sạc ô tô - Sạc siêu nhanh DC 250kW
+Thiết bị sạc Ô tô điện DC 250 kW là thiết bị cung cấp nguồn điện một chiều để sạc trực tiếp cho pin, được thiết kế dạng tủ đứng, mỗi thiết bị được trang bị 1 cổng sạc, công suất 250 kW.
+Kiểu dáng Tủ đứng
+Điện áp hoạt động (V) 400VAC ± 10%, 3 pha
+Điện áp đầu ra 200-1000 VDC
+Công suất 250 kW/ cổng sạc
+Số lượng đầu ra 1 cổng/trụ sạc
+Nhiệt độ hoạt động -30oC đến 55oC
+Bảo vệ Bảo vệ quá tải/ quá nhiệt/ ngắn mạch/ IP 54
+#### Trụ sạc ô tô - Sạc siêu nhanh DC 150kW
+Thiết kế dạng tủ đứng, mỗi thiết bị được trang bị 2 cổng sạc, công suất sạc có thể lên tới 150kW.
+Kiểu dáng Tủ đứng
+Điện áp hoạt động (V) 3 pha, 304 - 456 VAC
+Điện áp đầu ra 200 - 1000 VDC
+Tần số hoạt động 50 ± 5% Hz
+Công suất 150kW/cổng sạc
+Số lượng đầu ra 2 cổng sạc/trụ sạc
+Bảo vệ Bảo vệ quá tải/quá nhiệt/ngắn mạch/IP 54
+#### Trụ sạc ô tô - Sạc nhanh DC 60kW
+Thiết kế dạng tủ đứng, mỗi thiết bị được trang bị 2 cổng sạc, công suất 60 kW/1 cổng sạc.
+Kiểu dáng Tủ đứng
+Điện áp hoạt động (V) 3 pha, 304 - 456 VAC
+Tần số hoạt động 50 ± 5% Hz
+Điện áp đầu ra 200-1000 VDC
+Công suất 60 kW/ cổng sạc
+Số lượng đầu ra 2 cổng/trụ sạc
+Bảo vệ Bảo vệ quá tải/ quá nhiệt/ ngắn mạch/ IP 54
+#### Trụ sạc ô tô - Sạc nhanh DC 30kW
+Trụ sạc DC Ô tô điện được sử dụng để sạc cho Ô tô điện ở tại các điểm dừng nghỉ, bãi đỗ xe công cộng
+Kiểu dáng Treo tường & Tủ đứng
+Điện áp hoạt động (V) 3 pha, 304 - 456 VAC
+Tần số hoạt động 50 ± 5% Hz
+Công suất 3 30 kW/ cổng sạc
+Giao thức trực tuyến CAN Protocol
+Số lượng đầu ra 1 cổng/trụ sạc
+Bảo vệ Bảo vệ quá tải/ quá nhiệt/ ngắn mạch/ IP 54
+#### Trụ sạc ô tô - Sạc thường AC 11kW
+Trụ sạc AC ô tô điện là thiết bị sạc mà cung cấp nguồn điện xoay chiều cho xe, công suất cấp tối đa 11kW tùy dòng xe.
+Kiểu dáng Treo tường & Tủ đứng
+Điện áp hoạt động (V) 3 pha, 304 - 456 VAC
+Tần số hoạt động 50 ± 5% Hz
+Công suất 11 kW/ cổng sạc
+Giao thức trực tuyến CAN Protocol
+Số lượng đầu ra 1 cổng/trụ sạc
+Bảo vệ Bảo vệ quá tải/ quá nhiệt/ ngắn mạch/ IP 54
+## Thiết bị sạc tại nhà & sạc theo xe
+VinFast cung cấp đa dạng giải pháp sạc để đáp ứng nhu cầu sử dụng của Khách hàng một cách thuận tiện nhất.
+Khuyến cáo khách hàng sử dụng sạc chính hãng để hạn chế nguy cơ cháy nổ.
+### Bộ sạc treo tường AC 7,4 kW
+Bộ sạc treo tường AC 7,4 kW là bộ thiết bị cung cấp nguồn xoay chiều cấp cho xe, được thiết kế dạng tủ treo, với 1 đầu ra, công suất 7,4 kW.
+Chế độ sạc Sạc có dây AC mức 2
+Điện áp đầu vào 1 pha-230VAC ± 10%
+Tần số đầu vào 50 Hz / 60Hz
+Điện áp ngõ ra 230VAC ± 10%
+Tần số ngõ ra 50 Hz / 60Hz
+Số lượng đầu ra 1 cổng/trụ sạc
+Bảo vệ Quá áp/ thấp áp/ dòng rò/ quá nhiệt/ mất kết nối đất/ chống cháy (> UL94-V1)
+Xem chi tiết
+### Bộ sạc theo xe 3,5 kW (Ô tô điện)
+Được thiết kế dạng tủ treo, với 1 đầu ra, công suất 3,5 kW. Thời gian sạc khoảng 13,3h: cho 10% ~ 100% dung lượng pin (tùy dòng xe).
+Điện áp đâu vào 1 pha-230VAC ± 10%
+Tần số đầu vào 50 Hz / 60Hz
+Điện áp ngõ ra 230VAC ± 10%
+Tần số ngõ ra 50 Hz / 60Hz
+Số lượng đầu ra 1 cổng/trụ sạc
+Bảo vệ Quá áp/ thấp áp/ dòng rò/ quá nhiệt/ mất kết nối đất/ chống cháy (> UL94-V1)
+### Bộ sạc di động 2,2 kW (Ô tô điện)
+Được thiết kế dạng dây sạc, với 1 đầu ra, công suất 2,2 kW. Thời gian sạc khoảng 19,4h: cho 10% ~ 100% dung lượng pin (tùy dòng xe).
+Điện áp định mức 10A
+Tần số 45-65Hz
+Điện áp hoạt động 85V - 305V
+Bảo vệ
+- Bộ điều khiển: IP65;
+- Súng sạc không cắm vào xe: IP54;
+- Súng sạc khi cắm vào xe: IP55
+
+Giao thức trực tuyến CAN Protocol
+##### Tiện ích
+- Đăng ký lái thử
+- So sánh xe
+- Dự toán chi phí lăn bánh
+- Dự toán vay trả góp
+- Thẩm định vay
+- Đặt lịch dịch vụ
+
+##### Mua sắm
+- Phụ kiện xe
+- VF eStore
+
+##### Tin tức
+- Công ty
+- Ô tô điện
+- Xe máy điện
+
+##### Hỗ trợ
+- Tìm Showroom & Trạm sạc
+- Câu hỏi thường gặp
+
+##### Thảo luận
+- Cộng đồng VinFast Toàn cầu
+
+- Giới thiệu
+- Ô tô Xem tất cả
+  - Động cơ điện
+  - VF 2
+  - VF 3
+  - VF 5
+  - VF 6
+  - VF MPV 7
+  - VF 7
+  - VF 8
+  - VF 8 The All New
+  - VF 9
+  - Động cơ xăng
+  - Fadil
+  - Lux A2.0
+  - Lux SA2.0
+  - President
+  - Dòng xe dịch vụ
+  - Minio Green
+  - Herio Green
+  - Nerio Green
+  - Limo Green
+  - EC Van
+  - EBus
+- Xe máy điện
+- VF eStore
+- Dịch vụ hậu mãi
+  - Bảo hành & bảo dưỡng
+  - Thông tin bảo hành
+  - Thông tin bảo dưỡng định kỳ
+  - Thông tin dịch vụ
+  - Tra cứu tình trạng xe
+  - Hướng dẫn sử dụng
+  - Hướng dẫn sử dụng ô tô
+  - Hướng dẫn sử dụng xe máy điện
+- Pin và trạm sạc
+  - Pin và trạm sạc Ô tô điện
+  - Pin và trạm sạc Xe máy điện
+- V-Energy
+- Tiện ích
+  - Đăng ký lái thử
+  - So sánh xe
+  - Dự toán chi phí lăn bánh
+  - Dự toán vay trả góp
+  - Thẩm định vay
+  - Đặt lịch dịch vụ
+- Mua sắm
+  - Phụ kiện xe
+- Tin tức
+  - Công ty
+  - Ô tô điện
+  - Xe máy điện
+- Hỗ trợ
+  - Tìm Showroom & Trạm sạc
+  - Câu hỏi thường gặp
+- Thảo luận
+  - Cộng đồng VinFast Toàn cầu
+
+- Lựa chọn quốc gia Việt Nam Bắc Mỹ United States English Canada English Francais Châu Âu France Francais Deutschland Deutsch Nederland Nederlands Others English Châu Á Việt Nam Tiếng Việt English
+
+Ưu đãi chỉ tới 31/12!
+VinFast
+Google Tag Manager (noscript) End Google Tag Manager (noscript)

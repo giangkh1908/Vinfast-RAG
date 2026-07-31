@@ -1,0 +1,15 @@
+# Secrets — không commit
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Pipeline artifacts (JSON trung gian debug/audit)
+tmp/
+
+# OS
+Thumbs.db
+.DS_Store
