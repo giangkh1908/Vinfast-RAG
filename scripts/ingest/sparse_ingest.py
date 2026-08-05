@@ -1,19 +1,20 @@
 #!/usr/bin/env python3
 """
 sparse_ingest.py — Generate BM25 (TF-IDF) sparse vectors cho mọi chunk và
-upsert vào collection `sparse` của Qdrant (KHÔNG chạm dense collections,
-KHÔNG cần re-embed).
+upsert vào collection `sparse__<version>` của Qdrant (versioned, KHÔNG chạm
+dense collections, KHÔNG cần re-embed).
 
-Dense (OpenRouter embed) giữ nguyên trong 4 collection hiện có; sparse index nằm
-riêng trong collection `sparse`. Retriever (`scripts/retriever/hybrid_retriever.py`)
-merge 2 nguồn bằng RRF.
+Dense (OpenRouter embed) nằm trong `<col>__<version>`; sparse index nằm riêng
+trong collection `sparse__<version>`. Retriever merge 2 nguồn bằng RRF qua alias
+`sparse` (promote/rollback swap alias — xem scripts/version_manager.py).
 
 Đọc:   data/clean/<version>/vector/*.jsonl
-Tạo:   collection `sparse` (Qdrant)  ← SparseVector mỗi chunk
+Tạo:   collection `sparse__<version>` (Qdrant)  ← SparseVector mỗi chunk
 Lưu:   data/clean/<version>/sparse_index.json  (vocab + idf — retriever dùng chung)
 
 Usage:
     python scripts/ingest/sparse_ingest.py --version v1
+    python scripts/ingest/sparse_ingest.py --version v1 --recreate
 """
 
 import argparse
@@ -34,7 +35,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 VECTOR_DIR = REPO_ROOT / "data" / "clean" / "{version}" / "vector"
 SPARSE_INDEX_PATH = REPO_ROOT / "data" / "clean" / "{version}" / "sparse_index.json"
 
-SPARSE_COLLECTION = "sparse"
+SPARSE_COLLECTION_BASE = "sparse"
 DEFAULT_QDRANT_URL = "http://localhost:6333"
 
 # BM25 params
@@ -76,12 +77,13 @@ def load_chunks(version: str) -> list[tuple[str, dict]]:
 
 
 def run(version: str = "v1", url: str = DEFAULT_QDRANT_URL, recreate: bool = False) -> int:
-    """Build BM25 sparse vectors → Qdrant 'sparse' + sparse_index.json. Trả 0/1."""
+    """Build BM25 sparse vectors → Qdrant 'sparse__<version>' + sparse_index.json. Trả 0/1."""
+    sparse_collection = f"{SPARSE_COLLECTION_BASE}__{version}"
     chunks = load_chunks(version)
     if not chunks:
         print(f"[sparse_ingest] no chunks in {VECTOR_DIR.format(version=version)}", file=sys.stderr)
         return 1
-    print(f"[sparse_ingest] {len(chunks)} chunks")
+    print(f"[sparse_ingest] {len(chunks)} chunks  →  collection={sparse_collection}")
 
     # 1. Tokenize + document frequency
     doc_tokens = [tokenize(c["text"]) for _, c in chunks]
@@ -97,14 +99,14 @@ def run(version: str = "v1", url: str = DEFAULT_QDRANT_URL, recreate: bool = Fal
 
     # 2. Client
     client = QdrantClient(url=url)
-    if recreate and client.collection_exists(SPARSE_COLLECTION):
-        client.delete_collection(SPARSE_COLLECTION)
-    if not client.collection_exists(SPARSE_COLLECTION):
+    if recreate and client.collection_exists(sparse_collection):
+        client.delete_collection(sparse_collection)
+    if not client.collection_exists(sparse_collection):
         client.create_collection(
-            collection_name=SPARSE_COLLECTION,
+            collection_name=sparse_collection,
             sparse_vectors_config={"sparse": SparseVectorParams(index=SparseIndexParams(on_disk=False))},
         )
-        print(f"  created collection {SPARSE_COLLECTION}")
+        print(f"  created collection {sparse_collection}")
 
     # 3. BM25 sparse vector từng chunk + upsert
     points: list[PointStruct] = []
@@ -127,13 +129,14 @@ def run(version: str = "v1", url: str = DEFAULT_QDRANT_URL, recreate: bool = Fal
         points.append(PointStruct(
             id=qdrant_id(cid),
             vector={"sparse": SparseVector(indices=indices, values=values)},
-            payload={"collection": col, "chunk_id": cid, "model_id": c.get("model_id")},
+            payload={"collection": col, "chunk_id": cid, "model_id": c.get("model_id"),
+                      "vector_version": c.get("vector_version", version)},
         ))
         if len(points) >= 256:
-            client.upsert(collection_name=SPARSE_COLLECTION, points=points, wait=True)
+            client.upsert(collection_name=sparse_collection, points=points, wait=True)
             points = []
     if points:
-        client.upsert(collection_name=SPARSE_COLLECTION, points=points, wait=True)
+        client.upsert(collection_name=sparse_collection, points=points, wait=True)
 
     # 4. Lưu index cho retriever
     index_path = Path(str(SPARSE_INDEX_PATH).format(version=version))
@@ -150,8 +153,8 @@ def run(version: str = "v1", url: str = DEFAULT_QDRANT_URL, recreate: bool = Fal
         "b": B,
     }, ensure_ascii=False), encoding="utf-8")
 
-    total = client.count(collection_name=SPARSE_COLLECTION).count
-    print(f"[sparse_ingest] done. sparse points: {total}")
+    total = client.count(collection_name=sparse_collection).count
+    print(f"[sparse_ingest] done. sparse points: {total}  collection={sparse_collection}")
     print(f"  index saved: {index_path}")
     return 0
 

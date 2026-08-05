@@ -11,6 +11,8 @@ venv/
 tmp/
 # intermediate = output trước khi split, trùng với vector/ (debug only)
 data/clean/*/intermediate/
+# vector cache (artifact lớn — embed cache theo content-hash)
+data/.vector_cache/
 
 # OS
 Thumbs.db

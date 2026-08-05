@@ -32,6 +32,7 @@ sys.path.insert(0, str(REPO_ROOT / "backend"))
 from scripts.clean_data import clean_to_jsonl, split_cold_hot  # noqa: E402
 from scripts.ingest import vector_ingest, sparse_ingest, postgres_ingest  # noqa: E402
 from lib import openrouter  # noqa: E402
+from scripts import version_manager  # noqa: E402
 
 QDRANT_URL = os.environ.get("QDRANT_URL", "http://localhost:6333")
 PG_DSN = os.environ.get("PG_DSN", "postgresql://vivu:vivu@localhost:5432/vivu")
@@ -88,7 +89,7 @@ def _step(idx: str, label: str, fn, *args, **kwargs) -> int:
 
 
 def run(version: str, recreate: bool, no_sparse: bool, commit: str,
-       max_len: int = 400) -> int:
+       max_len: int = 400, prev: str | None = None, promote: bool = False) -> int:
     want_qdrant = True
     want_pg = True
     if preflight(version, want_qdrant, want_pg) != 0:
@@ -101,15 +102,15 @@ def run(version: str, recreate: bool, no_sparse: bool, commit: str,
         ("1/5", "clean (raw → intermediate)", clean_to_jsonl.run,
          (version,), {"max_len": max_len}),
         ("2/5", "split cold/hot → vector + postgres CSV", split_cold_hot.run,
-         (version,), {"commit": commit}),
-        ("3/5", "embed + ingest Qdrant dense", vector_ingest.run,
+         (version,), {"commit": commit, "prev": prev}),
+        ("3/5", "embed + ingest Qdrant dense (incremental)", vector_ingest.run,
          (version,), {"url": QDRANT_URL, "recreate": recreate}),
     ]
     if not no_sparse:
         steps.append(("4/5", "BM25 sparse → Qdrant sparse", sparse_ingest.run,
                       (version,), {"url": QDRANT_URL, "recreate": recreate}))
     steps.append(("5/5" if not no_sparse else "4/4",
-                  "UPSERT PostgreSQL", postgres_ingest.run,
+                  "UPSERT PostgreSQL (versioned)", postgres_ingest.run,
                   (version,), {"dsn": PG_DSN}))
 
     for idx, label, fn, args, kwargs in steps:
@@ -119,11 +120,20 @@ def run(version: str, recreate: bool, no_sparse: bool, commit: str,
                   file=sys.stderr)
             return rc
 
-    print(_bar(f"XONG  version={version}  ({time.time() - t_total:.1f}s)"))
+    print(_bar(f"XONG ingest  version={version}  ({time.time() - t_total:.1f}s)"))
+    print("Ingest xong — version CHƯA active. Activate bằng:")
+    print(f"  python scripts/version_manager.py promote --version {version}")
+    if promote:
+        print(_bar(f"PROMOTE → active={version}"))
+        rc = version_manager._activate(version, rollback=False)
+        if rc != 0:
+            print("[run_pipeline] promote FAIL — version đã ingest nhưng chưa active.",
+                  file=sys.stderr)
+            print(f"  sửa rồi chạy: version_manager.py promote --version {version}",
+                  file=sys.stderr)
+        return rc
     print("Verify:")
-    print(f"  curl {QDRANT_URL}/collections")
-    print(f"  docker exec vivu_postgres psql -U vivu -d vivu "
-          f"-c \"SELECT count(*) FROM price_list; SELECT count(*) FROM edition;\"")
+    print(f"  python scripts/version_manager.py status")
     print(f"  cat data/clean/{version}/_manifest.json")
     return 0
 
@@ -132,15 +142,20 @@ def main() -> int:
     ap = argparse.ArgumentParser(description="End-to-end data pipeline (dữ liệu hiện có).")
     ap.add_argument("--version", default="v1", help="Version folder (mặc định v1)")
     ap.add_argument("--recreate", action="store_true",
-                    help="Xóa và tạo lại Qdrant collections (dense + sparse)")
+                    help="Xóa collection __version + bỏ qua cache (rebuild sạch)")
     ap.add_argument("--no-sparse", action="store_true",
                     help="Bỏ qua BM25 sparse (chỉ dense + PostgreSQL)")
     ap.add_argument("--commit", default="",
                     help="Repo commit hash ghi vào _manifest / ingest_version")
     ap.add_argument("--max-len", type=int, default=400,
                     help="Chunk max length chars (mặc định 400)")
+    ap.add_argument("--prev", default=None,
+                    help="Version trước để diff (mặc định: auto-detect)")
+    ap.add_argument("--promote", action="store_true",
+                    help="Sau khi ingest xong, tự activate version (alias swap + is_current)")
     args = ap.parse_args()
-    return run(args.version, args.recreate, args.no_sparse, args.commit, args.max_len)
+    return run(args.version, args.recreate, args.no_sparse, args.commit,
+               args.max_len, args.prev, args.promote)
 
 
 if __name__ == "__main__":

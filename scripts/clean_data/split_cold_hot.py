@@ -34,6 +34,82 @@ def now_iso() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
+def _content_hash(text: str, structured: Any) -> str:
+    """Hash nội dung chunk (text + structured), model-agnostic — dùng cho diff."""
+    body = json.dumps(structured or {}, sort_keys=True, ensure_ascii=False)
+    return hashlib.sha1(f"{text}\x1f{body}".encode("utf-8")).hexdigest()
+
+
+def detect_prev_version(version: str) -> str | None:
+    """Version trước đó = folder có _manifest.json, created_at max < version hiện tại.
+
+    Bỏ qua chính `version` và folder không có manifest. Trả None nếu không có.
+    """
+    candidates: list[tuple[str, str]] = []  # (version, created_at)
+    for d in CLEAN_DIR.iterdir():
+        if not d.is_dir() or d.name == version:
+            continue
+        mf = d / "_manifest.json"
+        if not mf.exists():
+            continue
+        try:
+            m = json.loads(mf.read_text(encoding="utf-8"))
+            candidates.append((d.name, m.get("created_at") or ""))
+        except (json.JSONDecodeError, OSError):
+            continue
+    if not candidates:
+        return None
+    # created_at ISO → sắp giảm dần (lexicographic OK cho ISO UTC)
+    candidates.sort(key=lambda c: c[1], reverse=True)
+    return candidates[0][0]
+
+
+def _load_prev_hashes(prev_version: str) -> dict[str, dict[str, str]]:
+    """Trả {collection: {chunk_id: content_hash}} cho version trước."""
+    prev_dir = CLEAN_DIR / prev_version / "vector"
+    if not prev_dir.exists():
+        return {}
+    out: dict[str, dict[str, str]] = {}
+    for f in sorted(prev_dir.glob("*.jsonl")):
+        col = f.stem
+        m: dict[str, str] = {}
+        for line in f.read_text(encoding="utf-8").splitlines():
+            if not line.strip():
+                continue
+            c = json.loads(line)
+            m[c["id"]] = _content_hash(c["text"], c.get("structured"))
+        out[col] = m
+    return out
+
+
+def diff_chunks(
+    by_collection: dict[str, list[dict[str, Any]]],
+    prev_version: str | None,
+) -> dict[str, dict[str, int]]:
+    """Tính added/modified/removed mỗi collection so với prev_version.
+
+    - added   = chunk_id có ở curr, KHÔNG có ở prev
+    - removed = chunk_id có ở prev, KHÔNG có ở curr  (cả collection bị bỏ cũng tính)
+    - modified = có ở cả 2, hash khác
+    Trả {collection: {chunks, added, modified, removed}} (chỉ số, không ghi file).
+    """
+    prev_hashes = _load_prev_hashes(prev_version) if prev_version else {}
+    diff: dict[str, dict[str, int]] = {}
+    all_cols = set(by_collection) | set(prev_hashes)
+    for col in all_cols:
+        curr_rows = by_collection.get(col, [])
+        curr_map = {r["id"]: _content_hash(r["text"], r.get("structured")) for r in curr_rows}
+        prev_map = prev_hashes.get(col, {})
+        curr_ids = set(curr_map)
+        prev_ids = set(prev_map)
+        added = len(curr_ids - prev_ids)
+        removed = len(prev_ids - curr_ids)
+        modified = sum(1 for cid in curr_ids & prev_ids if curr_map[cid] != prev_map[cid])
+        diff[col] = {"chunks": len(curr_rows), "added": added,
+                     "modified": modified, "removed": removed}
+    return diff
+
+
 def slugify(text: str, max_len: int = 40) -> str:
     s = text.lower()
     s = re.sub(r"[^a-z0-9\s]+", " ", s)
@@ -145,31 +221,48 @@ def build_manifest(
     price_rows: list[dict[str, Any]],
     link_only: dict[str, list[str]],
     repo_commit: str = "",
+    prev_version: str | None = None,
+    diff: dict[str, dict[str, int]] | None = None,
 ) -> dict[str, Any]:
+    diff = diff or {}
     vector_summary: dict[str, Any] = {}
     total_chunks = 0
+    total_added = 0
+    total_modified = 0
+    total_removed = 0
     for col, rows in by_collection.items():
+        d = diff.get(col, {})
+        added = d.get("added", len(rows)) if diff else len(rows)
+        modified = d.get("modified", 0) if diff else 0
+        removed = d.get("removed", 0) if diff else 0
         vector_summary[col] = {
             "file": f"vector/{col}.jsonl",
             "chunks": len(rows),
-            "added": len(rows),  # v1: all added
-            "modified": 0,
-            "removed": 0,
+            "added": added,
+            "modified": modified,
+            "removed": removed,
         }
         total_chunks += len(rows)
+        total_added += added
+        total_modified += modified
+        total_removed += removed
+    # collection bị bỏ hẳn ở version này (chỉ có ở prev) cũng tính vào removed
+    for col, d in diff.items():
+        if col not in by_collection:
+            total_removed += d.get("removed", 0)
 
     return {
         "version": version,
         "created_at": now_iso(),
         "created_by": "scripts/clean_to_jsonl.py + scripts/split_cold_hot.py",
-        "prev_version": None,
+        "prev_version": prev_version,
         "repo_commit": repo_commit,
         "vector": {
             "collections": vector_summary,
             "total_chunks": total_chunks,
-            "total_added": total_chunks,
-            "total_modified": 0,
-            "total_removed": 0,
+            "total_added": total_added,
+            "total_modified": total_modified,
+            "total_removed": total_removed,
         },
         "postgres": {
             "tables": {
@@ -193,13 +286,14 @@ def build_manifest(
     }
 
 
-def run(version: str = "v1", commit: str = "") -> int:
+def run(version: str = "v1", commit: str = "", prev: str | None = None) -> int:
     """Split intermediate -> cold vector JSONL + hot postgres CSV + manifest.
-    Trả 0 nếu OK, 1 nếu lỗi."""
+    Trả 0 nếu OK, 1 nếu lỗi. `prev` = version trước để diff (None → auto-detect)."""
     version_dir = CLEAN_DIR / version
     inter_dir = version_dir / "intermediate"
     vector_dir = version_dir / "vector"
     postgres_dir = version_dir / "postgres"
+    prev_version = prev
 
     if not inter_dir.exists():
         print(f"[split_cold_hot] intermediate dir not found: {inter_dir}", file=sys.stderr)
@@ -237,13 +331,20 @@ def run(version: str = "v1", commit: str = "") -> int:
         price_rows,
     )
 
-    # Manifest
+    # Manifest (+ chunk diff so với prev_version)
     link_only = load_link_only(version_dir)
-    manifest = build_manifest(version, by_collection, edition_rows, price_rows, link_only, commit)
+    if prev_version is None:
+        prev_version = detect_prev_version(version)
+    diff = diff_chunks(by_collection, prev_version)
+    manifest = build_manifest(version, by_collection, edition_rows, price_rows,
+                               link_only, commit, prev_version, diff)
     (version_dir / "_manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
 
-    print(f"[split_cold_hot] version={version}")
+    print(f"[split_cold_hot] version={version}  prev={prev_version}")
     print(f"  vector collections: {len(by_collection)}  total chunks: {manifest['vector']['total_chunks']}")
+    print(f"  diff: added={manifest['vector']['total_added']}  "
+          f"modified={manifest['vector']['total_modified']}  "
+          f"removed={manifest['vector']['total_removed']}")
     print(f"  postgres edition rows: {len(edition_rows)}  price rows: {len(price_rows)}")
     print(f"  output dir: {version_dir}")
     return 0
@@ -253,8 +354,10 @@ def main() -> int:
     ap = argparse.ArgumentParser(description="Split intermediate JSONL into cold vector + hot postgres CSV.")
     ap.add_argument("--version", default="v1", help="Version folder (default: v1)")
     ap.add_argument("--commit", default="", help="Repository commit hash")
+    ap.add_argument("--prev", default=None,
+                    help="Version trước để diff (mặc định: auto-detect từ manifest)")
     args = ap.parse_args()
-    return run(args.version, args.commit)
+    return run(args.version, args.commit, args.prev)
 
 
 if __name__ == "__main__":
