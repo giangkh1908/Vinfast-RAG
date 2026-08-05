@@ -58,6 +58,14 @@ data/raw/*.txt ──► clean_to_jsonl.py ──► intermediate/{vector,hot}.j
               Qdrant (dense + sparse)                    PostgreSQL
 ```
 
+**Chunking 1 lần, phân nhiều thùng.** Cắt chunk chỉ diễn ra **1 lần** ở bước
+`clean_to_jsonl.py` (theo `max_len=400` chars, nhận biết câu, overlap câu cuối)
+→ ra **1 file gộp** `intermediate/vector.jsonl` (mỗi dòng 1 chunk, đã gán sẵn
+`collection` theo `category`). Bước `split_cold_hot.py` **không cắt lại** — chỉ
+đọc file gộp đó và **chia dòng theo trường `collection`** thành nhiều file
+`vector/<collection>.jsonl` (1 file = 1 Qdrant collection). Tổng chunk không đổi:
+2333 = 250 + 1447 + 546 + 90 (xem §2.1).
+
 ---
 
 ## 2. Schema Qdrant — Vector

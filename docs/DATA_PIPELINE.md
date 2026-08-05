@@ -91,6 +91,10 @@ data/clean/v1/
     └── price_list.csv
 ```
 
+- **Chunking 1 lần, phân nhiều thùng**: cắt chunk chỉ ở bước clean (1 file gộp
+  `intermediate/vector.jsonl`, 2333 dòng). Bước split KHÔNG cắt lại — chỉ chia
+  dòng theo `collection` thành 4 file `vector/<collection>.jsonl` (1 file = 1
+  Qdrant collection). 2333 = 250 + 1447 + 546 + 90.
 - **Stable chunk id**: `<collection>:<model_lower>:<edition_lower>:<section_slug>:<seq>`
   → Qdrant point id = `uuid5` từ chunk id (deterministic, re-run không trùng lặp).
 - **Vector text** phải KHÔNG chứa số tiền (`has_money` check) — chunk nào dính
