@@ -34,8 +34,8 @@
 | DB | Loại | Vai trò | Đổi bao lâu | Update |
 |---|---|---|---|---|
 | **Qdrant** (vector) | Cold | Kiến thức "cứng": specs, mô tả, chính sách, FAQ, link bảo dưỡng | tháng / quý | re-embed đắt → đánh version |
-| **PostgreSQL** | Hot | Số liệu "hay đổi": giá niêm yết + ưu đãi, lịch bảo dưỡng | ngày / tuần / chiến dịch | UPSERT rẻ, 1 câu SQL |
-| **Link-only** (manifest) | — | Showroom, khuyến mãi, lăn bánh | liên tục | KHÔNG vào DB, chỉ trả link |
+| **PostgreSQL** | Hot | Số liệu "hay đổi": giá niêm yết + ưu đãi | ngày / tuần / chiến dịch | UPSERT rẻ, 1 câu SQL |
+| **Link-only** (manifest) | — | Bảo dưỡng, showroom, khuyến mãi, lăn bánh | liên tục | KHÔNG vào DB, chỉ trả link |
 
 **Khóa join trung tâm:** `model_id` + `edition_id` (VD `VF9` + `Eco`).
 
@@ -69,7 +69,7 @@ data/raw/*.txt ──► clean_to_jsonl.py ──► intermediate/{vector,hot}.j
 | `vivu_specs` | `thong_so_ky_thuat` | Thông số kỹ thuật, so sánh, đối chiếu | 250 |
 | `vivu_product_info` | `thong_tin_san_pham` | Mô tả sản phẩm, tính năng, dat-coc (không giá) | 1447 |
 | `vivu_policy` | `chinh_sach_dich_vu` | Chính sách bảo hành, thuê pin, điều khoản pháp lý, cứu hộ | 546 |
-| `vivu_maintenance` | `dat_lich_bao_duong` | Dịch vụ bảo dưỡng (text chung) | 90 |
+| `vivu_maintenance` | `dat_lich_bao_duong` | Text chung về dịch vụ bảo dưỡng (KHÔNG phải lịch theo xe) | 90 |
 | `vivu_faq` *(định nghĩa, chưa có data ở v1)* | `ho_tro_mua_xe` | FAQ bán hàng / lái thử | 0 |
 
 **Cấu hình collection (dense):**
@@ -191,19 +191,6 @@ CREATE TABLE IF NOT EXISTS price_list (
 CREATE INDEX IF NOT EXISTS idx_price_active
     ON price_list(model_id, edition_id) WHERE valid_to IS NULL;
 
--- Lịch bảo dưỡng chi tiết (theo model × năm × loại dịch vụ)
-CREATE TABLE IF NOT EXISTS maintenance_schedule (
-    model_id        TEXT NOT NULL,
-    year            INT NOT NULL,
-    service_type    TEXT NOT NULL,         -- 'kiem_tra' | 'bao_duong_10k' | 'bao_duong_20k' ...
-    mileage_km      INT,                   -- 10000, 20000, ...
-    items           JSONB,                 -- list hạng mục kiểm tra/thay thế
-    cost_est_vnd    BIGINT,
-    source_url      TEXT,
-    updated_at      TIMESTAMPTZ DEFAULT now(),
-    PRIMARY KEY (model_id, year, service_type)
-);
-
 -- Tracking version ingest
 CREATE TABLE IF NOT EXISTS ingest_version (
     version                 TEXT PRIMARY KEY,   -- "v1", "v2" ...
@@ -224,7 +211,6 @@ CREATE TABLE IF NOT EXISTS ingest_version (
 |---|---|---|
 | `edition` | `(model_id, edition_id)` | model_label, edition_label, year_range, is_active, updated_at |
 | `price_list` | `(model_id, edition_id, valid_from)` | price_list_vnd, price_promo_vnd, promo_label, vat_included, battery_included, valid_to, updated_at, source_url |
-| `maintenance_schedule` | `(model_id, year, service_type)` | mileage_km, items, cost_est_vnd, source_url, updated_at |
 | `ingest_version` | `(version)` | toàn bộ cột (từ `_manifest.json`) |
 
 ### 3.2. CSV nguồn (đầu vào ingest)
@@ -241,11 +227,6 @@ VF3|Eco|VF 3|Eco|2026|t|2026-08-03T07:21:28Z|2026-08-03T07:21:28Z
 ```
 model_id|edition_id|price_list_vnd|price_promo_vnd|promo_label|vat_included|battery_included|valid_from|valid_to|updated_at|source_url
 VF3|Eco|285000000|270750000|Ưu đãi đặt cọc 2026|t|t|2026-07-01||2026-08-03T07:21:28Z|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf3.html
-```
-
-**`postgres/maintenance_schedule.csv`** *(v1: chỉ header, chưa có data)*
-```
-model_id|year|service_type|mileage_km|items|cost_est_vnd|source_url|updated_at
 ```
 
 > Bool trong CSV = `t`/`f`; cột trống = NULL. `price_promo_vnd` trống khi không
@@ -277,14 +258,14 @@ Index mỗi version (`data/clean/<ver>/_manifest.json`). Schema đầy đủ:
 
   "postgres": {
     "tables": {
-      "edition":              { "file": "postgres/edition.csv",              "rows": 14, "upserted": 14 },
-      "price_list":           { "file": "postgres/price_list.csv",           "rows": 14, "upserted": 14, "price_changed": 11 },
-      "maintenance_schedule":{ "file": "postgres/maintenance_schedule.csv", "rows": 0,  "upserted": 0 }
+      "edition":              { "file": "postgres/edition.csv",    "rows": 14, "upserted": 14 },
+      "price_list":           { "file": "postgres/price_list.csv", "rows": 14, "upserted": 14, "price_changed": 11 }
     },
     "total_rows_upserted": 28
   },
 
   "link_only": {
+    "maintenance_url":    "https://vinfastauto.com/vn_vi/dich-vu-bao-duong-oto",
     "brochure_urls":      ["https://..."],
     "brochure_by_model":  { "VF2": ["https://..."], "VF8": ["...", "..."] },
     "showroom_urls":      [],
@@ -355,8 +336,9 @@ WHERE model_id=%s [AND edition_id=%s]
 ORDER BY valid_from DESC LIMIT 1;
 ```
 
-**`maintenance_schedule`** — lịch bảo dưỡng theo model × năm × loại dịch vụ.
-`items` là JSONB (list hạng mục). v1 chưa có data (header-only).
+**`maintenance_schedule`** — ĐÃ BỎ. Lịch bảo dưỡng **không lưu DB** (dễ lỗi thời
+theo model × năm × hạng mục). Chatbot chỉ trả **link trang bảo dưỡng chính thức**
+của VinFast + text chung từ collection `vivu_maintenance` (xem §5.4).
 
 **`ingest_version`** — audit mỗi đợt ingest: số chunk add/modify/remove, số row
 pg upserted, commit repo. Đánh version **sau khi thu thập xong cả đợt**
@@ -364,9 +346,14 @@ pg upserted, commit repo. Đánh version **sau khi thu thập xong cả đợt**
 
 ### 5.4. Link-only (không vào DB)
 
-`showroom_urls`, `promotion_urls`, `roadside_cost_urls`, `brochure_urls`,
-`brochure_by_model` chỉ lưu trong `_manifest.json`. Chatbot trả link cho user
-tự xem thông tin mới nhất — tránh lưu dữ liệu dễ lỗi thời vào DB.
+`maintenance_url`, `showroom_urls`, `promotion_urls`, `roadside_cost_urls`,
+`brochure_urls`, `brochure_by_model` chỉ lưu trong `_manifest.json`. Chatbot trả
+link cho user tự xem thông tin mới nhất — tránh lưu dữ liệu dễ lỗi thời vào DB.
+
+**Bảo dưỡng:** chatbot gọi tool `get_maintenance_info` → trả text chung (từ
+collection `vivu_maintenance`) + link trang bảo dưỡng chính thức
+`https://vinfastauto.com/vn_vi/dich-vu-bao-duong-oto` cho user tự tra cứu theo xe.
+**KHÔNG** có bảng `maintenance_schedule` trong PostgreSQL.
 
 ---
 
