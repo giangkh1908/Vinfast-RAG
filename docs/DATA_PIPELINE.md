@@ -71,11 +71,12 @@ lỗi → dừng, không chạy bước sau):
 
 | Bước | Script | Output |
 |------|--------|--------|
-| 1/5 clean | `scripts/clean_data/clean_to_jsonl.py` | `intermediate/{vector,hot}.jsonl` + `link_only.json` |
-| 2/5 split | `scripts/clean_data/split_cold_hot.py` | `vector/*.jsonl` + `postgres/*.csv` + `_manifest.json` |
-| 3/5 dense | `scripts/ingest/vector_ingest.py` | 4 collection Qdrant dense `<col>__<ver>` (embed incremental, content-hash cache) |
-| 4/5 sparse | `scripts/ingest/sparse_ingest.py` | collection `sparse__<ver>` (BM25) + `sparse_index.json` |
-| 5/5 postgres | `scripts/ingest/postgres_ingest.py` | UPSERT `edition`, `price_list` (versioned) + `ingest_version` (is_current=false) |
+| 1/6 clean | `scripts/clean_data/clean_to_jsonl.py` | `intermediate/{vector,hot}.jsonl` + `link_only.json` (drop spec cấu trúc khỏi vector) |
+| 2/6 split | `scripts/clean_data/split_cold_hot.py` | `vector/*.jsonl` + `postgres/*.csv` + `_manifest.json` |
+| 3/6 parse_specs | `scripts/clean_data/parse_specs.py` | `postgres/specs.csv` (trích spec union từ raw → `car_specs`) |
+| 4/6 dense | `scripts/ingest/vector_ingest.py` | 4 collection Qdrant dense `<col>__<ver>` (embed incremental, content-hash cache) |
+| 5/6 sparse | `scripts/ingest/sparse_ingest.py` | collection `sparse__<ver>` (BM25) + `sparse_index.json` |
+| 6/6 postgres | `scripts/ingest/postgres_ingest.py` | UPSERT `edition`, `price_list` (versioned) + `car_specs` (full-refresh) + `ingest_version` (is_current=false) |
 
 ### CLI flags
 
@@ -110,15 +111,18 @@ data/clean/v1/
 │   ├── vivu_product_info.jsonl
 │   ├── vivu_policy.jsonl
 │   └── vivu_maintenance.jsonl
-└── postgres/               # hot — COPY INTO PostgreSQL (giá, edition)
+└── postgres/               # hot — COPY INTO PostgreSQL (giá, edition, specs)
     ├── edition.csv
-    └── price_list.csv
+    ├── price_list.csv
+    └── specs.csv           # car_specs (parse_specs.py — KHÔNG version, full-refresh)
 ```
 
 - **Chunking 1 lần, phân nhiều thùng**: cắt chunk chỉ ở bước clean (1 file gộp
-  `intermediate/vector.jsonl`, 2333 dòng). Bước split KHÔNG cắt lại — chỉ chia
-  dòng theo `collection` thành 4 file `vector/<collection>.jsonl` (1 file = 1
-  Qdrant collection). 2333 = 250 + 1447 + 546 + 90.
+  `intermediate/vector.jsonl`, 2212 dòng sau khi bỏ spec cấu trúc). Bước split
+  KHÔNG cắt lại — chỉ chia dòng theo `collection` thành 4 file
+  `vector/<collection>.jsonl` (1 file = 1 Qdrant collection).
+  2212 = 220 + 1356 + 546 + 90 (spec cấu trúc đã bỏ khỏi vector → `car_specs`;
+  xem `DATA_SCHEMA_SPEC.md` §5.3).
 - **Stable chunk id**: `<collection>:<model_lower>:<edition_lower>:<section_slug>:<seq>`
   → Qdrant point id = `uuid5` từ chunk id (deterministic, re-run không trùng lặp).
 - **Vector text** phải KHÔNG chứa số tiền (`has_money` check) — chunk nào dính
@@ -141,16 +145,20 @@ curl -s -X POST http://localhost:6333/collections/vivu_specs/points/count -d '{"
 docker exec vivu_postgres psql -U vivu -d vivu \
   -c "SELECT count(*) FROM edition_active; SELECT count(*) FROM price_list_active; \
       SELECT version,is_current FROM ingest_version;"
+# car_specs (KHÔNG version — query trực tiếp, không qua VIEW):
+docker exec vivu_postgres psql -U vivu -d vivu \
+  -c "SELECT model_code, version_name, spec_key, spec_value, spec_unit FROM car_specs \
+      WHERE model_code='VF 8' AND spec_key='power_kw';"
 ```
 
 Kết quả tham chiếu (lần chạy đầu, version `v1`, đã promote):
 
 ```
 version_manager status:  vivu_specs → vivu_specs__v1, sparse → sparse__v1, active=v1
-Qdrant:   vivu_specs__v1=250  vivu_product_info__v1=1447  vivu_policy__v1=546
-          vivu_maintenance__v1=90  sparse__v1=2333
-Postgres: edition_active=14  price_list_active=14  ingest_version: v1 is_current=t
-Manifest: total_chunks=2333  total_rows_upserted=28
+Qdrant:   vivu_specs__v1=220  vivu_product_info__v1=1356  vivu_policy__v1=546
+          vivu_maintenance__v1=90  sparse__v1=2212
+Postgres: edition_active=14  price_list_active=14  car_specs=217  ingest_version: v1 is_current=t
+Manifest: total_chunks=2212  total_rows_upserted=28
 ```
 
 > Nếu chưa promote: `status` in "active=(none)" và VIEW active rỗng. Chạy
@@ -179,6 +187,7 @@ Orchestrator là cách dùng chính. Nếu cần debug 1 bước, gọi script t
 ```bash
 PYTHONUTF8=1 python scripts/clean_data/clean_to_jsonl.py --version v1
 PYTHONUTF8=1 python scripts/clean_data/split_cold_hot.py --version v1 --commit $(git rev-parse --short HEAD)
+PYTHONUTF8=1 python scripts/clean_data/parse_specs.py    --version v1
 PYTHONUTF8=1 python scripts/ingest/vector_ingest.py --version v1 --recreate
 PYTHONUTF8=1 python scripts/ingest/sparse_ingest.py --version v1 --recreate
 PYTHONUTF8=1 python scripts/ingest/postgres_ingest.py --version v1

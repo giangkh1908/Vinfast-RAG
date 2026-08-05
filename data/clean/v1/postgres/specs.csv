@@ -1,0 +1,218 @@
+model_code|version_name|version_code|spec_category|spec_key|spec_value|spec_unit|source_url
+VF 2|||powertrain|battery_kwh|18.3|kWh|https://vnexpress.net/oto-xe-may/v-car/dong-xe/vinfast-vf-2-336
+VF 2|||powertrain|top_speed_kmh|80|km/h|https://vnexpress.net/oto-xe-may/v-car/dong-xe/vinfast-vf-2-336
+VF 2|||powertrain|engine|01 Motor||https://vinfastauto.com/vn_vi/dat-coc-xe-vf2
+VF 2|||powertrain|power_kw|30|kW|https://vinfastauto.com/vn_vi/dat-coc-xe-vf2
+VF 2|||powertrain|torque_nm|65|Nm|https://vinfastauto.com/vn_vi/dat-coc-xe-vf2
+VF 2|||powertrain|range_km|210|km|https://vinfastauto.com/vn_vi/dat-coc-xe-vf2
+VF 2|||powertrain|fast_charge_min|34|phút|https://vinfastauto.com/vn_vi/dat-coc-xe-vf2
+VF 2|||powertrain|drivetrain|RWD/Cầu sau||https://vinfastauto.com/vn_vi/dat-coc-xe-vf2
+VF 6|||powertrain|battery_type|LFP||https://www.vinfastmiennam.vn/so-sanh-vinfast-vf6-base-va-vf6-plus-p49
+VF 6|||powertrain|battery_kwh|59.6|kWh|https://vinfastlongan.vn/san-pham/vinfast-vf6/
+VF 6|||dimension|length_mm|4238|mm|https://vinfast-vn.vn/san-pham/vinfast-vf6/
+VF 6|||dimension|width_mm|1820|mm|https://vinfast-vn.vn/san-pham/vinfast-vf6/
+VF 6|||dimension|height_mm|1594|mm|https://vinfast-vn.vn/san-pham/vinfast-vf6/
+VF 6|||dimension|wheelbase_mm|2730|mm|https://vinfast-vn.vn/san-pham/vinfast-vf6/
+VF 6|Eco||powertrain|range_km|399|km|https://vinfast-vn.vn/san-pham/vinfast-vf6/
+VF 6|Plus||powertrain|range_km|381|km|https://vinfast-vn.vn/san-pham/vinfast-vf6/
+VF 6|Eco||powertrain|power_kw|100|kW|https://vinfast-vn.vn/san-pham/vinfast-vf6/
+VF 6|Plus||powertrain|power_kw|150|kW|https://vinfast-vn.vn/san-pham/vinfast-vf6/
+VF 6|Eco||powertrain|torque_nm|135|Nm|https://vinfast-vn.vn/san-pham/vinfast-vf6/
+VF 6|Plus||powertrain|torque_nm|310|Nm|https://vinfast-vn.vn/san-pham/vinfast-vf6/
+VF 6|Eco||exterior|wheel_size_inch|17|inch|https://vinfast-vn.vn/san-pham/vinfast-vf6/
+VF 6|Plus||exterior|wheel_size_inch|19|inch|https://vinfast-vn.vn/san-pham/vinfast-vf6/
+VF 6|||powertrain|engine|Motor||https://vinfastlongan.vn/san-pham/vinfast-vf6/
+VF 6|Eco||powertrain|top_speed_kmh|150|km/h|https://vinfastlongan.vn/san-pham/vinfast-vf6/
+VF 6|Plus||powertrain|top_speed_kmh|175|km/h|https://vinfastlongan.vn/san-pham/vinfast-vf6/
+VF 6|||powertrain|drivetrain|Cầu Trước||https://www.vinfastmiennam.vn/so-sanh-vinfast-vf6-base-va-vf6-plus-p49
+VF 6|||safety|suspension|Mac Pherson||https://www.vinfastmiennam.vn/so-sanh-vinfast-vf6-base-va-vf6-plus-p49
+VF 6|Plus||exterior|headlights|Tự đông||https://www.vinfastmiennam.vn/so-sanh-vinfast-vf6-base-va-vf6-plus-p49
+VF 6|Eco||exterior|headlights|Không||https://www.vinfastmiennam.vn/so-sanh-vinfast-vf6-base-va-vf6-plus-p49
+VF 6|||exterior|mirrors|Có||https://www.vinfastmiennam.vn/so-sanh-vinfast-vf6-base-va-vf6-plus-p49
+VF 6|Plus||interior|driver_seat|Chỉnh điện 8 hướng||https://www.vinfastmiennam.vn/so-sanh-vinfast-vf6-base-va-vf6-plus-p49
+VF 6|Eco||interior|driver_seat|Chỉnh cơ 6 hướng||https://www.vinfastmiennam.vn/so-sanh-vinfast-vf6-base-va-vf6-plus-p49
+VF 6|Plus||interior|passenger_seat|Có||https://www.vinfastmiennam.vn/so-sanh-vinfast-vf6-base-va-vf6-plus-p49
+VF 6|Eco||interior|passenger_seat|Không||https://www.vinfastmiennam.vn/so-sanh-vinfast-vf6-base-va-vf6-plus-p49
+VF 6|Plus||interior|ac|Tự động, 2 vùng||https://www.vinfastmiennam.vn/so-sanh-vinfast-vf6-base-va-vf6-plus-p49
+VF 6|Eco||interior|ac|Tự động, 1 vùng||https://www.vinfastmiennam.vn/so-sanh-vinfast-vf6-base-va-vf6-plus-p49
+VF 6|Plus||interior|speakers|8||https://www.vinfastmiennam.vn/so-sanh-vinfast-vf6-base-va-vf6-plus-p49
+VF 6|Eco||interior|speakers|6||https://www.vinfastmiennam.vn/so-sanh-vinfast-vf6-base-va-vf6-plus-p49
+VF 6|||safety|airbags|2||https://www.vinfastmiennam.vn/so-sanh-vinfast-vf6-base-va-vf6-plus-p49
+VF 6|||dimension|ground_clearance_mm|170|mm|https://www.vinfastmiennam.vn/so-sanh-vinfast-vf6-base-va-vf6-plus-p49
+VF 6|||powertrain|acceleration_0_100_s|8|s|https://www.vinfastmiennam.vn/so-sanh-vinfast-vf6-base-va-vf6-plus-p49
+VF 6|||powertrain|ac_charge_kw|7.2|kW|https://www.vinfastmiennam.vn/so-sanh-vinfast-vf6-base-va-vf6-plus-p49
+VF 6|||powertrain|drive_modes|Eco/Normal/Sport||https://www.vinfastmiennam.vn/so-sanh-vinfast-vf6-base-va-vf6-plus-p49
+VF 6|||safety|brakes|Đĩa||https://www.vinfastmiennam.vn/so-sanh-vinfast-vf6-base-va-vf6-plus-p49
+VF 6|||exterior|tire_type|Lốp mùa hè||https://www.vinfastmiennam.vn/so-sanh-vinfast-vf6-base-va-vf6-plus-p49
+VF 6|||exterior|spare_tire|Aftersales||https://www.vinfastmiennam.vn/so-sanh-vinfast-vf6-base-va-vf6-plus-p49
+VF 6|||exterior|drl|LED||https://www.vinfastmiennam.vn/so-sanh-vinfast-vf6-base-va-vf6-plus-p49
+VF 6|||exterior|tailgate|Chỉnh cơ||https://www.vinfastmiennam.vn/so-sanh-vinfast-vf6-base-va-vf6-plus-p49
+VF 6|||interior|seats|5||https://www.vinfastmiennam.vn/so-sanh-vinfast-vf6-base-va-vf6-plus-p49
+VF 6|||interior|seat_material|Giả da||https://www.vinfastmiennam.vn/so-sanh-vinfast-vf6-base-va-vf6-plus-p49
+VF 6|||interior|second_row|60:40||https://www.vinfastmiennam.vn/so-sanh-vinfast-vf6-base-va-vf6-plus-p49
+VF 6|||interior|display_inch|12.9|inch|https://vinfast-chinhhang.com/vinfast-vf6-s-2024-1447625.html
+VF 7|||powertrain|battery_type|Lithium-ion||https://vnexpress.net/oto-xe-may/v-car/dong-xe/vinfast-vf-7-253
+VF 7|||powertrain|battery_kwh|75.3|kWh|https://vinfastyenbai.com.vn/vinfast-vf7/
+VF 7|Eco||powertrain|engine|1 Motor điện||https://vinfastyenbai.com.vn/vinfast-vf7/
+VF 7|Plus||powertrain|engine|2 Motor điện||https://vinfastyenbai.com.vn/vinfast-vf7/
+VF 7|||powertrain|drivetrain|FWD – Dẫn động cầu trước||https://vinfastyenbai.com.vn/vinfast-vf7/
+VF 7|||dimension|wheelbase_mm|2840|mm|https://vinfastyenbai.com.vn/vinfast-vf7/
+VF 7|Eco||powertrain|range_km|450|km|https://vinfastyenbai.com.vn/vinfast-vf7/
+VF 7|Plus||powertrain|range_km|431|km|https://vinfastyenbai.com.vn/vinfast-vf7/
+VF 7|Eco||powertrain|power_kw|201|kW|https://vinfastyenbai.com.vn/vinfast-vf7/
+VF 7|Plus||powertrain|power_kw|349|kW|https://vinfastyenbai.com.vn/vinfast-vf7/
+VF 7|Eco||powertrain|torque_nm|310|Nm|https://vinfastyenbai.com.vn/vinfast-vf7/
+VF 7|Plus||powertrain|torque_nm|500|Nm|https://vinfastyenbai.com.vn/vinfast-vf7/
+VF 7|Eco||interior|seat_material|Nỉ||https://vinfastyenbai.com.vn/vinfast-vf7/
+VF 7|Plus||interior|seat_material|Chất liệu da cao cấp thân thiện môi trường||https://vinfastyenbai.com.vn/vinfast-vf7/
+VF 7|||dimension|length_mm|4545|mm|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf7.html
+VF 7|||dimension|width_mm|1890|mm|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf7.html
+VF 7|||dimension|height_mm|1635.75|mm|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf7.html
+VF 7|||exterior|mirrors|Đuôi xe Đuôi xe VinFast VF7 Đuôi xe VinFast VF7 thể hiện vẻ mạnh mẽ với đường gân dập nổi mở rộng và dải LED hình chữ V, là đặc điểm nhận diện thương hiệu.||https://oto360.net/xe-vinfast/vf7.html
+VF 7|||dimension|ground_clearance_mm|190|mm|https://oto360.net/xe-vinfast/vf7.html
+VF 7|||safety|brakes|Đĩa / Đĩa||https://oto360.net/xe-vinfast/vf7.html
+VF 5|||dimension|length_mm|3967|mm|https://vinfast-vn.vn/san-pham/vinfast-vf5/
+VF 5|||dimension|width_mm|1723|mm|https://vinfast-vn.vn/san-pham/vinfast-vf5/
+VF 5|||dimension|height_mm|1578|mm|https://vinfast-vn.vn/san-pham/vinfast-vf5/
+VF 5|||dimension|wheelbase_mm|2514|mm|https://vinfast-vn.vn/san-pham/vinfast-vf5/
+VF 5|||powertrain|range_km|326|km|https://vinfast-vn.vn/san-pham/vinfast-vf5/
+VF 5|||powertrain|power_kw|100|kW|https://vinfast-vn.vn/san-pham/vinfast-vf5/
+VF 5|||powertrain|torque_nm|135|Nm|https://vinfast-vn.vn/san-pham/vinfast-vf5/
+VF 5|||interior|seats|5||https://vinfast-vn.vn/san-pham/vinfast-vf5/
+VF 5|||powertrain|drive_modes|Eco/Sport||https://vinfast-vn.vn/san-pham/vinfast-vf5/
+VF 5|||powertrain|battery_type|LFP||https://vinfast-vn.vn/san-pham/vinfast-vf5/
+VF 5|||powertrain|battery_kwh|37.23|kWh|https://vinfast-vn.vn/san-pham/vinfast-vf5/
+VF 5|||safety|airbags|6||https://vinfast-vn.vn/san-pham/vinfast-vf5/
+VF 5|||exterior|wheel_size_inch|17|inch|https://vinfast-vn.vn/san-pham/vinfast-vf5/
+VF 5|||dimension|ground_clearance_mm|160|mm|https://vinfastev.com.vn/vinfast-vf5/
+VF 5|||powertrain|dc_charge_kw|50|kW|https://vinfastev.com.vn/vinfast-vf5/
+VF 5|||exterior|headlights|Halogen Tự động bật/tắt||https://vinfastev.com.vn/vinfast-vf5/
+VF 5|||exterior|drl|Không||https://vinfastev.com.vn/vinfast-vf5/
+VF 5|||exterior|fog_light|Không||https://vinfastev.com.vn/vinfast-vf5/
+VF 5|||exterior|mirrors|Chỉnh điện Tích hợp báo rẽ||https://vinfastev.com.vn/vinfast-vf5/
+VF 5|||interior|steering_wheel|Loại thông thường. Tích hợp nút bấm điều khiển nhiều tính năng giải trí và ga tự động||https://vinfastev.com.vn/vinfast-vf5/
+VF 5|||interior|ac|Chỉnh cơ, 1 vùng||https://vinfastev.com.vn/vinfast-vf5/
+VF 5|||safety|brakes|Đĩa thông gió||https://vinfastev.com.vn/vinfast-vf5/
+VF 5|||powertrain|engine|VF5 sử dụng động cơ điện công suất tối đa 100 kW (134 mã lực), mô-men xoắn cực đại đạt 135 Nm.||https://vinfastev.com.vn/vinfast-vf5/
+VF 5|||powertrain|drivetrain|FWD - Cầu trước||https://vinfastvungtau.com.vn/vinfast-vf5.htm
+VF 5|||powertrain|top_speed_kmh|130|km/h|https://vinfastvungtau.com.vn/vinfast-vf5.htm
+VF 5|||interior|seat_material|Giả da||https://vinfastvungtau.com.vn/vinfast-vf5.htm
+VF 5|||interior|speakers|4||https://vinfastvungtau.com.vn/vinfast-vf5.htm
+VF 5|||powertrain|consumption|13 kWh/100 km||https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf5.html
+VF 8|Eco||exterior|mirrors|Chỉnh điện, gập điện||https://www.vinfastmiennam.vn/so-sanh-vf8-eco-va-vf8-plus-p56
+VF 8|Plus||exterior|mirrors|Chỉnh điện, gập điện, nhớ vị trí, chống chói tự động||https://www.vinfastmiennam.vn/so-sanh-vf8-eco-va-vf8-plus-p56
+VF 8|||interior|driver_seat|chỉnh điện||https://vinfast-vn.vn/san-pham/vinfast-vf8/
+VF 8|Eco||powertrain|power_kw|150|kW|https://www.vinfastmiennam.vn/so-sanh-vf8-eco-va-vf8-plus-p56
+VF 8|Plus||powertrain|power_kw|300|kW|https://www.vinfastmiennam.vn/so-sanh-vf8-eco-va-vf8-plus-p56
+VF 8|Eco||powertrain|torque_nm|310|Nm|https://www.vinfastmiennam.vn/so-sanh-vf8-eco-va-vf8-plus-p56
+VF 8|Plus||powertrain|torque_nm|620|Nm|https://www.vinfastmiennam.vn/so-sanh-vf8-eco-va-vf8-plus-p56
+VF 8|Eco||powertrain|acceleration_0_100_s|11.8|s|https://www.vinfastmiennam.vn/so-sanh-vf8-eco-va-vf8-plus-p56
+VF 8|Plus||powertrain|acceleration_0_100_s|5.58|s|https://www.vinfastmiennam.vn/so-sanh-vf8-eco-va-vf8-plus-p56
+VF 8|||powertrain|battery_kwh|87.7|kWh|https://www.vinfastmiennam.vn/so-sanh-vf8-eco-va-vf8-plus-p56
+VF 8|Eco||powertrain|range_km|531|km|https://www.vinfastmiennam.vn/so-sanh-vf8-eco-va-vf8-plus-p56
+VF 8|Plus||powertrain|range_km|457|km|https://www.vinfastmiennam.vn/so-sanh-vf8-eco-va-vf8-plus-p56
+VF 8|Eco||exterior|tailgate|Chỉnh cơ||https://www.vinfastmiennam.vn/so-sanh-vf8-eco-va-vf8-plus-p56
+VF 8|Plus||exterior|tailgate|Chỉnh điện, đá chân||https://www.vinfastmiennam.vn/so-sanh-vf8-eco-va-vf8-plus-p56
+VF 8|Eco||interior|seat_material|Giả da||https://www.vinfastmiennam.vn/so-sanh-vf8-eco-va-vf8-plus-p56
+VF 8|Plus||interior|seat_material|Da nhân tạo||https://www.vinfastmiennam.vn/so-sanh-vf8-eco-va-vf8-plus-p56
+VF 8|Eco||safety|airbags|10||https://www.vinfastmiennam.vn/so-sanh-vf8-eco-va-vf8-plus-p56
+VF 8|Plus||safety|airbags|11||https://www.vinfastmiennam.vn/so-sanh-vf8-eco-va-vf8-plus-p56
+VF 8|||dimension|wheelbase_mm|2950|mm|https://www.vinfastmiennam.vn/so-sanh-vf8-eco-va-vf8-plus-p56
+VF 8|||dimension|length_mm|4750|mm|https://www.vinfastmiennam.vn/so-sanh-vf8-eco-va-vf8-plus-p56
+VF 8|||dimension|width_mm|1934|mm|https://www.vinfastmiennam.vn/so-sanh-vf8-eco-va-vf8-plus-p56
+VF 8|||dimension|height_mm|1667|mm|https://www.vinfastmiennam.vn/so-sanh-vf8-eco-va-vf8-plus-p56
+VF 8|Eco||dimension|ground_clearance_mm|162|mm|https://www.vinfastmiennam.vn/so-sanh-vf8-eco-va-vf8-plus-p56
+VF 8|Plus||dimension|ground_clearance_mm|157|mm|https://www.vinfastmiennam.vn/so-sanh-vf8-eco-va-vf8-plus-p56
+VF 8|||powertrain|drive_modes|Eco/Normal/Sport||https://www.vinfastmiennam.vn/so-sanh-vf8-eco-va-vf8-plus-p56
+VF 8|||safety|suspension|Treo độc lập thông minh||https://www.vinfastmiennam.vn/so-sanh-vf8-eco-va-vf8-plus-p56
+VF 8|||safety|brakes|Đĩa thông gió/Đĩa thông gió||https://www.vinfastmiennam.vn/so-sanh-vf8-eco-va-vf8-plus-p56
+VF 8|Eco||exterior|wheel_size_inch|19|inch|https://www.vinfastmiennam.vn/so-sanh-vf8-eco-va-vf8-plus-p56
+VF 8|Plus||exterior|wheel_size_inch|20|inch|https://www.vinfastmiennam.vn/so-sanh-vf8-eco-va-vf8-plus-p56
+VF 8|||exterior|drl|LED||https://www.vinfastmiennam.vn/so-sanh-vf8-eco-va-vf8-plus-p56
+VF 8|Eco||exterior|fog_light|Không||https://www.vinfastmiennam.vn/so-sanh-vf8-eco-va-vf8-plus-p56
+VF 8|Plus||exterior|fog_light|Có||https://www.vinfastmiennam.vn/so-sanh-vf8-eco-va-vf8-plus-p56
+VF 8|||exterior|headlights|LED||https://www.vinfastmiennam.vn/so-sanh-vf8-eco-va-vf8-plus-p56
+VF 8|||powertrain|battery_type|Lithium-ion||https://vinfasthanoi.com.vn/vinfast-vf8-plus-1452679.html
+VF 8|||interior|seats|5||https://vinfastauto.com/vn_vi/dat-coc-xe-vf8-the-all-new-2026
+VF 8|||powertrain|engine|điện||https://vinfastauto.com/vn_vi/dat-coc-xe-vf8-the-all-new-2026
+VF 8|||interior|speakers|8||https://vinfasthanoi.com.vn/vinfast-vf8-plus-1452679.html
+VF 8|||powertrain|top_speed_kmh|200|km/h|https://vinfasthanoi.com.vn/vinfast-vf8-plus-1452679.html
+VF 8|||powertrain|fast_charge_min|30|phút|https://vinfastauto.com/vn_vi/dat-coc-xe-vf8-the-all-new-2026
+VF 8|||interior|display_inch|12.9|inch|https://vinfastauto.com/vn_vi/dat-coc-xe-vf8-the-all-new-2026
+VF 8|||interior|second_row|điều chỉnh hướng||https://vinfastauto.com/vn_vi/dat-coc-xe-vf8-the-all-new-2026
+VF 9|||powertrain|engine|2 Motor (Loại 150 kW)||https://vinfastnewway.com.vn/thong-so-ky-thuat-vinfast-vf-9/
+VF 9|||powertrain|power_kw|300|kW|https://vinfastnewway.com.vn/thong-so-ky-thuat-vinfast-vf-9/
+VF 9|||powertrain|torque_nm|620|Nm|https://vinfastnewway.com.vn/thong-so-ky-thuat-vinfast-vf-9/
+VF 9|||powertrain|top_speed_kmh|200|km/h|https://vinfastnewway.com.vn/thong-so-ky-thuat-vinfast-vf-9/
+VF 9|||powertrain|drivetrain|AWD / 2 cầu toàn thời gian||https://vinfastnewway.com.vn/thong-so-ky-thuat-vinfast-vf-9/
+VF 9|||powertrain|drive_modes|3 chế độ: Eco/ Normal/ Sport||https://vinfastnewway.com.vn/thong-so-ky-thuat-vinfast-vf-9/
+VF 9|||interior|seats|7||https://vinfastnewway.com.vn/thong-so-ky-thuat-vinfast-vf-9/
+VF 9|Eco||interior|seat_material|Leatherette/Giả da||https://vinfastnewway.com.vn/thong-so-ky-thuat-vinfast-vf-9/
+VF 9|Plus||interior|seat_material|Vegan Leather/Da nhân tạo||https://vinfastnewway.com.vn/thong-so-ky-thuat-vinfast-vf-9/
+VF 9|Eco||interior|driver_seat|8-way power/Chỉnh điện 8 hướng||https://vinfastnewway.com.vn/thong-so-ky-thuat-vinfast-vf-9/
+VF 9|Plus||interior|driver_seat|12-way power/Chỉnh điện 12 hướng||https://vinfastnewway.com.vn/thong-so-ky-thuat-vinfast-vf-9/
+VF 9|Eco||interior|passenger_seat|6-way power/Chỉnh điện 6 hướng||https://vinfastnewway.com.vn/thong-so-ky-thuat-vinfast-vf-9/
+VF 9|Plus||interior|passenger_seat|10-way power/Chỉnh điện 10 hướng||https://vinfastnewway.com.vn/thong-so-ky-thuat-vinfast-vf-9/
+VF 9|Eco||interior|second_row|4-way power/Chỉnh điện 4 hướng||https://vinfastnewway.com.vn/thong-so-ky-thuat-vinfast-vf-9/
+VF 9|Plus||interior|second_row|8-way power/Chỉnh điện 8 hướng||https://vinfastnewway.com.vn/thong-so-ky-thuat-vinfast-vf-9/
+VF 9|Eco||interior|ac|Auto, 2 zones/ Tự động, 2 vùng||https://vinfastnewway.com.vn/thong-so-ky-thuat-vinfast-vf-9/
+VF 9|Plus||interior|ac|Auto, 3 zones/ Tự động, 3 vùng||https://vinfastnewway.com.vn/thong-so-ky-thuat-vinfast-vf-9/
+VF 9|||interior|speakers|13||https://vinfastnewway.com.vn/thong-so-ky-thuat-vinfast-vf-9/
+VF 9|||exterior|mirrors|Auto dimming/ Chống chói tự động||https://vinfastnewway.com.vn/thong-so-ky-thuat-vinfast-vf-9/
+VF 9|||dimension|ground_clearance_mm|204|mm|https://vinfastyenbai.com.vn/vinfast-vf9/
+VF 9|||powertrain|range_km|626|km|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-vf9.html
+VF 9|||powertrain|consumption|Pin SDI: 253 Wh/km (Eco), 237 Wh/km (Plus). Pin CATL: 202 Wh/km (Eco), 205 Wh/km (Plus)||https://vinfastnewway.com.vn/thong-so-ky-thuat-vinfast-vf-9/
+VF 9|||interior|display_inch|15.6|inch|https://vinfastnewway.com.vn/thong-so-ky-thuat-vinfast-vf-9/
+VF 9|||dimension|wheelbase_mm|3150|mm|https://vinfastyenbai.com.vn/vinfast-vf9/
+VF 9|||dimension|length_mm|5120|mm|https://vinfastyenbai.com.vn/vinfast-vf9/
+VF 9|||dimension|width_mm|2000|mm|https://vinfasthanoi.com.vn/vinfast-vf9-eco-1452682.html
+VF 9|||dimension|height_mm|1721|mm|https://vinfasthanoi.com.vn/vinfast-vf9-eco-1452682.html
+VF 9|||powertrain|battery_kwh|106|kWh|https://vinfasthanoi.com.vn/vinfast-vf9-eco-1452682.html
+VF 9|||exterior|headlights|LED Matrix||https://vinfastyenbai.com.vn/vinfast-vf9/
+VF 9|Eco||exterior|tailgate|Chỉnh cơ||https://vinfastyenbai.com.vn/vinfast-vf9/
+VF 9|Plus||exterior|tailgate|Chỉnh điện||https://vinfastyenbai.com.vn/vinfast-vf9/
+VF 9|||safety|airbags|2||https://vinfastyenbai.com.vn/vinfast-vf9/
+VF 3|||dimension|wheelbase_mm|2075|mm|https://vinfastev.com.vn/vinfast-vf3/
+VF 3|||dimension|length_mm|3190|mm|https://vinfastev.com.vn/vinfast-vf3/
+VF 3|||dimension|width_mm|1679|mm|https://vinfastev.com.vn/vinfast-vf3/
+VF 3|||dimension|height_mm|1652|mm|https://vinfastev.com.vn/vinfast-vf3/
+VF 3|||dimension|ground_clearance_mm|175|mm|https://vinfastev.com.vn/vinfast-vf3/
+VF 3|||safety|brakes|Phanh đĩa, calip nổi||https://vinfastev.com.vn/vinfast-vf3/
+VF 3|||exterior|headlights|Halogen||https://vinfastev.com.vn/vinfast-vf3/
+VF 3|||exterior|tailgate|Chỉnh cơ||https://vinfastev.com.vn/vinfast-vf3/
+VF 3|||powertrain|power_kw|30|kW|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf3.html
+VF 3|||powertrain|torque_nm|110|Nm|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf3.html
+VF 3|||powertrain|top_speed_kmh|100|km/h|https://vinfastev.com.vn/vinfast-vf3/
+VF 3|||powertrain|battery_type|LFP||https://vinfastev.com.vn/vinfast-vf3/
+VF 3|||powertrain|battery_kwh|18.64|kWh|https://vinfastev.com.vn/vinfast-vf3/
+VF 3|||powertrain|range_km|215|km|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf3.html
+VF 3|||powertrain|drivetrain|RWD/Cầu sau||https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf3.html
+VF 3|||powertrain|drive_modes|Có (Eco/Normal)||https://vinfastev.com.vn/vinfast-vf3/
+VF 3|||interior|seats|4||https://vinfastev.com.vn/vinfast-vf3/
+VF 3|||interior|seat_material|Nỉ||https://vinfastev.com.vn/vinfast-vf3/
+VF 3|||interior|ac|Chỉnh cơ, 1 vùng||https://vinfastev.com.vn/vinfast-vf3/
+VF 3|||interior|speakers|2||https://vinfastev.com.vn/vinfast-vf3/
+VF 3|||exterior|mirrors|Chế độ Ngày/đêm||https://vinfastev.com.vn/vinfast-vf3/
+VF 3|||powertrain|engine|VF3 sử dụng động cơ điện công suất tối đa 32 kW và mô-men xoắn cực đại đạt 110 Nm.||https://vinfastev.com.vn/vinfast-vf3/
+VF MPV 7|||dimension|length_mm|4740|mm|https://vinfastauto.com/vn_vi/dat-coc-xe-vf-mpv7
+VF MPV 7|||dimension|width_mm|1872|mm|https://vinfastauto.com/vn_vi/dat-coc-xe-vf-mpv7
+VF MPV 7|||dimension|height_mm|1734|mm|https://vinfastauto.com/vn_vi/dat-coc-xe-vf-mpv7
+VF MPV 7|||dimension|wheelbase_mm|2840|mm|https://vinfastauto.com/vn_vi/dat-coc-xe-vf-mpv7
+VF MPV 7|||dimension|ground_clearance_mm|185|mm|https://vinfastauto.com/vn_vi/dat-coc-xe-vf-mpv7
+VF MPV 7|||powertrain|power_kw|150|kW|https://vinfastauto.com/vn_vi/dat-coc-xe-vf-mpv7
+VF MPV 7|||powertrain|torque_nm|280|Nm|https://vinfastauto.com/vn_vi/dat-coc-xe-vf-mpv7
+VF MPV 7|||powertrain|range_km|450|km|https://vinfastauto.com/vn_vi/dat-coc-xe-vf-mpv7
+VF MPV 7|||powertrain|battery_kwh|60.13|kWh|https://vinfastauto.com/vn_vi/dat-coc-xe-vf-mpv7
+VF MPV 7|||powertrain|dc_charge_kw|80|kW|https://vinfastauto.com/vn_vi/dat-coc-xe-vf-mpv7
+VF MPV 7|||powertrain|fast_charge_min|30|phút|https://vinfastauto.com/vn_vi/dat-coc-xe-vf-mpv7
+VF MPV 7|||powertrain|drivetrain|FWD/Cầu trước||https://vinfastauto.com/vn_vi/dat-coc-xe-vf-mpv7
+VF MPV 7|||powertrain|drive_modes|Eco/Normal/Sport||https://vinfastauto.com/vn_vi/dat-coc-xe-vf-mpv7
+VF MPV 7|||safety|suspension|MacPherson/Đa liên kết||https://vinfastauto.com/vn_vi/dat-coc-xe-vf-mpv7
+VF MPV 7|||safety|brakes|Đĩa thông gió/Đĩa||https://vinfastauto.com/vn_vi/dat-coc-xe-vf-mpv7
+VF MPV 7|||exterior|headlights|LED||https://vinfastauto.com/vn_vi/dat-coc-xe-vf-mpv7
+VF MPV 7|||exterior|tailgate|Chỉnh cơ||https://vinfastauto.com/vn_vi/dat-coc-xe-vf-mpv7
+VF MPV 7|||interior|ac|Tự động 1 vùng||https://vinfastauto.com/vn_vi/dat-coc-xe-vf-mpv7
+VF MPV 7|||interior|display_inch|10.1|inch|https://vinfastauto.com/vn_vi/dat-coc-xe-vf-mpv7
+VF MPV 7|||interior|speakers|4||https://vinfastauto.com/vn_vi/dat-coc-xe-vf-mpv7
+VF MPV 7|||interior|driver_seat|Chỉnh cơ 6 hướng||https://vinfastauto.com/vn_vi/dat-coc-xe-vf-mpv7
+VF MPV 7|||powertrain|engine|điện||https://vinfastauto.com/vn_vi/dat-coc-xe-vf-mpv7

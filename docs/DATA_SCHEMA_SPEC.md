@@ -65,7 +65,8 @@ data/raw/*.txt ──► clean_to_jsonl.py ──► intermediate/{vector,hot}.j
 `collection` theo `category`). Bước `split_cold_hot.py` **không cắt lại** — chỉ
 đọc file gộp đó và **chia dòng theo trường `collection`** thành nhiều file
 `vector/<collection>.jsonl` (1 file = 1 Qdrant collection). Tổng chunk không đổi:
-2333 = 250 + 1447 + 546 + 90 (xem §2.1).
+2212 = 220 + 1356 + 546 + 90 (xem §2.1). Spec số liệu cấu trúc đã bỏ khỏi vector
+→ ở PostgreSQL `car_specs` (xem §3.1, §5.3).
 
 ---
 
@@ -75,11 +76,11 @@ data/raw/*.txt ──► clean_to_jsonl.py ──► intermediate/{vector,hot}.j
 
 | Alias (retriever) | Collection vật lý | category nguồn | Nội dung | chunks (v1) |
 |---|---|---|---|---|
-| `vivu_specs` | `vivu_specs__<ver>` | `thong_so_ky_thuat` | Thông số kỹ thuật, so sánh, đối chiếu | 250 |
-| `vivu_product_info` | `vivu_product_info__<ver>` | `thong_tin_san_pham` | Mô tả sản phẩm, tính năng, dat-coc (không giá) | 1447 |
+| `vivu_specs` | `vivu_specs__<ver>` | `thong_so_ky_thuat` | Văn xuôi mô tả/so sánh model — **spec số liệu ở `car_specs` (SQL)**, bảng spec đã bỏ | 220 |
+| `vivu_product_info` | `vivu_product_info__<ver>` | `thong_tin_san_pham` | Mô tả sản phẩm, tính năng, dat-coc (không giá, không section/bảng "Thông số kỹ thuật") | 1356 |
 | `vivu_policy` | `vivu_policy__<ver>` | `chinh_sach_dich_vu` | Chính sách bảo hành, thuê pin, điều khoản pháp lý, cứu hộ | 546 |
 | `vivu_maintenance` | `vivu_maintenance__<ver>` | `dat_lich_bao_duong` | Text chung về dịch vụ bảo dưỡng (KHÔNG phải lịch theo xe) | 90 |
-| `sparse` | `sparse__<ver>` | *(toàn corpus)* | BM25 sparse vector cho mọi chunk | 2333 |
+| `sparse` | `sparse__<ver>` | *(toàn corpus)* | BM25 sparse vector cho mọi chunk | 2212 |
 | `vivu_faq` | `vivu_faq__<ver>` *(định nghĩa, chưa có data)* | `ho_tro_mua_xe` | FAQ bán hàng / lái thử | 0 |
 
 > **Versioning**: collection vật lý = `<col>__<version>`; alias `<col>` →
@@ -160,7 +161,7 @@ query bằng cùng vocab/idf):
 
 ```jsonc
 { "version": "v1", "vocab": { "<term>": <int_idx>, ... }, "idf": [<float>, ...],
-  "avgdl": 123.4, "n_docs": 2333, "k1": 1.5, "b": 0.75 }
+  "avgdl": 47.5, "n_docs": 2212, "k1": 1.5, "b": 0.75 }
 ```
 
 ---
@@ -232,6 +233,25 @@ CREATE OR REPLACE VIEW edition_active AS
     SELECT * FROM edition WHERE version = (SELECT version FROM ingest_version WHERE is_current LIMIT 1);
 CREATE OR REPLACE VIEW price_list_active AS
     SELECT * FROM price_list WHERE version = (SELECT version FROM ingest_version WHERE is_current LIMIT 1);
+
+-- car_specs: lookup thông số kỹ thuật (EAV), KHÔNG version — retriever query trực tiếp
+-- cho spec chính xác (tránh nhầm Eco/Plus khi embed vector na ná nhau). Full-refresh
+-- mỗi ingest (TRUNCATE + insert). Nguồn: parse_specs.py trích union từ data/raw
+-- (prefer shop.vinfastauto.com). Xem §5.3.
+CREATE TABLE IF NOT EXISTS car_specs (
+    id             SERIAL PRIMARY KEY,
+    model_code     TEXT NOT NULL,      -- "VF 8" (MODEL_LABEL, có dấu cách)
+    version_name   TEXT,               -- "Eco"|"Plus"|...|NULL (= chung mọi bản)
+    version_code   TEXT,               -- NULL (raw không có mã nội bộ)
+    spec_category  TEXT NOT NULL,      -- dimension|powertrain|interior|safety|exterior
+    spec_key       TEXT NOT NULL,      -- power_kw|range_km|battery_kwh|length_mm|seats|...
+    spec_value     TEXT NOT NULL,      -- "150"|"87.7"|"5" (string, không phải number)
+    spec_unit      TEXT,               -- "kW"|"km"|"kWh"|"mm"|""|NULL
+    source_url     TEXT,
+    updated_at     TIMESTAMPTZ DEFAULT now()
+);
+CREATE UNIQUE INDEX IF NOT EXISTS uniq_car_specs ON car_specs
+    (model_code, COALESCE(version_code,''), COALESCE(version_name,''), spec_category, spec_key);
 ```
 
 **Upsert semantics** (xem `postgres_ingest.py`):
@@ -241,6 +261,7 @@ CREATE OR REPLACE VIEW price_list_active AS
 | `edition` | `(version, model_id, edition_id)` | model_label, edition_label, year_range, is_active, updated_at |
 | `price_list` | `(version, model_id, edition_id, valid_from)` | price_list_vnd, price_promo_vnd, promo_label, vat_included, battery_included, valid_to, updated_at, source_url |
 | `ingest_version` | `(version)` | created_at, prev_version, repo_commit, chunks added/modified/removed, pg_rows (từ `_manifest.json`); KHÔNG đụng `is_current` (ingest ≠ active) |
+| `car_specs` | *(KHÔNG version)* | **Full-refresh**: `TRUNCATE car_specs` + bulk insert từ `specs.csv` mỗi ingest (lookup table, không UPSERT) |
 
 > **Consumer contract:** retriever / team khác query VIEW `edition_active` /
 > `price_list_active` (= active version) — KHÔNG query base table `edition` /
@@ -262,8 +283,17 @@ model_id|edition_id|price_list_vnd|price_promo_vnd|promo_label|vat_included|batt
 VF3|Eco|285000000|270750000|Ưu đãi đặt cọc 2026|t|t|2026-07-01||2026-08-03T07:21:28Z|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf3.html
 ```
 
+**`postgres/specs.csv`** (sinh bởi `parse_specs.py` — chạy sau `split_cold_hot`)
+```
+model_code|version_name|version_code|spec_category|spec_key|spec_value|spec_unit|source_url
+VF 2|||powertrain|power_kw|30|kW|https://vinfastauto.com/vn_vi/dat-coc-xe-vf2
+VF 8|Eco||powertrain|power_kw|150|kW|https://www.vinfastmiennam.vn/so-sanh-vf8-eco-va-vf8-plus
+VF 8|Plus||powertrain|power_kw|300|kW|https://www.vinfastmiennam.vn/so-sanh-vf8-eco-va-vf8-plus
+```
+
 > Bool trong CSV = `t`/`f`; cột trống = NULL. `price_promo_vnd` trống khi không
-> có ưu đãi; `valid_to` trống = vẫn còn hiệu lực.
+> có ưu đãi; `valid_to` trống = vẫn còn hiệu lực. `specs.csv`: `version_name` trống
+> = spec chung mọi bản; `version_code` luôn trống (raw không có mã nội bộ).
 
 ---
 
@@ -287,7 +317,7 @@ Index mỗi version (`data/clean/<ver>/_manifest.json`). Schema đầy đủ:
         "added": 0, "modified": 1, "removed": 0   // diff thật vs prev_version (chunk_id + content hash)
       }
     },
-    "total_chunks": 2333, "total_added": 0, "total_modified": 1, "total_removed": 0
+    "total_chunks": 2212, "total_added": 0, "total_modified": 1, "total_removed": 0
   },
 
   "postgres": {
@@ -297,6 +327,8 @@ Index mỗi version (`data/clean/<ver>/_manifest.json`). Schema đầy đủ:
     },
     "total_rows_upserted": 28
   },
+  // car_specs KHÔNG nằm trong manifest (không version, full-refresh) — sinh bởi
+  // parse_specs.py (chạy sau split_cold_hot) → postgres/specs.csv → TRUNCATE+insert.
 
   "link_only": {
     "maintenance_url":    "https://vinfastauto.com/vn_vi/dich-vu-bao-duong-oto",
@@ -398,6 +430,31 @@ của VinFast + text chung từ collection `vivu_maintenance` (xem §5.4).
 pg upserted, commit repo. Đánh version **sau khi thu thập xong cả đợt**
 (crawl → clean → verify), KHÔNG đánh giữa chừng.
 
+**`car_specs`** — lookup thông số kỹ thuật (EAV), **KHÔNG version**. Retriever
+query trực tiếp (không qua VIEW, không filter version) khi user hỏi spec chính xác
+(công suất, momen, quãng đường, kích thước, pin...). Mỗi row = 1 spec của 1
+(model, edition): `spec_key` (power_kw, range_km, battery_kwh, length_mm, seats...)
++ `spec_value` (string) + `spec_unit`. `version_name=NULL` = spec chung mọi bản
+(VF8 Eco/Plus cùng 87.7 kWh pin → 1 row NULL); có giá trị khác giữa Eco/Plus →
+2 row (VD power_kw: Eco=150, Plus=300).
+
+**Nguồn**: `parse_specs.py` trích **union từ toàn bộ `data/raw/*.txt`** (dat-coc
+chính thức, bài so-sanh, thong-so, brochure, product page) — file nào có spec thì
+extract, conflict giá trị → prefer `shop.vinfastauto.com`. Đây là lý do spec rời
+khỏi vector: embed spec Eco vs Plus / VF8 vs VF9 na ná nhau → vector search nhầm
+model/edition; đưa vào SQL → query chính xác. **Full-refresh** mỗi ingest
+(`TRUNCATE` + insert) → không orphan, không phụ thuộc version.
+
+> **Caveat rollback**: `car_specs` không version nên rollback vector/price
+> (promote/rollback version) **KHÔNG rollback specs** — specs luôn là snapshot
+> mới nhất từ raw. Đây là trade-off chấp nhận được (spec ít đổi, lookup table).
+
+**Query chuẩn** (retriever):
+```sql
+SELECT spec_value, spec_unit, version_name FROM car_specs
+WHERE model_code='VF 8' AND spec_key='power_kw' [AND version_name='Plus'];
+```
+
 ### 5.4. Link-only (không vào DB)
 
 `maintenance_url`, `showroom_urls`, `promotion_urls`, `roadside_cost_urls`,
@@ -455,6 +512,18 @@ Giá chỉ trích từ domain chính thống `{vinfastauto.com, shop.vinfastauto
 vào Postgres. PDF extract → `vivu_policy`. So sánh/đối chiếu → `vivu_specs`.
 Article/dealer → `vivu_product_info` (confidence thấp hơn).
 
+**Spec số liệu → `car_specs` (SQL), KHÔNG vào vector** (`parse_specs.py`): section
+"Thông số kỹ thuật" của dat-coc (đang ở `vivu_product_info`) và bảng spec so-sanh
+(ở `vivu_specs`) bị drop khỏi vector ở bước clean — chỉ giữ prose mô tả/so sánh.
+Cụ thể, `clean_to_jsonl.py` drop chunk khi: (a) section_path có tiêu đề ==
+"thông số kỹ thuật"; (b) `vivu_specs` + `text_type in {table,list,key_value}`;
+(c) **content-based** — chunk ở `{vivu_specs, vivu_product_info}` có ≥4 ký tự `|`
+VÀ chứa label spec (công suất / mô men / pin / quãng đường / tải trọng...) → bắt
+bảng spec pipe-delimited bị gán nhãn `prose` do chunk-split mất dòng `---`.
+Ngưỡng pipe bảo vệ prose mô tả ("VF 8 có công suất 150 kW" — 0 pipe → giữ).
+Spec số liệu (công suất, momen, quãng đường, kích thước, pin...) → `car_specs`
+để retriever query SQL chính xác (tránh nhầm Eco/Plus khi embed na ná nhau).
+
 ---
 
 ## 7. Phụ thuộc & môi trường
@@ -472,6 +541,7 @@ Article/dealer → `vivu_product_info` (confidence thấp hơn).
 docker compose up -d
 python scripts/clean_data/clean_to_jsonl.py --version v1
 python scripts/clean_data/split_cold_hot.py --version v1 --commit $(git rev-parse --short HEAD)
+python scripts/clean_data/parse_specs.py    --version v1     # → postgres/specs.csv (car_specs)
 python scripts/ingest/vector_ingest.py   --version v1 --recreate
 python scripts/ingest/sparse_ingest.py   --version v1 --recreate
 python scripts/ingest/postgres_ingest.py --version v1
@@ -481,6 +551,8 @@ python scripts/ingest/postgres_ingest.py --version v1
 ```bash
 curl http://localhost:6333/collections
 docker exec -it vivu_postgres psql -U vivu -d vivu -c "SELECT * FROM price_list WHERE model_id='VF9';"
+docker exec -it vivu_postgres psql -U vivu -d vivu -c \
+  "SELECT model_code, version_name, spec_key, spec_value, spec_unit FROM car_specs WHERE model_code='VF 8' AND spec_key='power_kw';"
 ```
 
 ---

@@ -17,6 +17,11 @@ promote/rollback atomic, biết version mới đổi gì so cũ, incremental emb
 - **Consumer** (retriever / team khác): query **alias** `<col>` (Qdrant, tên ổn
   định) + VIEW `edition_active` / `price_list_active` (PG, không filter version).
   KHÔNG query collection vật lý `__<version>` hay base table trực tiếp.
+- **`car_specs` KHÔNG version** (lookup table): spec kỹ thuật không tag version,
+  full-refresh mỗi ingest (`TRUNCATE` + insert từ `specs.csv`). Retriever query
+  `car_specs` trực tiếp (không qua VIEW, không filter version). Hệ quả: rollback
+  vector/price **KHÔNG rollback specs** — specs luôn là snapshot mới nhất từ raw
+  (spec ít đổi, trade-off chấp nhận được).
 
 ## Lifecycle
 
@@ -67,7 +72,7 @@ PYTHONUTF8=1 python scripts/version_manager.py delete --version v2
   trong cùng section, bounded).
 - `--recreate` = drop collection + BỎ QUA cache (rebuild sạch — chỉ khi đổi embed
   model / sửa bug embed). Mặc định KHÔNG recreate = incremental UPSERT + cache.
-- Thực tế (đã verify): re-run cùng version = `embedded=0 cached=2333` (5s, 0
+- Thực tế (đã verify): re-run cùng version = `embedded=0 cached=2212` (5s, 0
   token); đổi 1 chunk = `embedded=1 cached=2332`.
 - Sparse BM25 rebuild toàn bộ mỗi lần (CPU-only, ~1s, không tốn token) —
   incremental sparse là phase sau.

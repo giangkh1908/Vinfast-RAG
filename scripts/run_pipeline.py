@@ -6,9 +6,10 @@ Chạy đủ bước theo thứ tự cho 1 version:
   data/raw/*.txt
     → 1. clean (clean_to_jsonl)      → intermediate/{vector,hot}.jsonl + link_only.json
     → 2. split cold/hot (split_cold_hot) → vector/*.jsonl + postgres/*.csv + _manifest.json
-    → 3. embed + ingest Qdrant dense (vector_ingest)
-    → 4. BM25 sparse → Qdrant sparse (sparse_ingest)   [bỏ qua nếu --no-sparse]
-    → 5. UPSERT PostgreSQL (postgres_ingest)
+    → 3. parse_specs → postgres/specs.csv (trích spec từ raw cho car_specs)
+    → 4. embed + ingest Qdrant dense (vector_ingest)
+    → 5. BM25 sparse → Qdrant sparse (sparse_ingest)   [bỏ qua nếu --no-sparse]
+    → 6. UPSERT PostgreSQL (postgres_ingest)
 
 Fail-fast: nếu 1 bước trả mã ≠0, dừng ngay, không chạy bước sau.
 
@@ -29,7 +30,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT))
 sys.path.insert(0, str(REPO_ROOT / "backend"))
 
-from scripts.clean_data import clean_to_jsonl, split_cold_hot  # noqa: E402
+from scripts.clean_data import clean_to_jsonl, split_cold_hot, parse_specs  # noqa: E402
 from scripts.ingest import vector_ingest, sparse_ingest, postgres_ingest  # noqa: E402
 from lib import openrouter  # noqa: E402
 from scripts import version_manager  # noqa: E402
@@ -99,17 +100,19 @@ def run(version: str, recreate: bool, no_sparse: bool, commit: str,
     print(_bar(f"END-TO-END DATA PIPELINE  version={version}"))
 
     steps = [
-        ("1/5", "clean (raw → intermediate)", clean_to_jsonl.run,
+        ("1/6", "clean (raw → intermediate)", clean_to_jsonl.run,
          (version,), {"max_len": max_len}),
-        ("2/5", "split cold/hot → vector + postgres CSV", split_cold_hot.run,
+        ("2/6", "split cold/hot → vector + postgres CSV", split_cold_hot.run,
          (version,), {"commit": commit, "prev": prev}),
-        ("3/5", "embed + ingest Qdrant dense (incremental)", vector_ingest.run,
+        ("3/6", "parse_specs → postgres/specs.csv (car_specs)", parse_specs.run,
+         (version,), {}),
+        ("4/6", "embed + ingest Qdrant dense (incremental)", vector_ingest.run,
          (version,), {"url": QDRANT_URL, "recreate": recreate}),
     ]
     if not no_sparse:
-        steps.append(("4/5", "BM25 sparse → Qdrant sparse", sparse_ingest.run,
+        steps.append(("5/6", "BM25 sparse → Qdrant sparse", sparse_ingest.run,
                       (version,), {"url": QDRANT_URL, "recreate": recreate}))
-    steps.append(("5/5" if not no_sparse else "4/4",
+    steps.append(("6/6" if not no_sparse else "5/5",
                   "UPSERT PostgreSQL (versioned)", postgres_ingest.run,
                   (version,), {"dsn": PG_DSN}))
 

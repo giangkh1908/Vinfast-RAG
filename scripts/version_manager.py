@@ -138,7 +138,8 @@ def cmd_list(args=None) -> int:
           f"{'added':>6} {'mod':>5} {'rem':>5} {'pg':>4}  commit")
     for r in rows:
         v, ca, prev, cur, add, mod, rem, pg, commit = r
-        print(f"{v:<8} {(ca or '')[:19]:<22} {'★' if cur else '':<8} {(prev or '-'):<6} "
+        ca_s = ca.strftime("%Y-%m-%d %H:%M:%S")[:19] if ca else ""
+        print(f"{v:<8} {ca_s:<22} {'★' if cur else '':<8} {(prev or '-'):<6} "
               f"{(add or 0):>6} {(mod or 0):>5} {(rem or 0):>5} {(pg or 0):>4}  {commit or ''}")
     return 0
 

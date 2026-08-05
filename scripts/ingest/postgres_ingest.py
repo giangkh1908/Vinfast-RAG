@@ -93,6 +93,25 @@ CREATE OR REPLACE VIEW edition_active AS
 SELECT * FROM edition WHERE version = (SELECT version FROM ingest_version WHERE is_current LIMIT 1);
 CREATE OR REPLACE VIEW price_list_active AS
 SELECT * FROM price_list WHERE version = (SELECT version FROM ingest_version WHERE is_current LIMIT 1);
+
+-- car_specs: bảng lookup thông số kỹ thuật (EAV), KHÔNG version — retriever query
+-- trực tiếp cho spec chính xác (tránh nhầm Eco/Plus khi embed vector na ná nhau).
+-- Full-refresh mỗi ingest (TRUNCATE + insert) → không orphan khi đổi version.
+-- Nguồn: parse_specs.py trích union từ data/raw (prefer shop.vinfastauto.com).
+CREATE TABLE IF NOT EXISTS car_specs (
+    id             SERIAL PRIMARY KEY,
+    model_code     TEXT NOT NULL,      -- "VF 8" (MODEL_LABEL, có dấu cách)
+    version_name   TEXT,               -- "Eco"|"Plus"|...|NULL (= chung mọi bản)
+    version_code   TEXT,               -- NULL (raw không có mã nội bộ)
+    spec_category  TEXT NOT NULL,      -- dimension|powertrain|interior|safety|exterior
+    spec_key       TEXT NOT NULL,      -- power_kw|range_km|battery_kwh|length_mm|...
+    spec_value     TEXT NOT NULL,      -- "150"|"87.7"|"5" (string)
+    spec_unit      TEXT,               -- "kW"|"km"|"kWh"|"mm"|""|NULL
+    source_url     TEXT,
+    updated_at     TIMESTAMPTZ DEFAULT now()
+);
+CREATE UNIQUE INDEX IF NOT EXISTS uniq_car_specs ON car_specs
+    (model_code, COALESCE(version_code,''), COALESCE(version_name,''), spec_category, spec_key);
 """
 
 # DDL nâng cấp ingest_version từ schema cũ (cho migrate-v1 — chỉ thêm cột mới,
@@ -177,6 +196,28 @@ def upsert_price_list(conn, version: str, rows: list[dict[str, Any]]) -> int:
     return len(rows)
 
 
+def upsert_specs(conn, rows: list[dict[str, Any]]) -> int:
+    """Full-refresh car_specs: TRUNCATE + bulk insert (KHÔNG version — lookup table)."""
+    if not rows:
+        return 0
+    cur = conn.cursor()
+    cur.execute("TRUNCATE car_specs RESTART IDENTITY")
+    sql = """
+    INSERT INTO car_specs (model_code, version_name, version_code, spec_category,
+                            spec_key, spec_value, spec_unit, source_url)
+    VALUES %s
+    """
+    values = [
+        (r["model_code"], r["version_name"] or None, r["version_code"] or None,
+         r["spec_category"], r["spec_key"], r["spec_value"],
+         r["spec_unit"] or None, r["source_url"] or None)
+        for r in rows
+    ]
+    execute_values(cur, sql, values)
+    conn.commit()
+    return len(rows)
+
+
 def record_manifest(conn, version: str, version_dir: Path) -> None:
     """Ghi/UPSERT dòng ingest_version cho `version` (is_current=false — ingest ≠ active)."""
     manifest_path = version_dir / "_manifest.json"
@@ -254,12 +295,15 @@ def run(version: str = "v1", dsn: str = DEFAULT_DSN) -> int:
 
     edition_rows = load_csv(pg_dir / "edition.csv")
     price_rows = load_csv(pg_dir / "price_list.csv")
+    specs_rows = load_csv(pg_dir / "specs.csv") if (pg_dir / "specs.csv").exists() else []
 
     n_edition = upsert_edition(conn, version, edition_rows)
     n_price = upsert_price_list(conn, version, price_rows)
+    n_specs = upsert_specs(conn, specs_rows)
     record_manifest(conn, version, version_dir)
 
-    print(f"[postgres_ingest] version={version}  edition={n_edition}  price_list={n_price}  (is_current=false)")
+    print(f"[postgres_ingest] version={version}  edition={n_edition}  price_list={n_price}  "
+          f"car_specs={n_specs}  (is_current=false)")
     conn.close()
     return 0
 

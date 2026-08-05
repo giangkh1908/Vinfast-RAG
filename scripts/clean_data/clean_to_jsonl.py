@@ -24,6 +24,7 @@ import argparse
 import json
 import re
 import sys
+import unicodedata
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -129,6 +130,12 @@ AUTHORITATIVE_DOMAINS = {"vinfastauto.com", "shop.vinfastauto.com"}
 # ── Helpers ────────────────────────────────────────────────────────────────
 def now_iso() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def no_diacritics(s: str) -> str:
+    """Bỏ dấu tiếng Việt → so khớp label/section không phân biệt dấu."""
+    return "".join(c for c in unicodedata.normalize("NFD", s)
+                  if unicodedata.category(c) != "Mn").replace("đ", "d")
 
 
 def to_model_id(raw: str) -> str:
@@ -813,6 +820,64 @@ def run(version: str = "v1", max_len: int = 400) -> int:
     before = len(all_vector)
     all_vector = apply_chunking(all_vector, max_len=max_len)
     print(f"  chunking: {before} -> {len(all_vector)} chunks (max_len={max_len})")
+
+    # Bỏ spec cấu trúc khỏi vector — spec số liệu giờ ở PostgreSQL `car_specs`
+    # (retriever query SQL chính xác, tránh nhầm Eco/Plus khi embed na ná nhau).
+    # 3 điều kiện drop:
+    #   (a) section_path có tiêu đề section == "thông số kỹ thuật" (section spec của
+    #       dat-coc — text_type có thể là prose do flatten "Động cơ 01 Motor...").
+    #   (b) collection == vivu_specs VÀ text_type in {table, list, key_value}
+    #       (bảng spec so-sanh — chỉ vivu_specs chứa spec; bảng ở collection khác
+    #       như vivu_policy là điều khoản, KHÔNG drop).
+    #   (c) content-based: chunk ở {vivu_specs, vivu_product_info} có ≥4 ký tự '|' VÀ
+    #       chứa label spec (công suất / mô men / pin / quãng đường / tải trọng...).
+    #       Bắt spec-table pipe-delimited bị gán nhãn text_type=prose do chunk-split
+    #       mất dòng `---` (detector '|'+---' không nhận). Ngưỡng pipe bảo vệ prose
+    #       mô tả ("VF 8 có công suất 150 kW" — 0 pipe → giữ).
+    def _is_spec_section(chunk: dict[str, Any]) -> bool:
+        for sp in chunk.get("section_path", []):
+            if no_diacritics(sp).lower().replace(" ", "") == "thongsokythuat":
+                return True
+        return False
+
+    _SPEC_LABELS = (
+        "cong suat", "mo men", "mo-men", "dung luong pin", "loai pin",
+        "quang duong", "tai trong", "trong luong", "chieu dai co so",
+        "chieu dai", "chieu rong", "chieu cao", "khoang sang", "co so",
+        "toc do toi da", "tang toc", "so cho ngoi", "cho ngoi",
+        "dan dong", "he thong treo", "treo truoc", "treo sau",
+        "thoi gian nap", "sac day", "sac nhanh", "khoang chua hanh ly",
+    )
+
+    def _is_spec_table(chunk: dict[str, Any]) -> bool:
+        if chunk.get("collection") not in ("vivu_specs", "vivu_product_info"):
+            return False
+        text = chunk.get("text", "") or ""
+        if text.count("|") < 4:
+            return False
+        low = no_diacritics(text).lower()
+        return any(lbl in low for lbl in _SPEC_LABELS)
+
+    pre = len(all_vector)
+    n_section = 0
+    n_table = 0
+    n_spec_table = 0
+    kept: list[dict[str, Any]] = []
+    for c in all_vector:
+        if _is_spec_section(c):
+            n_section += 1
+            continue
+        if c.get("collection") == "vivu_specs" \
+                and c.get("text_type") in {"table", "list", "key_value"}:
+            n_table += 1
+            continue
+        if _is_spec_table(c):
+            n_spec_table += 1
+            continue
+        kept.append(c)
+    all_vector = kept
+    print(f"  dropped spec chunks: {n_section} (section) + {n_table} (vivu_specs table/list) "
+          f"+ {n_spec_table} (spec-table pipe-delimited) | {pre} -> {len(all_vector)}")
 
     # Write intermediate
     with (intermediate_dir / "vector.jsonl").open("w", encoding="utf-8") as f:
