@@ -464,7 +464,6 @@ Article/dealer → `vivu_product_info` (confidence thấp hơn).
 | Qdrant | `qdrant/qdrant:latest`, port `6333` (REST) + `6334` (gRPC) |
 | PostgreSQL | `postgres:16-alpine`, port `5432`, user/db/pass `vivu` |
 | Embed model | `openai/text-embedding-3-small` (1536-dim, OpenRouter) |
-| Rerank model | `cohere/rerank-v3.5` (OpenRouter) — ở retriever, không phải ingest |
 | API key | `OPENROUTER_API_KEY` trong `.env` (không commit) |
 | Thư viện | `qdrant-client`, `psycopg2-binary`, `requests`, `python-dotenv` |
 

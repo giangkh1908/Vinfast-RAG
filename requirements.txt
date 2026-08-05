@@ -6,7 +6,7 @@ beautifulsoup4>=4.12
 pymupdf>=1.24            # rút text PDF (fitz)
 # pdfplumber>=0.11       # fallback PDF (tuỳ chọn)
 
-# OpenRouter API (embed / rerank / chat) — backend/lib/openrouter.py
+# OpenRouter API (embed / chat) — backend/lib/openrouter.py
 python-dotenv>=1.0
 
 # Vector DB

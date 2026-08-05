@@ -1,13 +1,11 @@
 #!/usr/bin/env python3
 """
-openrouter.py — Helpers dùng chung cho OpenRouter API (embedding + rerank + chat).
+openrouter.py — Helpers dùng chung cho OpenRouter API (embedding + chat).
 
 Đọc key từ .env (python-dotenv). Model mặc định:
   - Embed : openai/text-embedding-3-small  (1536 chiều)
-  - Rerank: cohere/rerank-v3.5
   - Chat  : openai/gpt-4o-mini
-Có thể ghi đè qua biến môi trường OPENROUTER_EMBED_MODEL / OPENROUTER_RERANK_MODEL
-/ OPENROUTER_CHAT_MODEL.
+Có thể ghi đè qua biến môi trường OPENROUTER_EMBED_MODEL / OPENROUTER_CHAT_MODEL.
 """
 
 import json
@@ -108,7 +106,6 @@ load_dotenv(Path(__file__).resolve().parents[2] / ".env")
 BASE_URL = "https://openrouter.ai/api/v1"
 API_KEY = os.environ.get("OPENROUTER_API_KEY", "")
 EMBED_MODEL = os.environ.get("OPENROUTER_EMBED_MODEL", "openai/text-embedding-3-small")
-RERANK_MODEL = os.environ.get("OPENROUTER_RERANK_MODEL", "cohere/rerank-v3.5")
 CHAT_MODEL = os.environ.get("OPENROUTER_CHAT_MODEL", "openai/gpt-4o-mini")
 # Reasoning của chat model: "" (không gửi param — giữ nguyên mặc định của model)
 #   | "off" (tắt reasoning → TTFT giảm mạnh) | "low" | "high" | "max"
@@ -191,26 +188,6 @@ def embed_texts(texts: list[str], model: str = EMBED_MODEL,
 
 def embed_text(text: str, model: str = EMBED_MODEL) -> list[float]:
     return embed_texts([text], model, batch_size=1)[0]
-
-
-def rerank(query: str, documents: list[str], top_n: int | None = None,
-           model: str = RERANK_MODEL) -> list[dict]:
-    """Rerank documents theo query. Trả list kết quả SẮP THEO relevance_score giảm dần:
-    [{index, relevance_score, ...}] — `index` = vị trí trong `documents`."""
-    if not documents:
-        return []
-    body: dict = {"model": model, "query": query, "documents": documents}
-    if top_n:
-        body["top_n"] = top_n
-    t0 = time.time()
-    r = _post(f"{BASE_URL}/rerank", body, timeout=120)
-    d = r.json()
-    record_metric("rerank", model, t0, d.get("usage"), batch=len(documents))
-    logger.info("rerank %d docs  model=%s  %.1fs", len(documents), model, time.time() - t0)
-    results = d.get("results", [])
-    # đảm bảo thứ tự relevance (API đã sắp sẵn, sort lại cho chắc)
-    results.sort(key=lambda x: x.get("relevance_score", 0.0), reverse=True)
-    return results
 
 
 def _chat_body(messages: list[dict], model: str, temperature: float,
