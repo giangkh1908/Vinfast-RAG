@@ -1,0 +1,147 @@
+#!/usr/bin/env python3
+"""
+run_pipeline.py — End-to-end data pipeline cho dữ liệu hiện có.
+
+Chạy đủ bước theo thứ tự cho 1 version:
+  data/raw/*.txt
+    → 1. clean (clean_to_jsonl)      → intermediate/{vector,hot}.jsonl + link_only.json
+    → 2. split cold/hot (split_cold_hot) → vector/*.jsonl + postgres/*.csv + _manifest.json
+    → 3. embed + ingest Qdrant dense (vector_ingest)
+    → 4. BM25 sparse → Qdrant sparse (sparse_ingest)   [bỏ qua nếu --no-sparse]
+    → 5. UPSERT PostgreSQL (postgres_ingest)
+
+Fail-fast: nếu 1 bước trả mã ≠0, dừng ngay, không chạy bước sau.
+
+Usage:
+    python scripts/run_pipeline.py --version v1
+    python scripts/run_pipeline.py --version v1 --recreate      # build lại sạch Qdrant
+    python scripts/run_pipeline.py --version v1 --no-sparse    # bỏ BM25 (chỉ dense + PG)
+"""
+
+import argparse
+import os
+import sys
+import time
+from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+# Cho phép `from scripts... import` và `from lib... import`
+sys.path.insert(0, str(REPO_ROOT))
+sys.path.insert(0, str(REPO_ROOT / "backend"))
+
+from scripts.clean_data import clean_to_jsonl, split_cold_hot  # noqa: E402
+from scripts.ingest import vector_ingest, sparse_ingest, postgres_ingest  # noqa: E402
+from lib import openrouter  # noqa: E402
+
+QDRANT_URL = os.environ.get("QDRANT_URL", "http://localhost:6333")
+PG_DSN = os.environ.get("PG_DSN", "postgresql://vivu:vivu@localhost:5432/vivu")
+
+
+def _bar(label: str) -> str:
+    return f"\n{'=' * 72}\n{label}\n{'=' * 72}"
+
+
+def preflight(version: str, want_qdrant: bool, want_pg: bool) -> int:
+    """Kiểm tra đầu vào trước khi chạy. Trả 0 nếu OK, 1 nếu thiếu."""
+    raw = REPO_ROOT / "data" / "raw"
+    if not raw.exists() or not any(raw.iterdir()):
+        print(f"[preflight] data/raw rỗng hoặc không tồn tại: {raw}", file=sys.stderr)
+        return 1
+
+    if not openrouter.API_KEY:
+        print("[preflight] OPENROUTER_API_KEY chưa set trong .env (xem .env.example)",
+              file=sys.stderr)
+        return 1
+
+    if want_qdrant:
+        try:
+            from qdrant_client import QdrantClient
+            QdrantClient(url=QDRANT_URL).get_collections()
+        except Exception as e:  # noqa: BLE001
+            print(f"[preflight] không kết nối được Qdrant tại {QDRANT_URL}: {e}",
+                  file=sys.stderr)
+            print("  hint: docker compose up -d", file=sys.stderr)
+            return 1
+
+    if want_pg:
+        try:
+            import psycopg2
+            psycopg2.connect(PG_DSN).close()
+        except Exception as e:  # noqa: BLE001
+            print(f"[preflight] không kết nối được Postgres tại {PG_DSN}: {e}",
+                  file=sys.stderr)
+            print("  hint: docker compose up -d", file=sys.stderr)
+            return 1
+
+    print(f"[preflight] OK  raw={raw}  qdrant={QDRANT_URL}  pg=…")
+    return 0
+
+
+def _step(idx: str, label: str, fn, *args, **kwargs) -> int:
+    print(_bar(f"Bước {idx}: {label}"))
+    t0 = time.time()
+    rc = fn(*args, **kwargs)
+    dt = time.time() - t0
+    tag = "PASS" if rc == 0 else f"FAIL (rc={rc})"
+    print(f"→ {label}: {tag}  ({dt:.1f}s)")
+    return rc
+
+
+def run(version: str, recreate: bool, no_sparse: bool, commit: str,
+       max_len: int = 400) -> int:
+    want_qdrant = True
+    want_pg = True
+    if preflight(version, want_qdrant, want_pg) != 0:
+        return 1
+
+    t_total = time.time()
+    print(_bar(f"END-TO-END DATA PIPELINE  version={version}"))
+
+    steps = [
+        ("1/5", "clean (raw → intermediate)", clean_to_jsonl.run,
+         (version,), {"max_len": max_len}),
+        ("2/5", "split cold/hot → vector + postgres CSV", split_cold_hot.run,
+         (version,), {"commit": commit}),
+        ("3/5", "embed + ingest Qdrant dense", vector_ingest.run,
+         (version,), {"url": QDRANT_URL, "recreate": recreate}),
+    ]
+    if not no_sparse:
+        steps.append(("4/5", "BM25 sparse → Qdrant sparse", sparse_ingest.run,
+                      (version,), {"url": QDRANT_URL, "recreate": recreate}))
+    steps.append(("5/5" if not no_sparse else "4/4",
+                  "UPSERT PostgreSQL", postgres_ingest.run,
+                  (version,), {"dsn": PG_DSN}))
+
+    for idx, label, fn, args, kwargs in steps:
+        rc = _step(idx, label, fn, *args, **kwargs)
+        if rc != 0:
+            print(f"\n[run_pipeline] DỪNG ở bước {idx} ({label}). Các bước sau KHÔNG chạy.",
+                  file=sys.stderr)
+            return rc
+
+    print(_bar(f"XONG  version={version}  ({time.time() - t_total:.1f}s)"))
+    print("Verify:")
+    print(f"  curl {QDRANT_URL}/collections")
+    print(f"  docker exec vivu_postgres psql -U vivu -d vivu "
+          f"-c \"SELECT count(*) FROM price_list; SELECT count(*) FROM edition;\"")
+    print(f"  cat data/clean/{version}/_manifest.json")
+    return 0
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser(description="End-to-end data pipeline (dữ liệu hiện có).")
+    ap.add_argument("--version", default="v1", help="Version folder (mặc định v1)")
+    ap.add_argument("--recreate", action="store_true",
+                    help="Xóa và tạo lại Qdrant collections (dense + sparse)")
+    ap.add_argument("--no-sparse", action="store_true",
+                    help="Bỏ qua BM25 sparse (chỉ dense + PostgreSQL)")
+    ap.add_argument("--commit", default="",
+                    help="Repo commit hash ghi vào _manifest / ingest_version")
+    ap.add_argument("--max-len", type=int, default=400,
+                    help="Chunk max length chars (mặc định 400)")
+    args = ap.parse_args()
+    return run(args.version, args.recreate, args.no_sparse, args.commit, args.max_len)
+
+
+if __name__ == "__main__":
+    sys.exit(main())

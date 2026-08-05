@@ -9,6 +9,8 @@ venv/
 
 # Pipeline artifacts (JSON trung gian debug/audit)
 tmp/
+# intermediate = output trước khi split, trùng với vector/ (debug only)
+data/clean/*/intermediate/
 
 # OS
 Thumbs.db

@@ -1,0 +1,80 @@
+{
+  "version": "v1",
+  "created_at": "2026-08-05T02:32:07Z",
+  "created_by": "scripts/clean_to_jsonl.py + scripts/split_cold_hot.py",
+  "prev_version": null,
+  "repo_commit": "10f272f",
+  "vector": {
+    "collections": {
+      "vivu_policy": {
+        "file": "vector/vivu_policy.jsonl",
+        "chunks": 546,
+        "added": 546,
+        "modified": 0,
+        "removed": 0
+      },
+      "vivu_specs": {
+        "file": "vector/vivu_specs.jsonl",
+        "chunks": 250,
+        "added": 250,
+        "modified": 0,
+        "removed": 0
+      },
+      "vivu_product_info": {
+        "file": "vector/vivu_product_info.jsonl",
+        "chunks": 1447,
+        "added": 1447,
+        "modified": 0,
+        "removed": 0
+      },
+      "vivu_maintenance": {
+        "file": "vector/vivu_maintenance.jsonl",
+        "chunks": 90,
+        "added": 90,
+        "modified": 0,
+        "removed": 0
+      }
+    },
+    "total_chunks": 2333,
+    "total_added": 2333,
+    "total_modified": 0,
+    "total_removed": 0
+  },
+  "postgres": {
+    "tables": {
+      "edition": {
+        "file": "postgres/edition.csv",
+        "rows": 14,
+        "upserted": 14
+      },
+      "price_list": {
+        "file": "postgres/price_list.csv",
+        "rows": 14,
+        "upserted": 14,
+        "price_changed": 11
+      }
+    },
+    "total_rows_upserted": 28
+  },
+  "link_only": {
+    "brochure_urls": [
+      "https://static-cms-prod.vinfastauto.com/brochure_vf_2.pdf",
+      "https://static-cms-prod.vinfastauto.com/vfvn-brochure-vf-3-ban-ngang.pdf",
+      "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwf5eb40b2/Document/VF5_Brochure_T82025.pdf",
+      "https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf",
+      "https://vinfasttayninh.com/files/category/vf7gpv1e04g.pdf",
+      "https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf",
+      "https://static-cms-prod.vinfastauto.com/brochure/26052026/VF%208%20The%20he%20moi_Brochure_final%2020.05.pdf",
+      "https://storage.googleapis.com/vinfast-data-01/brochure/VF%209_%20Brochure.pdf"
+    ],
+    "brochure_by_model": {},
+    "showroom_urls": [],
+    "promotion_urls": [],
+    "roadside_cost_urls": []
+  },
+  "pipeline_steps": [
+    "clean_to_jsonl",
+    "split_cold_hot"
+  ],
+  "schema_version": "1.0.0"
+}

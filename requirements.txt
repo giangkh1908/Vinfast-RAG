@@ -1,9 +1,20 @@
-# Pipeline làm sạch brochure (mục 02) — Python 3.11+
-jinja2>=3.1
-pyyaml>=6.0
+# Pipeline data end-to-end — Python 3.11+
+
+# Crawl (scripts/crawl.py)
+requests>=2.31
+beautifulsoup4>=4.12
+pymupdf>=1.24            # rút text PDF (fitz)
+# pdfplumber>=0.11       # fallback PDF (tuỳ chọn)
+
+# OpenRouter API (embed / rerank / chat) — backend/lib/openrouter.py
 python-dotenv>=1.0
 
+# Vector DB
+qdrant-client>=1.10
 
-# (Tùy chọn, cho bước parse PDF thô sau này)
-# pdfplumber>=0.11
-# pymupdf>=1.24
+# PostgreSQL
+psycopg2-binary>=2.9
+
+# (cũ) clean brochure mục 02
+jinja2>=3.1
+pyyaml>=6.0
