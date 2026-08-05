@@ -36,7 +36,7 @@ docker exec vivu_postgres psql -U vivu -d vivu -c '\dt'
 ```bash
 # Windows PowerShell (đặt PYTHONUTF8 cho tiếng Việt):
 $env:PYTHONUTF8=1
-python scripts/run_pipeline.py --version v1 --recreate --commit (git rev-parse --short HEAD)
+python scripts/run_pipeline.py --version v1 --recreate --commit $(git rev-parse --short HEAD)
 ```
 
 ```bash
