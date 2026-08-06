@@ -303,12 +303,19 @@ def run(version: str = "v1", commit: str = "", prev: str | None = None) -> int:
     vector_rows = [json.loads(line) for line in (inter_dir / "vector.jsonl").read_text(encoding="utf-8").splitlines() if line.strip()]
     hot_rows = [json.loads(line) for line in (inter_dir / "hot.jsonl").read_text(encoding="utf-8").splitlines() if line.strip()]
 
-    # Dọn output cũ (tránh file collection không còn trong version mới — VD vivu_faq)
-    for d in (vector_dir, postgres_dir):
-        if d.exists():
-            for f in d.iterdir():
-                if f.is_file():
-                    f.unlink()
+    # Dọn output cũ — CHỈ file split sở hữu:
+    #   vector/*.jsonl              (split viết hết → bỏ collection cũ như vivu_faq)
+    #   postgres/edition.csv, price_list.csv
+    # KHÔNG xóa postgres/specs.csv (do parse_specs.py viết — bước kế tiếp trong pipeline).
+    if vector_dir.exists():
+        for f in vector_dir.iterdir():
+            if f.is_file():
+                f.unlink()
+    postgres_dir.mkdir(parents=True, exist_ok=True)
+    for fname in ("edition.csv", "price_list.csv"):
+        p = postgres_dir / fname
+        if p.exists():
+            p.unlink()
 
     # Split vectors
     by_collection = split_vector_by_collection(vector_rows)

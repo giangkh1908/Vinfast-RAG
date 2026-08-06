@@ -370,6 +370,39 @@ def strip_price_spans(text: str) -> str:
     return re.sub(r"\n{3,}", "\n\n", text).strip()
 
 
+# Off-model noise: chunk được tag cho 1 model VinFast nhưng text KHÔNG nhắc tới
+# model đó / "vinfast", lại nhắc brand đối thủ → sidebar "tin liên quan" lạc tag
+# (VD: bài VF2 kèm headline "Toyota Land Cruiser FJ ra mắt Việt Nam, giá đồng").
+# Drop để khỏi bẩn corpus — conservative: chỉ drop khi chắc chắn không nhắc model.
+COMPETING_BRANDS = (
+    "toyota", "honda", "hyundai", "kia", "mazda", "mitsubishi", "nissan",
+    "ford", "suzuki", "lexus", "bmw", "mercedes", "audi", "volkswagen",
+    "peugeot", "renault", "byd", "tesla", "geely", "wuling",
+)
+
+
+def _is_offmodel_noise(chunk: dict[str, Any]) -> bool:
+    """True nếu chunk tag model VinFast nhưng text chỉ nói brand đối thủ.
+
+    So khớp nhiều form model trong text: compact ("vf7"), catalog ("vf 7",
+    "vf e34" — từ MODEL_LABEL). Nếu text nhắc model hoặc "vinfast" → giữ.
+    """
+    mid = chunk.get("model_id")
+    if not mid:
+        return False
+    text = chunk.get("text", "") or ""
+    low = no_diacritics(text).lower()
+    if not low:
+        return False
+    forms = {mid.lower(), mid.lower().replace(" ", "")}
+    cat = MODEL_LABEL.get(mid, "").lower()
+    if cat:
+        forms.add(cat)
+    if any(f and f in low for f in forms) or "vinfast" in low:
+        return False
+    return any(b in low for b in COMPETING_BRANDS)
+
+
 def normalize_numbers(text: str) -> str:
     """Unify numeric formatting: '5.119 x 2.254' -> '5119 × 2254' (dimensions)."""
     text = re.sub(
@@ -878,6 +911,17 @@ def run(version: str = "v1", max_len: int = 400) -> int:
     all_vector = kept
     print(f"  dropped spec chunks: {n_section} (section) + {n_table} (vivu_specs table/list) "
           f"+ {n_spec_table} (spec-table pipe-delimited) | {pre} -> {len(all_vector)}")
+
+    # Drop off-model noise (sidebar "tin liên quan" lạc tag — VD Toyota trong VF2)
+    n_offmodel = 0
+    kept_off: list[dict[str, Any]] = []
+    for c in all_vector:
+        if _is_offmodel_noise(c):
+            n_offmodel += 1
+            continue
+        kept_off.append(c)
+    all_vector = kept_off
+    print(f"  dropped off-model noise: {n_offmodel}")
 
     # Write intermediate
     with (intermediate_dir / "vector.jsonl").open("w", encoding="utf-8") as f:
