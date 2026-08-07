@@ -51,6 +51,7 @@ MODEL_ID_MAP = {
     "Products-Car-VF6": "VF6",
     "Products-Car-VF7": "VF7",
     "Products-Car-VF8": "VF8",
+    "Products-Car-VF8NEW": "VF8NEW",
     "Products-Car-VF9": "VF9",
     "Products-Car-VFMPV7": "VFMPV7",
     "Products-Car-MPV7": "VFMPV7",
@@ -86,6 +87,7 @@ MODEL_LABEL = {
     "VF6": "VF 6",
     "VF7": "VF 7",
     "VF8": "VF 8",
+    "VF8NEW": "VF 8 All New",
     "VF9": "VF 9",
     "VFMPV7": "VF MPV 7",
     "VFE34": "VF e34",
@@ -120,6 +122,7 @@ MODEL_EDITIONS = {
     "VF6": ["Eco", "Plus"],
     "VF7": ["Eco", "Plus", "PlusCaptain"],
     "VF8": ["Eco", "Plus"],
+    "VF8NEW": ["Eco", "Plus"],
     "VF9": ["Eco", "Plus"],
     "VFMPV7": ["Eco", "Plus"],
 }
@@ -200,7 +203,8 @@ def infer_model_raw(path: Path) -> str | None:
     # thứ tự quan trọng: e34 trước vf3, mpv7 trước vf7
     for key, model in [("vfe34", "VFE34"), ("mpv7", "VFMPV7"),
                        ("vf2", "VF2"), ("vf3", "VF3"), ("vf5", "VF5"),
-                       ("vf6", "VF6"), ("vf7", "VF7"), ("vf8", "VF8"), ("vf9", "VF9")]:
+                       ("vf6", "VF6"), ("vf7", "VF7"),
+                       ("vf8theallnew", "VF8NEW"), ("vf8", "VF8"), ("vf9", "VF9")]:
         if key in name:
             return model
     return None

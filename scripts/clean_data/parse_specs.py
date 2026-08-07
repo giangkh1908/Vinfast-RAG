@@ -74,6 +74,7 @@ _A = {
     "cong suat toi da (kw)": ("power_kw", "kW", "powertrain"),
     "cong suat toi da": ("power_kw", "kW", "powertrain"),
     "cong suat toi da (kw/hp)": ("power_kw", "kW", "powertrain"),
+    "cong suat": ("power_kw", "kW", "powertrain"),
     "mo men xoan cuc dai (nm)": ("torque_nm", "Nm", "powertrain"),
     "mo-men xoan cuc dai": ("torque_nm", "Nm", "powertrain"),
     "mo men xoan cuc dai": ("torque_nm", "Nm", "powertrain"),
@@ -427,6 +428,144 @@ def _looks_like_label(text: str) -> bool:
     return any(nt.startswith(a) for a in _ALIASES_BY_LEN)
 
 
+def _find_alias_anywhere(text: str) -> str | None:
+    """Alias (label spec) xuất hiện BẤT KỲ đâu trong text (không cần ở đầu dòng)."""
+    n = no_diacritics(text).lower().replace("đ", "d")
+    for a in _ALIASES_BY_LEN:
+        if a in n:
+            return a
+    return None
+
+
+# ── Bảng spec 2 cột (VF6/VF7 dat-coc qua Firecrawl) ─────────────────────────
+# Format: label rồi 2 giá trị (Eco/Plus) trên dòng riêng, xen dòng trống / label
+# lặp đôi (VF7). VD:
+#   "Công suất tối đa" / "130 kW/174 hp" / "150 kW/201 hp"
+#   "Dài x Rộng x Cao (mm)" / "4.241 x 1.834 x 1.580" / "4.241 x 1.834 x 1.580"
+def parse_label_then_values(body: str) -> list[tuple[str, str, str | None]]:
+    out: list[tuple[str, str, str | None]] = []
+    lines = body.splitlines()
+    n = len(lines)
+    i = 0
+    while i < n:
+        line = lines[i].strip()
+        if TABLE_ROW_RE.match(line) or not line:
+            i += 1
+            continue
+        # Dòng bắt đầu bằng số = value-first (hero card VF6) → không phải label, bỏ qua.
+        if re.match(r"^[0-9]", line):
+            i += 1
+            continue
+        line = line[2:] if line.startswith("- ") else line  # strip markdown list marker (vf8_html)
+        alias = _find_alias_anywhere(line)
+        if not alias or is_price_row(alias) or is_section_header(alias):
+            i += 1
+            continue
+        # Bỏ qua dòng trống + label lặp đôi để tới dòng giá trị.
+        j = i + 1
+        base = no_diacritics(line).lower().replace("đ", "d").strip()
+        while j < n:
+            nxt = re.sub(r"[*`_]", "", lines[j].strip()).strip()
+            nxt = nxt[2:] if nxt.startswith("- ") else nxt
+            if not nxt or no_diacritics(nxt).lower().replace("đ", "d").strip() == base:
+                j += 1
+            else:
+                break
+        # Gom tối đa 2 dòng giá trị (bắt đầu bằng số; dòng prose thì dừng).
+        values: list[str] = []
+        while j < n and len(values) < 2:
+            v = re.sub(r"[*`_]", "", lines[j].strip()).strip()
+            v = v[2:] if v.startswith("- ") else v
+            if not v:
+                j += 1
+                continue
+            if TABLE_ROW_RE.match(v) or v.startswith("#") or len(v) > 40 \
+                    or not re.match(r"^[0-9]", v):
+                break
+            values.append(v)
+            j += 1
+        if len(values) == 2:
+            out.append((alias, values[0], "Eco"))
+            out.append((alias, values[1], "Plus"))
+        i = j if j > i + 1 else i + 1
+    return out
+
+
+# ── Value-trên-label (VF8 All New 2026) ─────────────────────────────────────
+# Format: value trên dòng TRƯỚC label ('170 kW' / 'Công suất tối đa'). Có thể
+# xen dòng trống. VD:
+#   "170 kW" / "Công suất tối đa" / "330 Nm" / "Mô men xoắn cực đại" ...
+def _value_matches_spec(value: str, spec_key: str) -> bool:
+    """Guard unit: value-trên-label chỉ tin khi value khớp unit kỳ vọng của spec.
+    Tránh lấy nhầm value của spec khác khi bảng sau trộn format (VD "Số ghế ngồi"
+    bên dưới 1 giá trị dimension)."""
+    v = value.lower()
+    dim = ("dimension",) if spec_key.startswith("length") or spec_key.startswith("width") \
+        or spec_key.startswith("height") else ()
+    if spec_key in ("length_mm", "width_mm", "height_mm"):
+        return "x" in v
+    if spec_key in ("power_kw", "dc_charge_kw", "ac_charge_kw"):
+        return "kw" in v
+    if spec_key == "torque_nm":
+        return "nm" in v
+    if spec_key == "battery_kwh":
+        return "kwh" in v
+    if spec_key == "range_km":
+        return "km" in v
+    if spec_key in ("wheel_size_inch", "display_inch"):
+        return "inch" in v
+    if spec_key == "seats":
+        return "ghế" in v or "ghe" in v
+    return True  # các spec khác không ép unit
+
+
+def parse_value_above_label(body: str) -> list[tuple[str, str, str | None]]:
+    out: list[tuple[str, str, str | None]] = []
+    lines = body.splitlines()
+    n = len(lines)
+    for i in range(1, n):
+        line = lines[i].strip()
+        line = line[2:] if line.startswith("- ") else line
+        if TABLE_ROW_RE.match(line) or not line:
+            continue
+        alias = _find_alias_anywhere(line)
+        if not alias or is_price_row(alias) or is_section_header(alias):
+            continue
+        mapped = lookup_label(alias)
+        if not mapped:
+            continue
+        k = i - 1
+        prev = ""
+        while k >= 0 and not prev:
+            prev = re.sub(r"[*`_]", "", lines[k].strip()).strip()
+            prev = prev[2:] if prev.startswith("- ") else prev
+            k -= 1
+        if re.match(r"^[0-9]", prev) and _value_matches_spec(prev, mapped[0]):
+            out.append((alias, prev, None))
+    return out
+
+
+# ── Hero card value-first (VF6 dat-coc) ─────────────────────────────────────
+# "59,6 kWDung lượng pin" — value TRƯỚC label CÙNG dòng (Firecrawl merge unit+label).
+# Bắt các spec chưa có trong bảng 2 cột (vd dung lượng pin).
+def parse_value_first(body: str) -> list[tuple[str, str, str | None]]:
+    out: list[tuple[str, str, str | None]] = []
+    for line in body.splitlines():
+        if TABLE_ROW_RE.match(line):
+            continue
+        m = re.match(r"^\s*([\d.,]+)(?:\s*/\s*[\d.,]+)?\s*(kW|Nm|kWh|km)?", line, re.IGNORECASE)
+        if not m:
+            continue
+        rest = line[m.end():].strip()
+        if not rest:
+            continue
+        alias = _find_alias_anywhere(rest)
+        if not alias or is_price_row(alias) or is_section_header(alias):
+            continue
+        out.append((alias, m.group(1), detect_edition(rest)))
+    return out
+
+
 # ── File → spec rows ────────────────────────────────────────────────────────
 def extract_specs_from_file(path: Path) -> list[dict[str, Any]]:
     meta, body = parse_raw_file(path)
@@ -438,7 +577,12 @@ def extract_specs_from_file(path: Path) -> list[dict[str, Any]]:
 
     raw_pairs: list[tuple[str, str, str | None]] = []
     raw_pairs.extend(parse_tables(body))
-    raw_pairs.extend(parse_inline(body))
+    # value-trên-label (VF8 All New) chạy TRƯỚC để aggregate ưu tiên giá trị đúng
+    # khi cùng label bị parse_inline/label_then_values đọc nhầm value bên dưới.
+    raw_pairs.extend(parse_value_above_label(body))
+    raw_pairs.extend(parse_value_first(body))        # hero card value-first (VF6)
+    raw_pairs.extend(parse_inline(body))             # label-first B/C
+    raw_pairs.extend(parse_label_then_values(body))  # bảng spec 2 cột (VF6/VF7/VF8)
 
     rows: list[dict[str, Any]] = []
     seen: set[tuple[str, str | None, str]] = set()  # (key, edition) trong file

@@ -1,171 +1,442 @@
 # Nguồn: https://shop.vinfastauto.com/vn_vi/dat-coc-xe-vf8.html
-# Crawl lúc: 2026-07-30T21:32:01
+# Crawl lúc: 2026-08-07T17:28:32
 # Loại: html
 # Selector: (toàn trang / N/A với PDF)
 
 ================================================================================
 
-VF 5
-- Tổng quan
-- Thiết kế
-- Nội thất
-- Công nghệ
-- Vận hành
-- An toàn
-- Ưu đãi
-- Các phiên bản
+[![VF 5](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw1d7099cc/reserves/VF8/logo.svg)](https://shop.vinfastauto.com/)
 
-Đặt cọc ngay
-VinFast VF 8
+- [Tổng quan](https://shop.vinfastauto.com/vn_vi/dat-coc-xe-vf8.html#gioi-thieu)
+- [Thiết kế](https://shop.vinfastauto.com/vn_vi/dat-coc-xe-vf8.html#mau-sac)
+- [Nội thất](https://shop.vinfastauto.com/vn_vi/dat-coc-xe-vf8.html#noi-that)
+- [Công nghệ](https://shop.vinfastauto.com/vn_vi/dat-coc-xe-vf8.html#technology)
+- [Vận hành](https://shop.vinfastauto.com/vn_vi/dat-coc-xe-vf8.html#journey)
+- [An toàn](https://shop.vinfastauto.com/vn_vi/dat-coc-xe-vf8.html#safety)
+- [Ưu đãi](https://shop.vinfastauto.com/vn_vi/dat-coc-xe-vf8.html#owner)
+- [Các phiên bản](https://shop.vinfastauto.com/vn_vi/dat-coc-xe-vf8.html#specs)
+
+Tổng quan
+
+[Đặt cọc ngay](https://shop.vinfastauto.com/vn_vi/dat-coc-o-to-dien-vinfast.html?modelId=Products-Car-VF8)
+
+![VinFast VF 8](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw709af09f/reserves/VF8/sp/banner.webp)
+
 ### VF 8 series mới
+
 #### VF 8 Eco
-VinFast VF 8
-Giá bán từ
-853.100.000 VNĐ*
-898.000.000 VNĐ
-Đặt cọc đăng ký lái thử
+
+![VinFast VF 8](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwbee92711/reserves/VF8/vf8-lux.webp)Giá bán từ
+
+853.100.000
+VNĐ\*
+
+898.000.000
+VNĐ
+
+[Đặt cọc](https://shop.vinfastauto.com/vn_vi/dat-coc-o-to-dien-vinfast.html?modelId=Products-Car-VF8) [đăng ký lái thử](https://shop.vinfastauto.com/vn_vi/dang-ky-lai-thu.html)
+
 #### VF 8 Plus​
-VinFast VF 8
-Giá bán từ
-1.025.050.000 VNĐ*
-1.079.000.000 VNĐ
-Đặt cọc đăng ký lái thử
-(*) Mức giá ưu đãi mang tính chất tham khảo. Chương trình áp dụng theo điều khoản & điều kiện.
+
+![VinFast VF 8](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw1f936f89/reserves/VF8/vf8plus.webp)Giá bán từ
+
+1.025.050.000
+VNĐ\*
+
+1.079.000.000
+VNĐ
+
+[Đặt cọc](https://shop.vinfastauto.com/vn_vi/dat-coc-o-to-dien-vinfast.html?modelId=Products-Car-VF8) [đăng ký lái thử](https://shop.vinfastauto.com/vn_vi/dang-ky-lai-thu.html)
+
+(\*) Mức giá ưu đãi mang tính chất tham khảo. Chương trình áp dụng theo điều khoản & điều kiện.
+
 ## Thiết kế cá nhân hoá
+
 VF 8 Eco và VF 8 Plus đem đến đa dạng sự lựa chọn màu ngoại thất, phù hợp cho những chủ nhân yêu thích sự hiện đại, phong cách và sang trọng.
-<div class="tab-pane fade show active" id="colorExteriorCE1V" role="tabpanel" aria-labelledby="colorExterior1-tab"> <div class="swiper"> <picture> <source srcset="https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw30e54663/reserves/VF8/exterior/product-CE1V.webp" /> <img src="https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw30e54663/reserves/VF8/exterior/product-CE1V.webp" alt="VinFast VF 8" /> </picture> </div> </div> <div class="tab-pane fade" id="colorExteriorCE1W" role="tabpanel" aria-labelledby="colorExteriorCE1W-tab"> <div class="swiper"> <picture> <source srcset="https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw462de464/reserves/VF8/exterior/product-CE1W.webp" /> <img src="https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw462de464/reserves/VF8/exterior/product-CE1W.webp" alt="VinFast VF 8" /> </picture> </div> </div>
-VinFast VF 8
-VinFast VF 8
-VinFast VF 8
-<div class="tab-pane fade" id="colorExteriorCE17" role="tabpanel" aria-labelledby="colorExteriorCE17-tab"> <div class="swiper"> <picture> <source srcset="https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwa6beb040/reserves/VF8/exterior/product-CE17.webp" /> <img src="https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwa6beb040/reserves/VF8/exterior/product-CE17.webp" alt="VinFast VF 8" /> </picture> </div> </div>
-VinFast VF 8
-<div class="tab-pane fade" id="colorExterior2927" role="tabpanel" aria-labelledby="colorExterior2927-tab"> <div class="swiper"> <picture> <source srcset="https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw0102e332/reserves/VF8/exterior/product-2927.webp" /> <img src="https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw0102e332/reserves/VF8/exterior/product-2927.webp" alt="VinFast VF 8" /> </picture> </div> </div>
-VinFast VF 8
-VinFast VF 8
-<div class="tab-pane fade" id="colorExterior2911" role="tabpanel" aria-labelledby="colorExterior2911-tab"> <div class="swiper"> <picture> <source srcset="https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw9f2780b1/reserves/VF8/exterior/product-2911.webp" /> <img src="https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw9f2780b1/reserves/VF8/exterior/product-2911.webp" alt="VinFast VF 8" /> </picture> </div> </div>
--
--
--
--
--
--
+
+![VinFast VF 8](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw7afb0815/reserves/VF8/exterior/product-CE11.webp)
+
+![VinFast VF 8](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw585603bd/reserves/VF8/exterior/product-CE22.webp)
+
+![VinFast VF 8](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw23b1a8cb/reserves/VF8/exterior/product-CE18.webp)
+
+![VinFast VF 8](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwa5374fce/reserves/VF8/exterior/product-CE1M.webp)
+
+![VinFast VF 8](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwf0ab6184/reserves/VF8/exterior/product-171V.webp)
+
+![VinFast VF 8](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw44d79e9d/reserves/VF8/exterior/product-1V18.webp)
+
+- [![](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw51489d08/reserves/color/exterior/CE11.webp)](https://shop.vinfastauto.com/vn_vi/dat-coc-xe-vf8.html#colorExteriorCE11)
+- [![](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw5b436975/reserves/color/exterior/CE22.webp)](https://shop.vinfastauto.com/vn_vi/dat-coc-xe-vf8.html#colorExteriorCE22)
+- [![](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw76b01a92/reserves/color/exterior/CE18.webp)](https://shop.vinfastauto.com/vn_vi/dat-coc-xe-vf8.html#colorExteriorCE18)
+- [![](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw91273af3/reserves/color/exterior/CE1M.webp)](https://shop.vinfastauto.com/vn_vi/dat-coc-xe-vf8.html#colorExteriorCE1M)
+- [![](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw93273248/reserves/color/exterior/171V.webp)](https://shop.vinfastauto.com/vn_vi/dat-coc-xe-vf8.html#colorExterior171V)
+- [![](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw61563be0/reserves/color/exterior/1V18.webp)](https://shop.vinfastauto.com/vn_vi/dat-coc-xe-vf8.html#colorExterior1V18)
 
 Jet Black
-VinFast Exterior Design
+
+![VinFast Exterior Design](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwfc8f9d28/reserves/VF8/thietkekdh.webp)
+
 ### Thiết kế khí động học​
+
 Giảm lực cản không khí và tăng hiệu quả vận hành, đồng thời mang lại vẻ ngoài hiện đại và mạnh mẽ.
-VinFast Exterior Design
+
+![VinFast Exterior Design](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwfb6021d2/reserves/VF8/guong.webp)
+
 ### Gương chiếu hậu hiện đại
+
 Tự động lưu vị trí theo thói quen của chủ xe, tích hợp đèn báo rẽ và cảnh báo điểm mù tăng tăng cường sự an toàn cho Khách hàng.
-VinFast Exterior Design
+
+![VinFast Exterior Design](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw8d14f362/reserves/VF8/panorama.webp)
+
 ### Cửa sổ trời toàn cảnh
+
 Tích hợp rèm điện, điều khiển đóng mở bằng giọng nói.
-VinFast Exterior Design
+
+![VinFast Exterior Design](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw241f0305/reserves/VF8/360.webp)
+
 ### Cảm biến và camera 360 độ
+
 Giúp tài xế dễ dàng quan sát và điều khiển trong không gian hẹp hay các khu vực đông đúc.
-- Thiết kế khí động học​ VinFast Technology Giảm lực cản không khí và tăng hiệu quả vận hành, đồng thời mang lại vẻ ngoài hiện đại và mạnh mẽ.
-- Gương chiếu hậu hiện đại VinFast Technology Tự động lưu vị trí theo thói quen của chủ xe, tích hợp đèn báo rẽ và cảnh báo điểm mù tăng tăng cường sự an toàn cho Khách hàng.
-- Cửa sổ trời toàn cảnh VinFast Technology Tích hợp rèm điện, điều khiển đóng mở bằng giọng nói.
-- Cảm biến và camera 360 độ VinFast Technology Giúp tài xế dễ dàng quan sát và điều khiển trong không gian hẹp hay các khu vực đông đúc.
+
+- ### Thiết kế khí động học​
+
+
+
+
+
+![VinFast Technology](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwfc8f9d28/reserves/VF8/thietkekdh.webp)
+
+Giảm lực cản không khí và tăng hiệu quả vận hành, đồng thời mang lại vẻ ngoài hiện đại và mạnh mẽ.
+
+- ### Gương chiếu hậu hiện đại
+
+
+
+
+
+![VinFast Technology](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwfb6021d2/reserves/VF8/guong.webp)
+
+Tự động lưu vị trí theo thói quen của chủ xe, tích hợp đèn báo rẽ và cảnh báo điểm mù tăng tăng cường sự an toàn cho Khách hàng.
+
+- ### Cửa sổ trời toàn cảnh
+
+
+
+
+
+![VinFast Technology](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw8d14f362/reserves/VF8/panorama.webp)
+
+Tích hợp rèm điện, điều khiển đóng mở bằng giọng nói.
+
+- ### Cảm biến và camera 360 độ
+
+
+
+
+
+![VinFast Technology](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw241f0305/reserves/VF8/360.webp)
+
+Giúp tài xế dễ dàng quan sát và điều khiển trong không gian hẹp hay các khu vực đông đúc.
+
 
 ## Thăng hạng đẳng cấp
+
 VF 8 Eco và VF 8 Plus dành cho những người hiểu rõ giá trị sang trọng và đẳng cấp, mong muốn tận hưởng trọn vẹn những trải nghiệm cho bản thân và gia đình.
-VinFast Interior Design
-VinFast Interior Design
-VinFast Interior Design
-VinFast Interior Design
-VinFast Interior Design
-VinFast Exterior Design
+
+![VinFast Interior Design](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw3fdecc1d/reserves/VF8/interior-img1.webp)
+
+![VinFast Interior Design](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw908cf0f3/reserves/VF8/interior-img2.webp)
+
+![VinFast Interior Design](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwcbdcd23a/reserves/VF8/interior-img3.webp)
+
+![VinFast Interior Design](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw3adf82ae/reserves/VF8/interior-img4.webp)
+
+![VinFast Interior Design](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw14723304/reserves/VF8/interior-img5.webp)
+
+![VinFast Exterior Design](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw4ad4f9ae/reserves/VF8/giamsatnl.webp)
+
 ### Hệ thống giám sát người lái
+
 Liên tục theo dõi và cảnh báo khi người lái mệt mỏi, vì bạn và gia đình.
-VinFast Exterior Design
+
+![VinFast Exterior Design](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw0c6f2f0d/reserves/VF8/gheda-vegan.webp)
+
 ### Ghế da vegan tích hợp sưởi và thông gió
+
 Đảm bảo sự thoải mái tối đa cho mọi hành trình, cho cả mùa hè và mùa đông.
-VinFast Exterior Design
+
+![VinFast Exterior Design](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw7bf769e5/reserves/VF8/volang.webp)
+
 ### Vô lăng tối ưu cho mọi trải nghiệm
+
 Không chỉ tích hợp khả năng sưởi, vô lăng của VF 8 còn có thể ghi nhớ và tự động điều chỉnh theo thói quen lái xe của bạn.
-VinFast Exterior Design
+
+![VinFast Exterior Design](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw31a61fc6/reserves/VF8/hud.webp)
+
 ### HUD tích hợp sẵn
+
+Hiển thị các thông tin quan trọng như tốc độ xe, chỉ dẫn đường đi, cảnh báo va chạm ngay trên kính lái, cho phép người lái theo dõi mọi thông tin mà không cần rời mắt khỏi đường.
+
+- ### Hệ thống giám sát người lái
+
+
+
+
+
+![VinFast Technology](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw4ad4f9ae/reserves/VF8/giamsatnl.webp)
+
+Liên tục theo dõi và cảnh báo khi người lái mệt mỏi, vì bạn và gia đình.
+
+- ### Ghế da vegan tích hợp sưởi và thông gió
+
+
+
+
+
+![VinFast Technology](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw0c6f2f0d/reserves/VF8/gheda-vegan.webp)
+
+Đảm bảo sự thoải mái tối đa cho mọi hành trình, cho cả mùa hè và mùa đông.
+
+- ### Vô lăng tối ưu cho mọi trải nghiệm
+
+
+
+
+
+![VinFast Technology](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw7bf769e5/reserves/VF8/volang.webp)
+
+Không chỉ tích hợp khả năng sưởi, vô lăng của VF 8 còn có thể ghi nhớ và tự động điều chỉnh theo thói quen lái xe của bạn.
+
+- ### HUD tích hợp sẵn
+
+
+
+
+
+![VinFast Technology](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw31a61fc6/reserves/VF8/hud.webp)
+
 Hiển thị các thông tin quan trọng như tốc độ xe, chỉ dẫn đường đi, cảnh báo va chạm ngay trên kính lái, cho phép người lái theo dõi mọi thông tin mà không cần rời mắt khỏi đường.
-- Hệ thống giám sát người lái VinFast Technology Liên tục theo dõi và cảnh báo khi người lái mệt mỏi, vì bạn và gia đình.
-- Ghế da vegan tích hợp sưởi và thông gió VinFast Technology Đảm bảo sự thoải mái tối đa cho mọi hành trình, cho cả mùa hè và mùa đông.
-- Vô lăng tối ưu cho mọi trải nghiệm VinFast Technology Không chỉ tích hợp khả năng sưởi, vô lăng của VF 8 còn có thể ghi nhớ và tự động điều chỉnh theo thói quen lái xe của bạn.
-- HUD tích hợp sẵn VinFast Technology Hiển thị các thông tin quan trọng như tốc độ xe, chỉ dẫn đường đi, cảnh báo va chạm ngay trên kính lái, cho phép người lái theo dõi mọi thông tin mà không cần rời mắt khỏi đường.
+
 
 ## Công nghệ tiên phong
-VF 8 Eco và VF 8 Plus là sự lựa chọn lý tưởng cho những người đam mê công nghệ, với trợ lý ảo tích hợp công nghệ AI tạo sinh, mang đến trải nghiệm tương tác và điều khiển xe thân thiện, gần gũi và thực sự hữu dụng.
-VinFast Technology
-VinFast Technology
-VinFast Technology
-Trợ lý ảo ViVi 2.0 phiên bản mới nhất, ứng dụng công nghệ AI tạo sinh, mang đến khả năng tương tác, điểu khiển xe bằng giọng nói tiếng Việt hoàn toàn tự nhiên. Đồng thời, Trợ lý ảo ViVi 2.0 sẽ là một người bạn đồng hành thông minh và thấu hiểu, giúp mở ra cơ hội khám phá trí thức vô tận trên mỗi hành trình của bạn.
-Bên cạnh nâng cấp tại xưởng, VinFast cũng sẽ cung cấp dịch vụ nâng cấp xe từ xa, giúp bạn cập nhật phần mềm và tính năng mới nhất cho xe của mình một cách thuận tiện và tiết kiệm thời gian nhất.
-Với ứng dụng VinFast, Khách hàng kiểm tra tình trạng của các trạm sạc, xem dữ liệu về xe, đặt lịch bảo dưỡng, trợ giúp. Quan trọng hơn, ứng dụng VinFast giúp điều khiển xe, bật điều hòa từ xa để bạn luôn thoải mái ngay từ khi bước lên xe.
-VinFast Technology
-### Trợ lý ảo ViVi 2.0
-Trợ lý ảo ViVi 2.0 phiên bản mới nhất, ứng dụng công nghệ AI tạo sinh, mang đến khả năng tương tác, điểu khiển xe bằng giọng nói tiếng Việt hoàn toàn tự nhiên. Đồng thời, Trợ lý ảo ViVi 2.0 sẽ là một người bạn đồng hành thông minh và thấu hiểu, giúp mở ra cơ hội khám phá trí thức vô tận trên mỗi hành trình của bạn.
-VinFast Technology
-### Cập nhật từ xa
-Bên cạnh nâng cấp tại xưởng, VinFast cũng sẽ cung cấp dịch vụ nâng cấp xe từ xa, giúp bạn cập nhật phần mềm và tính năng mới nhất cho xe của mình một cách thuận tiện và tiết kiệm thời gian nhất.
-VinFast Technology
-### Ứng dụng VinFast
-Với ứng dụng VinFast, Khách hàng kiểm tra tình trạng của các trạm sạc, xem dữ liệu về xe, đặt lịch bảo dưỡng, trợ giúp. Quan trọng hơn, ứng dụng VinFast giúp điều khiển xe, bật điều hòa từ xa để bạn luôn thoải mái ngay từ khi bước lên xe.
-## Sẵn sàng cho mọi hành trình
-Với quãng đường di chuyển mỗi lần sạc đầy lên tới 562 km, kết hợp với hệ thống trạm sạc phủ sóng trên 63 tỉnh thành và nhiều ưu đãi đặc quyền dành riêng độc đáo, VinFast VF 8 cam kết sẵn sàng cùng bạn chinh phục mọi hành trình, cùng bạn tận hưởng không khí trong lành và khung cảnh thiên nhiên tươi đẹp trên mọi nẻo đường tại Việt Nam.
-VinFast Technology
-### 562 km
-pin cao cấp từ CATL
-### 5.58 giây
-0-100 Km/h
-### 402 hp
-tương đương động cơ đốt trong dung tích 3.2l​
-### 31 phút
-sạc nhanh từ 10-70%
-## An toàn của gia đình bạn là ưu tiên trên hết của VinFast
-Tất cả các xe VinFast tuân thủ các tiêu chuẩn an toàn nghiêm ngặt nhất và được trang bị những công nghệ hiện đại theo chuẩn quốc tế, mang lại sự yên tâm tuyệt đối cho gia đình bạn trên mọi chặng đường.
-### Cứu hộ khẩn cấp
-Khi nguy cấp, bạn có thể dễ dàng nhấn nút SOS tích hợp sẵn để nhận được sự trợ giúp nhanh chóng.
-### Hệ thống 11 túi khí
-Sở hữu nhiều túi khí nhất trong phân khúc, bảo vệ bạn trong những trường hợp khẩn cấp.
-## Công nghệ nâng tầm trải nghiệm
-Hệ thống trợ lái nâng cao của VinFast được trang bị công nghệ và trang thiết bị hiện đại nhất, mang đến trải nghiệm lái xe thư thái và dễ dàng. Điều này giúp bạn tận hưởng cuộc sống và kết nối với gia đình cũng như thiên nhiên một cách trọn vẹn!
-Cảnh báo điểm mù
-Cảnh báo va chạm toàn diện
-Tự động cảnh báo và can thiệp khi có nguy cơ va chạm phía trước, khi có phương tiện cắt ngang phía sau, các điểm mù khi xe đang di chuyển.
-Trợ lái khi có nguy cơ va chạm
-VF 8 tự động phanh khẩn cấp khi có nguy cơ va chạm xảy ra.
-<div class="slide-detail slide-detail-4"> <div class="slide-detail-title"> <p> Hỗ trợ đỗ xe </p> </div> <p> VF 8 tự động hỗ trợ đỗ xe. </p> </div>
-<div class="swiper-slide"> <div class="slide-img slide-img4"> <img src="https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw49194a59/reserves/VF8/trolan.webp" alt=""/> </div> </div>
-<section class="homePageVF8-preference quality" id="owner"> <picture> <source srcset="https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw8713d757/reserves/VF8/preferential-img1.webp" media="(max-width: 1199px)" /> <source srcset="https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw8713d757/reserves/VF8/preferential-img1.webp" media="(min-width: 1200px)" /> <img style="width: 100%" src="https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1785410140811/reserves/VF8/sp/preferential-img1.webp" alt="VinFast VF 8" /> </picture> <div class="section-content col-12 col-lg-6 invisible"> <h2 class="section-title text-center"> THĂNG HẠNG XE SANG, <br>ĐẶC QUYỀN ĐẲNG CẤP </h2> <div class="section-desc"> <div class="section-desc-item"> <h3>01</h3> <div class="item-content"> <h3>CƠ HỘI TRÚNG CĂN HỘ LIỀN KỀ VINHOMES 12 TỶ</h3> <p> Mỗi Khách hàng mua VF 8 Eco và VF 8 Plus thành công nhận được 01 vé tham gia chương trình quay số may mắn, và có cơ hội trúng thưởng 01 căn hộ liền kề Vinhomes Ocean Park 2 trị giá 12 tỷ đồng, cùng 10 suất ưu tiên xếp chỗ và miễn 01 năm học phí Vinschool trị giá lên tới 192 triệu đồng/suất. </p> </div> </div> <div class="section-desc-item"> <h3>02</h3> <div class="item-content"> <h3>THĂNG HẠNG VF 8 PLUS HOẢ LONG ĐỘC BẢN CHO NGƯỜI TIÊN PHONG</h3> <p> Tất cả 888 Khách hàng đầu tiên mua thành công VF 8 Eco và VF 8 Plus được đặc quyền thăng hạng lên phiên bản VF 8 Plus Hoả Long Độc bản được đánh số từ 1 đến 888, với nhiều chi tiết ngoại thất mạ vàng. </p> </div> </div> <div class="section-desc-item"> <h3>03</h3> <div class="item-content"> <h3>ƯU ĐÃI TOÀN DIỆN: TÀI CHÍNH, SỨC KHOẺ VÀ PHỤ KIỆN</h3> <p> Khách hàng mua VF 8 Eco và VF 8 Plus từ 20/08 – 30/11/2024 được ưu đãi 6% giá trị xe, gói khám sức khỏe Vinmec trị giá 50 triệu đồng cho bản thân và gia đình, 01 bộ thảm sàn và 01 bộ sạc di động 2,2 kW, miễn phí sạc và gửi xe lên tới 02 năm. Ưu đãi có thể quy đổi sang tiền mặt với tổng giá trị tới trên 200 triệu đồng. </p> <p> </p> </div> </div> <!-- <div class="cta-group"> <div class="content"> <a target="_blank" style="height:56px" href="https://shop.vinfastauto.com/vn_vi/trade-in" class="btn btn-primary order-now text-uppercase w-50 m-auto">Đăng ký đổi xe</a> <!-- <button class="btn btn-link text-uppercase" data-bs-toggle="modal" data-bs-target="#installmentCostPopUp"> Xem chi tiết </button> </div> </div> </div> </div> </section> <section class="homePageVF8-preference experience"> <picture> <source srcset="https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwa5b99dc1/reserves/VF8/preferential-img2.webp" media="(max-width: 1199px)" /> <source srcset="https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwa5b99dc1/reserves/VF8/preferential-img2.webp" media="(min-width: 1200px)" /> <img style="width: 100%" src="https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1785410140811/reserves/VF8/sp/preferential-img2.webp" alt="VinFast VF 8" /> </picture> <div class="section-content col-12 col-lg-6 invisible"> <h2 class="section-title text-center"> THĂNG HẠNG XE SANG, <br> ĐẶC QUYỀN ĐẲNG CẤP </h2> <div class="section-desc"> <div class="section-desc-item"> <h3>04</h3> <div class="item-content"> <h3>ƯU ĐÃI ĐẶC BIỆT CHO CƯ DÂN VINHOMES</h3> <p> Khách hàng sở hữu nhà Vinhomes được miễn phí gửi xe 02 năm tại các bãi đỗ xe của Vinhomes; và được hỗ trợ lắp trụ sạc lên tới 10 triệu đồng, cấp 900.000 đồng/xe/tháng chi phí sạc cho Cư dân chọn sạc tại nhà tới hết 01/07/2026. </p> </div> </div> <div class="section-desc-item"> <h3>05</h3> <div class="item-content"> <h3>ĐỔI XE ĐẲNG CẤP, CHI PHÍ CHÊNH LỆNH CỰC THẤP</h3> <p> Xe VF 8 có thể dễ dàng bán lại cho VinFast và đổi sang xe VF 8 Eco và VF 8 Plus với mức giá thu cũ cực ưu đãi lên tới 93% giá trị xe. </p> </div> </div> <div class="section-desc-item"> <h3>06</h3> <div class="item-content"> <h3>BÁN XE GIÁ TRỊ TỐI ƯU, AN TÂM TUYỆT ĐỐI</h3> <p> Xe VF 8 Eco và VF 8 Plus mua mới từ ngày 16/07/2024 có thể bán lại cho VinFast với giá đặc biệt tối ưu lên tới 90% giá trị xe. </p> </div> </div> </div> </div> </section>
-## Tổng quan sự khác biệt
-<div class="title-type col-3">S</div>
-Eco
-Plus
-- Màu sắc <li class="specs-detail col-3">4 màu sắc cơ bản</li> 4 màu tiêu chuẩn và 4 màu nâng cao 4 màu tiêu chuẩn và 4 màu nâng cao Công suất <li class="specs-detail col-3">350 hp</li> 201 hp 402 hp Quãng đường di chuyển <li class="specs-detail col-3">562 km</li> 562 km (theo NEDC) 457km (theo WLTP) <ul class="detail row"> <li class="specs-title col-3">Ưu đãi</li> <li class="specs-detail col-3">Miễn phí sạc 2 năm tại các trụ VinFast</li> <li class="specs-detail col-3">Miễn phí sạc 2 năm tại các trụ VinFast</li> </ul> Trợ lý ảo <li class="specs-detail col-3">Trợ lý ảo VinFast tiêu chuẩn</li> Trợ lý ảo ViVi Trợ lý ảo ViVi Màu sắc <div class="mobile-content row"> <p class="title col-6">VF 8S</p> <p class="subtitle col-6">4 màu sắc cơ bản</p> </div> VF 8 Eco 4 màu tiêu chuẩn và 4 màu nâng cao VF 8 Plus 4 màu tiêu chuẩn và 4 màu nâng cao Công suất <div class="mobile-content row"> <p class="title col-6">VF 8S</p> <p class="subtitle col-6">350 hp</p> </div> VF 8 Eco 201 hp VF 8 Plus 402 hp Quãng đường di chuyển <div class="mobile-content row"> <p class="title col-6">VF 8S</p> <p class="subtitle col-6">562 km</p> </div> VF 8 Eco 562 km VF 8 Plus 457 km <div class="group-content"> <p class="mobile-title">Ưu đãi</p> <div class="mobile-content row"> <p class="title col-6">VF 8 Eco</p> <p class="subtitle col-6">Miễn phí sạc 2 năm tại các trụ VinFast</p> </div> <div class="mobile-content row"> <p class="title col-6">VF 8 Plus</p> <p class="subtitle col-6">Miễn phí sạc 2 năm tại các trụ VinFast</p> </div> </div> Trợ lý ảo <div class="mobile-content row"> <p class="title col-6">VF 8S</p> <p class="subtitle col-6">Trợ lý ảo VinFast tiêu chuẩn</p> </div> VF 8 Eco Trợ lý ảo VinFast tiêu chuẩn VF 8 Plus Trợ lý ảo VinFast trí tuệ nhân tạo
 
-đặt cọc ngay THÔNG SỐ CHI TIẾT
+VF 8 Eco và VF 8 Plus là sự lựa chọn lý tưởng cho những người đam mê công nghệ, với trợ lý ảo tích hợp công nghệ AI tạo sinh, mang đến trải nghiệm tương tác và điều khiển xe thân thiện, gần gũi và thực sự hữu dụng.
+
+![VinFast Technology](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwb8a40fc6/reserves/VF8/ai.webp)
+
+![VinFast Technology](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwbf365fec/reserves/VF8/sota.webp)
+
+![VinFast Technology](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw92d79e25/reserves/VF8/vapp.webp)
+
+Trợ lý ảo ViVi 2.0Cập nhật từ xaỨng dụng VinFast
+
+Trợ lý ảo ViVi 2.0 phiên bản mới nhất, ứng dụng công nghệ AI tạo sinh, mang đến khả năng tương tác, điểu khiển xe bằng giọng nói tiếng Việt hoàn toàn tự nhiên. Đồng thời, Trợ lý ảo ViVi 2.0 sẽ là một người bạn đồng hành thông minh và thấu hiểu, giúp mở ra cơ hội khám phá trí thức vô tận trên mỗi hành trình của bạn.
+
+Bên cạnh nâng cấp tại xưởng, VinFast cũng sẽ cung cấp dịch vụ nâng cấp xe từ xa, giúp bạn cập nhật phần mềm và tính năng mới nhất cho xe của mình một cách thuận tiện và tiết kiệm thời gian nhất.
+
+Với ứng dụng VinFast, Khách hàng kiểm tra tình trạng của các trạm sạc, xem dữ liệu về xe, đặt lịch bảo dưỡng, trợ giúp. Quan trọng hơn, ứng dụng VinFast giúp điều khiển xe, bật điều hòa từ xa để bạn luôn thoải mái ngay từ khi bước lên xe.
+
+![VinFast Technology](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwb8a40fc6/reserves/VF8/ai.webp)
+
+### Trợ lý ảo ViVi 2.0
+
+Trợ lý ảo ViVi 2.0 phiên bản mới nhất, ứng dụng công nghệ AI tạo sinh, mang đến khả năng tương tác, điểu khiển xe bằng giọng nói tiếng Việt hoàn toàn tự nhiên. Đồng thời, Trợ lý ảo ViVi 2.0 sẽ là một người bạn đồng hành thông minh và thấu hiểu, giúp mở ra cơ hội khám phá trí thức vô tận trên mỗi hành trình của bạn.
+
+![VinFast Technology](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwbf365fec/reserves/VF8/sota.webp)
+
+### Cập nhật từ xa
+
+Bên cạnh nâng cấp tại xưởng, VinFast cũng sẽ cung cấp dịch vụ nâng cấp xe từ xa, giúp bạn cập nhật phần mềm và tính năng mới nhất cho xe của mình một cách thuận tiện và tiết kiệm thời gian nhất.
+
+![VinFast Technology](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw92d79e25/reserves/VF8/vapp.webp)
+
+### Ứng dụng VinFast
+
+Với ứng dụng VinFast, Khách hàng kiểm tra tình trạng của các trạm sạc, xem dữ liệu về xe, đặt lịch bảo dưỡng, trợ giúp. Quan trọng hơn, ứng dụng VinFast giúp điều khiển xe, bật điều hòa từ xa để bạn luôn thoải mái ngay từ khi bước lên xe.
+
+## Sẵn sàng cho    mọi hành trình
+
+Với quãng đường di chuyển mỗi lần sạc đầy lên tới 562 km, kết hợp với hệ thống trạm sạc phủ sóng trên 63 tỉnh thành và nhiều ưu đãi đặc quyền dành riêng độc đáo, VinFast VF 8 cam kết sẵn sàng cùng bạn chinh phục mọi hành trình, cùng bạn tận hưởng không khí trong lành và khung cảnh thiên nhiên tươi đẹp trên mọi nẻo đường tại Việt Nam.
+
+![VinFast Technology](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwbf5656f4/reserves/VF8/journey.webp)
+
+### 562 km
+
+pin cao cấp từ CATL
+
+### 5.58 giây
+
+0-100 Km/h
+
+### 402 hp
+
+tương đương động cơ đốt trong dung tích 3.2l​
+
+### 31 phút
+
+sạc nhanh từ 10-70%
+
+## An toàn của gia đình bạn là ưu tiên trên hết của VinFast
+
+Tất cả các xe VinFast tuân thủ các tiêu chuẩn an toàn nghiêm ngặt nhất và được trang bị những công nghệ hiện đại theo chuẩn quốc tế, mang lại sự yên tâm tuyệt đối cho gia đình bạn trên mọi chặng đường.
+
+![](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwaef6af8a/reserves/VF8/sos.webp)
+
+### Cứu hộ khẩn cấp
+
+Khi nguy cấp, bạn có thể dễ dàng nhấn nút SOS tích hợp sẵn để nhận được sự trợ giúp nhanh chóng.
+
+![](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwbbe0227c/reserves/VF8/11-boombag.webp)
+
+### Hệ thống 11 túi khí
+
+Sở hữu nhiều túi khí nhất trong phân khúc, bảo vệ bạn trong những trường hợp khẩn cấp.
+
+## Công nghệ nâng tầm trải nghiệm
+
+Hệ thống trợ lái nâng cao của VinFast được trang bị công nghệ và trang thiết bị hiện đại nhất, mang đến trải nghiệm lái xe thư thái và dễ dàng. Điều này giúp bạn tận hưởng cuộc sống và kết nối với gia đình cũng như thiên nhiên một cách trọn vẹn!
+
+Cảnh báo điểm mù
+
+Cảnh báo va chạm toàn diện
+
+Tự động cảnh báo và can thiệp khi có nguy cơ va chạm phía trước, khi có phương tiện cắt ngang phía sau, các điểm mù khi xe đang di chuyển.
+
+Trợ lái khi có nguy cơ va chạm
+
+VF 8 tự động phanh khẩn cấp khi có nguy cơ va chạm xảy ra.
+
+![](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw2370f045/reserves/VF8/giamsatht.webp)
+
+![](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw25e665ad/reserves/VF8/canhbaovc.webp)
+
+![](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwe66f6107/reserves/VF8/trolai.webp)
+
+## Tổng quan sự khác biệt
+
+Eco
+
+Plus
+
+- - Màu sắc
+  - 4 màu tiêu chuẩn và 4 màu nâng cao
+  - 4 màu tiêu chuẩn và 4 màu nâng cao
+
+  - Công suất
+  - 201 hp
+  - 402 hp
+
+  - Quãng đường di chuyển
+  - 562 km (theo NEDC)
+  - 457km (theo WLTP)
+
+  - Trợ lý ảo
+  - Trợ lý ảo ViVi
+  - Trợ lý ảo ViVi
+
+Màu sắc
+
+VF 8 Eco
+
+4 màu tiêu chuẩn và 4 màu nâng cao
+
+VF 8 Plus
+
+4 màu tiêu chuẩn và 4 màu nâng cao
+
+Công suất
+
+VF 8 Eco
+
+201 hp
+
+VF 8 Plus
+
+402 hp
+
+Quãng đường di chuyển
+
+VF 8 Eco
+
+562 km
+
+VF 8 Plus
+
+457 km
+
+Trợ lý ảo
+
+VF 8 Eco
+
+Trợ lý ảo VinFast tiêu chuẩn
+
+VF 8 Plus
+
+Trợ lý ảo VinFast trí tuệ nhân tạo
+
+[đặt cọc ngay](https://shop.vinfastauto.com/vn_vi/dat-coc-o-to-dien-vinfast.html?modelId=Products-Car-VF8) [THÔNG SỐ CHI TIẾT](https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf)
+
 ### So sánh giữa xe VinFast VF 8 và xe động cơ đốt trong
+
 Vui lòng nhập thông tin xe động cơ đốt trong cần so sánh:
+
 Loại nhiên liệu sử dụng
-Xăng Dầu
-Mức tiêu thụ nhiên liệu/100km *
+
+XăngDầu
+
+Mức tiêu thụ nhiên liệu/100km
+\*
+
 lít
+
 Vui lòng nhập quãng đường di chuyển mỗi tháng:
-Quãng đường di chuyển/tháng *
+
+Quãng đường di chuyển/tháng
+\*
+
 km
-(*) Nhập số (phân cách bằng dấu phẩy “,”). Ví dụ: 6,5 lít.
-VF 8 Lợi thế chi phí nhiên liệu
-VF 8
-Chi phí nhiên liệu/tháng của VF 8
-0 VNĐ
+
+(\*) Nhập số (phân cách bằng dấu phẩy “,”). Ví dụ: 6,5 lít.
+
+SO SÁNH
+
+![VF 8](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwf93a0ea5/reserves/VF8/naturel.webp) Lợi thế chi phí nhiên liệu
+
+![VF 8](https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw8bd6afde/reserves/VF8/car-compare.webp)
+
+Chi phí nhiên liệu/tháng
+
+
+của VF 8
+
+
+0VNĐ
+
 (Theo chương trình miễn phí sạc từ V-Green, áp dụng kèm điều kiện và điều khoản. Vui lòng liên hệ đại lý để biết thông tin chi tiết)
-(*) Chưa có dữ liệu so sánh. Vui lòng nhập thông tin!
+
+(\*) Chưa có dữ liệu so sánh. Vui lòng nhập thông tin!
+
 Chi phí nhiên liệu tiết kiệm/tháng
-0 VNĐ
+
+
+0VNĐ
+
 Chi phí nhiên liệu tiết kiệm/năm
-0 VNĐ
-Chi phí nhiên liệu tiết kiệm tới 10/02/2029 (Thời điểm kết thúc Miễn phí sạc V-Green)
-0 VNĐ
-(*) Lưu ý: Các thông số, đơn giá và giả định sử dụng để tính chi phí nhiên liệu có thể thay đổi. Công cụ trên dựa vào một số thông tin cập nhật sau:
+
+
+0VNĐ
+
+Chi phí nhiên liệu tiết kiệm tới 10/02/2029
+
+
+(Thời điểm kết thúc Miễn phí sạc V-Green)
+
+
+0VNĐ
+
+(\*) Lưu ý: Các thông số, đơn giá và giả định sử dụng để tính chi phí nhiên liệu có thể thay đổi. Công cụ trên dựa vào một số thông tin cập nhật sau:
+
 - Giá xăng E10 RON 95-III cập nhật gần nhất ngày 11/06/2026: 22.060 VNĐ/lít
 - Giá dầu Diesel 0,001S-V cập nhật gần nhất ngày 11/06/2026: 27.130 VNĐ/lít
 
@@ -175,39 +446,34 @@ Chi phí nhiên liệu tiết kiệm tới 10/02/2029 (Thời điểm kết thú
 - Một số ưu đãi đặc quyền chỉ áp dụng cho khách hàng sở hữu VF 8 Eco và VF 8 Plus. Các điều khoản và điều kiện nhận ưu đãi có thể thay đổi mà không cần thông báo trước, tùy theo thời điểm và địa điểm. Để biết thêm chi tiết và cập nhật mới nhất, vui lòng liên hệ hotline 1900 23 23 89 hoặc đến Showroom, Đại lý, hoặc Nhà phân phối chính hãng của VinFast.
 
 Đăng ký tư vấn
+
+
+
 Vui lòng để lại thông tin, VinFast sẽ cập nhật cho Quý khách thông tin sản phẩm và ưu đãi mới nhất.
-### Nhận báo giá & ưu đãi mới nhất
-Đăng ký ngay, VinFast sẽ liên hệ tư vấn trong thời gian sớm nhất
-icon-popup-success
-### Đăng ký thành công!
+
+
+Họ và tên
+
+Nhập số điện thoại
+
+Email
+
+Quý khách cần hỗ trợ thêm thông tin gì?
+0/300
+
+Tôi đồng ý cho phép Công ty TNHH Kinh doanh Thương mại và Dịch vụ VinFast xử lý dữ liệu cá nhân của tôi và các thông tin khác do tôi cung cấp cho mục đích và theo phương thức được mô tả chi tiết tại [Chính sách Bảo vệ Dữ liệu cá nhân](https://vinfastauto.com/vn_vi/privacy-policy).
+
+
+Đăng ký
+
+Đăng ký thành công!
+
 Cảm ơn Quý Khách đã quan tâm và để lại thông tin. Chuyên viên tư vấn sẽ liên hệ Quý Khách trong thời gian sớm nhất.
-Trong thời gian chờ đợi, kính mời Quý khách tham khảo:
-Dự toán chi phí lăn bánh
-dwMarker="content" dwID="vf-footer-menu-bottom" dwContentID="e5dfff24226006bf8fedf74609"
-End content-asset
+
 Về đầu trang
-Modal Login Register
-Vinfast - Logo
-Đăng nhập
-Để thuận tiện theo dõi đơn hàng và dễ dàng thanh toán online. Quý khách vui lòng đăng nhập/ đăng ký trước khi mua hàng.
-Đăng ký tài khoản
-Đăng nhập
-Đăng ký tài khoản
-Vinfast - Logo
-#### Kiểm tra email để kích hoạt tài khoản
-VinFast đã gửi cho Quý khách email kích hoạt tài khoản. Quý khách vui lòng kiểm tra email và thực hiện theo hướng dẫn.
-###### Hotline 1900 23 23 89
-Vinfast - Logo
-#### Quý khách vui lòng đổi mật khẩu để đảm bảo an toàn thông tin.
-Đổi mật khẩu
-Vinfast - Logo
-#### Đổi mật khẩu thành công
-Quý khách đã thay đổi thành công mật khẩu của tài khoản VinFast.
-###### Hotline 1900 23 23 89
-Vinfast - Logo
-#### Kiểm tra email
-VinFast đã gửi cho Quý khách email xác nhận đặt lại mật khẩu. Quý khách vui lòng kiểm tra trong phần Hộp thư đến (hoặc phần Spam nếu không tìm thấy) và thực hiện theo hướng dẫn.
-###### Hotline 1900 23 23 89
-Vinfast - Logo
-###### Quên mật khẩu?
-Google Tag Manager End Google Tag Manager Google Tag Manager (noscript) End Google Tag Manager (noscript)
+
+reCAPTCHA
+
+Hình xác thực lại yêu cầu xác minh.
+
+được bảo vệ bằng **reCAPTCHA**

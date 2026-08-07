@@ -12,12 +12,31 @@ VF 5|||powertrain|battery_kwh|37.23|kWh|https://shop.vinfastauto.com/vn_vi/dat-c
 VF 5|||powertrain|consumption|13 kWh/100 km||https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf5.html
 VF 5|||interior|seats|5||https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf5.html
 VF 5|||safety|airbags|6||https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf5.html
+VF 6|||powertrain|battery_kwh|59.6|kWh|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf6.html
+VF 6|Eco||powertrain|range_km|485|km|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf6.html
+VF 6|Plus||powertrain|range_km|460|km|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf6.html
+VF 6|Eco||powertrain|power_kw|130|kW|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf6.html
+VF 6|Plus||powertrain|power_kw|150|kW|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf6.html
+VF 6|Eco||powertrain|torque_nm|250|Nm|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf6.html
+VF 6|Plus||powertrain|torque_nm|310|Nm|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf6.html
+VF 6|||dimension|length_mm|4241|mm|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf6.html
+VF 6|||dimension|width_mm|1834|mm|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf6.html
+VF 6|||dimension|height_mm|1580|mm|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf6.html
+VF 6|||dimension|wheelbase_mm|2730|mm|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf6.html
+VF 6|Eco||exterior|wheel_size_inch|17|inch|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf6.html
+VF 6|Plus||exterior|wheel_size_inch|18|inch|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf6.html
 VF 7|||dimension|length_mm|4545|mm|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf7.html
 VF 7|||dimension|width_mm|1890|mm|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf7.html
 VF 7|||dimension|height_mm|1635.75|mm|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf7.html
-VF 7|||powertrain|power_kw|130|kW|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf7.html
-VF 7|||powertrain|torque_nm|250|Nm|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf7.html
-VF 7|||powertrain|battery_kwh|59.6|kWh|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf7.html
+VF 7|Eco||powertrain|power_kw|130|kW|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf7.html
+VF 7|Plus||powertrain|power_kw|150|kW|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf7.html
+VF 7|Eco||powertrain|torque_nm|250|Nm|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf7.html
+VF 7|Plus||powertrain|torque_nm|310|Nm|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf7.html
+VF 7|Eco||powertrain|battery_kwh|59.6|kWh|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf7.html
+VF 7|Plus||powertrain|battery_kwh|70|kWh|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf7.html
+VF 7|||dimension|wheelbase_mm|2840|mm|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf7.html
+VF 7|Eco||powertrain|range_km|440|km|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf7.html
+VF 7|Plus||powertrain|range_km|500.5|km|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf7.html
 VF MPV 7|||dimension|length_mm|4740|mm|https://vinfastauto.com/vn_vi/dat-coc-xe-vf-mpv7
 VF MPV 7|||dimension|width_mm|1872|mm|https://vinfastauto.com/vn_vi/dat-coc-xe-vf-mpv7
 VF MPV 7|||dimension|height_mm|1734|mm|https://vinfastauto.com/vn_vi/dat-coc-xe-vf-mpv7
@@ -40,23 +59,25 @@ VF MPV 7|||interior|display_inch|10.1|inch|https://vinfastauto.com/vn_vi/dat-coc
 VF MPV 7|||interior|speakers|4||https://vinfastauto.com/vn_vi/dat-coc-xe-vf-mpv7
 VF MPV 7|||interior|driver_seat|Chỉnh cơ 6 hướng||https://vinfastauto.com/vn_vi/dat-coc-xe-vf-mpv7
 VF MPV 7|||powertrain|engine|điện||https://vinfastauto.com/vn_vi/dat-coc-xe-vf-mpv7
+VF 2|||powertrain|drivetrain|34 phút (10% - 70%)||https://vinfastauto.com/vn_vi/dat-coc-xe-vf2
 VF 2|||powertrain|engine|01 Motor||https://vinfastauto.com/vn_vi/dat-coc-xe-vf2
 VF 2|||powertrain|power_kw|30|kW|https://vinfastauto.com/vn_vi/dat-coc-xe-vf2
 VF 2|||powertrain|torque_nm|65|Nm|https://vinfastauto.com/vn_vi/dat-coc-xe-vf2
 VF 2|||powertrain|range_km|210|km|https://vinfastauto.com/vn_vi/dat-coc-xe-vf2
 VF 2|||powertrain|fast_charge_min|34|phút|https://vinfastauto.com/vn_vi/dat-coc-xe-vf2
-VF 2|||powertrain|drivetrain|RWD/Cầu sau||https://vinfastauto.com/vn_vi/dat-coc-xe-vf2
-VF 8|||powertrain|power_kw|330|kW|https://vinfastauto.com/vn_vi/dat-coc-xe-vf8-the-all-new-2026
-VF 8|||powertrain|torque_nm|480|Nm|https://vinfastauto.com/vn_vi/dat-coc-xe-vf8-the-all-new-2026
-VF 8|||powertrain|battery_kwh|8|kWh|https://vinfastauto.com/vn_vi/dat-coc-xe-vf8-the-all-new-2026
-VF 8|||dimension|length_mm|4701|mm|https://vinfastauto.com/vn_vi/dat-coc-xe-vf8-the-all-new-2026
-VF 8|||dimension|width_mm|1872|mm|https://vinfastauto.com/vn_vi/dat-coc-xe-vf8-the-all-new-2026
-VF 8|||dimension|height_mm|1670|mm|https://vinfastauto.com/vn_vi/dat-coc-xe-vf8-the-all-new-2026
-VF 8|||interior|seats|5||https://vinfastauto.com/vn_vi/dat-coc-xe-vf8-the-all-new-2026
-VF 8|||powertrain|fast_charge_min|30|phút|https://vinfastauto.com/vn_vi/dat-coc-xe-vf8-the-all-new-2026
-VF 8|||exterior|wheel_size_inch|19|inch|https://vinfastauto.com/vn_vi/dat-coc-xe-vf8-the-all-new-2026
-VF 8|||interior|display_inch|12.9|inch|https://vinfastauto.com/vn_vi/dat-coc-xe-vf8-the-all-new-2026
-VF 8|||interior|second_row|điều chỉnh hướng||https://vinfastauto.com/vn_vi/dat-coc-xe-vf8-the-all-new-2026
-VF 8|||powertrain|engine|điện||https://vinfastauto.com/vn_vi/dat-coc-xe-vf8-the-all-new-2026
-VF 8|||exterior|mirrors|hiện đại VinFast Technology Tự động lưu vị trí theo thói quen của chủ xe, tích hợp đèn báo rẽ và cảnh báo điểm mù tăng tăng cường sự an toàn cho Khách hàng.||https://shop.vinfastauto.com/vn_vi/dat-coc-xe-vf8.html
+VF 8 All New|||powertrain|power_kw|170|kW|https://vinfastauto.com/vn_vi/dat-coc-xe-vf8-the-all-new-2026
+VF 8 All New|||powertrain|torque_nm|330|Nm|https://vinfastauto.com/vn_vi/dat-coc-xe-vf8-the-all-new-2026
+VF 8 All New|||powertrain|battery_kwh|60|kWh|https://vinfastauto.com/vn_vi/dat-coc-xe-vf8-the-all-new-2026
+VF 8 All New|||dimension|length_mm|4701|mm|https://vinfastauto.com/vn_vi/dat-coc-xe-vf8-the-all-new-2026
+VF 8 All New|||dimension|width_mm|1872|mm|https://vinfastauto.com/vn_vi/dat-coc-xe-vf8-the-all-new-2026
+VF 8 All New|||dimension|height_mm|1670|mm|https://vinfastauto.com/vn_vi/dat-coc-xe-vf8-the-all-new-2026
+VF 8 All New|||interior|seats|5||https://vinfastauto.com/vn_vi/dat-coc-xe-vf8-the-all-new-2026
+VF 8 All New|||powertrain|fast_charge_min|30|phút|https://vinfastauto.com/vn_vi/dat-coc-xe-vf8-the-all-new-2026
+VF 8 All New|||exterior|wheel_size_inch|19|inch|https://vinfastauto.com/vn_vi/dat-coc-xe-vf8-the-all-new-2026
+VF 8 All New|||interior|display_inch|12.9|inch|https://vinfastauto.com/vn_vi/dat-coc-xe-vf8-the-all-new-2026
+VF 8 All New|||interior|second_row|điều chỉnh hướng||https://vinfastauto.com/vn_vi/dat-coc-xe-vf8-the-all-new-2026
+VF 8|Eco||powertrain|power_kw|201|kW|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-vf8.html
+VF 8|Plus||powertrain|power_kw|402|kW|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-vf8.html
+VF 8|Eco||powertrain|range_km|562|km|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-vf8.html
+VF 8|Plus||powertrain|range_km|457|km|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-vf8.html
 VF 9|||powertrain|range_km|626|km|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-vf9.html
