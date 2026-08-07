@@ -1,0 +1,131 @@
+# Nguồn: https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf6.html
+# Crawl lúc: 2026-07-30T21:31:17
+# Loại: html
+# Selector: (toàn trang / N/A với PDF)
+
+================================================================================
+
+VF 6
+- Giá bán
+- Thiết kế
+- Thông số
+- Hình ảnh
+
+<div class="swiper-slide exteriorSwiper"> <picture> <source srcset="https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1785410140811/reserves/VF6/2026/VF6-banner-1.webp" media="(min-width: 768px)" type="image/svg+xml"> <source srcset="https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1785410140811/reserves/VF6/2026/VF6-banner-1-mb.webp" type="image/svg+xml"> <img src="https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1785410140811/reserves/VF6/2026/VF6-banner-1.webp" alt="banner-VF6"> </picture> <!-- <img src="https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1785410140811/reserves/VF6/2026/VF6-banner-1.webp" alt="exterior-VF6" />
+-->
+banner-VF6
+<img src="https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwd77c2afa/reserves/VF6/2026/VF6-banner.webp" alt="exterior-VF6" />
+<div class="swiper-button-next"> <svg width="16" height="15" viewBox="0 0 16 15" fill="none" xmlns="http://www.w3.org/2000/svg"> <path d="M1 7.5H15" stroke="#3C3C3C" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" /> <path d="M9 13.5L15 7.5L9 1.5" stroke="#3C3C3C" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" /> </svg> </div> <div class="swiper-button-prev"> <svg width="16" height="15" viewBox="0 0 16 15" fill="none" xmlns="http://www.w3.org/2000/svg"> <path d="M15 7.5H1" stroke="#3C3C3C" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" /> <path d="M7 13.5L1 7.5L7 1.5" stroke="#3C3C3C" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" /> </svg> </div>
+59,6 kW Dung lượng pin
+485 km/lần sạc Quãng đường (NEDC)* VF 6 Eco
+150 kW/201 hp Công suất tối đa VF 6 Plus
+310 Nm Mô men xoắn cực đại VF 6 Plus
+isAvailableReservation !==R eservationStatus.LEAD}">
+isAvailableReservation==R eservationStatus.LEAD}"><div class="banner-content-form email-form"><span class="form-subtitle">Đăng ký nhận thông tin chính thức mở bán <span class="non-wrap">VF 6.</span></span><form class="form-subscribe" data-url="https://shop.vinfastauto.com/on/demandware.store/Sites-app_vinfast_vn-Site/vi_VN/Lead-ReservesLeadVF6"><div class="form-group d-flex flex-column"><div class="form-label-group"><input name="lastName" type="text" class="custom-required" required maxlength="80" placeholder="Họ và tên" pattern="^[^!@$#%^&*<>()\-=.\\/]+\1*$" data-invalid="Trường không được chứa ký tự đặc biệt" value=""/><label class="label required">Họ và tên</label><div class="invalid-feedback"></div></div><div class="form-label-group"><input placeholder="Email" id="email" name="email" size="20" type="text" class="custom-required ignore-regex" value="" data-invalid="Sai định dạng email, vui lòng kiểm tra lại." pattern="^[\w.%+-]+@[\w.-]+\.[\w]{2,}$"/><label class="label required">Nhập Email</label><div class="invalid-feedback"></div><div class="check-email"></div></div><div class="form-label-group"><input placeholder="Số điện thoại" id="phone" maxlength="12" name="phone" size="20" type="text" class="custom-required" value="" data-invalid="Vui lòng nhập 10 chữ số." pattern="^(0|\+[0-9]{2})\d{9}$"/><label class="label required">Nhập số điện thoại</label><div class="invalid-feedback"></div></div><div class="form-message"></div><div id="registration-subscribe" class="registration-btn"><button class="btn" type="button" disabled="disabled"><span>Đăng ký</span></button></div></div></form></div>
+bottom-banner-VF6
+### VF 6 Eco
+### VF 6 Plus
+Giá bán từ
+613.700.000 VNĐ*
+646.000.000 VNĐ*
+Giá bán từ
+664.050.000 VNĐ*
+699.000.000 VNĐ
+isAvailableReservation !==R eservationStatus.ENDING <p class="policy-content mb-4">Tặng quà cho khách hàng mua xe*:</p><div class="policy-content"><ul class="policy-list pl-4"><li class="policy-item"><span> Hỗ trợ chi phí đăng ký biển số xe tương đương 20.000.000 VNĐ/xe </span></li><li class="policy-item"> Miễn phí 01 năm sạc pin tại các trạm sạc của VinFast </li></ul><p class="disclaimer-text">*Áp dụng Khách hàng đặt cọc từ ngày 20 - 30/10/2023</p></div> Đặt cọc
+(*) Mức giá ưu đãi mang tính chất tham khảo. Chương trình áp dụng theo điều khoản & điều kiện.
+Cùng VF 6 ghi dấu từng khoảnh khắc, khởi đầu mọi hành trình.
+image-style
+## Triết lý thiết kế “Cặp đối lập tự nhiên”
+VF 6 là tuyệt tác nghệ thuật được thiết kế dựa trên triết lý “Cặp đối lập tự nhiên”, tạo nên sự cân bằng hoàn hảo giữa các yếu tố tưởng chừng như đối lập: thú vị - tinh tế, công nghệ - con người.
+exterior-VF6
+exterior-VF6
+exterior-VF6
+### Ngoại thất
+Thiết kế ngoại thất được khởi tạo từ những đường nét tinh tế đến từng chi tiết cùng vẻ ngoài năng động, ấn tượng ngay từ ánh nhìn đầu tiên.
+interior-VF6
+interior-VF6
+### Nội thất
+Thiết kế nội thất lấy cảm hứng từ ngôi nhà thứ hai của gia đình với không gian rộng rãi, thoải mái cùng hai màu nội thất và chất liệu tự nhiên, thân thiện với người dùng.
+technology-VF6
+technology-VF6
+### Công nghệ
+VF 6 mang đến cho người dùng cả “thế giới công nghệ” với trợ lý ảo VinFast cùng nhiều tính năng an toàn, giải trí và tiện ích đẳng cấp.
+logo-car-VF6
+Khả năng vận hành vượt trội
+Với sức mạnh của động cơ điện tương đương với những mẫu xe thuộc phân khúc C-SUV, VF 6chắc chắn sẽ thỏa mãn niềm đam mê cầm lái của chủ sở hữu, tự tin chinh phục mọi địa hình.
+VF 6 Eco
+VF 6 Plus
+Nhận tư vấn xem chi tiết
+### So sánh giữa xe VinFast VF 6 và xe động cơ đốt trong
+Vui lòng nhập thông tin xe động cơ đốt trong cần so sánh:
+Loại nhiên liệu sử dụng
+Xăng Dầu
+Mức tiêu thụ nhiên liệu/100km *
+lít
+Vui lòng nhập quãng đường di chuyển mỗi tháng:
+Quãng đường di chuyển/tháng *
+km
+(*) Nhập số (phân cách bằng dấu phẩy “,”). Ví dụ: 6,5 lít.
+VF 6 Lợi thế chi phí nhiên liệu của VF 6
+VF 6
+Chi phí nhiên liệu/tháng của VF 6
+0 VNĐ
+(Theo chương trình miễn phí sạc từ V-Green, áp dụng kèm điều kiện và điều khoản. Vui lòng liên hệ đại lý để biết thông tin chi tiết)
+(*) Chưa có dữ liệu so sánh. Vui lòng nhập thông tin!
+Chi phí nhiên liệu tiết kiệm/tháng
+0 VNĐ
+Chi phí nhiên liệu tiết kiệm/năm
+0 VNĐ
+Chi phí nhiên liệu tiết kiệm tới 10/02/2029 (Thời điểm kết thúc Miễn phí sạc V-Green)
+0 VNĐ
+(*) Lưu ý: Các thông số, đơn giá và giả định sử dụng để tính chi phí nhiên liệu có thể thay đổi. Công cụ trên dựa vào một số thông tin cập nhật sau:
+- Giá xăng E10 RON 95-III cập nhật gần nhất ngày 11/06/2026: 22.060 VNĐ/lít
+- Giá dầu Diesel 0,001S-V cập nhật gần nhất ngày 11/06/2026: 27.130 VNĐ/lít
+
+VF6 Life Style
+VF6 Life Style
+VF6 Life Style
+VF6 Life Style
+<div class="swiper-slide"> <img src="https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw645188ef/reserves/VF6/VF6-Lifestyle-01.jpg" alt="VF6 Life Style"> </div> <div class="swiper-slide"> <img src="https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw728cff84/reserves/VF6/VF6-Lifestyle-02.jpg" alt="VF6 Life Style"> </div> <div class="swiper-slide"> <img src="https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwa7b70283/reserves/VF6/VF6-Lifestyle-03.jpg" alt="VF6 Life Style"> </div> <div class="swiper-slide"> <img src="https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwc530fef9/reserves/VF6/VF6-Lifestyle-04.jpg" alt="VF6 Life Style"> </div> <div class="swiper-slide"> <img src="https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw1135ee4f/reserves/VF6/VF6-Lifestyle-05.jpg" alt="VF6 Life Style"> </div> <div class="swiper-slide"> <img src="https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwe7e90ba1/reserves/VF6/VF6-Lifestyle-06.jpg" alt="VF6 Life Style"> </div>
+(*)Lưu ý:
+- Một số tính năng sẽ chưa có sẵn hoặc chưa được kích hoạt tại thời điểm giao xe cho Khách hàng. Những tính năng này sẽ được cập nhật sau thông qua phương thức cập nhật phần mềm từ xa qua kết nối không dây hoặc cập nhật tại xưởng dịch vụ VinFast. Các thông tin sản phẩm có thể thay đổi mà không cần báo trước.
+- Quãng đường di chuyển được tính toán dựa trên kết quả kiểm định theo quy chuẩn toàn cầu (NEDC hoặc WLTP). Quãng đường di chuyển thực tế có thể giảm so với kết quả kiểm định, phụ thuộc vào tốc độ lái xe, nhiệt độ, địa hình, thói quen sử dụng của người lái, chế độ lái được cài đặt, số lượng hành khách, và các điều kiện giao thông khác.
+
+### Nhận báo giá & ưu đãi mới nhất
+Đăng ký ngay, VinFast sẽ liên hệ tư vấn trong thời gian sớm nhất
+icon-popup-success
+### Đăng ký thành công!
+Cảm ơn Quý Khách đã quan tâm và để lại thông tin. Chuyên viên tư vấn sẽ liên hệ Quý Khách trong thời gian sớm nhất.
+Trong thời gian chờ đợi, kính mời Quý khách tham khảo:
+Dự toán chi phí lăn bánh
+icon-popup-success
+### Đăng ký thành công!
+Những thông tin nóng hổi nhất về chiếc xe VF 6 Plus sẽ được gửi tới hòm email của Quý khách. Hãy đón chờ!
+dwMarker="content" dwID="vf-footer-menu-bottom" dwContentID="e5dfff24226006bf8fedf74609"
+End content-asset
+Về đầu trang
+Modal Login Register
+Vinfast - Logo
+Đăng nhập
+Để thuận tiện theo dõi đơn hàng và dễ dàng thanh toán online. Quý khách vui lòng đăng nhập/ đăng ký trước khi mua hàng.
+Đăng ký tài khoản
+Đăng nhập
+Đăng ký tài khoản
+Vinfast - Logo
+#### Kiểm tra email để kích hoạt tài khoản
+VinFast đã gửi cho Quý khách email kích hoạt tài khoản. Quý khách vui lòng kiểm tra email và thực hiện theo hướng dẫn.
+###### Hotline 1900 23 23 89
+Vinfast - Logo
+#### Quý khách vui lòng đổi mật khẩu để đảm bảo an toàn thông tin.
+Đổi mật khẩu
+Vinfast - Logo
+#### Đổi mật khẩu thành công
+Quý khách đã thay đổi thành công mật khẩu của tài khoản VinFast.
+###### Hotline 1900 23 23 89
+Vinfast - Logo
+#### Kiểm tra email
+VinFast đã gửi cho Quý khách email xác nhận đặt lại mật khẩu. Quý khách vui lòng kiểm tra trong phần Hộp thư đến (hoặc phần Spam nếu không tìm thấy) và thực hiện theo hướng dẫn.
+###### Hotline 1900 23 23 89
+Vinfast - Logo
+###### Quên mật khẩu?
+Google Tag Manager End Google Tag Manager Google Tag Manager (noscript) End Google Tag Manager (noscript)

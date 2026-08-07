@@ -1,0 +1,396 @@
+# Nguồn: https://vnexpress.net/oto-xe-may/v-car/dong-xe/vinfast-vf-7-253
+# Crawl lúc: 2026-07-30T22:53:18
+# Loại: html
+# Selector: (toàn trang / N/A với PDF)
+
+================================================================================
+
+V-car
+Lọc
+- Hãng xe
+- Phân khúc xe
+- Loại xe
+- Top doanh số
+  - Nửa đầu năm 2026
+  - Quý 2/2026
+  - Tháng 6/2026
+  - Tháng 5/2026
+  - Tháng 4/2026
+  - Quý 1/2026
+  - Tháng 3/2026
+  - Tháng 2/2026
+  - Tháng 1/2026
+  - Cả năm 2025
+  - Tháng 12/2025
+  - Tháng 11/2025
+  - Tháng 10/2025
+  - Quý 3/2025
+  - Tháng 9/2025
+  - Tháng 8/2025
+- Mới ra mắt
+
+- Trang chủ
+- VinFast
+- VinFast VF 7 2026
+
+# VinFast VF 7 2026 Đời xe: 2023 | Thế hệ mới
++ So sánh
+Khoảng giá: 799 triệu - 969 triệu
++ So sánh
+Tổng quan Chi tiết Thông số kỹ thuật
+[if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] Xe cỡ vừa hạng C
+Nguồn: VnExpress/Thành Nhạn
+[if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] [if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] [if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] [if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] [if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] [if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] [if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] [if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] [if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] [if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] [if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] [if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] [if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] [if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] [if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] [if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] [if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] [if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] [if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] [if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] [if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] [if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif]
+## Giá niêm yết
+Phiên bản
+Eco - 799 triệu
+Plus (trần thép) - 949 triệu
+Plus (trần kính) - 969 triệu
+Nơi đăng ký
+Khu vực I (HN, TP HCM)
+Khu vực II (Còn lại)
+Giá lăn bánh tại Khu vực I (HN, TP HCM) : 815.337.000
+Xem chi tiết thuế/ phí
+Mẫu crossover cỡ C của VinFast bán ra hai phiên bản, giá lần lượt 850 triệu và 999 triệu đồng, nhận cọc từ 2/12, giao xe trước Tết Nguyên đán.
+Bang gia lan banh
+## Bảng giá VinFast VF 7 2026
+Tại Việt Nam, VinFast VF 7 2026 được phân phân phối chính hãng 3 phiên bản. Giá lăn bánh tham khảo như sau:
+| Tên phiên bản | Giá niêm yết | Lăn bánh KV I (HN, TP.HCM) | Lăn bánh KV II (Còn lại) |
+| --- | --- | --- | --- |
+| Eco | 799 triệu VNĐ | 815.337.000 VNĐ | 801.477.000 VNĐ |
+| Plus (trần thép) | 949 triệu VNĐ | 965.337.000 VNĐ | 951.477.000 VNĐ |
+| Plus (trần kính) | 969 triệu VNĐ | 985.337.000 VNĐ | 971.477.000 VNĐ |
+
+## Mô tả / đánh giá chi tiết
+html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd"
+Sáng 21/11, VinFast ra mắt VF 7, mẫu xe gầm cao cỡ C lắp ráp trong nước, bán ra hai phiên bản: Eco và Plus. Đây là mẫu xe thuần điện duy nhất trong phân khúc và sản phẩm thương mại thứ tư được hãng Việt giới thiệu trong 2023, sau VF 5, VF 6 và VF 9.
+Tạo hình VinFast VF 7 được chắp bút bởi xưởng thiết kế Torino Design (Italy). VF 7 giống như bản thu nhỏ của VF 9 khi kết hợp các đường cong uyển chuyển ở phần đầu và dứt khoát ở đuôi xe. Ở trước và sau, dải định vị LED chữ V mô phỏng hình cánh chim đặt trưng của hãng Việt tạo điểm nhấn cho mẫu xe này.
+VinFast gọi ngôn ngữ thiết kế trên VF 7 là "vũ trụ phi đối xứng". Riêng phần mui xe vuốt xuôi về phía sau phong cách coupe, la-zăng hợp kim 20 inch ở cả hai phiên bản. So với VF 6 tổng thể mềm mại, VF 7 có phần nam tính, thể thao hơn.
+Về kích thước, VinFast VF 7 dài 4.545 mm, rộng 1.890 mm, cao 1.635 mm. Kích thước này của VF 7 ngắn và thấp hơn so với các đối thủ, trong khi chiều rộng nhỉnh hơn, cụ thể CR-V (4.623 x 1.855 x 1.679 mm), Tucson (4.630 x 1.865 x 1.695 mm), CX-5 (4.550 x 1.840 x 1.680 mm).
+Riêng về chiều dài cơ sở, VF 7 (2.840 mm) vượt trội hơn tất cả các đối thủ chạy xăng. Ví dụ CR-V là 2.660 mm, Tucson 2.755 mm hay CX-5 2.700 mm.
+Ở khoang lái, các chi tiết trên VF 7 được thiết kế hướng về người lái. Màn hình cảm ứng cỡ lớn 12,9 inch là nơi tập hợp tất cả thông tin giải trí lẫn điều hướng chức năng trên xe. VF 7 trang bị hệ thống hiển thị thông tin trên kính lái HUD, vô lăng D-cut phối hai màu. Giống như bản concept, VinFast cũng trang bị cần số dạng nút bấm ngay dưới màn hình giải trí.
+VinFast cho biết VF 7 có 6 lựa chọn màu ngoại thất, 2 màu nội thất. Riêng phiên bản Plus, nội thất được phối hai tông màu. Trần kính toàn cảnh Panorama là trang bị tùy chọn và chỉ có trên bản Plus.
+VF 7 Plus trang bị hai môtơ điện, cho tổng công suất 349 mã lực, mô-men xoắn 500 Nm, dẫn động 4 bánh toàn thời gian. Công suất của bản này đưa VF 7 trở thành mẫu xe mạnh nhất phân khúc. Pin cung cấp năng lượng cho môtơ điện trên bản này dung lượng 75,3 kWh, cho quãng đường di chuyển tối đa khoảng 431 km sau mỗi lần sạc đầy (tiêu chuẩn WLTP).
+Bản VF 7 Base trang bị một môtơ điện, công suất 174 mã lực, mô-men xoắn 250 Nm. Bộ pin đi kèm dung lượng 59,6 kWh, cho quãng đường di chuyển tối đa 375 km/lần sạc đầy, theo công bố của hãng.
+Ngoài các tính năng an toàn cơ bản như cân bằng điện tử, kiểm soát lực kéo, hỗ trợ khởi hành ngang dốc, kiểm soát chống lật, bản Plus có thêm gói hỗ trợ lại (ADAS). Những tính năng của gói ADAS như giám sát hành trình thích ứng, cảnh báo lệch làn, cảnh báo va chạm phía trước, cảnh báo phương tiện cắt ngang phía sau, cảnh báo điểm mù, cảnh báo mở cửa, phanh tự động khẩn cấp phía trước, hệ thống camera 360 độ...
+Ngoài ra, hai phiên bản đều có trợ lý ảo với khả năng tương tác bằng giọng nói tiếng Việt đa vùng miền.
+VinFast VF 7 bản Base có giá 850 triệu đồng (chưa bao gồm pin) và 999 triệu đồng (đã bao gồm pin). Bản Plus có giá 999 triệu đồng (chưa bao gồm pin) và 1,199 tỷ đồng (đã bao gồm pin). Giá bán của VF 7 ở khoảng giữa trong phân khúc CUV cỡ C.
+Mẫu xe giá thấp nhất phân khúc hiện tại là Mazda CX-5 (749-999 triệu đồng), trong khi giá cao nhất là Honda CR-V (1,109-1,31 tỷ đồng), không kể Volkswagen Tiguan (1,999 tỷ đồng) có doanh số thấp.
+VinFast áp dụng gói thuê pin 2,9 triệu đồng/tháng cho quãng đường di chuyển tối đa 3.000 km/tháng, và 4,8 triệu đồng/tháng nếu đi nhiều hơn 3.000 km. Mức cọc thuê pin là 41 triệu đồng, sẽ được hoàn lại khi người dùng dừng hợp đồng thuê, trả lại VinFast hoặc chuyển nhượng sang người khác.
+VF 7 nhận cọc từ 2/12 và dự kiến giao xe cho khách Việt trước Tết nguyên đán. Riêng những khách đặt cọc trước 31/12, hãng khuyến mại 30 triệu đồng trừ vào giá xe. VF 7 được hãng bảo hành 10 năm hoặc 200.000 km (tùy điều kiện nào đến trước), pin đi kèm xe bảo hành 10 năm, không giới hạn số km.
+## Tin tức ôtô hot hôm nay
+[if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] CSGT: Quan niệm xe to đền xe bé đã lỗi thời
+### CSGT: Quan niệm xe to đền xe bé đã lỗi thời
+### Hai xe bán tải bốc cháy sau thử nghiệm phá hủy
+[if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] Toyota Corolla phiên bản đắt nhất chỉ có hai chỗ
+### Toyota Corolla phiên bản đắt nhất chỉ có hai chỗ
+[if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] Audi Q9 ra mắt - SUV cỡ lớn đầu tiên của hãng Đức
+### Audi Q9 ra mắt - SUV cỡ lớn đầu tiên của hãng Đức
+Xem thêm Rút gọn
+## Thông số kỹ thuật cơ bản
+Kiểu động cơ
+Một môtơ điện | Hai môtơ điện
+Công suất môtơ điện (mã lực)
+174 | 349
+Mô-men xoắn môtơ điện (Nm)
+250 | 500
+Hộp số
+1 cấp
+Hệ dẫn động
+Cầu trước (FWD) | AWD (2 cầu toàn thời gian)
+Loại pin
+Lithium-ion
+Dung lượng pin
+59,6 | 75,3
+Tầm hoạt động (km)
+496 | 430
+Xem thông số chi tiết
+## Giá niêm yết
+Phiên bản
+Eco - 799 triệu
+- Eco - 799 triệu
+- Plus (trần thép) - 949 triệu
+- Plus (trần kính) - 969 triệu
+
+Nơi đăng ký
+Khu vực I (HN, TP HCM)
+- Khu vực I (HN, TP HCM)
+- Khu vực II (Còn lại)
+
+Giá lăn bánh tại Khu vực I (HN, TP HCM) : 815.337.000
+## Dự tính chi phí
+(vnđ)
+- Giá niêm yết: 799.000.000
+- Phí trước bạ (0%): 0
+- Phí sử dụng đường bộ (01 năm): 1.560.000
+- Bảo hiểm trách nhiệm dân sự (01 năm): 437.000
+- Phí đăng kí biển số: 14.000.000
+- Phí đăng kiểm: 340.000
+- Tổng cộng: 815.337.000
+
+Start Tính giá mua trả góp box
+## Tính giá mua trả góp
+Ước tính số tiền trả hàng tháng Ước tính số tiền có thể vay
+Ước tính số tiền trả hàng tháng
+VNĐ
+năm
+/năm
+Ước tính số tiền có thể vay
+VNĐ
+VNĐ
+năm
+/năm
+Tính giá Tính giá
+End Tính giá mua trả góp
+Xe khác của hãng
+## Xe cùng phân khúc
+[if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] Hyundai Elantra 2026
+### Hyundai Elantra 2026
+[if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] MG MG5 2026
+### MG MG5 2026
+[if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] Mazda Mazda3 2026
+### Mazda Mazda3 2026
+[if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] Kia K3 2026
+### Kia K3 2026
+[if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] BYD Seal 5 2026
+### BYD Seal 5 2026
+[if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] Honda Civic 2026
+### Honda Civic 2026
+Xem thêm
+Xe cùng phân khúc
+## Xe cùng hãng
+[if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] VinFast VF 2 2026
+### VinFast VF 2 2026
+[if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] VinFast Minio Green 2026
+### VinFast Minio Green 2026
+[if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] VinFast EC Van 2026
+### VinFast EC Van 2026
+[if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] VinFast VF 3 2026
+### VinFast VF 3 2026
+[if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] VinFast Herio Green 2026
+### VinFast Herio Green 2026
+[if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] VinFast VF 5 2026
+### VinFast VF 5 2026
+Xem thêm
+## Tin tức về xe VinFast VF 7 2026
+[if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] Doanh số CUV cỡ C nửa đầu 2026 - VF 7 vượt Territory
+### Doanh số CUV cỡ C nửa đầu 2026 - VF 7 vượt Territory
+Hai mẫu xe ăn khách nhất phân khúc gầm cao cỡ C 6 tháng qua lần lượt là Mazda CX-5 và VinFast VF 7.
+[if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] Hành trình 40 ngày, gần 8.000 km cùng VinFast VF 7
+### Hành trình 40 ngày, gần 8.000 km cùng VinFast VF 7
+Chị Hương Giang một mình cầm lái chiếc VinFast VF 7 đi qua 29 tỉnh, thành phố, cho biết việc sạc pin không phải vấn đề quá lớn với xe điện.
+[if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] Doanh số Mitsubishi Destinator lần đầu vượt Mazda CX-5
+### Doanh số Mitsubishi Destinator lần đầu vượt Mazda CX-5
+Tháng 3, phân khúc CUV cỡ C chứng kiến Destinator và VF 7 dẫn đầu doanh số phân khúc thay cho CX-5.
+[if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] Doanh số C-SUV tháng 3: VinFast VF 7 lần đầu bán chạy nhất
+### Doanh số C-SUV tháng 3: VinFast VF 7 lần đầu bán chạy nhất
+VinFast VF 7 vươn lên dẫn đầu phân khúc SUV cỡ C với doanh số 1.732 chiếc, theo sau là Mitsubishi Destinator và Mazda CX-5.
+[if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] Doanh số CUV cỡ C tháng 2 - Sportage thất thế, CX-5 thống trị
+### Doanh số CUV cỡ C tháng 2 - Sportage thất thế, CX-5 thống trị
+Hai mẫu xe Kia, Mazda cùng được lắp ráp, phân phối bởi Trường Hải có sức hút trái ngược nhau trong phân khúc.
+[if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] Kia Sportage đuối sức trong cuộc đua doanh số CUV cỡ C
+### Kia Sportage đuối sức trong cuộc đua doanh số CUV cỡ C
+Khi Outlander khai tử, Sportage bán chậm nhất phân khúc và chưa có dấu hiệu cải thiện đầu 2026.
+[if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] VinFast VF 7 là SUV điện của năm tại Ấn Độ
+### VinFast VF 7 là SUV điện của năm tại Ấn Độ
+BBC Topgear India vinh danh VinFast VF 7 nhờ mang lại giá trị tổng thể trong phân khúc, cân bằng giữa giá bán, thiết kế, trang bị và khả năng vận hành.
+[if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] VinFast VF 7 nhận giải 'Thiết kế của năm' tại Ấn Độ
+### VinFast VF 7 nhận giải 'Thiết kế của năm' tại Ấn Độ
+Hội đồng giám khảo đánh giá cao thiết kế mẫu SUV điện cao cấp của VinFast, vinh danh tại sự kiện Zee Media Auto Summit 2025, hôm 9/12.
+[if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] 1 tỷ nên mua Toyota Corolla Cross hay VinFast VF 7?
+### 1 tỷ nên mua Toyota Corolla Cross hay VinFast VF 7?
+Tầm tiền này tôi phân vân mua Toyota Corolla Cross 1.8 HEV hoặc VinFast VF 7 Plus, nhờ độc giả tư vấn thêm. (Hoài Thu)
+[if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] Crossover cỡ C tháng 10: CX-5 áp đảo, VF 7 tăng nhanh
+### Crossover cỡ C tháng 10: CX-5 áp đảo, VF 7 tăng nhanh
+Đến tháng 10, doanh số VF 7 thuộc nhóm ba mẫu xe bán chạy nhất, xếp trên những đối thủ có mặt lâu năm trên thị trường như Tucson, CR-V.
+[if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] Chủ xe điện VinFast VF 7 vượt hơn 50.000 km đến châu Phi
+### Chủ xe điện VinFast VF 7 vượt hơn 50.000 km đến châu Phi
+Khởi hành từ Hà Nội, anh Nguyễn Thanh Hải (Kar) thực hiện chuyến đi xuyên lục địa Á -Âu - Phi một mình trong gần 5 tháng, sử dụng mẫu ôtô thuần điện VinFast VF 7.
+[if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] Mazda CX-5 - thế lực khó xô đổ phân khúc CUV cỡ C
+### Mazda CX-5 - thế lực khó xô đổ phân khúc CUV cỡ C
+Doanh số sau ba quý đầu 2025 của CX-5 đạt 11.306 xe, bỏ xa mẫu xe xếp thứ hai là Territory hơn 3.100 xe.
+[if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] CX-5, Territory, CR-V đua giảm giá hàng chục triệu đồng
+### CX-5, Territory, CR-V đua giảm giá hàng chục triệu đồng
+Nhóm các mẫu xe bán chạy nhất phân khúc CUV hạng C giảm giá bằng tiền mặt, phụ kiện hoặc ưu đãi lệ phí trước bạ cuối tháng 9.
+[if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] VinFast VF 7 vào top 3 xe bán chạy phân khúc CUV cỡ C
+### VinFast VF 7 vào top 3 xe bán chạy phân khúc CUV cỡ C
+8 tháng đầu 2025, doanh số VF 7 vượt các đối thủ chạy máy xăng như Honda CR-V, Hyundai Tucson và chỉ xếp dưới Mazda CX-5, Ford Territory.
+[if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] VinFast mở bán ôtô điện sản xuất tại Ấn Độ
+### VinFast mở bán ôtô điện sản xuất tại Ấn Độ
+VinFast sản xuất VF 6 và VF 7 ở nhà máy Thoothukudi cho thị trường Ấn Độ, giá bán khởi điểm lần lượt hơn 18.700 USD và 23.700 USD, hôm 6/9.
+[if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] VinFast khai trương showroom lớn nhất tại Ấn Độ
+### VinFast khai trương showroom lớn nhất tại Ấn Độ
+VinFast Auto khai trương showroom 430 m2 hôm 1/8 tại thành phố Chennai, bang Tamil Nadu, hiện là cơ sở lớn nhất của hãng ở Ấn Độ.
+[if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] VinFast VF 7 ra mắt thị trường Indonesia
+### VinFast VF 7 ra mắt thị trường Indonesia
+VinFast ra mắt mẫu SUV điện cỡ C phiên bản tay lái nghịch ở thị trường Indonesia, hai phiên bản VF 7 Eco và Plus, hôm 23/7.
+[if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] VinFast VF 7 nhận ưu đãi gần 200 triệu đồng
+### VinFast VF 7 nhận ưu đãi gần 200 triệu đồng
+Hãng xe điện Việt Nam áp dụng loạt ưu đãi cho VF 7 gồm tiền mặt và quà tặng, mức cao nhất tương đương 198 triệu đồng.
+[if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] Nữ chủ xe thích xê dịch nói gì về VinFast VF 7?
+### Nữ chủ xe thích xê dịch nói gì về VinFast VF 7?
+Chị Hương Giang, người sở hữu chiếc VinFast VF 7, chia sẻ về trải nghiệm di chuyển thú vị, an toàn và tiết kiệm nhiên liệu khi sử dụng mẫu xe này.
+[if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] VinFast VF 7 nhận giải thưởng mới tại Ấn Độ
+### VinFast VF 7 nhận giải thưởng mới tại Ấn Độ
+Hãng truyền hình ABP News trao giải "Xe mới được mong chờ nhất" cho VinFast VF 7, mẫu xe dự kiến mở bán tại Ấn Độ trong năm nay, hôm 28/4.
+[if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] VinFast VF 7 điều chỉnh động cơ, giá
+### VinFast VF 7 điều chỉnh động cơ, giá
+Từ 15/4, VinFast điều chỉnh cấu hình VF 7 khi bản Plus có thêm lựa chọn dẫn động một cầu, bản hai cầu chỉ bán hàng còn tồn.
+[if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] Geely EX5 - xe điện gầm cao mới sắp bán tại Việt Nam
+### Geely EX5 - xe điện gầm cao mới sắp bán tại Việt Nam
+Mẫu crossover lắp môtơ điện 214 mã lực, pin 60,22 kWh, phạm vi hoạt động 430 km, hỗ trợ sạc nhanh DC, bán hai phiên bản trong quý II.
+[if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] Dàn xe điện vào Mỹ trong 2025: có hai xe VinFast
+### Dàn xe điện vào Mỹ trong 2025: có hai xe VinFast
+Loạt ôtô điện từ crossover cỡ nhỏ cho đến những SUV hạng sang đến từ nhiều hãng xe, trong đó có cả VinFast.
+[if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] VinFast ra mắt thương hiệu tại Ấn Độ
+### VinFast ra mắt thương hiệu tại Ấn Độ
+Hãng xe giới thiệu hai mẫu SUV thuần điện phân khúc B và C, VF 6 và VF 7 tại triển lãm ôtô Bharat Mobility Global Expo 2025, ngày 18/1.
+[if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] VinFast VF 7 là xe của năm phân khúc Crossover cỡ C
+### VinFast VF 7 là xe của năm phân khúc Crossover cỡ C
+VinFast VF 7 giành điểm số cao nhất từ ban giám khảo cũng như bình chọn của độc giả trước đối thủ Hyundai Tucson và Lynk & Co 01.
+[if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] Các đề cử Ôtô của năm 2024 phân khúc crossover cỡ C
+### Các đề cử Ôtô của năm 2024 phân khúc crossover cỡ C
+VinFast VF 7, Hyundai Tucson, Lynk & Co 01 và 05 là những mẫu crossover cỡ C trong danh sách đề cử Ôtô của năm 2024.
+[if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] Chuyên gia Car Awards: 'VF 7 thừa sức mạnh để đi địa hình khó'
+### Chuyên gia Car Awards: 'VF 7 thừa sức mạnh để đi địa hình khó'
+VinFast VF 7 được thử thách ở cung đường offroad nhẹ, chuyên gia Car Awards nhận định mẫu xe điện lợi thế ở chi phí sử dụng, trong phần hai của hành trình Car Test.
+[if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] Chuyên gia Car Awards: 'VF 7 đẹp, chạy hay'
+### Chuyên gia Car Awards: 'VF 7 đẹp, chạy hay'
+Ngôn ngữ thiết kế do Torino Design (Italy) chấp bút là yếu tố được các chuyên gia đánh giá cao nhất trên VinFast VF 7, trong phần đầu của hành trình Car Test.
+[if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] Chuyên gia Car Awards đánh giá VinFast VF 7 sau gần 500 km
+### Chuyên gia Car Awards đánh giá VinFast VF 7 sau gần 500 km
+Mẫu crossover thuần điện phong cách thể thao của VinFast được 6 chuyên gia đánh giá kỹ lưỡng trên cung đường Hà Nội – Mộc Châu, hoạt động trong giải thưởng Car Awards 2024.
+[if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] Nên mua CX-5 hay VF 7?
+### Nên mua CX-5 hay VF 7?
+Tôi đang đi xe cỡ A, trước Tết muốn đổi lên xe gầm cao để thuận tiện hơn việc đi chơi và về quê. (Bùi Nam)
+[if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] 900 triệu, tôi phân vân mua VF 7 hoặc Tusson 2023?
+### 900 triệu, tôi phân vân mua VF 7 hoặc Tusson 2023?
+Tầm tiền này, tôi phân vân mua xe điện của VinFast hoặc xe máy xăng, nhờ độc giả có kinh nghiệm tư vấn thêm. (Anh Nguyệt)
+[if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] Chủ nhân hai chiếc VF 7 nói gì về trải nghiệm với xe điện?
+### Chủ nhân hai chiếc VF 7 nói gì về trải nghiệm với xe điện?
+Sau 35 năm cầm vô lăng, anh Trần Thái Long đánh giá cao trải nghiệm với xe điện, mua hai chiếc VinFast VF 7 để phục vụ bản thân và gia đình.
+[if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] BYD Atto 3 - crossover điện cỡ B+ giá từ 766 triệu đồng
+### BYD Atto 3 - crossover điện cỡ B+ giá từ 766 triệu đồng
+Thương hiệu xe điện lớn nhất Trung Quốc, BYD, bán Atto 3 với giá 766-866 triệu đồng đã gồm pin, nhỉnh hơn đôi chút so với VinFast VF 6.
+[if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] Ba điểm nhấn trên VinFast VF 7
+### Ba điểm nhấn trên VinFast VF 7
+Mẫu SUV điện thiết kế theo phong cách thể thao, nhiều tính năng công nghệ, công suất 349 mã lực, sức kéo 500 Nm mạnh hơn các đối thủ cùng tầm giá.
+[if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] VinFast VF 7 'sánh đôi' người mẫu Thanh Hằng
+### VinFast VF 7 'sánh đôi' người mẫu Thanh Hằng
+Mẫu SUV điện VinFast được thiết kế bởi Torino Design là lựa chọn của siêu mẫu Thanh Hằng trong bộ ảnh thực hiện bên lề một sự kiện thời trang.
+[if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] Người dùng nói gì về VinFast VF 7
+### Người dùng nói gì về VinFast VF 7
+Động cơ mạnh, nhiều tính năng thông minh, thiết kế năng động, không gian nội thất hiện đại… VinFast là những điểm người dùng đánh giá cao trên mẫu VinFast VF 7.
+[if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] Xe VinFast có bộ sạc mới từ tháng 3, thêm chi phí 10-12 triệu đồng
+### Xe VinFast có bộ sạc mới từ tháng 3, thêm chi phí 10-12 triệu đồng
+Bộ sạc tại nhà 2,2 kW trước đây trên các xe VinFast được thay bằng loại 7,4-11 kW tùy mẫu, giá tăng 10-12 triệu đồng.
+[if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] Những ôtô, xe máy phiên bản 'Rồng' tại Việt Nam
+### Những ôtô, xe máy phiên bản 'Rồng' tại Việt Nam
+Chào đón năm Giáp Thìn 2024, các hãng như VinFast, Vespa, Dat Bike ra mắt các mẫu xe với thiết kế đặc biệt, sản xuất giới hạn.
+[if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] VinFast VF 7 bản đặc biệt hết hàng sau 22 phút mở bán
+### VinFast VF 7 bản đặc biệt hết hàng sau 22 phút mở bán
+68 chiếc VF 7 phiên bản Dragon Forged (Hỏa long độc bản) chào năm 2024 bán hết sau 22 phút, lập kỷ lục mới cho hãng xe Việt.
+[if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] VF 7 Dragon Forged ra mắt tại sân khấu có Maroon 5
+### VF 7 Dragon Forged ra mắt tại sân khấu có Maroon 5
+Mẫu crossover cỡ C của VinFast ra mắt phiên bản màu đặc biệt Dragon Forged - Hỏa Long Độc Bản ngay tại sân khấu 8Wonder Winter Festival, tối 16/12.
+Xem thêm
+imgslide0 imgslide1 imgslide2 imgslide3 imgslide4 imgslide5 imgslide6 imgslide7 imgslide8 imgslide9 imgslide10 imgslide11 imgslide12 imgslide13 imgslide14 imgslide15 imgslide16 imgslide17 imgslide18 imgslide19 imgslide20 imgslide21
+## Dự tính chi phí
+(vnđ)
+Phiên bản
+VinFast VF 7 2024 Eco - 799 triệu
+VinFast VF 7 2024 Plus (trần thép) - 949 triệu
+VinFast VF 7 2024 Plus (trần kính) - 969 triệu
+Nơi đăng ký
+Khu vực I (HN, TP HCM)
+Khu vực II (Còn lại)
+- Giá niêm yết: 799.000.000
+- Phí trước bạ (0%): N/A
+- Phí sử dụng đường bộ (01 năm): 1.560.000
+- Bảo hiểm trách nhiệm dân sự (01 năm): 437.000
+- Phí đăng kí biển số: 14.000.000
+- Phí đăng kiểm: 340.000
+- Tổng cộng: 815.337.000
+
+Ước tính số tiền trả hàng tháng
+## So sánh xe (Bạn chỉ được phép chọn 4 xe cùng một lúc)
+Xóa tất cả
+Thêm xe
+VS
+Thêm xe
+VS
+Thêm xe
+VS
+Thêm xe
+Xóa tất cả So sánh
+Thêm xe so sánh
+Hãng xe
+Chọn hãng xe
+- Aston Martin
+- Audi
+- Bentley
+- BMW
+- Ford
+- Honda
+- Hyundai
+- Isuzu
+- Jaguar
+- Jeep
+- Kia
+- Land Rover
+- Lexus
+- Maserati
+- Mazda
+- Mercedes
+- MG
+- Mini
+- Mitsubishi
+- Nissan
+- Peugeot
+- Porsche
+- Ram
+- Subaru
+- Suzuki
+- Toyota
+- VinFast
+- Volkswagen
+- Volvo
+- Hongqi
+- Wuling
+- Haval
+- Skoda
+- Haima
+- Lynk & Co
+- BYD
+- GAC
+- Omoda
+- Jaecoo
+- Geely
+- Dongfeng
+- Lotus
+
+Dòng xe
+Chọn dòng xe (Vios, Accent, Fadil...)
+Phiên bản
+Chọn phiên bản xe
+Thêm
+POPUP FILLTER ALL
+## Lọc nâng cao
+### Hãng xe
+Aston Martin Audi Bentley BMW Ford Honda Hyundai Isuzu Jaguar Jeep Kia Land Rover Lexus Maserati Mazda Mercedes MG Mini Mitsubishi Nissan Peugeot Porsche Ram Subaru Suzuki Toyota VinFast Volkswagen Volvo Hongqi Wuling Haval Skoda Haima Lynk & Co BYD GAC Omoda Jaecoo Geely Dongfeng Lotus
+### Loại xe
+Sedan SUV Crossover MPV Bán tải Hatchback Coupe Station wagon Convertible Ôtô điện Hybrid Van
+### Phân khúc
+Xe nhỏ cỡ A Xe nhỏ hạng B Xe nhỏ hạng B+/C- Xe cỡ vừa hạng C Xe cỡ trung hạng D Xe cỡ trung hạng E Bán tải cỡ trung Bán tải cỡ lớn MPV cỡ nhỏ MPV cỡ trung MPV cỡ lớn Xe sang cỡ nhỏ Xe sang cỡ trung Xe sang cỡ lớn MPV hạng sang Siêu xe/Xe thể thao Siêu sang cỡ lớn SUV phổ thông cỡ lớn Xe nhỏ cỡ A+/B- Xe siêu nhỏ
+### Khoảng giá
+<span id="slider-range-value1"></span>
+<span id="slider-range-value2"></span>
+### Xuất xứ
+Lắp ráp Nhập khẩu Sản xuất trong nước
+### Số chỗ
+2 3 4 5 6 7 8 9
+### Nhiên liệu
+Xăng Diesel
+Áp dụng
+FOOTER PC END FOOTER PC Back to top <section id="header_sticky_new" class="header_sticky_new"> <div class="box-search"> <div class="title-car" title="v-car"> <a href="/oto-xe-may/v-car#vn_source=&vn_campain=Header&vn_medium=Logo-VCar&vn_term=" title="V-Car"><img src="/images/graphics/v-car.svg" alt="v-car"></a> </div> <div class="form-search"> <input type="search" class="input_search input_search_header_footer" name="keyword" autocomplete="off" value="" placeholder="Nhập tên xe cần tìm, ví dụ Hyundai…"> <button type="submit" class="icon_seach_web"> <svg class="icon-svg"> <use xlink:href="#search"></use> </svg> </button> <button type="reset" class="btn_reset"> <svg class="icon-svg"> <use xlink:href="#cancel"></use> </svg> </button> <a class="fillter" style="cursor: pointer"> <span>Lọc</span> <svg class="icon-svg"> <use xlink:href="#fillter"></use> </svg> </a> <div class="suggest-search"> <div class="select-dish" id="autocomplete-box-footer"> </div> </div> </div> </div> </section>
+Jquery lib build:script

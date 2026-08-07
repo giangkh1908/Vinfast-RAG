@@ -1,0 +1,214 @@
+# Nguồn: https://vnexpress.net/oto-xe-may/v-car/dong-xe/vinfast-vf-2-336
+# Crawl lúc: 2026-07-30T22:41:47
+# Loại: html
+# Selector: (toàn trang / N/A với PDF)
+
+================================================================================
+
+V-car
+Lọc
+- Hãng xe
+- Phân khúc xe
+- Loại xe
+- Top doanh số
+  - Nửa đầu năm 2026
+  - Quý 2/2026
+  - Tháng 6/2026
+  - Tháng 5/2026
+  - Tháng 4/2026
+  - Quý 1/2026
+  - Tháng 3/2026
+  - Tháng 2/2026
+  - Tháng 1/2026
+  - Cả năm 2025
+  - Tháng 12/2025
+  - Tháng 11/2025
+  - Tháng 10/2025
+  - Quý 3/2025
+  - Tháng 9/2025
+  - Tháng 8/2025
+- Mới ra mắt
+
+- Trang chủ
+- VinFast
+- VinFast VF 2 2026
+
+# VinFast VF 2 2026 Đời xe: 2026 | Thế hệ mới
++ So sánh
+Khoảng giá: 188 triệu
++ So sánh
+Tổng quan Chi tiết Thông số kỹ thuật
+[if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] Xe siêu nhỏ
+Nguồn: VinFast
+[if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] [if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] [if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] [if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] [if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] [if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] [if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] [if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] [if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] [if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] [if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] [if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] [if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] [if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] [if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif]
+## Giá niêm yết
+Phiên bản
+Nơi đăng ký
+Khu vực I (HN, TP HCM)
+Khu vực II (Còn lại)
+Giá lăn bánh tại Khu vực I (HN, TP HCM) : 0
+Xem chi tiết thuế/ phí
+VF 2 là mẫu xe đô thị cỡ nhỏ dành cho khách hàng cá nhân, được VinFast tinh chỉnh, tối ưu từ Minio Green, với thiết kế gọn gàng, linh hoạt, phù hợp di chuyển trong những tuyến phố nội đô nhỏ hẹp, đông đúc.
+Bang gia lan banh
+## Bảng giá VinFast VF 2 2026
+Tại Việt Nam, VinFast VF 2 2026 được phân phân phối chính hãng 0 phiên bản. Giá lăn bánh tham khảo như sau:
+| Tên phiên bản | Giá niêm yết | Lăn bánh KV I (HN, TP.HCM) | Lăn bánh KV II (Còn lại) |
+| --- | --- | --- | --- |
+
+## Mô tả / đánh giá chi tiết
+html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd"
+VF 2 tối ưu từ phiên bản Minio Green, hướng tới phân khúc khách hàng cá nhân, thiết kế nhỏ gọn để di chuyển trong những tuyến phố nội đô nhỏ hẹp, đông đúc.
+Kích thước tổng thể là 3.090 x 1.496 x 1.663,2 mm (dài x rộng x cao), trục cơ sở dài 2.065 mm. Đơn vị tạo điểm nhấn cho xe bằng chi tiết cụm đèn LED chiếu sáng phía trước, bộ la-zăng 13 inch cho phép người dùng cá nhân hóa... Xe được trang bị màn hình thông tin 7 inch sau vô lăng, hệ thống điều hòa, ghế lái chỉnh cơ 4 hướng cùng hai loa tích hợp radio FM.
+VF 2 có động cơ điện dẫn động cầu sau, công suất tối đa 30 kW, mô-men xoắn cực đại 65 Nm, tốc độ tối đa 80 km/h cùng hai chế độ lái Eco và Normal. Bộ pin dung lượng khả dụng 18,3 kWh cho quãng đường di chuyển tới 210 km sau mỗi lần sạc đầy (theo tiêu chuẩn NEDC). Hãng công bố, với công suất sạc nhanh tối đa từ 24 kW, xe có thể sạc từ 10% lên 70% trong khoảng 34 phút.
+Các tính năng an toàn gồm túi khí cho người lái cùng loạt công nghệ hỗ trợ như chống bó cứng phanh ABS, kiểm soát lực kéo TCS và phân phối lực phanh điện tử EBD. Hệ thống treo MacPherson ở cả cầu trước và cầu sau góp phần tạo cảm giác lái êm ái, ổn định.
+Mức giá 188 triệu đồng đã bao gồm pin, cùng ưu đãi miễn phí sạc pin 10 lần mỗi tháng tại các trạm sạc công cộng V-Green trên toàn quốc đến hết ngày 10/2/2029. Hãng cho biết lợi thế của VinFast VF 2 là chi phí sở hữu chỉ tương đương một mẫu xe máy cao cấp nhưng mang đến công năng sử dụng và các công nghệ an toàn của một mẫu ôtô điện.
+Hãng nhận đặt cọc từ ngày 15/7 với mức phí 10 triệu đồng mỗi xe. Trong ba ngày đầu tiên (15-17/7), phí giảm còn 8 triệu đồng mỗi xe. Khoản cọc không hoàn hủy, chỉ được chuyển nhượng cho người thân trong gia đình gồm bố mẹ, vợ hoặc chồng, con cái, anh chị em ruột hoặc công ty do các cá nhân này đứng tên.
+Dự kiến, những chiếc VinFast VF 2 đầu tiên sẽ được bàn giao cho khách hàng trong tháng 9/2026.
+## Tin tức ôtô hot hôm nay
+[if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] CSGT: Quan niệm xe to đền xe bé đã lỗi thời
+### CSGT: Quan niệm xe to đền xe bé đã lỗi thời
+### Hai xe bán tải bốc cháy sau thử nghiệm phá hủy
+[if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] Toyota Corolla phiên bản đắt nhất chỉ có hai chỗ
+### Toyota Corolla phiên bản đắt nhất chỉ có hai chỗ
+[if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] Audi Q9 ra mắt - SUV cỡ lớn đầu tiên của hãng Đức
+### Audi Q9 ra mắt - SUV cỡ lớn đầu tiên của hãng Đức
+Xem thêm Rút gọn
+## Thông số kỹ thuật cơ bản
+Kiểu động cơ
+Môtơ điện
+Hệ dẫn động
+RWD
+Dung lượng pin
+18,3 kWh
+Tầm hoạt động (km)
+210
+Công suất môtơ điện (mã lực)
+40
+Mô-men xoắn môtơ điện (Nm)
+65
+Tốc độ tối đa (km/h)
+80
+Thời gian sạc nhanh DC 10-70% (phút)
+34 phút
+Xe khác của hãng
+## Xe cùng phân khúc
+[if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] Wuling Hongguang Mini EV 2026
+### Wuling Hongguang Mini EV 2026
+[if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] VinFast Minio Green 2026
+### VinFast Minio Green 2026
+[if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] VinFast EC Van 2026
+### VinFast EC Van 2026
+[if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] VinFast VF 3 2026
+### VinFast VF 3 2026
+Xe cùng phân khúc
+## Xe cùng hãng
+[if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] VinFast Minio Green 2026
+### VinFast Minio Green 2026
+[if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] VinFast EC Van 2026
+### VinFast EC Van 2026
+[if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] VinFast VF 3 2026
+### VinFast VF 3 2026
+[if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] VinFast Herio Green 2026
+### VinFast Herio Green 2026
+[if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] VinFast VF 5 2026
+### VinFast VF 5 2026
+[if IE 9]><video style="display: none;"><![endif] [if IE 9]></video><![endif] VinFast Nerio Green 2026
+### VinFast Nerio Green 2026
+Xem thêm
+imgslide0 imgslide1 imgslide2 imgslide3 imgslide4 imgslide5 imgslide6 imgslide7 imgslide8 imgslide9 imgslide10 imgslide11 imgslide12 imgslide13 imgslide14
+## Dự tính chi phí
+(vnđ)
+Phiên bản
+Nơi đăng ký
+Khu vực I (HN, TP HCM)
+Khu vực II (Còn lại)
+- Giá niêm yết: 0
+- Phí trước bạ : N/A
+- Phí sử dụng đường bộ (01 năm): N/A
+- Bảo hiểm trách nhiệm dân sự (01 năm): N/A
+- Phí đăng kí biển số: N/A
+- Phí đăng kiểm: N/A
+- Tổng cộng: N/A
+
+Ước tính số tiền trả hàng tháng
+## So sánh xe (Bạn chỉ được phép chọn 4 xe cùng một lúc)
+Xóa tất cả
+Thêm xe
+VS
+Thêm xe
+VS
+Thêm xe
+VS
+Thêm xe
+Xóa tất cả So sánh
+Thêm xe so sánh
+Hãng xe
+Chọn hãng xe
+- Aston Martin
+- Audi
+- Bentley
+- BMW
+- Ford
+- Honda
+- Hyundai
+- Isuzu
+- Jaguar
+- Jeep
+- Kia
+- Land Rover
+- Lexus
+- Maserati
+- Mazda
+- Mercedes
+- MG
+- Mini
+- Mitsubishi
+- Nissan
+- Peugeot
+- Porsche
+- Ram
+- Subaru
+- Suzuki
+- Toyota
+- VinFast
+- Volkswagen
+- Volvo
+- Hongqi
+- Wuling
+- Haval
+- Skoda
+- Haima
+- Lynk & Co
+- BYD
+- GAC
+- Omoda
+- Jaecoo
+- Geely
+- Dongfeng
+- Lotus
+
+Dòng xe
+Chọn dòng xe (Vios, Accent, Fadil...)
+Phiên bản
+Chọn phiên bản xe
+Thêm
+POPUP FILLTER ALL
+## Lọc nâng cao
+### Hãng xe
+Aston Martin Audi Bentley BMW Ford Honda Hyundai Isuzu Jaguar Jeep Kia Land Rover Lexus Maserati Mazda Mercedes MG Mini Mitsubishi Nissan Peugeot Porsche Ram Subaru Suzuki Toyota VinFast Volkswagen Volvo Hongqi Wuling Haval Skoda Haima Lynk & Co BYD GAC Omoda Jaecoo Geely Dongfeng Lotus
+### Loại xe
+Sedan SUV Crossover MPV Bán tải Hatchback Coupe Station wagon Convertible Ôtô điện Hybrid Van
+### Phân khúc
+Xe nhỏ cỡ A Xe nhỏ hạng B Xe nhỏ hạng B+/C- Xe cỡ vừa hạng C Xe cỡ trung hạng D Xe cỡ trung hạng E Bán tải cỡ trung Bán tải cỡ lớn MPV cỡ nhỏ MPV cỡ trung MPV cỡ lớn Xe sang cỡ nhỏ Xe sang cỡ trung Xe sang cỡ lớn MPV hạng sang Siêu xe/Xe thể thao Siêu sang cỡ lớn SUV phổ thông cỡ lớn Xe nhỏ cỡ A+/B- Xe siêu nhỏ
+### Khoảng giá
+<span id="slider-range-value1"></span>
+<span id="slider-range-value2"></span>
+### Xuất xứ
+Lắp ráp Nhập khẩu Sản xuất trong nước
+### Số chỗ
+2 3 4 5 6 7 8 9
+### Nhiên liệu
+Xăng Diesel
+Áp dụng
+FOOTER PC END FOOTER PC Back to top <section id="header_sticky_new" class="header_sticky_new"> <div class="box-search"> <div class="title-car" title="v-car"> <a href="/oto-xe-may/v-car#vn_source=&vn_campain=Header&vn_medium=Logo-VCar&vn_term=" title="V-Car"><img src="/images/graphics/v-car.svg" alt="v-car"></a> </div> <div class="form-search"> <input type="search" class="input_search input_search_header_footer" name="keyword" autocomplete="off" value="" placeholder="Nhập tên xe cần tìm, ví dụ Hyundai…"> <button type="submit" class="icon_seach_web"> <svg class="icon-svg"> <use xlink:href="#search"></use> </svg> </button> <button type="reset" class="btn_reset"> <svg class="icon-svg"> <use xlink:href="#cancel"></use> </svg> </button> <a class="fillter" style="cursor: pointer"> <span>Lọc</span> <svg class="icon-svg"> <use xlink:href="#fillter"></use> </svg> </a> <div class="suggest-search"> <div class="select-dish" id="autocomplete-box-footer"> </div> </div> </div> </div> </section>
+Jquery lib build:script

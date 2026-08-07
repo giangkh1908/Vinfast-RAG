@@ -1,0 +1,229 @@
+# Nguồn: https://vinfastnewway.com.vn/thong-so-ky-thuat-vinfast-vf-9/
+# Crawl lúc: 2026-07-30T23:01:18
+# Loại: html
+# Selector: (toàn trang / N/A với PDF)
+
+================================================================================
+
+Meta Pixel Code End Meta Pixel Code
+Skip to content
+- Giới thiệu
+- Liên hệ
+- Chăm sóc khách hàng
+
+#top-bar-content
+-
+-
+-
+
+#top-bar-social
+#top-bar-inner
+#top-bar
+#top-bar-wrap #site-header
+.page-header
+Thông số kỹ thuật xe điện VinFast VF9 – Cập nhật thông số kích thước của xe, ngoại thất, nội thất, các tính năng thông minh được trang bị trên xe & hệ thống an toàn
+VinFast VF 9 là mẫu xe ô tô điện, kiểu dáng SUV, định vị ở phân khúc E với khả năng vận hành mạnh mẽ, vóc dáng thể thao, cabin rộng rãi & tiện nghi. Hiện tại, VinFast VF 9 có 2 phiên bản là Eco & Plus.
+VinFast VF 9 đánh dấu bước tiến quan trọng trong ngành công nghiệp ô tô, có khả năng tăng tốc từ 0 – 100 km/h chỉ trong khoảng 6,8 giây ((*VF 9 sử dụng PIN CATL)khi được trang bị 2 động cơ điện với công suất tối đa 300kW cùng mô-men xoắn cực đại 640Nm. Mẫu xe điện này có thể di chuyển lên đến 626 Km / 1 lần sạc đầy.
+Nội Dung Chính
+## GIÁ XE VINFAST VF 9
+VF9 ECO
+- Giá xe VinFast VF9 eco: 1.499.000.000 VNĐ
+
+VF9 PLUS
+- Giá xe VinFast VF9 Plus: 1.699.000.000 VNĐ
+
+<Giá bán đã bao gồm VAT, chưa bao gồm tùy chọn ghế cơ trưởng, áp dụng từ tháng 06/2025 đến khi có thông báo mới nhất từ VinFast>
+## KÍCH THƯỚC & TRỌNG LƯỢNG
+thong so kỹ thuat vf9 tong quan
+Cả 2 phiên bản đều cùng kích thước: Dài x Rộng x Cao: 5.118 mm x 2.254 mm x 1.696 mm, chiều dài cơ sở: 3150 mm. Với kích thước này, xe ô tô điện VinFast VF9 trông bề thế, mạnh mẽ
+Khoảng sáng gầm xe 197mm – phù hợp với điều kiện mưa nhiều thường xảy ra ở các thành phố lớn
+## HỆ THỐNG TRUYỀN ĐỘNG
+Bố trí 2 động cơ tại trục trước & trục sau
+| Thông số hệ thống truyền động | VinFast VF9 – Bản Eco | VinFast VF9 – Bản Plus |
+| --- | --- | --- |
+| Động cơ | 2 Motor (Loại 150 kW) | 2 Motor (Loại 150 kW) |
+| Công suất tối đa (kW) | 300 (~402hp) | 300 (~402hp) |
+| Mô men xoắn cực đại (Nm) | 620 | 620 |
+| Khả năng tăng tốc từ 0-100km/h (s) – mục tiêu dự kiến | 7.5 | 7.5 |
+| Tốc độ tối đa duy trì 1 phút (Km/h) | 200 | 200 |
+| Dẫn động | AWD / 2 cầu toàn thời gian | AWD / 2 cầu toàn thời gian |
+| Hệ thống treo trước | Độc lập, tay đòn kép | Độc lập, tay đòn kép |
+| Hệ thống treo sau | Liên kết đa điểm, giảm chấn khí nén | Liên kết đa điểm, giảm chấn khí nén |
+| Hệ thống phanh trước/ sau | Đĩa thông gió | Đĩa thông gió |
+| Hệ thống trợ lực lái | Trợ lực điện | Trợ lực điện |
+| Chế độ lái | 3 chế độ: Eco/ Normal/ Sport | 3 chế độ: Eco/ Normal/ Sport |
+| Sưởi pin cao thế | Có | Có |
+
+Hệ thống dẫn động 4 bánh toàn thời gian cho phép xe tự động điều chỉnh và phân chia lực kéo cho từng cầu, giúp người lái rảnh tay hơn, thường được sử dụng hầu hết trên các dòng SUV, Crosser…nay cũng được trang bị trên VF9, cho thấy khả năng chinh phục mọi địa hình của dòng xe này
+## HỆ THỐNG PIN
+Quãng đường chạy một lần sạc đầy (km) – Điều kiện tiêu chuẩn Châu Âu (WLTP): lên tới 626 Km
+Mức công bố tiêu thụ điện năng: Pin SDI: 253 Wh/km (Eco), 237 Wh/km (Plus). Pin CATL: 202 Wh/km (Eco), 205 Wh/km (Plus)
+Có sạc tại nhà, sạc nhanh & siêu nhanh tại các trạm sạc.
+## NGOẠI THẤT
+thong so ky thuat vinfast vf 9 ngoai that
+Đối với xe điện VF9: Ngoại thất có 6 lựa chọn màu thân xe gồm: Đen, Đỏ, Trắng, Xám, Xanh rêu, Xanh dương.
+## NỘI THẤT & TIỆN NGHI
+Không gian nội thất xe điện VinFast VF9 được thiết kế tinh giản, tạo độ rộng thoáng, thoải mái cho người ngồi bên trong. VF9 có thiết kế gồm 5 chỗ ngồi, 2 hàng ghế thoải mái.
+Cụm đồng hồ phía trước người lái được giản lược cho người điều khiển dễ dàng quan sát ở phía trước, cùng các thông tin quan trọng như tốc độ, dung lượng pin thông qua màn hình hắt trên kính lái HUD.
+Màn hình giải trí trung tâm có kích thước 15,6 inch, độ phân giải lớn, giảm số lượng nút bấm vật lý giúp người dùng dễ dàng theo dõi và điều khiển các tính năng trong quá trình vận hành.
+Đặc biệt, VF9 trang bị hệ thống ghế tích hợp sưởi ở bản Eco & kết hợp sưởi – thông gió ở bản Plus, tính năng này phù hợp cho người sử dụng trong mùa đông lạnh tại Việt Nam & các nước châu Âu.
+Bên cạnh đó, xe điện VinFast VF9 có chế độ lọc không khí trong cabin Combi 1.0 – mang tới không gian trong lành cho người ngồi bên trong.
+Màu nội thất:
+Bản Eco chỉ có 1 màu nội thất: ĐenBản Plus có 4 màu nội thất: Đen, nâu, be. Riêng nội thất màu xanh: Chỉ sản xuất xe khách hàng đặt mua VF9 phiên bản Plus các màu ngoại thất: Đen, Trắng, hoặc Xanh dương
+| Nội thất | VinFast VF9 – Bản Eco | VinFast VF9 – Bản Plus |
+| --- | --- | --- |
+| GHẾ TOÀN XE |   |   |
+| Số chỗ ngồi | 7 or/hoặc 6 | 7 or/hoặc 6 |
+| Chất liệu bọc ghế | Leatherette/Giả da | Vegan Leather/Da nhân tạo |
+| GHẾ LÁI |   |   |
+| Ghế lái – điều chỉnh hướng | 8-way power/Chỉnh điện 8 hướng | 12-way power/Chỉnh điện 12 hướng |
+| Ghế lái nhớ vị trí |   | YES |
+| Tựa đầu ghế lái | Adjustable/ Chỉnh cơ cao thấp | Adjustable/ Chỉnh cơ cao thấp |
+| Ghế lái có massage |   | YES |
+| Ghế lái có thông gió |   | YES |
+| Ghế lái có sưởi | YES | YES |
+| GHẾ PHỤ |   |   |
+| Ghế phụ – điều chỉnh hướng | 6-way power/Chỉnh điện 6 hướng | 10-way power/Chỉnh điện 10 hướng |
+| Tựa đầu ghế phụ | Adjustable/ Chỉnh cơ cao thấp | Adjustable/ Chỉnh cơ cao thấp |
+| Ghế phụ có massage |   | YES |
+| Ghế phụ có thông gió |   | YES |
+| Ghế phụ có sưởi | YES | YES |
+| GHẾ HÀNG 2 | Post/Sau SOP | Post/Sau SOP |
+| Hàng ghế thứ 2 điều chỉnh hướng | 4-way power/Chỉnh điện 4 hướng | 8-way power/Chỉnh điện 8 hướng |
+| Hàng ghế thứ 2 điều chỉnh gập tỷ lệ | 60:40 40:20:40, easy 3rd row/dễ vào hàng 3 | 60:40 40:20:40, easy 3rd row/dễ vào hàng 3 |
+| Hàng ghế thứ 2 có thông gió |   | YES |
+| Hàng ghế thứ 2 có sưởi |   | YES |
+| Hàng ghế thứ 2 có massage |   | YES |
+| GHẾ VIP | YES, different variant/Có, KH lựa chọn từ đầu khi mua xe | YES, different variant/Có, KH lựa chọn từ đầu khi mua xe |
+| Ghế VIP chỉnh điện | 8-way power/chỉnh điện 8 hướng | 8-way power/chỉnh điện 8 hướng |
+| Hộp đồ hàng ghế sau | YES | YES, with wireless charger/có sạc không dây |
+| Tựa đầu ghế VIP | Adjustable/ Chỉnh cơ cao thấp | Adjustable/ Chỉnh cơ cao thấp |
+| Ghế VIP massage |   | YES |
+| Ghế VIP có thông gió |   | YES |
+| Ghế VIP có sưởi |   | YES |
+| HÀNG GHẾ THỨ 3 |   |   |
+| Tựa đầu hàng ghế thứ 3 | Adjustable/ Chỉnh cơ cao thấp | Adjustable/ Chỉnh cơ cao thấp |
+| Thao tác gập hàng ghế thứ 3 | Strap (Seatback)/Có dây kéo (lưng ghế) | Strap (Seatback)/Có dây kéo (lưng ghế) |
+| VÔ LĂNG |   |   |
+| Điều chỉnh vô lăng | 4-way manual/Chỉnh cơ 4 hướng | 4-way power/Chỉnh điện 4 hướng |
+| Bọc vô lăng | Vegan Leather/Da nhân tạo | Vegan Leather/Da nhân tạo |
+| Vô lăng: nút bấm điều khiển tính năng giải trí | YES | YES |
+| Vô lăng: nút bấm điều khiển ADAS | YES | YES |
+| Sưởi tay lái | YES | YES |
+| Nhớ vị trí vô lăng |   | YES |
+| ĐIỀU HÒA KHÔNG KHÍ |   |   |
+| Hệ thống điều hòa | Auto, 2 zones/ Tự động, 2 vùng | Auto, 3 zones/ Tự động, 3 vùng |
+| Bơm nhiệt (bản xe điện) | YES | YES |
+| Chức năng kiểm soát chất lượng không khí | YES | YES |
+| Chức năng ion hóa không khí | YES | YES |
+| Lọc không khí Cabin | Combi 1.0 | Combi 1.0 |
+| Chức năng làm tan sương/tan băng | YES | YES |
+| Ống thông gió dưới chân hành khách sau | YES | YES |
+| MÀN HÌNH, KẾT NỐI GIẢI TRÍ |   |   |
+| Màn hình giải trí cảm ứng | 15.6 Inch | 15.6 Inch |
+| Màn hình giải trí cảm ứng hàng ghế sau |   | 8 Inch |
+| Màn hình hiển thị HUD | YES | YES |
+| Cổng kết nối USB loại A hàng ghế lái | 2 | 2 |
+| Cổng kết nối USB loại A hàng ghế thứ 2 | 2 | 2 (ghế dài/Bench) 4 (ghế VIP/VIP) |
+| Cổng kết nối USB loại A hàng ghế thứ 3 | 2 | 2 |
+| Cổng kết nối USB loại C | YES | YES |
+| Cổng sạc 12V khoang hành lý | YES | YES |
+| Ổ điện xoay chiều 230V | YES | YES |
+| Sạc không dây | YES | YES |
+| Kết nối Wifi | YES | YES |
+| Phát wifi | YES | YES |
+| Kết nối Bluetooth | YES | YES |
+| Chìa khóa | Smart key/Chìa khóa thông minh | Smart key/Chìa khóa thông minh |
+| Khởi động bằng bàn đạp phanh – BEV | YES | YES |
+| HỆ THỐNG LOA |   |   |
+| Hệ thống loa | 13 | 13 |
+| Loa trầm | 1 | 1 |
+| HỆ THỐNG ĐÈN NỘI THẤT |   |   |
+| Đèn trang trí nội thất | YES (Multi/Đa màu) | YES (Multi/Đa màu) |
+| Đèn chiếu khoang để chân | YES | YES |
+| Rèm cửa sổ hàng 2 | Post/Sau SOP: YES | Post/Sau SOP: YES |
+| Trần kính toàn cảnh |   | YES |
+| Tấm rèm trần |   | Aftersales |
+| NỘI THẤT & TIỆN NGHI KHÁC |   |   |
+| Phanh tay | Electronic/Điện tử | Electronic/Điện tử |
+| Gương chiếu hậu trong xe | Auto dimming/ Chống chói tự động | Auto dimming/ Chống chói tự động |
+|   |   |   |
+
+Thông số kỹ thuật VinFast VF9
+noi-that-vinfast-vf-e36-thong-so-1
+noi-that-vinfast-vf-e36-thong-so-2
+## TÍNH NĂNG THÔNG MINH
+Giống với xe điện VF e34, tính năng nổi bật là trợ lý ảo – hệ thống điều khiển bằng giọng nói. Hệ thống có khả năng hỗ trợ người dùng hỏi đáp thông tin & thực hiện nhiều tác vụ rảnh tay khi đang di chuyển.
+Ngoài ra, xe điện VinFast VF9 – ở cả 2 phiên bản Eco & Plus đều sở hữu 12 nhóm tính năng thông minh cụ thể như sau:
+Thông số kỹ thuật VinFast VF9
+| 1. ĐIỀU KHIỂN THÔNG MINH | – Điều khiển chức năng trên xe qua giọng nói hoặc màn hình | Có |
+| --- | --- | --- |
+| – Điều khiển chức năng trên xe từ xa qua ứng dụng VinFast | Có |
+| Chế độ người lạ, thú cưng, cắm trại, giảm âm báo & chế độ rửa xe | Có |
+| 2. THIẾT LẬP, THEO DÕI & GHI NHỚ HỒ SƠ NGƯỜI LÁI | – Đồng bộ & quản lý tài khoản | Có |
+| – Cài đặt giới hạn địa lý của xe | Có |
+| – Cài đặt thời gian hoạt động của xe | Có |
+| 3. ĐIỀU HƯỚNG – DẪN ĐƯỜNG | – Tìm kiếm, dẫn đường & chia sẻ vị trí trên bản đồ | Có |
+| – Hỗ trợ thiết lập hành trình tối ưu | Có |
+| – Hiển thị tình trạng giao thông thời gian thực | Có |
+| – Hiển thị bản đồ vệ tinh, định vị vị trí xe từ xa | Có |
+| 4. AN NINH – AN TOÀN | – Thực hiện gọi cứu hộ / cấp cứu tự động trong trường hợp khẩn cấp | Có |
+| – Giám sát & cảnh báo xâm nhập trái phép | Có |
+| – Chẩn đoán lỗi trên xe tự động |   |
+| – Theo dõi & hiển thị thông tin tình trạng xe | Mức pin còn lại, mức nước làm mát |
+| – Đề xuất lịch bảo trì/ bảo dưỡng tự động |   |
+| 5. TIỆN ÍCH GIA ĐÌNH & VĂN PHÒNG | – Giải trí thông qua đồng bộ với điện thoại | Có |
+| – Giải trí âm thanh | Có |
+| – Hỏi đáp trợ lý ảo |   |
+| – Cá nhân hoá trải nghiệm trợ lý ảo |   |
+| – Giải trí thông qua đồng bộ với điện thoại |   |
+| – Giải trí âm thanh |   |
+| – Xem phim/video |   |
+| – Chơi trò chơi điện tử |   |
+| – Tra cứu và truy cập Internet |   |
+| – Tích hợp điều khiển các thiết bị Smart Homes |   |
+| – Đồng bộ lịch và danh bạ điện thoại |   |
+| – Nhận và gửi tin nhắn qua giọng nói |   |
+| – Ứng dụng văn phòng |   |
+| 6. CẬP NHẬT PHẦN MỀM TỪ XA | – Cập nhật phần mềm miễn phí – FOTA | Có |
+| 7. CÁC DỊCH VỤ VỀ XE | Nhận thông báo và đặt dịch vụ hậu mãi | Có |
+| Quản lý gói cước thuê pin trực tuyến | Có |
+| Lên lịch sạc pin theo thói quen sử dụng | Có |
+| Quản lý sạc | Có |
+| eSIM đa nhà mạng | Có |
+
+tinh nang thong minh vf 9
+## HỆ THỐNG AN TOÀN
+Hệ thống an toàn trên xe điện VinFast VF9 dự kiến đạt chứng nhận tiêu chuẩn chất lượng và độ an toàn ở mức cao nhất: ASEAN NCAP 5* – Đánh giá an toàn xe hơi mới cho các nước Đông Nam Á , EURO NCAP 5* – Đánh giá an toàn xe hơi Châu Âu, NHTSA 5* – chương trình đánh giá an toàn giao thông đường bộ của Cơ quan an toàn Giao thông quốc gia Mỹ.
+Hệ thống 11 túi khí bao gồm: 1 Túi khí trước lái, 1 ghế lái phụ, 2 túi khí rèm, 2 túi khí bên hông hàng ghế trước, 2 túi khí bên hông hàng ghế sau, 2 túi khí bảo vệ chân hàng ghế trước, 1 túi khí trung tâm hàng ghế trước
+### ASEAN NCAP 5*
+### EURO NCAP 5*
+### NHTSA 5*
+## CÁC TÍNH NĂNG HỖ TRỢ NÂNG CAO CHO NGƯỜI LÁI - ADAS
+| – Hỗ trợ di chuyển khi đường đang ùn tắc. | – Điều chỉnh tốc độ thông minh |
+| --- | --- |
+| – Hỗ trợ lái trên đường cao tốc | – Cảnh báo phương tiện cắt ngang phía sau |
+| – Tự động chuyển làn an toàn | – Nhật biết biển báo giao thông |
+| – Hỗ trợ đỗ xe từ xa | – Cảnh báo va chạm phía trước |
+| – Triệu tập xe thông minh. | – Cảnh báo điểm mù |
+| – Cảnh báo lệch làn | – Cảnh báo luồng giao thông đến khi mở cửa |
+| – Hỗ trợ giữ làn | – Phanh tự động khẩn cấp trước/ sau |
+| – Kiểm soát đi giữa làn | – Tự động giữ làn khẩn cấp |
+| – Giám sát hành trình thích ứng | – Hỗ trợ đỗ phía trước / sau |
+| – Điều khiển đèn pha tự động | – Hệ thống camera sau |
+| – Cảnh báo va chạm khi ở giao lộ | – Giám sát xung quanh 360 độ |
+| – Hỗ trợ đỗ xe thông minh | – Giám sát lái xe |
+|   | – Hỗ trợ giữ làn khẩn cấp |
+
+3.9/5 - (7 bình chọn)
+#main #footer
+#wrap
+#outer-wrap
+EchBay Phonering Alo
+.
+.
+.
+.
+END EchBay Phonering Alo Start of Tawk.to Script End of Tawk.to Script <script src="https://uhchat.net/code.php?f=c48781"></script> Google Tag Manager (noscript) End Google Tag Manager (noscript) Histats.com START (aync) Histats.com END
+ĐẶT XE NGAY HÔM NAY ĐỂ NHẬN ĐƯỢC ƯU ĐÃI TỐT NHẤT.​
+Meta Pixel Event Code End Meta Pixel Event Code

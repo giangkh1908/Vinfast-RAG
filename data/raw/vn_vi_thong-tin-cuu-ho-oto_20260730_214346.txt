@@ -1,0 +1,137 @@
+# Nguồn: https://vinfastauto.com/vn_vi/thong-tin-cuu-ho-oto
+# Crawl lúc: 2026-07-30T21:43:46
+# Loại: html
+# Selector: (toàn trang / N/A với PDF)
+
+================================================================================
+
+Đăng nhập / Đăng ký
+# Thông tin cứu hộ
+## Thông tin cứu hộ
+#### Cứu hộ 24/7:
+- Dịch vụ cứu hộ 24/7 dành riêng cho xe ô tô VinFast, được triển khai tại các thị trường nơi VinFast cung cấp dịch vụ. Trong suốt thời gian bảo hành, xe sẽ được cứu hộ miễn phí với các dịch vụ (*) như sau:
+
+#### Dịch vụ hỗ trợ trên đường
+- Dịch vụ kéo xe về Xưởng dịch vụ ủy quyền gần nhất của VinFast. Trường hợp xe hết năng lượng: kéo xe về trạm sạc gần nhất hoặc nhà khách hàng (tùy điều kiện nào gần hơn).
+- Dịch vụ áp dụng cho chủ sở hữu hoặc tài xế được ủy quyền sử dụng xe VinFast.
+
+#### Cách liên hệ cứu hộ:
+- Gọi tổng đài cứu hộ: 1900 23 23 89.
+- Chọn "Cứu hộ" trên màn hình trung tâm xe hoặc trong ứng dụng VinFast.
+- Nhấn nút SOS trong trường hợp khẩn cấp (tính năng được trang bị trên một số dòng xe, vui lòng tham khảo hướng dẫn sử dụng để biết chi tiết).
+
+(*): Vui lòng liên hệ tổng đài cứu hộ 1900 23 23 89 để biết thêm thông tin chi tiết về "Phạm vi công việc cứu hộ" và "Các điều khoản loại trừ".
+#### Hỗ trợ khẩn cấp (eCall)*
+An tâm mọi hành trình – Chạm nút SOS, VinFast luôn sẵn sàng.
+VinFast triển khai hệ thống eCall thông minh, giúp Khách hàng tại Việt Nam kết nối nhanh với Trung tâm Hỗ trợ khẩn cấp khi xảy ra sự cố:
+- Phản hồi ngay lập tức khi nhận tín hiệu từ nút SOS trong xe. Nếu cuộc gọi eCall nhỡ, bộ phận CSKH sẽ chủ động liên hệ lại trong 15 phút.
+- Chuyển tiếp yêu cầu cứu hộ đến đơn vị điều phối cứu hộ trong vòng 10 phút sau xác minh.
+- Đơn vị cứu hộ hoặc Xưởng dịch vụ bắt đầu di chuyển đến hiện trường trong 15 phút kể từ khi nhận yêu cầu.
+
+(*) Áp dụng đối với một số dòng xe.
+## Hướng dẫn ứng phó khẩn cấp
+Quý khách hàng tự chi trả chi phí cầu đường, phạt vi phạm… (nếu có). Quý khách vui lòng tham khảo thông tin chi tiết về Hướng dẫn Ứng phó Khẩn cấp theo từng dòng xe trong phần nội dung bên dưới.
+VF 3
+VF 5
+VF 6
+VF 7
+VF 8
+VF 9
+VF e34
+Limo Green và VF Limo
+## Thông tin hỗ trợ
+#### DỊCH VỤ KHÁCH HÀNG
+1900 23 23 89 - Nhánh 1
+[email protected]
+#### SPEAK-UP HOTLINE
+https://vinfast.ethicspoint.com/
+[email protected]
+#### TÀI LIỆU LIÊN QUAN
+TRA CỨU TÀI LIỆU HƯỚNG DẪN
+##### Tiện ích
+- Đăng ký lái thử
+- So sánh xe
+- Dự toán chi phí lăn bánh
+- Dự toán vay trả góp
+- Thẩm định vay
+- Đặt lịch dịch vụ
+
+##### Mua sắm
+- Phụ kiện xe
+- VF eStore
+
+##### Tin tức
+- Công ty
+- Ô tô điện
+- Xe máy điện
+
+##### Hỗ trợ
+- Tìm Showroom & Trạm sạc
+- Câu hỏi thường gặp
+
+##### Thảo luận
+- Cộng đồng VinFast Toàn cầu
+
+- Giới thiệu
+- Ô tô Xem tất cả
+  - Động cơ điện
+  - VF 2
+  - VF 3
+  - VF 5
+  - VF 6
+  - VF MPV 7
+  - VF 7
+  - VF 8
+  - VF 8 The All New
+  - VF 9
+  - Động cơ xăng
+  - Fadil
+  - Lux A2.0
+  - Lux SA2.0
+  - President
+  - Dòng xe dịch vụ
+  - Minio Green
+  - Herio Green
+  - Nerio Green
+  - Limo Green
+  - EC Van
+  - EBus
+- Xe máy điện
+- VF eStore
+- Dịch vụ hậu mãi
+  - Bảo hành & bảo dưỡng
+  - Thông tin bảo hành
+  - Thông tin bảo dưỡng định kỳ
+  - Thông tin dịch vụ
+  - Tra cứu tình trạng xe
+  - Hướng dẫn sử dụng
+  - Hướng dẫn sử dụng ô tô
+  - Hướng dẫn sử dụng xe máy điện
+- Pin và trạm sạc
+  - Pin và trạm sạc Ô tô điện
+  - Pin và trạm sạc Xe máy điện
+- V-Energy
+- Tiện ích
+  - Đăng ký lái thử
+  - So sánh xe
+  - Dự toán chi phí lăn bánh
+  - Dự toán vay trả góp
+  - Thẩm định vay
+  - Đặt lịch dịch vụ
+- Mua sắm
+  - Phụ kiện xe
+- Tin tức
+  - Công ty
+  - Ô tô điện
+  - Xe máy điện
+- Hỗ trợ
+  - Tìm Showroom & Trạm sạc
+  - Câu hỏi thường gặp
+- Thảo luận
+  - Cộng đồng VinFast Toàn cầu
+
+- Lựa chọn quốc gia Việt Nam Bắc Mỹ United States English Canada English Francais Châu Âu France Francais Deutschland Deutsch Nederland Nederlands Others English Châu Á Việt Nam Tiếng Việt English
+
+Ưu đãi chỉ tới 31/12!
+VinFast
+Google Tag Manager (noscript) End Google Tag Manager (noscript)
