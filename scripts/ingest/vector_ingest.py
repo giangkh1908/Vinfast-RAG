@@ -2,7 +2,7 @@
 """
 vector_ingest.py — Ingest vector JSONL vào Qdrant (versioned + incremental).
 
-Collection = `<stem>__<version>` (VD `vivu_specs__v2`). Versioned → ingest v2
+Collection = `<stem>__<version>` (VD `vivu_product_info__v2`). Versioned → ingest v2
 KHÔNG đè v1. Promote/rollback swap alias (xem scripts/version_manager.py).
 
 Incremental embed: cache vector theo content-hash (backend/lib/vector_cache.py).
@@ -39,7 +39,7 @@ from lib.vector_cache import VectorCache, content_hash  # noqa: E402
 REPO_ROOT = Path(__file__).resolve().parents[2]
 VECTOR_DIR = REPO_ROOT / "data" / "clean" / "{version}" / "vector"
 
-DEFAULT_QDRANT_URL = "http://localhost:6333"
+DEFAULT_QDRANT_URL = "http://localhost:16333"
 BATCH_SIZE = 64
 UPSERT_BATCH = 100
 

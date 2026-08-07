@@ -1,42 +1,35 @@
 {
   "version": "v1",
-  "created_at": "2026-08-06T05:09:30Z",
+  "created_at": "2026-08-07T08:47:04Z",
   "created_by": "scripts/clean_to_jsonl.py + scripts/split_cold_hot.py",
   "prev_version": null,
-  "repo_commit": "",
+  "repo_commit": "72e2bf2",
   "vector": {
     "collections": {
       "vivu_policy": {
         "file": "vector/vivu_policy.jsonl",
-        "chunks": 546,
-        "added": 546,
-        "modified": 0,
-        "removed": 0
-      },
-      "vivu_specs": {
-        "file": "vector/vivu_specs.jsonl",
-        "chunks": 220,
-        "added": 220,
+        "chunks": 530,
+        "added": 530,
         "modified": 0,
         "removed": 0
       },
       "vivu_product_info": {
         "file": "vector/vivu_product_info.jsonl",
-        "chunks": 1308,
-        "added": 1308,
+        "chunks": 218,
+        "added": 218,
         "modified": 0,
         "removed": 0
       },
       "vivu_maintenance": {
         "file": "vector/vivu_maintenance.jsonl",
-        "chunks": 90,
-        "added": 90,
+        "chunks": 86,
+        "added": 86,
         "modified": 0,
         "removed": 0
       }
     },
-    "total_chunks": 2164,
-    "total_added": 2164,
+    "total_chunks": 834,
+    "total_added": 834,
     "total_modified": 0,
     "total_removed": 0
   },

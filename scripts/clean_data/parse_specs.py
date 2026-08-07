@@ -4,8 +4,8 @@ parse_specs.py — Trích thông số kỹ thuật (số liệu cấu trúc) t�
 → data/clean/<version>/postgres/specs.csv → bảng PostgreSQL `car_specs`.
 
 Vì sao tách riêng: spec số liệu (công suất, momen, quãng đường, kích thước, pin...)
-embed trong Qdrant `vivu_specs` cho vector na ná nhau giữa Eco/Plus và giữa các model
-→ vector search dễ nhầm. Đưa vào `car_specs` (SQL) để retriever query chính xác.
+nếu embed trong Qdrant vector sẽ na ná nhau giữa Eco/Plus và giữa các model → vector
+search dễ nhầm. Đưa vào `car_specs` (SQL) để retriever query chính xác.
 
 Nguồn: **toàn bộ data/raw/*.txt** (KHÔNG dùng model_specs.json tổng hợp). Mỗi model có
 spec rải rác ở nhiều file (dat-coc chính thức, bài so-sanh, thong-so, brochure, product

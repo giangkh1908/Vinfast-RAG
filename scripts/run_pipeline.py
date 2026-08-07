@@ -35,8 +35,8 @@ from scripts.ingest import vector_ingest, sparse_ingest, postgres_ingest  # noqa
 from lib import openrouter  # noqa: E402
 from scripts import version_manager  # noqa: E402
 
-QDRANT_URL = os.environ.get("QDRANT_URL", "http://localhost:6333")
-PG_DSN = os.environ.get("PG_DSN", "postgresql://vivu:vivu@localhost:5432/vivu")
+QDRANT_URL = os.environ.get("QDRANT_URL", "http://localhost:16333")
+PG_DSN = os.environ.get("PG_DSN", "postgresql://vivu:vivu@localhost:15432/vivu")
 
 
 def _bar(label: str) -> str:

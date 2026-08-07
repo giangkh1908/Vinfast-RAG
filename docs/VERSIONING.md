@@ -27,7 +27,7 @@ promote/rollback atomic, biết version mới đổi gì so cũ, incremental emb
 
 ```
 ingest v2 (build, không active)         run_pipeline --version v2 --recreate
-   ↓                                    → vivu_specs__v2 (+ sparse__v2), v1 nguyên
+   ↓                                    → vivu_product_info__v2 (+ sparse__v2), v1 nguyên
    ↓                                       PG rows version='v2' (is_current=false)
 promote v2 (activate)                    version_manager.py promote --version v2
    ↓                                        (hoặc run_pipeline --version v2 --promote)
@@ -94,10 +94,10 @@ Version đầu (không prev) = tất cả `added`.
 
 ## migrate-v1 (1 lần)
 
-Khi deploy code versioned lên hệ thống đang chạy v1 (collection unversioned
-`vivu_specs`...):
-- Copy Qdrant `vivu_specs` → `vivu_specs__v1` (×4 dense + sparse, **giữ vector,
-  không re-embed**) → drop gốc → tạo alias `<col>` → `__v1`.
+Khi deploy code versioned lên hệ thống đang chạy v1 (collection unversioned,
+Vd `vivu_product_info`...):
+- Copy Qdrant `vivu_product_info` → `vivu_product_info__v1` (×4 dense + sparse,
+  **giữ vector, không re-embed**) → drop gốc → tạo alias `<col>` → `__v1`.
 - Backfill vector cache từ v1 (re-ingest v1 sau đó = 0 token).
 - PG: drop bảng unversioned cũ, tạo schema versioned, ingest v1 CSV tag
   `version='v1'`, `is_current=v1` + VIEW active.

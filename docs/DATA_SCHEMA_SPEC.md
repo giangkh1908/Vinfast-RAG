@@ -65,8 +65,8 @@ data/raw/*.txt ──► clean_to_jsonl.py ──► intermediate/{vector,hot}.j
 `collection` theo `category`). Bước `split_cold_hot.py` **không cắt lại** — chỉ
 đọc file gộp đó và **chia dòng theo trường `collection`** thành nhiều file
 `vector/<collection>.jsonl` (1 file = 1 Qdrant collection). Tổng chunk không đổi:
-2212 = 220 + 1356 + 546 + 90 (xem §2.1). Spec số liệu cấu trúc đã bỏ khỏi vector
-→ ở PostgreSQL `car_specs` (xem §3.1, §5.3).
+834 = 218 + 530 + 86 (xem §2.1). Spec số liệu cấu trúc + junk boilerplate đã bỏ khỏi
+vector → spec ở PostgreSQL `car_specs` (xem §3.1, §5.3). Không còn collection `vivu_specs`.
 
 ---
 
@@ -76,16 +76,16 @@ data/raw/*.txt ──► clean_to_jsonl.py ──► intermediate/{vector,hot}.j
 
 | Alias (retriever) | Collection vật lý | category nguồn | Nội dung | chunks (v1) |
 |---|---|---|---|---|
-| `vivu_specs` | `vivu_specs__<ver>` | `thong_so_ky_thuat` | Văn xuôi mô tả/so sánh model — **spec số liệu ở `car_specs` (SQL)**, bảng spec đã bỏ | 220 |
-| `vivu_product_info` | `vivu_product_info__<ver>` | `thong_tin_san_pham` | Mô tả sản phẩm, tính năng, dat-coc (không giá, không section/bảng "Thông số kỹ thuật") | 1356 |
-| `vivu_policy` | `vivu_policy__<ver>` | `chinh_sach_dich_vu` | Chính sách bảo hành, thuê pin, điều khoản pháp lý, cứu hộ | 546 |
-| `vivu_maintenance` | `vivu_maintenance__<ver>` | `dat_lich_bao_duong` | Text chung về dịch vụ bảo dưỡng (KHÔNG phải lịch theo xe) | 90 |
-| `sparse` | `sparse__<ver>` | *(toàn corpus)* | BM25 sparse vector cho mọi chunk | 2212 |
+| `vivu_product_info` | `vivu_product_info__<ver>` | `thong_tin_san_pham` | Mô tả sản phẩm, tính năng, dat-coc, prose mô tả/so sánh model (không giá, không section/bảng "Thông số kỹ thuật") | 218 |
+| `vivu_policy` | `vivu_policy__<ver>` | `chinh_sach_dich_vu` | Chính sách bảo hành, thuê pin, điều khoản pháp lý, cứu hộ | 530 |
+| `vivu_maintenance` | `vivu_maintenance__<ver>` | `dat_lich_bao_duong` | Text chung về dịch vụ bảo dưỡng (KHÔNG phải lịch theo xe) | 86 |
+| `sparse` | `sparse__<ver>` | *(toàn corpus)* | BM25 sparse vector cho mọi chunk | 834 |
 | `vivu_faq` | `vivu_faq__<ver>` *(định nghĩa, chưa có data)* | `ho_tro_mua_xe` | FAQ bán hàng / lái thử | 0 |
 
 > **Versioning**: collection vật lý = `<col>__<version>`; alias `<col>` →
 > collection của **active** version (promote/rollback swap alias, atomic — xem
-> `docs/VERSIONING.md`). Ingest v2 tạo `vivu_specs__v2` KHÔNG đè v1 (`vivu_specs__v1`).
+> `docs/VERSIONING.md`). Ingest v2 tạo `vivu_product_info__v2` KHÔNG đè v1
+> (`vivu_product_info__v1`).
 
 **Cấu hình collection (dense):**
 
@@ -98,9 +98,10 @@ data/raw/*.txt ──► clean_to_jsonl.py ──► intermediate/{vector,hot}.j
 | Upsert batch | 100 points / request |
 | Incremental | cache vector theo content-hash (`data/.vector_cache/cache.sqlite`) — chunk không đổi = 0 API call |
 
-> Retriever đọc **alias** `vivu_specs`, `vivu_product_info`, `vivu_policy`,
+> Retriever đọc **alias** `vivu_product_info`, `vivu_policy`,
 > `vivu_maintenance`, `sparse` (tên ổn định → không cần biết active version).
 > `vivu_faq` là collection dự phòng (route `ho_tro_mua_xe`), chưa có chunk trong v1.
+> Spec số liệu query thẳng `car_specs` (SQL) — KHÔNG có alias `vivu_specs`.
 
 ### 2.2. Chunk payload (full fields)
 
@@ -109,23 +110,23 @@ bộ trường (JSON, 1 dòng compact):**
 
 ```jsonc
 {
-  "id":            "vivu_specs:vf8:all:thong_so_ky_thuat:1",
-  "collection":    "vivu_specs",
+  "id":            "vivu_product_info:vf8:all:bao_mat:1",
+  "collection":    "vivu_product_info",
   "vector_version":"v1",
   "model_id":      "VF8",          // nullable
   "edition_id":    null,           // nullable (v1 hiện = null cho mọi chunk)
-  "category":     "thong_so_ky_thuat",
-  "section_path":  ["thong_so_ky_thuat", "Bảng Đối Chiếu Thông Số ..."],
+  "category":     "thong_tin_san_pham",
+  "section_path":  ["thong_tin_san_pham", "An toàn"],
   "text":         "...",           // KHÔNG chứa số tiền (guard has_money)
-  "text_type":    "list",          // prose|table|list|key_value|qa_pair|legal_clause|link_list
+  "text_type":    "prose",         // prose|table|list|key_value|qa_pair|legal_clause|link_list
   "structured":   {},             // object, tuỳ loại (dimension/powertrain/adas/...)
   "language":     "vi",
-  "tags":         ["thongsokythuat", "vf8"],
-  "confidence":   0.8,             // 1.0 = verify thủ công; <1.0 = OCR/crawl lỗi
-  "source_file":  "data/raw/..._20260730_225643.txt",
-  "source_url":   "https://...",
+  "tags":         ["thongtinsanpham", "vf8"],
+  "confidence":   1.0,             // 1.0 = verify thủ công; <1.0 = OCR/crawl lỗi
+  "source_file":  "data/raw/vn_vi_dat-coc-xe-vf8_html_20260730_213201.txt",
+  "source_url":   "https://shop.vinfastauto.com/vn_vi/dat-coc-xe-vf8.html",
   "source_type":  "raw_html",     // raw_html | raw_pdf | brochure | product_page | faq | ...
-  "fetched_at":   "2026-07-30T22:56:43",
+  "fetched_at":   "2026-07-30T21:32:01",
   "ingested_at":  "2026-08-03T07:21:26Z",
   "is_hot":       false           // flag cold/hot — KHÔNG được đưa vào Qdrant payload
 }
@@ -153,7 +154,7 @@ source_type, fetched_at, ingested_at
 **Payload sparse** (4 trường, tối giản để filter):
 
 ```jsonc
-{ "collection": "vivu_specs", "chunk_id": "vivu_specs:vf8:all:...:1", "model_id": "VF8", "vector_version": "v2" }
+{ "collection": "vivu_product_info", "chunk_id": "vivu_product_info:vf8:all:..:1", "model_id": "VF8", "vector_version": "v2" }
 ```
 
 **File index đi kèm** — `data/clean/<ver>/sparse_index.json` (retriever encode
@@ -161,7 +162,7 @@ query bằng cùng vocab/idf):
 
 ```jsonc
 { "version": "v1", "vocab": { "<term>": <int_idx>, ... }, "idf": [<float>, ...],
-  "avgdl": 47.5, "n_docs": 2212, "k1": 1.5, "b": 0.75 }
+  "avgdl": 50.1, "n_docs": 834, "k1": 1.5, "b": 0.75 }
 ```
 
 ---
@@ -481,7 +482,8 @@ collection `vivu_maintenance`) + link trang bảo dưỡng chính thức
 - `section_slug` = `slugify(2 phần cuối section_path)`, lower, `[a-z0-9_]`, ≤ 40 ký tự.
 - `seq` = số thứ tự tăng dần trong `(collection, model, edition)`.
 
-Ví dụ: `vivu_specs:vf8:all:thong_so_ky_thuat:1`, `vivu_maintenance:general:all:dat_lich_bao_duong_d_ch_v_b_o_d_ng:1`.
+Ví dụ: `vivu_product_info:vf8:all:an_toan:1`,
+`vivu_maintenance:general:all:dat_lich_bao_duong_d_ch_v_b_o_d_ng:1`.
 
 ### 6.2. Khóa join
 
@@ -500,29 +502,32 @@ entity từ query (regex `VF 9`, `Plus`, `Eco`...) → filter Qdrant theo
 
 | category | collection |
 |---|---|
-| `thong_so_ky_thuat` | `vivu_specs` |
 | `thong_tin_san_pham` | `vivu_product_info` |
 | `ho_tro_mua_xe` | `vivu_faq` |
 | `chinh_sach_dich_vu` | `vivu_policy` |
 | `dat_lich_bao_duong` | `vivu_maintenance` |
 
+> Note: KHÔNG có collection `vivu_specs`. Category gốc `thong_so_ky_thuat`
+> (bài so-sánh/đối chiếu) giờ rơi về `vivu_product_info` (prose mô tả/so sánh model);
+> spec số liệu chỉ ở `car_specs` (SQL).
+
 ### 6.4. Routing nguồn (clean_to_jsonl)
 
 Giá chỉ trích từ domain chính thống `{vinfastauto.com, shop.vinfastauto.com}`
-vào Postgres. PDF extract → `vivu_policy`. So sánh/đối chiếu → `vivu_specs`.
-Article/dealer → `vivu_product_info` (confidence thấp hơn).
+vào Postgres. PDF extract → `vivu_policy`. Article/dealer → `vivu_product_info`
+(confidence thấp hơn). Bài so sánh/đối chiếu → `vivu_product_info` (prose mô tả/
+so sánh model).
 
 **Spec số liệu → `car_specs` (SQL), KHÔNG vào vector** (`parse_specs.py`): section
-"Thông số kỹ thuật" của dat-coc (đang ở `vivu_product_info`) và bảng spec so-sanh
-(ở `vivu_specs`) bị drop khỏi vector ở bước clean — chỉ giữ prose mô tả/so sánh.
-Cụ thể, `clean_to_jsonl.py` drop chunk khi: (a) section_path có tiêu đề ==
-"thông số kỹ thuật"; (b) `vivu_specs` + `text_type in {table,list,key_value}`;
-(c) **content-based** — chunk ở `{vivu_specs, vivu_product_info}` có ≥4 ký tự `|`
-VÀ chứa label spec (công suất / mô men / pin / quãng đường / tải trọng...) → bắt
-bảng spec pipe-delimited bị gán nhãn `prose` do chunk-split mất dòng `---`.
-Ngưỡng pipe bảo vệ prose mô tả ("VF 8 có công suất 150 kW" — 0 pipe → giữ).
-Spec số liệu (công suất, momen, quãng đường, kích thước, pin...) → `car_specs`
-để retriever query SQL chính xác (tránh nhầm Eco/Plus khi embed na ná nhau).
+"Thông số kỹ thuật" của dat-coc và bảng spec so-sanh bị drop khỏi vector ở bước
+clean — chỉ giữ prose mô tả/so sánh. Cụ thể, `clean_to_jsonl.py` drop chunk khi:
+(a) section_path có tiêu đề == "thông số kỹ thuật"; (b) **content-based** — chunk
+ở `vivu_product_info` có ≥4 ký tự `|` VÀ chứa label spec (công suất / mô men /
+pin / quãng đường / tải trọng...) → bắt bảng spec pipe-delimited bị gán nhãn
+`prose` do chunk-split mất dòng `---`. Ngưỡng pipe bảo vệ prose mô tả
+("VF 8 có công suất 150 kW" — 0 pipe → giữ). Spec số liệu (công suất, momen,
+quãng đường, kích thước, pin...) → `car_specs` để retriever query SQL chính xác
+(tránh nhầm Eco/Plus khi embed na ná nhau).
 
 ---
 

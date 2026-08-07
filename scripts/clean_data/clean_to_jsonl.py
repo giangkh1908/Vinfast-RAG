@@ -99,9 +99,9 @@ MODEL_LABEL = {
     "NERIO": "Nerio Green",
 }
 
-# Collection / category routing
+# Collection / category routing  (spec số liệu KHÔNG vào vector — chỉ ở car_specs SQL;
+# prose mô tả/so sánh model hiện nằm trong vivu_product_info)
 COLLECTION_BY_CATEGORY = {
-    "thong_so_ky_thuat": "vivu_specs",
     "thong_tin_san_pham": "vivu_product_info",
     "ho_tro_mua_xe": "vivu_faq",
     "chinh_sach_dich_vu": "vivu_policy",
@@ -236,11 +236,12 @@ def classify_raw(path: Path, meta: dict[str, Any]) -> dict[str, Any] | None:
     if stype == "pdf":
         return route("vivu_policy", "chinh_sach_dich_vu", 0.9, "pdf-manual")
 
-    # Web articles / dealer pages
+    # Web articles / dealer pages — prose mô tả/so sánh model → vivu_product_info
+    # (spec số liệu → car_specs qua parse_specs, không vào vector)
     if any(k in name for k in ("so-sanh", "bang-doi-chieu")):
-        return route("vivu_specs", "thong_so_ky_thuat", 0.8, "comparison")
+        return route("vivu_product_info", "thong_so_ky_thuat", 0.8, "comparison")
     if any(k in name for k in ("thong-so-ky-thuat", "thong-so-")):
-        return route("vivu_specs", "thong_so_ky_thuat", 0.8, "specs-article")
+        return route("vivu_product_info", "thong_so_ky_thuat", 0.8, "specs-article")
     return route("vivu_product_info", "thong_tin_san_pham", 0.7, "article")
 
 
@@ -401,6 +402,55 @@ def _is_offmodel_noise(chunk: dict[str, Any]) -> bool:
     if any(f and f in low for f in forms) or "vinfast" in low:
         return False
     return any(b in low for b in COMPETING_BRANDS)
+
+
+# ── Junk chunk filter (boilerplate site) ─────────────────────────────────────
+# Rác lặp trên MỌI trang của vinfastauto.com / shop.vinfastauto.com: modal
+# đăng ký/email, footer nav links, nav menu của trang, button "Giá bán từ Đặt
+# cọc". Là điều hướng/form, KHÔNG phải thông tin xe → drop ở mức chunk (vì là
+# khối đa-dòng, lọc theo từng dòng bằng NOISE_PATTERNS không đủ).
+_JUNK_SECTION_NORM = {
+    "dang ky thanh cong", "kiem tra email", "kiem tra email de kich hoat tai khoan",
+    "doi mat khau thanh cong", "nhan bao gia uu dai moi nhat",
+    "dich vu khach hang", "speak-up hotline", "speak up hotline",
+    "tien ich", "mua sam", "theo doi",
+}
+_JUNK_TEXT_RE = re.compile(
+    r"icon-popup-success|"
+    r"d[ăa]ng nh[ậa]p\s*/\s*[đd][ăa]ng k[ýy] tr[ưu]ớc khi mua h[àa]ng|"
+    r"gi[áa] b[áa]n t[ừu] đ[ặa]t c[ọo]c đ[ăa]ng k[ýy] l[áa]i th[ửu]|"
+    r"vinfast s[ẽe] li[êe]n h[ệe] t[ưu] v[ấa]n|"
+    r"c[ảa]m [ơo]n qu[ýy] kh[áa]ch đ[ãa] quan t[âa]m",
+    re.IGNORECASE,
+)
+_NAV_ITEM_RE = re.compile(
+    r"^-\s*(gi[áa] b[áa]n|gi[ớo]i thi[ệe]u|ngo[ạa]i th[ấa]t|n[ộo]i th[ấa]t|"
+    r"th[ôo]ng s[ốo]|t[íi]nh n[ăa]ng|t[ổo]ng quan|thi[ếe]t k[ếe]|v[ậa]n h[àa]nh|"
+    r"an to[àa]n|ưu đ[ãa]i|c[áa]c phi[êe]n b[ảa]n)\s*$",
+    re.IGNORECASE,
+)
+
+
+def _is_junk_chunk(chunk: dict[str, Any]) -> bool:
+    """True nếu chunk là boilerplate site (modal/footer/nav/button) — drop."""
+    text = chunk.get("text", "") or ""
+    # (1) section title là header modal hoặc footer
+    for sp in chunk.get("section_path", []):
+        if no_diacritics(sp).lower().strip() in _JUNK_SECTION_NORM:
+            return True
+    # (2) text khớp modal/newsletter/price-button
+    if _JUNK_TEXT_RE.search(text):
+        return True
+    # (3) nav menu leak: KHÔNG có section title (chunk gốc) + text là/mở đầu bằng nav items
+    if len(chunk.get("section_path", [])) <= 1:
+        lines = [l.strip() for l in text.splitlines() if l.strip()]
+        nav_lines = [l for l in lines if _NAV_ITEM_RE.match(l)]
+        if len(nav_lines) >= 2 and len(nav_lines) / max(len(lines), 1) >= 0.5:
+            return True
+        if re.search(r"^-\s*(gi[aá] b[aá]n|gi[ớo]i thi[ệe]u|ngo[ạa]i th[ấa]t|"
+                     r"n[ộo]i th[ấa]t|th[ôo]ng s[ốo])\s*\n", text, re.MULTILINE):
+            return True
+    return False
 
 
 def normalize_numbers(text: str) -> str:
@@ -856,17 +906,14 @@ def run(version: str = "v1", max_len: int = 400) -> int:
 
     # Bỏ spec cấu trúc khỏi vector — spec số liệu giờ ở PostgreSQL `car_specs`
     # (retriever query SQL chính xác, tránh nhầm Eco/Plus khi embed na ná nhau).
-    # 3 điều kiện drop:
+    # 2 điều kiện drop:
     #   (a) section_path có tiêu đề section == "thông số kỹ thuật" (section spec của
     #       dat-coc — text_type có thể là prose do flatten "Động cơ 01 Motor...").
-    #   (b) collection == vivu_specs VÀ text_type in {table, list, key_value}
-    #       (bảng spec so-sanh — chỉ vivu_specs chứa spec; bảng ở collection khác
-    #       như vivu_policy là điều khoản, KHÔNG drop).
-    #   (c) content-based: chunk ở {vivu_specs, vivu_product_info} có ≥4 ký tự '|' VÀ
-    #       chứa label spec (công suất / mô men / pin / quãng đường / tải trọng...).
-    #       Bắt spec-table pipe-delimited bị gán nhãn text_type=prose do chunk-split
-    #       mất dòng `---` (detector '|'+---' không nhận). Ngưỡng pipe bảo vệ prose
-    #       mô tả ("VF 8 có công suất 150 kW" — 0 pipe → giữ).
+    #   (b) content-based: chunk ở vivu_product_info có ≥4 ký tự '|' VÀ chứa label spec
+    #       (công suất / mô men / pin / quãng đường / tải trọng...). Bắt spec-table
+    #       pipe-delimited bị gán nhãn text_type=prose do chunk-split mất dòng `---`
+    #       (detector '|'+---' không nhận). Ngưỡng pipe bảo vệ prose mô tả
+    #       ("VF 8 có công suất 150 kW" — 0 pipe → giữ).
     def _is_spec_section(chunk: dict[str, Any]) -> bool:
         for sp in chunk.get("section_path", []):
             if no_diacritics(sp).lower().replace(" ", "") == "thongsokythuat":
@@ -883,7 +930,7 @@ def run(version: str = "v1", max_len: int = 400) -> int:
     )
 
     def _is_spec_table(chunk: dict[str, Any]) -> bool:
-        if chunk.get("collection") not in ("vivu_specs", "vivu_product_info"):
+        if chunk.get("collection") != "vivu_product_info":
             return False
         text = chunk.get("text", "") or ""
         if text.count("|") < 4:
@@ -893,23 +940,18 @@ def run(version: str = "v1", max_len: int = 400) -> int:
 
     pre = len(all_vector)
     n_section = 0
-    n_table = 0
     n_spec_table = 0
     kept: list[dict[str, Any]] = []
     for c in all_vector:
         if _is_spec_section(c):
             n_section += 1
             continue
-        if c.get("collection") == "vivu_specs" \
-                and c.get("text_type") in {"table", "list", "key_value"}:
-            n_table += 1
-            continue
         if _is_spec_table(c):
             n_spec_table += 1
             continue
         kept.append(c)
     all_vector = kept
-    print(f"  dropped spec chunks: {n_section} (section) + {n_table} (vivu_specs table/list) "
+    print(f"  dropped spec chunks: {n_section} (section) "
           f"+ {n_spec_table} (spec-table pipe-delimited) | {pre} -> {len(all_vector)}")
 
     # Drop off-model noise (sidebar "tin liên quan" lạc tag — VD Toyota trong VF2)
@@ -922,6 +964,17 @@ def run(version: str = "v1", max_len: int = 400) -> int:
         kept_off.append(c)
     all_vector = kept_off
     print(f"  dropped off-model noise: {n_offmodel}")
+
+    # Drop junk boilerplate (modal/footer/nav/button từ shop site)
+    n_junk = 0
+    kept_junk: list[dict[str, Any]] = []
+    for c in all_vector:
+        if _is_junk_chunk(c):
+            n_junk += 1
+            continue
+        kept_junk.append(c)
+    all_vector = kept_junk
+    print(f"  dropped junk boilerplate: {n_junk}")
 
     # Write intermediate
     with (intermediate_dir / "vector.jsonl").open("w", encoding="utf-8") as f:
