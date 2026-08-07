@@ -2,7 +2,7 @@
 """
 vector_ingest.py — Ingest vector JSONL vào Qdrant (versioned + incremental).
 
-Collection = `<stem>__<version>` (VD `vivu_specs__v2`). Versioned → ingest v2
+Collection = `<stem>__<version>` (VD `vivu_product_info__v2`). Versioned → ingest v2
 KHÔNG đè v1. Promote/rollback swap alias (xem scripts/version_manager.py).
 
 Incremental embed: cache vector theo content-hash (backend/lib/vector_cache.py).
@@ -50,7 +50,7 @@ def qdrant_id(chunk_id: str) -> str:
 
 
 def make_payload(chunk: dict[str, Any]) -> dict[str, Any]:
-    return {k: v for k, v in chunk.items() if k not in {"id", "is_hot"}}
+    return {k: v for k, v in chunk.items() if k not in {"id", "text", "is_hot"}}
 
 
 def probe_dimension() -> int:

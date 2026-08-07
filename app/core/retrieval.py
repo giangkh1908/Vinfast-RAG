@@ -15,7 +15,7 @@ from app.config import settings
 _reranker = None
 _sparse_index = None
 
-DENSE_COLLECTIONS = ["vivu_specs", "vivu_product_info", "vivu_policy", "vivu_maintenance"]
+DENSE_COLLECTIONS = ["vivu_product_info", "vivu_policy", "vivu_maintenance"]
 SPARSE_COLLECTION = "sparse"
 SPARSE_INDEX_PATH = Path(__file__).resolve().parents[2] / "data" / "clean" / "v1" / "sparse_index.json"
 

@@ -11,9 +11,9 @@ Subcommands:
   promote     — alias swap → `__<V>` + is_current=V (V đã ingest)
   rollback    — alias swap về `__<V>` + is_current=V (V vẫn còn data → instant)
   delete      — drop `__<V>` collections + DELETE rows PG version=V (refuse nếu đang active)
-  migrate-v1  — (1 lần) chuyển v1 hiện có (collection unversioned `vivu_specs`...)
-                sang `vivu_specs__v1` + alias, PG versioned, is_current=v1. KHÔNG re-embed
-                (copy points WITH vectors). Chạy sau khi deploy code versioned.
+  migrate-v1  — (1 lần) chuyển v1 hiện có (collection unversioned) sang `__v1` + alias,
+                PG versioned, is_current=v1. KHÔNG re-embed (copy points WITH vectors).
+                Chạy sau khi deploy code versioned.
 
 Usage:
     python scripts/version_manager.py list
@@ -41,7 +41,7 @@ QDRANT_URL = os.environ.get("QDRANT_URL", "http://localhost:6333")
 PG_DSN = os.environ.get("PG_DSN", "postgresql://vivu:vivu@localhost:5432/vivu")
 
 SPARSE_ALIAS = "sparse"
-DENSE_ALIASES = ["vivu_specs", "vivu_product_info", "vivu_policy", "vivu_maintenance"]
+DENSE_ALIASES = ["vivu_product_info", "vivu_policy", "vivu_maintenance"]
 
 ALL_ALIASES = DENSE_ALIASES + [SPARSE_ALIAS]
 

@@ -102,10 +102,7 @@ def run(version: str = "v1", url: str = DEFAULT_QDRANT_URL, recreate: bool = Fal
     if recreate and client.collection_exists(sparse_collection):
         client.delete_collection(sparse_collection)
     if not client.collection_exists(sparse_collection):
-        client.create_collection(
-            collection_name=sparse_collection,
-            vectors_config={},
-            sparse_vectors_config={"sparse": SparseVectorParams(index=SparseIndexParams(on_disk=False))},
+        client.create_collection(collection_name=sparse_collection, vectors_config={}, sparse_vectors_config={"sparse": SparseVectorParams(index=SparseIndexParams(on_disk=False))},
         )
         print(f"  created collection {sparse_collection}")
 

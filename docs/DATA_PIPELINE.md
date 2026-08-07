@@ -26,13 +26,13 @@ raw text → clean → chunk → embed → ingest vào **Qdrant** (dense + spars
 ```bash
 pip install -r requirements.txt
 cp .env.example .env          # rồi điền OPENROUTER_API_KEY=...
-docker compose up -d          # Qdrant :6333/:6334, Postgres16 :5432
+docker compose up -d          # Qdrant :16333/:16334, Postgres16 :15432 (đổi port tránh xung)
 ```
 
 Kiểm tra 2 DB đã lên:
 
 ```bash
-curl http://localhost:6333/collections        # []  (rỗng là OK lần đầu)
+curl http://localhost:16333/collections        # []  (rỗng là OK lần đầu)
 docker exec vivu_postgres psql -U vivu -d vivu -c '\dt'
 ```
 
@@ -107,7 +107,6 @@ data/clean/v1/
 │   ├── hot.jsonl
 │   └── link_only.json
 ├── vector/                 # cold — ingest Qdrant dense (text KHÔNG chứa giá)
-│   ├── vivu_specs.jsonl
 │   ├── vivu_product_info.jsonl
 │   ├── vivu_policy.jsonl
 │   └── vivu_maintenance.jsonl
@@ -118,11 +117,12 @@ data/clean/v1/
 ```
 
 - **Chunking 1 lần, phân nhiều thùng**: cắt chunk chỉ ở bước clean (1 file gộp
-  `intermediate/vector.jsonl`, 2212 dòng sau khi bỏ spec cấu trúc). Bước split
-  KHÔNG cắt lại — chỉ chia dòng theo `collection` thành 4 file
-  `vector/<collection>.jsonl` (1 file = 1 Qdrant collection).
-  2212 = 220 + 1356 + 546 + 90 (spec cấu trúc đã bỏ khỏi vector → `car_specs`;
-  xem `DATA_SCHEMA_SPEC.md` §5.3).
+  `intermediate/vector.jsonl`, 834 dòng sau khi bỏ spec cấu trúc + junk boilerplate
+  modal/footer/nav). Bước split KHÔNG cắt lại — chỉ chia dòng theo `collection`
+  thành 3 file `vector/<collection>.jsonl` (1 file = 1 Qdrant collection).
+  834 = 218 + 530 + 86 (spec cấu trúc đã bỏ khỏi vector → `car_specs`;
+  xem `DATA_SCHEMA_SPEC.md` §5.3). Không còn collection `vivu_specs` — spec số liệu
+  chỉ ở `car_specs` (SQL), prose mô tả/so sánh model nằm trong `vivu_product_info`.
 - **Stable chunk id**: `<collection>:<model_lower>:<edition_lower>:<section_slug>:<seq>`
   → Qdrant point id = `uuid5` từ chunk id (deterministic, re-run không trùng lặp).
 - **Vector text** phải KHÔNG chứa số tiền (`has_money` check) — chunk nào dính
@@ -138,8 +138,8 @@ PYTHONUTF8=1 python scripts/version_manager.py status
 PYTHONUTF8=1 python scripts/version_manager.py list
 
 # Qdrant: collection vật lý __v1 (alias <col> trỏ tới). Count qua alias OK.
-curl http://localhost:6333/collections          # vivu_specs__v1, sparse__v1 ...
-curl -s -X POST http://localhost:6333/collections/vivu_specs/points/count -d '{"exact":true}'
+curl http://localhost:16333/collections          # vivu_product_info__v1, sparse__v1 ...
+curl -s -X POST http://localhost:16333/collections/vivu_product_info/points/count -d '{"exact":true}'
 
 # PostgreSQL: query VIEW active (= v1), KHÔNG query base table (chứa nhiều version)
 docker exec vivu_postgres psql -U vivu -d vivu \
@@ -154,11 +154,11 @@ docker exec vivu_postgres psql -U vivu -d vivu \
 Kết quả tham chiếu (lần chạy đầu, version `v1`, đã promote):
 
 ```
-version_manager status:  vivu_specs → vivu_specs__v1, sparse → sparse__v1, active=v1
-Qdrant:   vivu_specs__v1=220  vivu_product_info__v1=1356  vivu_policy__v1=546
-          vivu_maintenance__v1=90  sparse__v1=2212
-Postgres: edition_active=14  price_list_active=14  car_specs=217  ingest_version: v1 is_current=t
-Manifest: total_chunks=2212  total_rows_upserted=28
+version_manager status:  vivu_product_info → vivu_product_info__v1, sparse → sparse__v1, active=v1
+Qdrant:   vivu_product_info__v1=218  vivu_policy__v1=530
+          vivu_maintenance__v1=86  sparse__v1=834
+Postgres: edition_active=14  price_list_active=14  car_specs=61  ingest_version: v1 is_current=t
+Manifest: total_chunks=834  total_rows_upserted=28
 ```
 
 > Nếu chưa promote: `status` in "active=(none)" và VIEW active rỗng. Chạy
