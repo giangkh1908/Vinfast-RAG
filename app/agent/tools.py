@@ -143,7 +143,14 @@ async def list_available_models() -> dict:
             }
         by_model[mid]["versions"].append(r["edition_id"])
 
-    return {"models": list(by_model.values())}
+    # Add source_url for citation
+    models = []
+    for mid, info in by_model.items():
+        model_lower = mid.lower().replace(" ", "-")
+        info["source_url"] = f"https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-{model_lower}.html"
+        models.append(info)
+
+    return {"models": models}
 
 
 UTILITY_LINKS = {
