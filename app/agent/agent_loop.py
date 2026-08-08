@@ -2,6 +2,7 @@ import asyncio
 import json
 import logging
 import re
+import time
 from dataclasses import dataclass, field
 
 from openai import AsyncOpenAI
@@ -9,17 +10,17 @@ from openai import AsyncOpenAI
 from app.config import settings
 from app.agent.schemas import build_tool_schemas
 from app.agent.tools import TOOL_REGISTRY
-from app.agent.prompts import get_system_prompt, SYNTHESIZE_PROMPT
+from app.agent.prompts import get_system_prompt, SYNTHESIZE_PROMPT, get_prompt_hash
 from app.agent.context_builder import build_structured_context
 from app.agent.classifier import get_classifier
 from app.agent.decision import (
     assess_evidence,
     validate_citations,
     make_decision_log,
+    log_store,
     REFUSAL_MESSAGES,
     get_oos_messages,
     get_clarify_messages,
-    DecisionLog,
 )
 
 logger = logging.getLogger("bds.agent")
@@ -160,7 +161,19 @@ class AgentLoop:
             return clarify_msgs["version"]
         return "Bạn có thể đặt câu hỏi cụ thể hơn không?"
 
+    def _build_log_kwargs(self, t0: float, t_retrieval: float, t_generation: float) -> dict:
+        return {
+            "latency_ms": (time.time() - t0) * 1000,
+            "latency_retrieval_ms": t_retrieval * 1000,
+            "latency_generation_ms": t_generation * 1000,
+            "prompt_hash": get_prompt_hash(),
+        }
+
     async def run(self, query: str, history: list[dict]) -> AgentResult:
+        t0 = time.time()
+        t_retrieval = 0.0
+        t_generation = 0.0
+
         classify_result = self.classifier.classify(query, history)
 
         # Decision Order Step 1: Out-of-scope check
@@ -168,25 +181,27 @@ class AgentLoop:
             oos_type = classify_result.intents[0] if classify_result.intents else "unknown"
             oos_msgs = get_oos_messages()
             response = oos_msgs.get(oos_type, oos_msgs.get("model_oos", ""))
-            dlog = make_decision_log(query, classify_result, [], response, [])
-            logger.info("BDS decision=%s reason=%s", "out_of_scope", classify_result.reason)
+            dlog = make_decision_log(query, classify_result, [], response, [], **self._build_log_kwargs(t0, 0, 0))
+            log_store.add(dlog)
+            logger.info("BDS decision=%s reason_code=%s", "out_of_scope", dlog.reason_code)
             return AgentResult(
                 response=response,
                 decision="out_of_scope",
-                classify_result={"decision": "out_of_scope", "reason": classify_result.reason, "entities": classify_result.entities},
+                classify_result={"decision": "out_of_scope", "reason_code": dlog.reason_code, "entities": classify_result.entities},
                 decision_log=dlog.to_dict(),
             )
 
         # Decision Order Step 2-4: Clarify checks
         if classify_result.decision == "clarify":
             response = self._generate_clarification(classify_result)
-            dlog = make_decision_log(query, classify_result, [], response, [])
-            logger.info("BDS decision=%s reason=%s", "clarify", classify_result.reason)
+            dlog = make_decision_log(query, classify_result, [], response, [], **self._build_log_kwargs(t0, 0, 0))
+            log_store.add(dlog)
+            logger.info("BDS decision=%s reason_code=%s", "clarify", dlog.reason_code)
             return AgentResult(
                 response=response,
                 needs_clarification=True,
                 decision="clarify",
-                classify_result={"decision": "clarify", "reason": classify_result.reason, "entities": classify_result.entities},
+                classify_result={"decision": "clarify", "reason_code": dlog.reason_code, "entities": classify_result.entities},
                 decision_log=dlog.to_dict(),
             )
 
@@ -196,13 +211,29 @@ class AgentLoop:
         tool_results = []
         force_tool = classify_result.topic is not None
 
+        t_retrieve_start = time.time()
         for i in range(self.MAX_ITERATIONS):
-            response = await self.llm.chat.completions.create(
-                model=settings.llm_model,
-                messages=messages,
-                tools=tool_schemas,
-                tool_choice="required" if force_tool and i == 0 else "auto",
-            )
+            try:
+                response = await self.llm.chat.completions.create(
+                    model=settings.llm_model,
+                    messages=messages,
+                    tools=tool_schemas,
+                    tool_choice="required" if force_tool and i == 0 else "auto",
+                )
+            except Exception as e:
+                t_retrieval = time.time() - t_retrieve_start
+                dlog = make_decision_log(
+                    query, classify_result, [], REFUSAL_MESSAGES["system_error"], [],
+                    **self._build_log_kwargs(t0, t_retrieval, 0),
+                    error_stage="retrieval", error_type=type(e).__name__, error_message=str(e)[:200],
+                )
+                log_store.add(dlog)
+                return AgentResult(
+                    response=REFUSAL_MESSAGES["system_error"],
+                    decision="refuse",
+                    classify_result={"decision": "refuse", "reason_code": "system_error"},
+                    decision_log=dlog.to_dict(),
+                )
 
             choice = response.choices[0]
             if not choice.message.tool_calls:
@@ -215,19 +246,21 @@ class AgentLoop:
             for tc, res in zip(choice.message.tool_calls, results):
                 messages.append({"role": "tool", "tool_call_id": tc.id, "content": json.dumps(res["result"], ensure_ascii=False)})
 
+        t_retrieval = time.time() - t_retrieve_start
+
         # Decision Order Step 5-6: Evidence assessment
         assessment, valid_sources = assess_evidence(tool_results, query)
 
         if assessment == "insufficient":
             response_text = REFUSAL_MESSAGES["insufficient_evidence"]
-            dlog = make_decision_log(query, classify_result, tool_results, response_text, [])
-            dlog.evidence_assessment = "insufficient"
-            logger.info("BDS decision=refuse reason=insufficient_evidence")
+            dlog = make_decision_log(query, classify_result, tool_results, response_text, [], **self._build_log_kwargs(t0, t_retrieval, 0))
+            log_store.add(dlog)
+            logger.info("BDS decision=refuse reason_code=insufficient_evidence")
             return AgentResult(
                 response=response_text,
                 sources=tool_results,
                 decision="refuse",
-                classify_result={"decision": "refuse", "reason": "insufficient_evidence", "assessment": assessment},
+                classify_result={"decision": "refuse", "reason_code": "insufficient_evidence", "assessment": assessment},
                 decision_log=dlog.to_dict(),
             )
 
@@ -241,64 +274,91 @@ class AgentLoop:
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": SYNTHESIZE_PROMPT.format(context=context, query=query)},
         ]
-        synth_response = await self.llm.chat.completions.create(model=settings.llm_model, messages=synth_messages)
-        final_response = synth_response.choices[0].message.content or ""
+
+        t_gen_start = time.time()
+        try:
+            synth_response = await self.llm.chat.completions.create(model=settings.llm_model, messages=synth_messages)
+            final_response = synth_response.choices[0].message.content or ""
+        except Exception as e:
+            t_generation = time.time() - t_gen_start
+            dlog = make_decision_log(
+                query, classify_result, tool_results, REFUSAL_MESSAGES["system_error"], [],
+                **self._build_log_kwargs(t0, t_retrieval, t_generation),
+                error_stage="generation", error_type=type(e).__name__, error_message=str(e)[:200],
+            )
+            log_store.add(dlog)
+            return AgentResult(
+                response=REFUSAL_MESSAGES["system_error"],
+                sources=tool_results,
+                decision="refuse",
+                classify_result={"decision": "refuse", "reason_code": "system_error"},
+                decision_log=dlog.to_dict(),
+            )
+        t_generation = time.time() - t_gen_start
 
         # Decision Order Step 8: Citation check
         if not citations and final_response:
             has_numbers = bool(re.search(r"\d[\d.,]+", final_response))
             if has_numbers:
                 response_text = REFUSAL_MESSAGES["no_citation"]
-                dlog = make_decision_log(query, classify_result, tool_results, response_text, [])
-                dlog.evidence_assessment = "no_citation"
-                logger.info("BDS decision=refuse reason=no_citation")
+                dlog = make_decision_log(query, classify_result, tool_results, response_text, [], **self._build_log_kwargs(t0, t_retrieval, t_generation))
+                log_store.add(dlog)
+                logger.info("BDS decision=refuse reason_code=citation_failure")
                 return AgentResult(
                     response=response_text,
                     sources=tool_results,
                     decision="refuse",
-                    classify_result={"decision": "refuse", "reason": "no_citation"},
+                    classify_result={"decision": "refuse", "reason_code": "citation_failure"},
                     decision_log=dlog.to_dict(),
                 )
 
         # Decision Order Step 9: Grounding check
         if not self._check_grounding(final_response, tool_results):
             final_response = REFUSAL_MESSAGES["grounding_fail"]
-            dlog = make_decision_log(query, classify_result, tool_results, final_response, citations)
-            dlog.evidence_assessment = "grounding_fail"
-            logger.info("BDS decision=refuse reason=grounding_fail")
+            dlog = make_decision_log(query, classify_result, tool_results, final_response, citations, **self._build_log_kwargs(t0, t_retrieval, t_generation))
+            log_store.add(dlog)
+            logger.info("BDS decision=refuse reason_code=grounding_failure")
             return AgentResult(
                 response=final_response,
                 sources=tool_results,
                 decision="refuse",
-                classify_result={"decision": "refuse", "reason": "grounding_fail"},
+                classify_result={"decision": "refuse", "reason_code": "grounding_failure"},
                 decision_log=dlog.to_dict(),
             )
 
         # Decision Order Step 9: Answer
-        dlog = make_decision_log(query, classify_result, tool_results, final_response, citations)
-        logger.info("BDS decision=answer assessment=%s citations=%d", assessment, len(citations))
+        dlog = make_decision_log(query, classify_result, tool_results, final_response, citations, **self._build_log_kwargs(t0, t_retrieval, t_generation))
+        log_store.add(dlog)
+        logger.info("BDS decision=answer reason_code=%s latency=%.0fms", dlog.reason_code, dlog.latency_total_ms)
         return AgentResult(
             response=final_response,
             sources=tool_results,
             decision="answer",
-            classify_result={"decision": "answer", "reason": classify_result.reason, "assessment": assessment},
+            classify_result={"decision": "answer", "reason_code": dlog.reason_code, "assessment": assessment},
             decision_log=dlog.to_dict(),
         )
 
     async def run_stream(self, query: str, history: list[dict]):
+        t0 = time.time()
         classify_result = self.classifier.classify(query, history)
 
         if classify_result.decision == "out_of_scope":
             oos_type = classify_result.intents[0] if classify_result.intents else "unknown"
             oos_msgs = get_oos_messages()
+            response = oos_msgs.get(oos_type, oos_msgs.get("model_oos", ""))
+            dlog = make_decision_log(query, classify_result, [], response, [], **self._build_log_kwargs(t0, 0, 0))
+            log_store.add(dlog)
             yield {"type": "decision", "content": "out_of_scope"}
-            yield {"type": "answer", "content": oos_msgs.get(oos_type, oos_msgs.get("model_oos", ""))}
+            yield {"type": "answer", "content": response}
             yield {"type": "done"}
             return
 
         if classify_result.decision == "clarify":
+            response = self._generate_clarification(classify_result)
+            dlog = make_decision_log(query, classify_result, [], response, [], **self._build_log_kwargs(t0, 0, 0))
+            log_store.add(dlog)
             yield {"type": "decision", "content": "clarify"}
-            yield {"type": "clarify", "content": self._generate_clarification(classify_result)}
+            yield {"type": "clarify", "content": response}
             yield {"type": "done"}
             return
 
@@ -310,11 +370,24 @@ class AgentLoop:
         tool_results = []
         force_tool = classify_result.topic is not None
 
+        t_retrieve_start = time.time()
         for i in range(self.MAX_ITERATIONS):
-            response = await self.llm.chat.completions.create(
-                model=settings.llm_model, messages=messages, tools=tool_schemas,
-                tool_choice="required" if force_tool and i == 0 else "auto", stream=False,
-            )
+            try:
+                response = await self.llm.chat.completions.create(
+                    model=settings.llm_model, messages=messages, tools=tool_schemas,
+                    tool_choice="required" if force_tool and i == 0 else "auto", stream=False,
+                )
+            except Exception as e:
+                t_retrieval = time.time() - t_retrieve_start
+                dlog = make_decision_log(
+                    query, classify_result, [], REFUSAL_MESSAGES["system_error"], [],
+                    **self._build_log_kwargs(t0, t_retrieval, 0),
+                    error_stage="retrieval", error_type=type(e).__name__, error_message=str(e)[:200],
+                )
+                log_store.add(dlog)
+                yield {"type": "answer", "content": REFUSAL_MESSAGES["system_error"]}
+                yield {"type": "done"}
+                return
 
             choice = response.choices[0]
             if not choice.message.tool_calls:
@@ -330,9 +403,13 @@ class AgentLoop:
             for tc, res in zip(choice.message.tool_calls, results):
                 messages.append({"role": "tool", "tool_call_id": tc.id, "content": json.dumps(res["result"], ensure_ascii=False)})
 
+        t_retrieval = time.time() - t_retrieve_start
+
         assessment, valid_sources = assess_evidence(tool_results, query)
 
         if assessment == "insufficient":
+            dlog = make_decision_log(query, classify_result, tool_results, REFUSAL_MESSAGES["insufficient_evidence"], [], **self._build_log_kwargs(t0, t_retrieval, 0))
+            log_store.add(dlog)
             yield {"type": "answer", "content": REFUSAL_MESSAGES["insufficient_evidence"]}
             yield {"type": "sources", "content": []}
             yield {"type": "done"}
@@ -347,6 +424,7 @@ class AgentLoop:
             {"role": "user", "content": SYNTHESIZE_PROMPT.format(context=context, query=query)},
         ]
 
+        t_gen_start = time.time()
         stream = await self.llm.chat.completions.create(model=settings.llm_model, messages=synth_messages, stream=True)
 
         final_response = ""
@@ -356,8 +434,14 @@ class AgentLoop:
                 final_response += delta.content
                 yield {"type": "token", "content": delta.content}
 
+        t_generation = time.time() - t_gen_start
+
         if not self._check_grounding(final_response, tool_results):
+            final_response += "\n\n" + REFUSAL_MESSAGES["grounding_fail"]
             yield {"type": "token", "content": "\n\n" + REFUSAL_MESSAGES["grounding_fail"]}
+
+        dlog = make_decision_log(query, classify_result, tool_results, final_response, citations, **self._build_log_kwargs(t0, t_retrieval, t_generation))
+        log_store.add(dlog)
 
         yield {"type": "done"}
         if citations:

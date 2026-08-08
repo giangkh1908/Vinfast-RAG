@@ -103,3 +103,15 @@ Context:
 
 Câu hỏi: {query}
 """
+
+
+import hashlib
+
+_cached_prompt_hash = None
+
+
+def get_prompt_hash() -> str:
+    global _cached_prompt_hash
+    if _cached_prompt_hash is None:
+        _cached_prompt_hash = hashlib.sha256(BDS_SYSTEM_PROMPT.encode('utf-8')).hexdigest()[:12]
+    return _cached_prompt_hash

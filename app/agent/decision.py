@@ -1,58 +1,237 @@
+import hashlib
 import json
 import logging
 import re
-from dataclasses import dataclass, field
+import subprocess
+import time
+import uuid
+from dataclasses import dataclass, field, asdict
 from datetime import datetime, timezone
+from enum import Enum
+from pathlib import Path
 
 from app.config import settings
 
 logger = logging.getLogger("bds.decision")
 
+REPO_ROOT = Path(__file__).resolve().parents[2]
+
+
+# ── Reason Code Enum (contract §5) ─────────────────────────────────────────
+class ReasonCode(str, Enum):
+    # answer
+    SUFFICIENT_DIRECT_EVIDENCE = "sufficient_direct_evidence"
+    PARTIAL_DIRECT_EVIDENCE = "partial_direct_evidence"
+    # clarify
+    MISSING_MODEL = "missing_model"
+    MISSING_VERSION = "missing_version"
+    MISSING_TOPIC = "missing_topic"
+    AMBIGUOUS_CONTEXT = "ambiguous_context"
+    # refuse
+    INSUFFICIENT_EVIDENCE = "insufficient_evidence"
+    INDIRECT_EVIDENCE = "indirect_evidence"
+    INVALID_SOURCE = "invalid_source"
+    SOURCE_CONFLICT = "source_conflict"
+    CITATION_FAILURE = "citation_failure"
+    SYSTEM_ERROR = "system_error"
+    GROUNDING_FAILURE = "grounding_failure"
+    # out_of_scope
+    UNSUPPORTED_MODEL = "unsupported_model"
+    UNSUPPORTED_COMPARISON = "unsupported_comparison"
+    UNSUPPORTED_RECOMMENDATION = "unsupported_recommendation"
+    UNSUPPORTED_PRICING_POLICY = "unsupported_pricing_policy"
+    UNSUPPORTED_AFTER_SALES = "unsupported_after_sales"
+    UNSUPPORTED_SAFETY_DIAGNOSIS = "unsupported_safety_diagnosis"
+    UNSUPPORTED_CONTACT_WORKFLOW = "unsupported_contact_workflow"
+    EXTERNAL_SOURCE_REQUESTED = "external_source_requested"
+
+
+# Map classifier reason strings → ReasonCode
+_REASON_MAP = {
+    "BDS-01": ReasonCode.SUFFICIENT_DIRECT_EVIDENCE,
+    "BDS-02": ReasonCode.MISSING_MODEL,
+    "BDS-02A": ReasonCode.UNSUPPORTED_MODEL,
+    "BDS-05": ReasonCode.MISSING_TOPIC,
+    "insufficient_evidence": ReasonCode.INSUFFICIENT_EVIDENCE,
+    "no_citation": ReasonCode.CITATION_FAILURE,
+    "grounding_fail": ReasonCode.GROUNDING_FAILURE,
+    "system_error": ReasonCode.SYSTEM_ERROR,
+    "comparison": ReasonCode.UNSUPPORTED_COMPARISON,
+    "recommendation": ReasonCode.UNSUPPORTED_RECOMMENDATION,
+    "pricing": ReasonCode.UNSUPPORTED_PRICING_POLICY,
+    "warranty_maintenance": ReasonCode.UNSUPPORTED_AFTER_SALES,
+    "diagnostics": ReasonCode.UNSUPPORTED_SAFETY_DIAGNOSIS,
+    "hotline_showroom": ReasonCode.UNSUPPORTED_CONTACT_WORKFLOW,
+    "external_source": ReasonCode.EXTERNAL_SOURCE_REQUESTED,
+    "model_oos": ReasonCode.UNSUPPORTED_MODEL,
+}
+
+
+def resolve_reason_code(reason: str) -> str:
+    """Map classifier reason string → ReasonCode enum value."""
+    for prefix, code in _REASON_MAP.items():
+        if prefix in reason:
+            return code.value
+    return ReasonCode.SUFFICIENT_DIRECT_EVIDENCE.value
+
+
+# ── Version helpers ────────────────────────────────────────────────────────
+def _get_build_version() -> str:
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "--short", "HEAD"],
+            capture_output=True, text=True, timeout=5,
+            cwd=str(REPO_ROOT),
+        )
+        return result.stdout.strip() or "unknown"
+    except Exception:
+        return "unknown"
+
+
+def _get_prompt_hash(prompt: str) -> str:
+    return hashlib.sha256(prompt.encode("utf-8")).hexdigest()[:12]
+
+
+def _get_data_snapshot_id() -> str:
+    manifest = REPO_ROOT / "data" / "clean" / "v1" / "_manifest.json"
+    if manifest.exists():
+        try:
+            m = json.loads(manifest.read_text(encoding="utf-8"))
+            return m.get("version", "v1") + "_" + m.get("created_at", "")[:10]
+        except Exception:
+            pass
+    return "unknown"
+
+
+# ── P0 Decision Log ────────────────────────────────────────────────────────
+@dataclass
+class RetrievedChunk:
+    rank: int = 0
+    chunk_id: str = ""
+    source_id: str = ""
+    source_title: str = ""
+    source_url: str = ""
+    content: str = ""
+    vehicle_model: str = ""
+    vehicle_version: str = ""
+    topic: str = ""
+    approval_status: str = "approved"
+    retrieval_score: float = 0.0
+
+
+@dataclass
+class DisplayedCitation:
+    display_text: str = ""
+    source_id: str = ""
+    chunk_ids: list[str] = field(default_factory=list)
+    source_url: str = ""
+    section: str = ""
+
 
 @dataclass
 class DecisionLog:
+    # §4.1 Request & version identity
+    schema_version: str = "1.0"
+    request_id: str = ""
+    timestamp: str = ""
+    run_id: str = ""
+    test_id: str = ""
+    build_version: str = ""
+    prompt_version: str = ""
+    data_snapshot_id: str = ""
+    conversation_id: str = ""
+    turn_index: int = 0
+    previous_request_id: str = ""
+
+    # §4.2 Input & detected context
     user_query: str = ""
     detected_vehicle_model: str = "unknown"
     detected_vehicle_version: str = "unknown"
     detected_topic: str = "unknown"
     decision: str = ""
-    reason: str = ""
-    retrieved_sources: list[dict] = field(default_factory=list)
+    reason_code: str = ""
+
+    # §4.3 Retrieval & evidence
+    retrieval_status: str = "not_run"
+    retrieved_chunks: list[dict] = field(default_factory=list)
+    retrieval_query: str = ""
+    requested_top_k: int = 5
     evidence_assessment: str = ""
+
+    # §4.4 Answer & citation
     displayed_answer: str = ""
     displayed_citations: list[dict] = field(default_factory=list)
-    error: str = ""
-    timestamp: str = ""
+
+    # §4.5 Latency & error
+    error_stage: str = ""
+    error_type: str = ""
+    error_message: str = ""
+    latency_total_ms: float = 0.0
+    latency_retrieval_ms: float = 0.0
+    latency_generation_ms: float = 0.0
 
     def to_dict(self) -> dict:
-        return {
-            "user_query": self.user_query,
-            "detected_vehicle_model": self.detected_vehicle_model,
-            "detected_vehicle_version": self.detected_vehicle_version,
-            "detected_topic": self.detected_topic,
-            "decision": self.decision,
-            "reason": self.reason,
-            "retrieved_sources": self.retrieved_sources,
-            "evidence_assessment": self.evidence_assessment,
-            "displayed_answer": self.displayed_answer,
-            "displayed_citations": self.displayed_citations,
-            "error": self.error,
-            "timestamp": self.timestamp or datetime.now(timezone.utc).isoformat(),
-        }
+        d = asdict(self)
+        d.pop("retrieval_query", None)
+        d.pop("requested_top_k", None)
+        return d
 
 
+# ── Log Store (in-memory, exportable) ──────────────────────────────────────
+class LogStore:
+    """In-memory store for decision logs. Export to JSONL."""
+
+    def __init__(self):
+        self._logs: list[dict] = []
+        self._run_id = ""
+        self._run_timestamp = ""
+
+    def start_run(self) -> str:
+        self._run_id = f"run_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:6]}"
+        self._run_timestamp = datetime.now(timezone.utc).isoformat()
+        return self._run_id
+
+    def add(self, log: DecisionLog) -> None:
+        if not self._run_id:
+            self.start_run()
+        log.run_id = self._run_id
+        if not log.build_version:
+            log.build_version = _get_build_version()
+        if not log.data_snapshot_id:
+            log.data_snapshot_id = _get_data_snapshot_id()
+        self._logs.append(log.to_dict())
+
+    def get_all(self) -> list[dict]:
+        return list(self._logs)
+
+    def get_by_run(self, run_id: str) -> list[dict]:
+        return [l for l in self._logs if l.get("run_id") == run_id]
+
+    def export_jsonl(self, path: str | Path) -> int:
+        path = Path(path)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with path.open("w", encoding="utf-8") as f:
+            for log in self._logs:
+                f.write(json.dumps(log, ensure_ascii=False) + "\n")
+        return len(self._logs)
+
+    def clear(self):
+        self._logs.clear()
+
+
+log_store = LogStore()
+
+
+# ── Response Messages ──────────────────────────────────────────────────────
 def _scope_model_list() -> str:
     return " hoặc ".join(settings.scope_models)
 
 
 REFUSAL_MESSAGES = {
-    "no_evidence": "Mình chưa thể xác nhận thông tin này từ nguồn đã được phê duyệt hiện có.",
     "insufficient_evidence": "Mình chưa thể xác nhận thông tin chính từ nguồn hiện có.",
-    "no_citation": "M mình chưa thể xác nhận vì chưa có nguồn kiểm chứng hợp lệ.",
-    "conflict": "Nguồn hiện có chưa đủ nhất quán để xác nhận thông tin này.",
-    "invalid_source": "Mình chưa thể xác nhận từ nguồn hợp lệ hiện có.",
-    "system_error": "Mình chưa thể hoàn tất câu trả lời lúc này. Vui lòng thử lại.",
+    "no_citation": "Mình chưa thể xác nhận vì chưa có nguồn kiểm chứng hợp lệ.",
     "grounding_fail": "Mình chưa thể xác nhận thông tin này từ nguồn đã được phê duyệt hiện có.",
+    "system_error": "Mình chưa thể hoàn tất câu trả lời lúc này. Vui lòng thử lại.",
 }
 
 
@@ -79,8 +258,8 @@ def get_clarify_messages() -> dict[str, str]:
     }
 
 
+# ── Evidence Assessment ────────────────────────────────────────────────────
 def assess_evidence(tool_results: list[dict], query: str) -> tuple[str, list[dict]]:
-    """Assess evidence quality. Returns (assessment_type, valid_sources)."""
     if not tool_results:
         return "insufficient", []
 
@@ -96,12 +275,11 @@ def assess_evidence(tool_results: list[dict], query: str) -> tuple[str, list[dic
 
         if tool == "get_specs" and result.get("specs"):
             for s in result["specs"]:
-                src_url = result.get("source_url", "")
                 valid_sources.append({
                     "tool": tool,
                     "model_code": result.get("model_code", ""),
                     "text": f"{s.get('key', '')}: {s.get('value', '')} {s.get('unit', '')}",
-                    "source_url": src_url,
+                    "source_url": result.get("source_url", ""),
                     "source_type": "specs",
                 })
             has_direct = True
@@ -127,6 +305,8 @@ def assess_evidence(tool_results: list[dict], query: str) -> tuple[str, list[dic
                         "source_url": r.get("source_url", ""),
                         "source_type": r.get("source_type", ""),
                         "score": score,
+                        "chunk_id": r.get("id", ""),
+                        "model_id": r.get("model_id", ""),
                     })
                     if score >= 0.5:
                         has_direct = True
@@ -149,16 +329,99 @@ def assess_evidence(tool_results: list[dict], query: str) -> tuple[str, list[dic
 
 
 def validate_citations(sources: list[dict]) -> list[dict]:
-    """Filter sources to valid citations. Accept any URL with actual content."""
     valid = []
     for s in sources:
         url = s.get("source_url", "")
-        if not url:
-            continue
-        if not url.startswith("http"):
+        if not url or not url.startswith("http"):
             continue
         valid.append(s)
     return valid
+
+
+def build_retrieved_chunks(tool_results: list[dict]) -> list[dict]:
+    """Convert tool_results → P0 retrieved_chunks schema."""
+    chunks = []
+    rank = 0
+    for tr in tool_results:
+        if not tr.get("success"):
+            continue
+        result = tr["result"]
+        tool = tr["tool"]
+
+        if tool == "search_knowledge_base" and result.get("results"):
+            for r in result["results"]:
+                rank += 1
+                chunks.append(RetrievedChunk(
+                    rank=rank,
+                    chunk_id=r.get("id", f"kb_{rank}"),
+                    source_id=r.get("source_type", ""),
+                    source_title=r.get("source_type", ""),
+                    source_url=r.get("source_url", ""),
+                    content=r.get("text", "")[:500],
+                    vehicle_model=r.get("model_id", "") or "",
+                    vehicle_version="all_versions",
+                    topic="",
+                    approval_status="approved",
+                    retrieval_score=r.get("score", 0.0),
+                ).__dict__)
+
+        elif tool == "get_specs" and result.get("specs"):
+            for s in result["specs"]:
+                rank += 1
+                chunks.append(RetrievedChunk(
+                    rank=rank,
+                    chunk_id=f"spec_{result.get('model_code', '')}_{s.get('key', '')}",
+                    source_id="car_specs",
+                    source_title=f"Specs {result.get('model_code', '')}",
+                    source_url=result.get("source_url", ""),
+                    content=f"{s.get('key', '')}: {s.get('value', '')} {s.get('unit', '')}",
+                    vehicle_model=result.get("model_code", ""),
+                    vehicle_version=s.get("version_name", "all_versions"),
+                    topic="thông_số_kỹ_thuật",
+                    approval_status="approved",
+                    retrieval_score=1.0,
+                ).__dict__)
+
+        elif tool == "get_price" and result.get("prices"):
+            for p in result["prices"]:
+                rank += 1
+                chunks.append(RetrievedChunk(
+                    rank=rank,
+                    chunk_id=f"price_{result.get('model_code', '')}_{p.get('version_name', '')}",
+                    source_id="price_list",
+                    source_title=f"Giá {result.get('model_code', '')}",
+                    source_url=result.get("source_url", ""),
+                    content=f"{p.get('version_name', '')}: {p.get('price_vnd', '')}",
+                    vehicle_model=result.get("model_code", ""),
+                    vehicle_version=p.get("version_name", "all_versions"),
+                    topic="pricing",
+                    approval_status="approved",
+                    retrieval_score=1.0,
+                ).__dict__)
+
+    return chunks
+
+
+def build_displayed_citations(citations: list[dict]) -> list[dict]:
+    """Convert citations → P0 displayed_citations schema."""
+    seen = set()
+    result = []
+    for c in citations:
+        url = c.get("source_url", "")
+        if not url or url in seen:
+            continue
+        seen.add(url)
+        model = c.get("model_code", "")
+        label = c.get("source_type", "")
+        text = f"{model} — {label}" if model and label else (label or url)
+        result.append(DisplayedCitation(
+            display_text=text,
+            source_id=label,
+            chunk_ids=[c.get("chunk_id", "")] if c.get("chunk_id") else [],
+            source_url=url,
+            section="",
+        ).__dict__)
+    return result
 
 
 def make_decision_log(
@@ -167,23 +430,51 @@ def make_decision_log(
     tool_results: list[dict],
     response: str,
     citations: list[dict],
+    *,
+    conversation_id: str = "",
+    turn_index: int = 0,
+    previous_request_id: str = "",
+    latency_ms: float = 0.0,
+    latency_retrieval_ms: float = 0.0,
+    latency_generation_ms: float = 0.0,
+    prompt_hash: str = "",
+    error_stage: str = "",
+    error_type: str = "",
+    error_message: str = "",
 ) -> DecisionLog:
-    """Build a structured decision log entry."""
     model = classify_result.entities.get("model_code", "unknown")
     version = classify_result.entities.get("version", "all_versions")
     topic = classify_result.topic or "unknown"
 
-    assessment, _ = assess_evidence(tool_results, query) if tool_results else ("none", [])
+    assessment, _ = assess_evidence(tool_results, query) if tool_results else ("not_run", [])
+
+    reason_code = resolve_reason_code(classify_result.reason)
+    retrieval_status = "success" if tool_results else ("not_run" if classify_result.decision in ("clarify", "out_of_scope") else "no_result")
 
     return DecisionLog(
+        request_id=f"req_{uuid.uuid4().hex[:12]}",
+        timestamp=datetime.now(timezone.utc).isoformat(),
+        build_version=_get_build_version(),
+        prompt_version=prompt_hash or _get_prompt_hash(""),
+        data_snapshot_id=_get_data_snapshot_id(),
+        conversation_id=conversation_id or uuid.uuid4().hex[:12],
+        turn_index=turn_index,
+        previous_request_id=previous_request_id,
         user_query=query,
         detected_vehicle_model=model,
         detected_vehicle_version=version,
         detected_topic=topic,
         decision=classify_result.decision,
-        reason=classify_result.reason,
+        reason_code=reason_code,
+        retrieval_status=retrieval_status,
+        retrieved_chunks=build_retrieved_chunks(tool_results),
         evidence_assessment=assessment,
-        displayed_answer=response[:500],
-        displayed_citations=citations,
-        timestamp=datetime.now(timezone.utc).isoformat(),
+        displayed_answer=response[:2000],
+        displayed_citations=build_displayed_citations(citations),
+        error_stage=error_stage,
+        error_type=error_type,
+        error_message=error_message,
+        latency_total_ms=round(latency_ms, 1),
+        latency_retrieval_ms=round(latency_retrieval_ms, 1),
+        latency_generation_ms=round(latency_generation_ms, 1),
     )

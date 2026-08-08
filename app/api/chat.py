@@ -56,3 +56,31 @@ async def chat_stream(request: ChatRequest):
             yield f"data: {json.dumps(event, ensure_ascii=False)}\n\n"
 
     return StreamingResponse(generate(), media_type="text/event-stream")
+
+from fastapi.responses import JSONResponse, StreamingResponse as SR
+from app.agent.decision import log_store
+
+
+@router.get("/api/logs")
+async def get_logs(run_id: str = None):
+    if run_id:
+        logs = log_store.get_by_run(run_id)
+    else:
+        logs = log_store.get_all()
+    return JSONResponse(content={"count": len(logs), "run_id": run_id, "logs": logs})
+
+
+@router.get("/api/logs/export")
+async def export_logs(run_id: str = None):
+    if run_id:
+        logs = log_store.get_by_run(run_id)
+    else:
+        logs = log_store.get_all()
+    lines = [json.dumps(l, ensure_ascii=False) for l in logs]
+    content = "\n".join(lines) + "\n" if lines else ""
+    fname = "logs_" + (run_id or "all") + ".jsonl"
+    return SR(
+        content=iter([content]),
+        media_type="application/x-ndjson",
+        headers={"Content-Disposition": "attachment; filename=" + fname},
+    )
