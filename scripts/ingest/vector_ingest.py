@@ -22,6 +22,7 @@ Usage:
 
 import argparse
 import json
+import os
 import sys
 import time
 import uuid
@@ -39,7 +40,7 @@ from lib.vector_cache import VectorCache, content_hash  # noqa: E402
 REPO_ROOT = Path(__file__).resolve().parents[2]
 VECTOR_DIR = REPO_ROOT / "data" / "clean" / "{version}" / "vector"
 
-DEFAULT_QDRANT_URL = "http://localhost:6333"
+DEFAULT_QDRANT_URL = "http://localhost:16333"
 BATCH_SIZE = 64
 UPSERT_BATCH = 100
 
@@ -180,7 +181,7 @@ def run(version: str = "v1", url: str = DEFAULT_QDRANT_URL, recreate: bool = Fal
         print(f"[vector_ingest] vector dir not found: {vector_dir}", file=sys.stderr)
         return 1
 
-    client = QdrantClient(url=url)
+    client = QdrantClient(url=url, api_key=os.environ.get("QDRANT_API_KEY", "") or None)
     try:
         client.get_collections()
     except Exception as e:

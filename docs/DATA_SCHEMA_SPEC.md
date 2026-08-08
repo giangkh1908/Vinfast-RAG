@@ -65,8 +65,9 @@ data/raw/*.txt ──► clean_to_jsonl.py ──► intermediate/{vector,hot}.j
 `collection` theo `category`). Bước `split_cold_hot.py` **không cắt lại** — chỉ
 đọc file gộp đó và **chia dòng theo trường `collection`** thành nhiều file
 `vector/<collection>.jsonl` (1 file = 1 Qdrant collection). Tổng chunk không đổi:
-834 = 218 + 530 + 86 (xem §2.1). Spec số liệu cấu trúc + junk boilerplate đã bỏ khỏi
+1068 = 452 + 530 + 86 (xem §2.1). Spec số liệu cấu trúc + junk boilerplate đã bỏ khỏi
 vector → spec ở PostgreSQL `car_specs` (xem §3.1, §5.3). Không còn collection `vivu_specs`.
+(`vivu_product_info` tăng 218→452 nhờ 8 brochure PDF prose marketing vào embed corpus.)
 
 ---
 
@@ -76,10 +77,10 @@ vector → spec ở PostgreSQL `car_specs` (xem §3.1, §5.3). Không còn colle
 
 | Alias (retriever) | Collection vật lý | category nguồn | Nội dung | chunks (v1) |
 |---|---|---|---|---|
-| `vivu_product_info` | `vivu_product_info__<ver>` | `thong_tin_san_pham` | Mô tả sản phẩm, tính năng, dat-coc, prose mô tả/so sánh model (không giá, không section/bảng "Thông số kỹ thuật") | 218 |
+| `vivu_product_info` | `vivu_product_info__<ver>` | `thong_tin_san_pham` | Mô tả sản phẩm, tính năng, dat-coc, prose brochure (không giá, không section/bảng "Thông số kỹ thuật") | 452 |
 | `vivu_policy` | `vivu_policy__<ver>` | `chinh_sach_dich_vu` | Chính sách bảo hành, thuê pin, điều khoản pháp lý, cứu hộ | 530 |
 | `vivu_maintenance` | `vivu_maintenance__<ver>` | `dat_lich_bao_duong` | Text chung về dịch vụ bảo dưỡng (KHÔNG phải lịch theo xe) | 86 |
-| `sparse` | `sparse__<ver>` | *(toàn corpus)* | BM25 sparse vector cho mọi chunk | 834 |
+| `sparse` | `sparse__<ver>` | *(toàn corpus)* | BM25 sparse vector cho mọi chunk | 1068 |
 | `vivu_faq` | `vivu_faq__<ver>` *(định nghĩa, chưa có data)* | `ho_tro_mua_xe` | FAQ bán hàng / lái thử | 0 |
 
 > **Versioning**: collection vật lý = `<col>__<version>`; alias `<col>` →
@@ -162,15 +163,15 @@ query bằng cùng vocab/idf):
 
 ```jsonc
 { "version": "v1", "vocab": { "<term>": <int_idx>, ... }, "idf": [<float>, ...],
-  "avgdl": 50.1, "n_docs": 834, "k1": 1.5, "b": 0.75 }
+  "avgdl": 52.1, "n_docs": 1068, "k1": 1.5, "b": 0.75 }
 ```
 
 ---
 
 ## 3. Schema PostgreSQL
 
-- **DSN mặc định:** `postgresql://vivu:vivu@localhost:5432/vivu`
-- **Container:** `vivu_postgres` (image `postgres:16-alpine`, xem `docker-compose.yml`)
+- **DSN mặc định:** lấy từ `PG_DSN` trong `.env` (Neon cloud; fallback local
+  `postgresql://vivu:vivu@localhost:15432/vivu` qua `docker-compose.local.yml`).
 - **Charset:** UTF-8. CSV nguồn dùng delimiter `|`.
 
 ### 3.1. DDL đầy đủ
@@ -244,7 +245,7 @@ CREATE TABLE IF NOT EXISTS car_specs (
     model_code     TEXT NOT NULL,      -- "VF 8" (MODEL_LABEL, có dấu cách)
     version_name   TEXT,               -- "Eco"|"Plus"|...|NULL (= chung mọi bản)
     version_code   TEXT,               -- NULL (raw không có mã nội bộ)
-    spec_category  TEXT NOT NULL,      -- dimension|powertrain|interior|safety|exterior
+    spec_category  TEXT NOT NULL,      -- dimension|powertrain|battery|interior (whitelist BASIC_SPECS, xem SPEC_SCHEMA.md)
     spec_key       TEXT NOT NULL,      -- power_kw|range_km|battery_kwh|length_mm|seats|...
     spec_value     TEXT NOT NULL,      -- "150"|"87.7"|"5" (string, không phải number)
     spec_unit      TEXT,               -- "kW"|"km"|"kWh"|"mm"|""|NULL
@@ -535,28 +536,38 @@ quãng đường, kích thước, pin...) → `car_specs` để retriever query 
 
 | Thành phần | Giá trị |
 |---|---|
-| Qdrant | `qdrant/qdrant:latest`, port `6333` (REST) + `6334` (gRPC) |
-| PostgreSQL | `postgres:16-alpine`, port `5432`, user/db/pass `vivu` |
+| Qdrant | Mặc định cloud; fallback local `qdrant/qdrant:latest` port `16333` (REST) + `16334` (gRPC) |
+| PostgreSQL | Mặc định Neon cloud; fallback local `postgres:16-alpine` port `15432`, user/db/pass `vivu` |
 | Embed model | `openai/text-embedding-3-small` (1536-dim, OpenRouter) |
 | API key | `OPENROUTER_API_KEY` trong `.env` (không commit) |
 | Thư viện | `qdrant-client`, `psycopg2-binary`, `requests`, `python-dotenv` |
 
+> **Fallback local bằng Docker** (khi cloud lỗi/offline): khởi động
+> `docker compose -f docker-compose.local.yml up -d`, đổi trong `.env` về
+> `QDRANT_URL=http://localhost:16333`, `QDRANT_API_KEY=` (rỗng),
+> `PG_DSN=postgresql://vivu:vivu@localhost:15432/vivu`, rồi chạy lại pipeline.
+> Lệnh kiểm tra local dùng `docker exec -it vivu_postgres psql -U vivu -d vivu ...`.
+
 **Lệnh ingest (run order):**
 ```bash
-docker compose up -d
-python scripts/clean_data/clean_to_jsonl.py --version v1
+python scripts/clean_data/clean_to_jsonl.py --version v1 --max-len 800
 python scripts/clean_data/split_cold_hot.py --version v1 --commit $(git rev-parse --short HEAD)
-python scripts/clean_data/parse_specs.py    --version v1     # → postgres/specs.csv (car_specs)
+python scripts/clean_data/parse_specs.py    --version v1 --crawl-brochures  # → postgres/specs.csv (car_specs)
 python scripts/ingest/vector_ingest.py   --version v1 --recreate
 python scripts/ingest/sparse_ingest.py   --version v1 --recreate
 python scripts/ingest/postgres_ingest.py --version v1
 ```
 
-**Kiểm tra:**
+Hoặc một lệnh full (khuyến nghị):
 ```bash
-curl http://localhost:6333/collections
-docker exec -it vivu_postgres psql -U vivu -d vivu -c "SELECT * FROM price_list WHERE model_id='VF9';"
-docker exec -it vivu_postgres psql -U vivu -d vivu -c \
+python scripts/run_pipeline.py --version v1 --recreate --promote
+```
+
+**Kiểm tra (cloud):**
+```bash
+curl -u ":$QDRANT_API_KEY" "$QDRANT_URL/collections"
+psql "$PG_DSN" -c "SELECT * FROM price_list WHERE model_id='VF9';"
+psql "$PG_DSN" -c \
   "SELECT model_code, version_name, spec_key, spec_value, spec_unit FROM car_specs WHERE model_code='VF 8' AND spec_key='power_kw';"
 ```
 

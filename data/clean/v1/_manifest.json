@@ -1,35 +1,35 @@
 {
   "version": "v1",
-  "created_at": "2026-08-07T08:47:04Z",
+  "created_at": "2026-08-08T08:12:51Z",
   "created_by": "scripts/clean_to_jsonl.py + scripts/split_cold_hot.py",
   "prev_version": null,
-  "repo_commit": "72e2bf2",
+  "repo_commit": "51be163",
   "vector": {
     "collections": {
       "vivu_policy": {
         "file": "vector/vivu_policy.jsonl",
-        "chunks": 530,
-        "added": 530,
+        "chunks": 204,
+        "added": 204,
         "modified": 0,
         "removed": 0
       },
       "vivu_product_info": {
         "file": "vector/vivu_product_info.jsonl",
-        "chunks": 218,
-        "added": 218,
+        "chunks": 199,
+        "added": 199,
         "modified": 0,
         "removed": 0
       },
       "vivu_maintenance": {
         "file": "vector/vivu_maintenance.jsonl",
-        "chunks": 86,
-        "added": 86,
+        "chunks": 35,
+        "added": 35,
         "modified": 0,
         "removed": 0
       }
     },
-    "total_chunks": 834,
-    "total_added": 834,
+    "total_chunks": 438,
+    "total_added": 438,
     "total_modified": 0,
     "total_removed": 0
   },
@@ -44,7 +44,7 @@
         "file": "postgres/price_list.csv",
         "rows": 14,
         "upserted": 14,
-        "price_changed": 11
+        "price_changed": 14
       }
     },
     "total_rows_upserted": 28

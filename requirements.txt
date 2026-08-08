@@ -3,6 +3,8 @@
 # Crawl (scripts/crawl.py)
 requests>=2.31
 beautifulsoup4>=4.12
+crawl4ai>=0.9.2
+pypdf>=5.0            # Crawl4AI PDF content strategy
 pymupdf>=1.24            # rút text PDF (fitz)
 # pdfplumber>=0.11       # fallback PDF (tuỳ chọn)
 

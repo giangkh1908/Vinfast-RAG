@@ -29,16 +29,20 @@ import sys
 from pathlib import Path
 
 import psycopg2
+from dotenv import load_dotenv
 from qdrant_client import QdrantClient, models
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT))
 sys.path.insert(0, str(REPO_ROOT / "backend"))
 
+load_dotenv(REPO_ROOT / ".env")
+
 from scripts.ingest import postgres_ingest  # noqa: E402
 
-QDRANT_URL = os.environ.get("QDRANT_URL", "http://localhost:6333")
-PG_DSN = os.environ.get("PG_DSN", "postgresql://vivu:vivu@localhost:5432/vivu")
+QDRANT_URL = os.environ.get("QDRANT_URL", "http://localhost:16333")
+QDRANT_API_KEY = os.environ.get("QDRANT_API_KEY", "")
+PG_DSN = os.environ.get("PG_DSN", "postgresql://vivu:vivu@localhost:15432/vivu")
 
 SPARSE_ALIAS = "sparse"
 DENSE_ALIASES = ["vivu_product_info", "vivu_policy", "vivu_maintenance"]
@@ -49,7 +53,7 @@ ALL_ALIASES = DENSE_ALIASES + [SPARSE_ALIAS]
 # ── helpers ──────────────────────────────────────────────────────────────────
 
 def _client() -> QdrantClient:
-    return QdrantClient(url=QDRANT_URL)
+    return QdrantClient(url=QDRANT_URL, api_key=QDRANT_API_KEY or None)
 
 
 def _conn():

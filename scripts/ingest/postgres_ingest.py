@@ -26,12 +26,15 @@ from pathlib import Path
 from typing import Any
 
 import psycopg2
+from dotenv import load_dotenv
 from psycopg2.extras import execute_values
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 POSTGRES_DIR = REPO_ROOT / "data" / "clean" / "{version}" / "postgres"
 
-DEFAULT_DSN = "postgresql://vivu:vivu@localhost:5432/vivu"
+load_dotenv(REPO_ROOT / ".env")
+
+DEFAULT_DSN = "postgresql://vivu:vivu@localhost:15432/vivu"
 
 # DDL versioned: cột `version` trong PK + FK; VIEW active cho consumer.
 DDL = """

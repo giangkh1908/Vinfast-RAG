@@ -6,7 +6,7 @@ Chạy đủ bước theo thứ tự cho 1 version:
   data/raw/*.txt
     → 1. clean (clean_to_jsonl)      → intermediate/{vector,hot}.jsonl + link_only.json
     → 2. split cold/hot (split_cold_hot) → vector/*.jsonl + postgres/*.csv + _manifest.json
-    → 3. parse_specs → postgres/specs.csv (trích spec từ raw cho car_specs)
+    → 3. parse_specs → postgres/specs.csv (Crawl4AI/vision brochure + raw fallback)
     → 4. embed + ingest Qdrant dense (vector_ingest)
     → 5. BM25 sparse → Qdrant sparse (sparse_ingest)   [bỏ qua nếu --no-sparse]
     → 6. UPSERT PostgreSQL (postgres_ingest)
@@ -14,9 +14,9 @@ Chạy đủ bước theo thứ tự cho 1 version:
 Fail-fast: nếu 1 bước trả mã ≠0, dừng ngay, không chạy bước sau.
 
 Usage:
-    python scripts/run_pipeline.py --version v1
-    python scripts/run_pipeline.py --version v1 --recreate      # build lại sạch Qdrant
-    python scripts/run_pipeline.py --version v1 --no-sparse    # bỏ BM25 (chỉ dense + PG)
+    python scripts/run_pipeline.py --version v1 --recreate --promote
+    python scripts/run_pipeline.py --version v1 --no-crawl-brochures  # bỏ PDF/LLM
+    python scripts/run_pipeline.py --version v1 --no-sparse            # bỏ BM25
 """
 
 import argparse
@@ -35,8 +35,9 @@ from scripts.ingest import vector_ingest, sparse_ingest, postgres_ingest  # noqa
 from lib import openrouter  # noqa: E402
 from scripts import version_manager  # noqa: E402
 
-QDRANT_URL = os.environ.get("QDRANT_URL", "http://localhost:6333")
-PG_DSN = os.environ.get("PG_DSN", "postgresql://vivu:vivu@localhost:5432/vivu")
+QDRANT_URL = os.environ.get("QDRANT_URL", "http://localhost:16333")
+QDRANT_API_KEY = os.environ.get("QDRANT_API_KEY", "")
+PG_DSN = os.environ.get("PG_DSN", "postgresql://vivu:vivu@localhost:15432/vivu")
 
 
 def _bar(label: str) -> str:
@@ -58,7 +59,7 @@ def preflight(version: str, want_qdrant: bool, want_pg: bool) -> int:
     if want_qdrant:
         try:
             from qdrant_client import QdrantClient
-            QdrantClient(url=QDRANT_URL).get_collections()
+            QdrantClient(url=QDRANT_URL, api_key=QDRANT_API_KEY or None).get_collections()
         except Exception as e:  # noqa: BLE001
             print(f"[preflight] không kết nối được Qdrant tại {QDRANT_URL}: {e}",
                   file=sys.stderr)
@@ -90,7 +91,8 @@ def _step(idx: str, label: str, fn, *args, **kwargs) -> int:
 
 
 def run(version: str, recreate: bool, no_sparse: bool, commit: str,
-       max_len: int = 400, prev: str | None = None, promote: bool = False) -> int:
+       max_len: int = 800, prev: str | None = None, promote: bool = False,
+       crawl_brochures: bool = True) -> int:
     want_qdrant = True
     want_pg = True
     if preflight(version, want_qdrant, want_pg) != 0:
@@ -103,9 +105,9 @@ def run(version: str, recreate: bool, no_sparse: bool, commit: str,
         ("1/6", "clean (raw → intermediate)", clean_to_jsonl.run,
          (version,), {"max_len": max_len}),
         ("2/6", "split cold/hot → vector + postgres CSV", split_cold_hot.run,
-         (version,), {"commit": commit, "prev": prev}),
+        (version,), {"commit": commit, "prev": prev}),
         ("3/6", "parse_specs → postgres/specs.csv (car_specs)", parse_specs.run,
-         (version,), {}),
+         (version,), {"crawl_brochures": crawl_brochures}),
         ("4/6", "embed + ingest Qdrant dense (incremental)", vector_ingest.run,
          (version,), {"url": QDRANT_URL, "recreate": recreate}),
     ]
@@ -150,15 +152,17 @@ def main() -> int:
                     help="Bỏ qua BM25 sparse (chỉ dense + PostgreSQL)")
     ap.add_argument("--commit", default="",
                     help="Repo commit hash ghi vào _manifest / ingest_version")
-    ap.add_argument("--max-len", type=int, default=400,
-                    help="Chunk max length chars (mặc định 400)")
+    ap.add_argument("--max-len", type=int, default=800,
+                    help="Chunk max length chars (mặc định 800; dùng 400 nếu cần chunk nhỏ hơn)")
     ap.add_argument("--prev", default=None,
                     help="Version trước để diff (mặc định: auto-detect)")
     ap.add_argument("--promote", action="store_true",
                     help="Sau khi ingest xong, tự activate version (alias swap + is_current)")
+    ap.add_argument("--no-crawl-brochures", action="store_true",
+                    help="Bỏ qua Crawl4AI/vision brochure (chạy nhanh, dùng raw fallback)")
     args = ap.parse_args()
     return run(args.version, args.recreate, args.no_sparse, args.commit,
-               args.max_len, args.prev, args.promote)
+               args.max_len, args.prev, args.promote, not args.no_crawl_brochures)
 
 
 if __name__ == "__main__":

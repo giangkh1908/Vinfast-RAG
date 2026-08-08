@@ -103,7 +103,10 @@ def get_reranker():
 
 
 def get_qdrant_client() -> QdrantClient:
-    return QdrantClient(url=settings.qdrant_url, prefer_grpc=False)
+    kwargs = {"url": settings.qdrant_url, "prefer_grpc": False}
+    if settings.qdrant_api_key:
+        kwargs["api_key"] = settings.qdrant_api_key
+    return QdrantClient(**kwargs)
 
 
 def _rrf_score(rank: int, k: int = 60) -> float:

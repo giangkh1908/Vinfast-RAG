@@ -19,6 +19,7 @@ class Settings:
         # DB
         self.postgres_url: str = _env.get("POSTGRES_URL", "postgresql+asyncpg://vivu:vivu@localhost:5432/vivu")
         self.qdrant_url: str = _env.get("QDRANT_URL", "http://localhost:6333")
+        self.qdrant_api_key: str = _env.get("QDRANT_API_KEY", "")
         self.qdrant_collection: str = _env.get("QDRANT_COLLECTION", "vivu_specs")
         self.embedding_model: str = _env.get("EMBEDDING_MODEL", "nvidia/llama-nemotron-embed-vl-1b-v2:free")
         self.embedding_dim: int = int(_env.get("EMBEDDING_DIM", "2048"))
