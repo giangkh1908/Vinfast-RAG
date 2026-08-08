@@ -15,6 +15,7 @@ Output mặc định: data/raw/<slug>_<timestamp>.txt  (text thô)
 """
 
 import argparse
+import asyncio
 import os
 import re
 import sys
@@ -24,6 +25,16 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 import requests
+
+
+def configure_console() -> None:
+    """Keep CLI output usable on Windows consoles that default to cp1252."""
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(encoding="utf-8", errors="replace")
+
+
+configure_console()
 
 # Header giống trình duyệt thật — nhiều site chặn nếu thiếu / dùng UA mặc định.
 HEADERS = {
@@ -105,6 +116,45 @@ def fetch_firecrawl(url: str) -> tuple[str, str]:
     md = result.get("markdown", "")
     title = result.get("metadata", {}).get("title", "")
     return md, title
+
+
+async def _crawl4ai_async(url: str, selector: str | None = None,
+                          plain: bool = False) -> tuple[str, str, str, str]:
+    """Render an HTML page with the locally installed Crawl4AI browser."""
+    from crawl4ai import AsyncWebCrawler, BrowserConfig, CacheMode, CrawlerRunConfig
+
+    browser = BrowserConfig(headless=True, verbose=False, user_agent=HEADERS["User-Agent"])
+    run = CrawlerRunConfig(
+        css_selector=selector,
+        only_text=plain,
+        excluded_tags=DROP_TAGS,
+        remove_forms=True,
+        cache_mode=CacheMode.BYPASS,
+        wait_until="domcontentloaded",
+        page_timeout=90000,
+        verbose=False,
+    )
+    async with AsyncWebCrawler(config=browser) as crawler:
+        result = await crawler.arun(url=url, config=run)
+
+    if not result.success:
+        raise RuntimeError(f"Crawl4AI lỗi: {result.error_message or 'không rõ lỗi'}")
+
+    markdown = getattr(result, "markdown", "") or ""
+    if not isinstance(markdown, str):
+        markdown = (getattr(markdown, "raw_markdown", None)
+                    or getattr(markdown, "fit_markdown", None)
+                    or str(markdown))
+    metadata = getattr(result, "metadata", {}) or {}
+    title = metadata.get("title", "") if isinstance(metadata, dict) else ""
+    html = getattr(result, "cleaned_html", "") or getattr(result, "html", "") or ""
+    return markdown.strip(), title, markdown, html
+
+
+def fetch_crawl4ai(url: str, selector: str | None = None,
+                   plain: bool = False) -> tuple[str, str, str, str]:
+    """Synchronous wrapper for Crawl4AI, keeping the existing CLI synchronous."""
+    return asyncio.run(_crawl4ai_async(url, selector, plain))
 
 
 def is_pdf(resp: "requests.Response", url: str) -> bool:
@@ -390,7 +440,13 @@ def process_html(html: str, selector: str | None = None, plain: bool = False):
     - plain=True : text phẳng.
     - plain=False: Markdown sạch (cho .txt) + marker_md nội bộ (để build chunk).
     """
-    from bs4 import BeautifulSoup  # lazy: chỉ cần cho crawl HTML thường (không Firecrawl)
+    try:
+        from bs4 import BeautifulSoup  # lazy: chỉ cần cho crawl HTML thường (không Firecrawl)
+    except ModuleNotFoundError as exc:
+        raise RuntimeError(
+            "Thiếu dependency beautifulsoup4. Chạy: "
+            "python -m pip install -r requirements.txt"
+        ) from exc
     soup = BeautifulSoup(html, "html.parser")
     root = soup.select_one(selector) if selector else soup.body or soup
     if root is None:
@@ -442,25 +498,27 @@ def main() -> int:
         html = text  # cho nhánh --html (nếu dùng)
         print(f"  Đã tải {len(raw_bytes):,} bytes (markdown sau JS render)")
     else:
-        resp = fetch(args.url)
-        raw_bytes = resp.content
-        print(f"  Đã tải {len(raw_bytes):,} bytes ({resp.headers.get('Content-Type','?')})")
-
-    if not args.firecrawl:
-        if is_pdf(resp, args.url):
-            print("  → Phát hiện PDF, đang rút text...")
-            if args.selector:
-                print("  (PDF bỏ qua --selector)")
-            text = extract_pdf_text(raw_bytes)
-            title, marker_md = "", ""
-            kind = "pdf"
+        # PDF vẫn dùng requests + PyMuPDF; HTML dùng browser render của Crawl4AI.
+        if urlparse(args.url).path.lower().endswith(".pdf"):
+            resp = fetch(args.url)
+            raw_bytes = resp.content
+            print(f"  Đã tải {len(raw_bytes):,} bytes ({resp.headers.get('Content-Type','?')})")
         else:
-            # HTML: ép encoding cho site VN.
-            if not resp.encoding or resp.encoding.lower() == "iso-8859-1":
-                resp.encoding = resp.apparent_encoding
-            html = resp.text
-            text, title, marker_md = process_html(html, args.selector, plain=args.plain)
+            print("  → Crawl HTML bằng Crawl4AI (Chromium headless)...")
+            text, title, marker_md, html = fetch_crawl4ai(
+                args.url, args.selector, plain=args.plain
+            )
+            raw_bytes = html.encode("utf-8")
             kind = "html"
+            print(f"  Đã tải {len(raw_bytes):,} bytes (Crawl4AI)")
+
+    if not args.firecrawl and 'resp' in locals() and is_pdf(resp, args.url):
+        print("  → Phát hiện PDF, đang rút text...")
+        if args.selector:
+            print("  (PDF bỏ qua --selector)")
+        text = extract_pdf_text(raw_bytes)
+        title, marker_md = "", ""
+        kind = "pdf"
 
     print(f"  Đã rút {len(text):,} ký tự text thô")
 

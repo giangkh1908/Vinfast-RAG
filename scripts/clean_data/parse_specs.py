@@ -31,12 +31,25 @@ Usage:
 """
 
 import argparse
+import asyncio
+import base64
 import csv
+import io
+import json
+import os
 import re
 import sys
 import unicodedata
 from pathlib import Path
 from typing import Any
+
+from dotenv import load_dotenv
+import requests
+
+
+for _stream in (sys.stdout, sys.stderr):
+    if hasattr(_stream, "reconfigure"):
+        _stream.reconfigure(encoding="utf-8", errors="replace")
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT))
@@ -50,6 +63,7 @@ CLEAN_DIR = REPO_ROOT / "data" / "clean"
 
 # Ưu tiên nguồn khi conflict giá trị (chính thống nhất → trước).
 SOURCE_PRIORITY = ("shop.vinfastauto.com", "vinfastauto.com")
+BROCHURE_LINKS = REPO_ROOT / "data" / "raw" / "link_brochure.md"
 
 
 # ── Normalize ───────────────────────────────────────────────────────────────
@@ -171,6 +185,26 @@ _A = {
 LABEL_MAP = {alias: v for alias, v in _A.items()}
 _ALIASES_BY_LEN = sorted(LABEL_MAP.keys(), key=len, reverse=True)
 
+# ── WHITELIST: chỉ giữ spec cơ bản phục vụ tư vấn mua xe ────────────────────
+# (power/torque/range/pin/kích thước/chỗ ngồi). Key ngoài whitelist → drop.
+# category: dimension | powertrain | battery | interior
+BASIC_SPECS: dict[str, tuple[str, str]] = {
+    # key:                      (category, unit)
+    "length_mm":            ("dimension", "mm"),
+    "width_mm":             ("dimension", "mm"),
+    "height_mm":            ("dimension", "mm"),
+    "wheelbase_mm":         ("dimension", "mm"),
+    "ground_clearance_mm":  ("dimension", "mm"),
+    "power_kw":             ("powertrain", "kW"),
+    "torque_nm":            ("powertrain", "Nm"),
+    "drivetrain":           ("powertrain", ""),
+    "battery_kwh":          ("battery",   "kWh"),
+    "range_km":             ("battery",   "km"),
+    "dc_charge_kw":         ("battery",   "kW"),
+    "seats":                ("interior",  ""),
+}
+
+
 # spec_key có giá trị số → chỉ giữ phần số. Còn lại giữ nguyên text (định tính).
 NUMERIC_KEYS = {
     "power_kw", "torque_nm", "range_km", "battery_kwh", "fast_charge_min",
@@ -274,6 +308,13 @@ def clean_value(spec_key: str, raw: str) -> str | None:
         if lo is not None and not (lo <= val <= hi):
             return None
         return canon
+    if spec_key == "drivetrain":
+        # Chuẩn hóa FWD/RWD/AWD — bỏ "Cầu trước"/"Cầu sau"/tiếng Anh lẫn VN.
+        n = v.upper()
+        for token in ("AWD", "RWD", "FWD"):
+            if token in n:
+                return token
+        return None  # không nhận diện được (vd VF2 parse nhầm) → drop
     return v
 
 
@@ -562,6 +603,13 @@ def parse_value_first(body: str) -> list[tuple[str, str, str | None]]:
         alias = _find_alias_anywhere(rest)
         if not alias or is_price_row(alias) or is_section_header(alias):
             continue
+        mapped = lookup_label(alias)
+        if not mapped:
+            continue
+        # Guard unit: value-trước-label chỉ tin khi đơn vị khớp spec.
+        # Tránh false positive: "100 km/h khi dung lượng pin >50%" → battery_kwh.
+        if not _value_matches_spec(line, mapped[0]):
+            continue
         out.append((alias, m.group(1), detect_edition(rest)))
     return out
 
@@ -591,6 +639,9 @@ def extract_specs_from_file(path: Path) -> list[dict[str, Any]]:
         if not mapped:
             continue
         spec_key, spec_unit, category = mapped
+        if spec_key not in BASIC_SPECS and spec_key != "dimension_triple":
+            # Key ngoài whitelist spec cơ bản → drop (không phải yếu tố mua xe).
+            continue
         if spec_key == "dimension_triple":
             for sub_key, sub_val in parse_dimension_triple(value_raw):
                 if not sub_val:
@@ -609,8 +660,10 @@ def extract_specs_from_file(path: Path) -> list[dict[str, Any]]:
         if k in seen:
             continue
         seen.add(k)
-        rows.append(_row(model_code, edition, category, spec_key, value,
-                         spec_unit, source_url))
+        # category/unit lấy từ BASIC_SPECS (canonical) — bỏ qua mapped của LABEL_MAP.
+        cat, unit = BASIC_SPECS.get(spec_key, (category, spec_unit))
+        rows.append(_row(model_code, edition, cat, spec_key, value,
+                         unit, source_url))
     return rows
 
 
@@ -625,6 +678,230 @@ def _row(model_code, edition, category, key, value, unit, source_url) -> dict[st
         "spec_unit": unit or "",
         "source_url": source_url,
     }
+
+
+# ── Crawl4AI brochure extraction ────────────────────────────────────────────
+def _llm_label_to_key(label: str, value: str) -> str | None:
+    """Map occasional LLM labels back to the strict BASIC_SPECS whitelist."""
+    n = norm(label)
+    v = norm(value)
+    if n in BASIC_SPECS:
+        return n
+    if n in ("dai x rong x cao", "kich thuoc") and re.search(r"[xX×]", value):
+        return "dimension_triple"
+    if "chieu dai co so" in n:
+        return "wheelbase_mm"
+    if "khoang sang gam" in n:
+        return "ground_clearance_mm"
+    if "cong suat sac" in n and ("dc" in n or "nhanh" in n):
+        return "dc_charge_kw"
+    if "cong suat toi da" in n or n == "cong suat":
+        return "power_kw"
+    if "mo men xoan" in n:
+        return "torque_nm"
+    if "dung luong pin" in n or n == "pack pin":
+        return "battery_kwh"
+    if "quang duong" in n or n == "pham vi di chuyen":
+        return "range_km"
+    if "dan dong" in n or "he dan dong" in n:
+        return "drivetrain"
+    if "so cho ngoi" in n or "so ghe ngoi" in n:
+        return "seats"
+    # Some PDF layouts put the dimension labels in one combined text block.
+    if "dai" in n and "rong" in n and "cao" in n and re.search(r"[xX×]", value):
+        return "dimension_triple"
+    return None
+
+
+def _normalize_edition(value: Any) -> str | None:
+    if not value:
+        return None
+    text = str(value).strip().lower()
+    aliases = {
+        "pluscaptain": "PlusCaptain", "plus": "Plus", "eco": "Eco",
+        "tieuchuan": "TieuChuan", "nangcao": "NangCao", "caocap": "CaoCap",
+    }
+    if text in aliases:
+        return aliases[text]
+    if text == "base":
+        return "Eco"
+    return None
+
+
+def _parse_crawl4ai_content(content: str) -> list[dict[str, Any]]:
+    if not content:
+        return []
+    try:
+        data = json.loads(content)
+    except json.JSONDecodeError:
+        return []
+    if isinstance(data, dict):
+        data = data.get("specs", data.get("items", []))
+    return data if isinstance(data, list) else []
+
+
+def _vision_extract_brochure(url: str, model_id: str, schema: dict) -> list[dict[str, Any]]:
+    """Fallback for image-only PDFs: render pages and send them to a vision LLM."""
+    try:
+        import fitz
+    except ImportError:
+        print("  [vision] PyMuPDF missing; cannot render image-only PDF")
+        return []
+
+    response = requests.get(url, timeout=120)
+    response.raise_for_status()
+    prompt = (
+        f"Read these brochure pages for VinFast {model_id}. OCR the page images and "
+        "extract only explicit basic vehicle specs. Return JSON object {\"specs\": "
+        "[...]} with spec_key, spec_value, edition. Allowed keys: "
+        "length_mm, width_mm, height_mm, wheelbase_mm, ground_clearance_mm, "
+        "power_kw, torque_nm, drivetrain, battery_kwh, range_km, dc_charge_kw, seats. "
+        "For dimensions split length/width/height. Normalize drivetrain to FWD/RWD/AWD. "
+        "Use kW, not Hp, and prefer NEDC over WLTP. Never guess."
+    )
+    content: list[dict[str, Any]] = [{"type": "text", "text": prompt}]
+    with fitz.open(stream=response.content, filetype="pdf") as document:
+        for page in document[:20]:
+            pix = page.get_pixmap(matrix=fitz.Matrix(1.2, 1.2), alpha=False)
+            image = io.BytesIO(pix.tobytes("jpeg", jpg_quality=70))
+            encoded = base64.b64encode(image.getvalue()).decode("ascii")
+            content.append({
+                "type": "image_url",
+                "image_url": {"url": f"data:image/jpeg;base64,{encoded}"},
+            })
+
+    result = requests.post(
+        "https://openrouter.ai/api/v1/chat/completions",
+        headers={
+            "Authorization": f"Bearer {os.environ['OPENROUTER_API_KEY']}",
+            "Content-Type": "application/json",
+        },
+        json={
+            "model": os.environ.get("OPENROUTER_CHAT_MODEL", "openai/gpt-4o-mini"),
+            "messages": [{"role": "user", "content": content}],
+            "response_format": {"type": "json_object"},
+            "temperature": 0,
+        },
+        timeout=300,
+    )
+    result.raise_for_status()
+    body = result.json()
+    answer = body["choices"][0]["message"]["content"]
+    return _parse_crawl4ai_content(answer)
+
+
+BROCHURE_MODEL_ORDER = [
+    "VF2", "VF3", "VF5", "VF6", "VF7", "VF8", "VF8NEW", "VF9",
+]
+
+
+def _crawl_brochure_urls() -> list[tuple[str, str]]:
+    if not BROCHURE_LINKS.exists():
+        return []
+    urls: list[str] = []
+    for line in BROCHURE_LINKS.read_text(encoding="utf-8").splitlines():
+        match = re.search(r"https?://\S+", line.strip())
+        if match:
+            url = match.group(0).rstrip(")\"'")
+            if url not in urls:
+                urls.append(url)
+    return list(zip(BROCHURE_MODEL_ORDER, urls))
+
+
+async def _crawl_brochure_specs(urls: list[tuple[str, str]]) -> list[dict[str, Any]]:
+    """Crawl brochure PDFs with Crawl4AI and return validated raw spec rows."""
+    from crawl4ai import (AsyncWebCrawler, BrowserConfig, CacheMode,
+                          CrawlerRunConfig, LLMConfig, LLMExtractionStrategy,
+                          PDFContentScrapingStrategy)
+    from crawl4ai.processors.pdf import PDFCrawlerStrategy
+
+    schema = {
+        "type": "object",
+        "properties": {
+            "spec_key": {"type": "string", "enum": sorted(BASIC_SPECS)},
+            "spec_value": {"type": "string"},
+            "edition": {"type": ["string", "null"]},
+        },
+        "required": ["spec_key", "spec_value", "edition"],
+    }
+    instruction = (
+        "Extract only explicit basic VinFast vehicle specs from this brochure. "
+        "Return one item per value using exactly the allowed spec_key enum. "
+        "For Dài x Rộng x Cao return three items with length_mm, width_mm, height_mm. "
+        "For kW/Hp use the kW token, not Hp. Prefer NEDC over WLTP. "
+        "Detect Eco, Plus, PlusCaptain editions from table columns. Never guess."
+    )
+    provider = os.environ.get("OPENROUTER_CHAT_MODEL", "openai/gpt-4o-mini")
+    llm = LLMExtractionStrategy(
+        llm_config=LLMConfig(
+            provider=provider,
+            api_token="env:OPENROUTER_API_KEY",
+            base_url="https://openrouter.ai/api/v1",
+            temperature=0,
+        ),
+        schema=schema,
+        instruction=instruction,
+        input_format="markdown",
+        force_json_response=True,
+        verbose=False,
+    )
+    crawl_config = CrawlerRunConfig(
+        # Brochure images are decorative in this pass. Disabling image parsing
+        # avoids broken embedded image streams and keeps text/table extraction fast.
+        scraping_strategy=PDFContentScrapingStrategy(extract_images=False),
+        extraction_strategy=llm,
+        cache_mode=CacheMode.BYPASS,
+        page_timeout=120000,
+        verbose=False,
+    )
+    browser = BrowserConfig(headless=True, verbose=False)
+    rows: list[dict[str, Any]] = []
+    async with AsyncWebCrawler(crawler_strategy=PDFCrawlerStrategy(), config=browser) as crawler:
+        for model_id, url in urls:
+            result = await crawler.arun(url, config=crawl_config)
+            content = result.extracted_content or ""
+            raw_items = _parse_crawl4ai_content(content)
+            if not raw_items:
+                print(f"  [crawl4ai] {model_id}: no text specs; trying vision OCR")
+                try:
+                    raw_items = _vision_extract_brochure(url, model_id, schema)
+                except Exception as exc:  # noqa: BLE001
+                    print(f"  [vision] {model_id} failed: {exc}")
+            count = 0
+            for item in raw_items:
+                if not isinstance(item, dict) or item.get("error"):
+                    continue
+                key = _llm_label_to_key(str(item.get("spec_key", "")),
+                                        str(item.get("spec_value", "")))
+                value = str(item.get("spec_value", "")).strip()
+                edition = _normalize_edition(item.get("edition"))
+                if not key:
+                    continue
+                if key == "dimension_triple":
+                    values = parse_dimension_triple(value)
+                else:
+                    cleaned = clean_value(key, value)
+                    values = [(key, cleaned)] if cleaned else []
+                for final_key, final_value in values:
+                    cat, unit = BASIC_SPECS[final_key]
+                    rows.append(_row(MODEL_LABEL[model_id], edition, cat, final_key,
+                                     final_value, unit, url))
+                    count += 1
+            if count:
+                print(f"  [crawl4ai] {model_id}: {count} validated specs from {url}")
+            else:
+                print(
+                    f"  [crawl4ai] {model_id}: brochure has no extractable text; "
+                    "keep dat-coc/raw fallback specs"
+                )
+    return rows
+
+
+def crawl_brochure_specs() -> list[dict[str, Any]]:
+    load_dotenv(REPO_ROOT / ".env")
+    if not os.environ.get("OPENROUTER_API_KEY"):
+        raise RuntimeError("OPENROUTER_API_KEY is required for --crawl-brochures")
+    return asyncio.run(_crawl_brochure_specs(_crawl_brochure_urls()))
 
 
 # ── Aggregate (union all files) ─────────────────────────────────────────────
@@ -687,7 +964,7 @@ CSV_FIELDS = ["model_code", "version_name", "version_code", "spec_category",
               "spec_key", "spec_value", "spec_unit", "source_url"]
 
 
-def run(version: str = "v1") -> int:
+def run(version: str = "v1", crawl_brochures: bool = False) -> int:
     version_dir = CLEAN_DIR / version
     pg_dir = version_dir / "postgres"
     pg_dir.mkdir(parents=True, exist_ok=True)
@@ -699,6 +976,13 @@ def run(version: str = "v1") -> int:
     all_rows: list[dict[str, Any]] = []
     n_files = 0
     by_model: dict[str, int] = {}
+    if crawl_brochures:
+        print("[parse_specs] crawling brochure PDFs with Crawl4AI...")
+        crawled_rows = crawl_brochure_specs()
+        all_rows.extend(crawled_rows)
+        for r in crawled_rows:
+            by_model[r["model_code"]] = by_model.get(r["model_code"], 0) + 1
+
     for path in sorted(RAW_DIR.iterdir()):
         if not path.is_file() or path.suffix not in (".txt", ".md"):
             continue
@@ -730,8 +1014,10 @@ def run(version: str = "v1") -> int:
 def main() -> int:
     ap = argparse.ArgumentParser(description="Trích spec kỹ thuật từ raw → specs.csv")
     ap.add_argument("--version", default="v1", help="Output version folder (default v1)")
+    ap.add_argument("--crawl-brochures", action="store_true",
+                    help="Crawl PDF brochure URLs with Crawl4AI + LLM extraction")
     args = ap.parse_args()
-    return run(args.version)
+    return run(args.version, crawl_brochures=args.crawl_brochures)
 
 
 if __name__ == "__main__":

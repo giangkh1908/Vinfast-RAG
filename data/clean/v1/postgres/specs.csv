@@ -1,42 +1,105 @@
 model_code|version_name|version_code|spec_category|spec_key|spec_value|spec_unit|source_url
+VF 2|||dimension|length_mm|3090|mm|https://static-cms-prod.vinfastauto.com/brochure_vf_2.pdf
+VF 2|||dimension|width_mm|1496|mm|https://static-cms-prod.vinfastauto.com/brochure_vf_2.pdf
+VF 2|||dimension|height_mm|1663.2|mm|https://static-cms-prod.vinfastauto.com/brochure_vf_2.pdf
+VF 2|||dimension|wheelbase_mm|2065|mm|https://static-cms-prod.vinfastauto.com/brochure_vf_2.pdf
+VF 2|||dimension|ground_clearance_mm|166.3|mm|https://static-cms-prod.vinfastauto.com/brochure_vf_2.pdf
+VF 2|||powertrain|power_kw|30|kW|https://static-cms-prod.vinfastauto.com/brochure_vf_2.pdf
+VF 2|||powertrain|torque_nm|65|Nm|https://static-cms-prod.vinfastauto.com/brochure_vf_2.pdf
+VF 2|||battery|range_km|210|km|https://static-cms-prod.vinfastauto.com/brochure_vf_2.pdf
+VF 2|||battery|battery_kwh|18.3|kWh|https://static-cms-prod.vinfastauto.com/brochure_vf_2.pdf
+VF 2|||battery|dc_charge_kw|3|kW|https://static-cms-prod.vinfastauto.com/brochure_vf_2.pdf
+VF 2|||powertrain|drivetrain|RWD||https://vinfastauto.com/vn_vi/dat-coc-xe-vf2
+VF 3|||dimension|length_mm|3190|mm|https://static-cms-prod.vinfastauto.com/vfvn-brochure-vf-3-ban-ngang.pdf
+VF 3|||dimension|width_mm|1679|mm|https://static-cms-prod.vinfastauto.com/vfvn-brochure-vf-3-ban-ngang.pdf
+VF 3|||dimension|height_mm|1652|mm|https://static-cms-prod.vinfastauto.com/vfvn-brochure-vf-3-ban-ngang.pdf
+VF 3|||dimension|wheelbase_mm|2075|mm|https://static-cms-prod.vinfastauto.com/vfvn-brochure-vf-3-ban-ngang.pdf
+VF 3|||dimension|ground_clearance_mm|175|mm|https://static-cms-prod.vinfastauto.com/vfvn-brochure-vf-3-ban-ngang.pdf
 VF 3|||powertrain|power_kw|30|kW|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf3.html
 VF 3|||powertrain|torque_nm|110|Nm|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf3.html
-VF 3|||powertrain|range_km|215|km|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf3.html
-VF 3|||powertrain|drivetrain|RWD/Cầu sau||https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf3.html
-VF 5|||powertrain|power_kw|134|kW|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf5.html
-VF 5|||powertrain|torque_nm|135|Nm|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf5.html
-VF 5|||dimension|length_mm|3967|mm|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf5.html
-VF 5|||dimension|width_mm|1723|mm|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf5.html
-VF 5|||dimension|height_mm|1579|mm|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf5.html
-VF 5|||powertrain|battery_kwh|37.23|kWh|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf5.html
-VF 5|||powertrain|consumption|13 kWh/100 km||https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf5.html
-VF 5|||interior|seats|5||https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf5.html
-VF 5|||safety|airbags|6||https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf5.html
-VF 6|||powertrain|battery_kwh|59.6|kWh|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf6.html
-VF 6|Eco||powertrain|range_km|485|km|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf6.html
-VF 6|Plus||powertrain|range_km|460|km|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf6.html
-VF 6|Eco||powertrain|power_kw|130|kW|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf6.html
-VF 6|Plus||powertrain|power_kw|150|kW|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf6.html
-VF 6|Eco||powertrain|torque_nm|250|Nm|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf6.html
-VF 6|Plus||powertrain|torque_nm|310|Nm|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf6.html
+VF 3|||powertrain|drivetrain|RWD||https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf3.html
+VF 3|||battery|range_km|215|km|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf3.html
+VF 3|||interior|seats|4||https://static-cms-prod.vinfastauto.com/vfvn-brochure-vf-3-ban-ngang.pdf
+VF 5|||dimension|length_mm|3967|mm|https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwf5eb40b2/Document/VF5_Brochure_T82025.pdf
+VF 5|||dimension|width_mm|1723|mm|https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwf5eb40b2/Document/VF5_Brochure_T82025.pdf
+VF 5|||dimension|height_mm|1579|mm|https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwf5eb40b2/Document/VF5_Brochure_T82025.pdf
+VF 5|||dimension|wheelbase_mm|2514|mm|https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwf5eb40b2/Document/VF5_Brochure_T82025.pdf
+VF 5|||interior|seats|5||https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwf5eb40b2/Document/VF5_Brochure_T82025.pdf
+VF 5|||dimension|ground_clearance_mm|160|mm|https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwf5eb40b2/Document/VF5_Brochure_T82025.pdf
+VF 5|||powertrain|power_kw|100|kW|https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwf5eb40b2/Document/VF5_Brochure_T82025.pdf
+VF 5|||powertrain|torque_nm|135|Nm|https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwf5eb40b2/Document/VF5_Brochure_T82025.pdf
+VF 5|||battery|battery_kwh|37.23|kWh|https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwf5eb40b2/Document/VF5_Brochure_T82025.pdf
+VF 5|||battery|range_km|326|km|https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwf5eb40b2/Document/VF5_Brochure_T82025.pdf
+VF 5|||powertrain|drivetrain|FWD||https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwf5eb40b2/Document/VF5_Brochure_T82025.pdf
 VF 6|||dimension|length_mm|4241|mm|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf6.html
 VF 6|||dimension|width_mm|1834|mm|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf6.html
 VF 6|||dimension|height_mm|1580|mm|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf6.html
 VF 6|||dimension|wheelbase_mm|2730|mm|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf6.html
-VF 6|Eco||exterior|wheel_size_inch|17|inch|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf6.html
-VF 6|Plus||exterior|wheel_size_inch|18|inch|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf6.html
+VF 6|||dimension|ground_clearance_mm|170|mm|https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Eco||powertrain|power_kw|130|kW|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf6.html
+VF 6|Plus||powertrain|power_kw|150|kW|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf6.html
+VF 6|Eco||powertrain|torque_nm|250|Nm|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf6.html
+VF 6|Plus||powertrain|torque_nm|310|Nm|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf6.html
+VF 6|Eco||battery|range_km|485|km|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf6.html
+VF 6|Plus||battery|range_km|460|km|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf6.html
+VF 6|||battery|battery_kwh|59.6|kWh|https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|||battery|dc_charge_kw|3.5|kW|https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|||powertrain|drivetrain|FWD||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
 VF 7|||dimension|length_mm|4545|mm|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf7.html
 VF 7|||dimension|width_mm|1890|mm|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf7.html
 VF 7|||dimension|height_mm|1635.75|mm|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf7.html
+VF 7|||dimension|wheelbase_mm|2840|mm|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf7.html
+VF 7|||dimension|ground_clearance_mm|190|mm|https://vinfasttayninh.com/files/category/vf7gpv1e04g.pdf
 VF 7|Eco||powertrain|power_kw|130|kW|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf7.html
 VF 7|Plus||powertrain|power_kw|150|kW|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf7.html
 VF 7|Eco||powertrain|torque_nm|250|Nm|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf7.html
 VF 7|Plus||powertrain|torque_nm|310|Nm|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf7.html
-VF 7|Eco||powertrain|battery_kwh|59.6|kWh|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf7.html
-VF 7|Plus||powertrain|battery_kwh|70|kWh|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf7.html
-VF 7|||dimension|wheelbase_mm|2840|mm|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf7.html
-VF 7|Eco||powertrain|range_km|440|km|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf7.html
-VF 7|Plus||powertrain|range_km|500.5|km|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf7.html
+VF 7|||powertrain|drivetrain|AWD||https://vinfasttayninh.com/files/category/vf7gpv1e04g.pdf
+VF 7|Eco||battery|battery_kwh|59.6|kWh|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf7.html
+VF 7|Plus||battery|battery_kwh|70|kWh|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf7.html
+VF 7|Eco||battery|range_km|440|km|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf7.html
+VF 7|Plus||battery|range_km|500.5|km|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf7.html
+VF 7|||battery|dc_charge_kw|150|kW|https://vinfasttayninh.com/files/category/vf7gpv1e04g.pdf
+VF 7|||interior|seats|5||https://vinfasttayninh.com/files/category/vf7gpv1e04g.pdf
+VF 8|||dimension|length_mm|4750|mm|https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|||dimension|width_mm|1934|mm|https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|||dimension|height_mm|1667|mm|https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Eco||dimension|ground_clearance_mm|162|mm|https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Plus||dimension|ground_clearance_mm|157|mm|https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|||battery|battery_kwh|87.7|kWh|https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Eco||battery|range_km|562|km|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-vf8.html
+VF 8|Plus||battery|range_km|457|km|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-vf8.html
+VF 8|Eco||powertrain|power_kw|201|kW|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-vf8.html
+VF 8|Plus||powertrain|power_kw|402|kW|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-vf8.html
+VF 8|Eco||powertrain|torque_nm|310|Nm|https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Plus||powertrain|torque_nm|620|Nm|https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Eco||powertrain|drivetrain|FWD||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Plus||powertrain|drivetrain|AWD||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|||dimension|wheelbase_mm|2950|mm|https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|||battery|dc_charge_kw|70|kW|https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|||interior|seats|5||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8 All New|||dimension|length_mm|4701|mm|https://static-cms-prod.vinfastauto.com/brochure/26052026/VF%208%20The%20he%20moi_Brochure_final%2020.05.pdf
+VF 8 All New|||dimension|width_mm|1872|mm|https://static-cms-prod.vinfastauto.com/brochure/26052026/VF%208%20The%20he%20moi_Brochure_final%2020.05.pdf
+VF 8 All New|||dimension|height_mm|1670|mm|https://static-cms-prod.vinfastauto.com/brochure/26052026/VF%208%20The%20he%20moi_Brochure_final%2020.05.pdf
+VF 8 All New|||dimension|wheelbase_mm|2840|mm|https://static-cms-prod.vinfastauto.com/brochure/26052026/VF%208%20The%20he%20moi_Brochure_final%2020.05.pdf
+VF 8 All New|||dimension|ground_clearance_mm|170|mm|https://static-cms-prod.vinfastauto.com/brochure/26052026/VF%208%20The%20he%20moi_Brochure_final%2020.05.pdf
+VF 8 All New|||battery|battery_kwh|60.13|kWh|https://static-cms-prod.vinfastauto.com/brochure/26052026/VF%208%20The%20he%20moi_Brochure_final%2020.05.pdf
+VF 8 All New|||battery|range_km|480|km|https://static-cms-prod.vinfastauto.com/brochure/26052026/VF%208%20The%20he%20moi_Brochure_final%2020.05.pdf
+VF 8 All New|||battery|dc_charge_kw|100|kW|https://static-cms-prod.vinfastauto.com/brochure/26052026/VF%208%20The%20he%20moi_Brochure_final%2020.05.pdf
+VF 8 All New|||powertrain|power_kw|170|kW|https://static-cms-prod.vinfastauto.com/brochure/26052026/VF%208%20The%20he%20moi_Brochure_final%2020.05.pdf
+VF 8 All New|||powertrain|torque_nm|330|Nm|https://static-cms-prod.vinfastauto.com/brochure/26052026/VF%208%20The%20he%20moi_Brochure_final%2020.05.pdf
+VF 8 All New|||powertrain|drivetrain|FWD||https://static-cms-prod.vinfastauto.com/brochure/26052026/VF%208%20The%20he%20moi_Brochure_final%2020.05.pdf
+VF 8 All New|||interior|seats|5||https://vinfastauto.com/vn_vi/dat-coc-xe-vf8-the-all-new-2026
+VF 9|||dimension|length_mm|5119|mm|https://storage.googleapis.com/vinfast-data-01/brochure/VF%209_%20Brochure.pdf
+VF 9|||dimension|width_mm|2254|mm|https://storage.googleapis.com/vinfast-data-01/brochure/VF%209_%20Brochure.pdf
+VF 9|||dimension|height_mm|1697|mm|https://storage.googleapis.com/vinfast-data-01/brochure/VF%209_%20Brochure.pdf
+VF 9|||dimension|wheelbase_mm|3149|mm|https://storage.googleapis.com/vinfast-data-01/brochure/VF%209_%20Brochure.pdf
+VF 9|||powertrain|power_kw|300|kW|https://storage.googleapis.com/vinfast-data-01/brochure/VF%209_%20Brochure.pdf
+VF 9|||powertrain|torque_nm|620|Nm|https://storage.googleapis.com/vinfast-data-01/brochure/VF%209_%20Brochure.pdf
+VF 9|||battery|battery_kwh|123|kWh|https://storage.googleapis.com/vinfast-data-01/brochure/VF%209_%20Brochure.pdf
+VF 9|Eco||battery|range_km|626|km|https://storage.googleapis.com/vinfast-data-01/brochure/VF%209_%20Brochure.pdf
+VF 9|Plus||battery|range_km|602|km|https://storage.googleapis.com/vinfast-data-01/brochure/VF%209_%20Brochure.pdf
+VF 9|||powertrain|drivetrain|AWD||https://storage.googleapis.com/vinfast-data-01/brochure/VF%209_%20Brochure.pdf
 VF MPV 7|||dimension|length_mm|4740|mm|https://vinfastauto.com/vn_vi/dat-coc-xe-vf-mpv7
 VF MPV 7|||dimension|width_mm|1872|mm|https://vinfastauto.com/vn_vi/dat-coc-xe-vf-mpv7
 VF MPV 7|||dimension|height_mm|1734|mm|https://vinfastauto.com/vn_vi/dat-coc-xe-vf-mpv7
@@ -44,40 +107,7 @@ VF MPV 7|||dimension|wheelbase_mm|2840|mm|https://vinfastauto.com/vn_vi/dat-coc-
 VF MPV 7|||dimension|ground_clearance_mm|185|mm|https://vinfastauto.com/vn_vi/dat-coc-xe-vf-mpv7
 VF MPV 7|||powertrain|power_kw|150|kW|https://vinfastauto.com/vn_vi/dat-coc-xe-vf-mpv7
 VF MPV 7|||powertrain|torque_nm|280|Nm|https://vinfastauto.com/vn_vi/dat-coc-xe-vf-mpv7
-VF MPV 7|||powertrain|range_km|450|km|https://vinfastauto.com/vn_vi/dat-coc-xe-vf-mpv7
-VF MPV 7|||powertrain|battery_kwh|60.13|kWh|https://vinfastauto.com/vn_vi/dat-coc-xe-vf-mpv7
-VF MPV 7|||powertrain|dc_charge_kw|80|kW|https://vinfastauto.com/vn_vi/dat-coc-xe-vf-mpv7
-VF MPV 7|||powertrain|fast_charge_min|30|phút|https://vinfastauto.com/vn_vi/dat-coc-xe-vf-mpv7
-VF MPV 7|||powertrain|drivetrain|FWD/Cầu trước||https://vinfastauto.com/vn_vi/dat-coc-xe-vf-mpv7
-VF MPV 7|||powertrain|drive_modes|Eco/Normal/Sport||https://vinfastauto.com/vn_vi/dat-coc-xe-vf-mpv7
-VF MPV 7|||safety|suspension|MacPherson/Đa liên kết||https://vinfastauto.com/vn_vi/dat-coc-xe-vf-mpv7
-VF MPV 7|||safety|brakes|Đĩa thông gió/Đĩa||https://vinfastauto.com/vn_vi/dat-coc-xe-vf-mpv7
-VF MPV 7|||exterior|headlights|LED||https://vinfastauto.com/vn_vi/dat-coc-xe-vf-mpv7
-VF MPV 7|||exterior|tailgate|Chỉnh cơ||https://vinfastauto.com/vn_vi/dat-coc-xe-vf-mpv7
-VF MPV 7|||interior|ac|Tự động 1 vùng||https://vinfastauto.com/vn_vi/dat-coc-xe-vf-mpv7
-VF MPV 7|||interior|display_inch|10.1|inch|https://vinfastauto.com/vn_vi/dat-coc-xe-vf-mpv7
-VF MPV 7|||interior|speakers|4||https://vinfastauto.com/vn_vi/dat-coc-xe-vf-mpv7
-VF MPV 7|||interior|driver_seat|Chỉnh cơ 6 hướng||https://vinfastauto.com/vn_vi/dat-coc-xe-vf-mpv7
-VF MPV 7|||powertrain|engine|điện||https://vinfastauto.com/vn_vi/dat-coc-xe-vf-mpv7
-VF 2|||powertrain|drivetrain|34 phút (10% - 70%)||https://vinfastauto.com/vn_vi/dat-coc-xe-vf2
-VF 2|||powertrain|engine|01 Motor||https://vinfastauto.com/vn_vi/dat-coc-xe-vf2
-VF 2|||powertrain|power_kw|30|kW|https://vinfastauto.com/vn_vi/dat-coc-xe-vf2
-VF 2|||powertrain|torque_nm|65|Nm|https://vinfastauto.com/vn_vi/dat-coc-xe-vf2
-VF 2|||powertrain|range_km|210|km|https://vinfastauto.com/vn_vi/dat-coc-xe-vf2
-VF 2|||powertrain|fast_charge_min|34|phút|https://vinfastauto.com/vn_vi/dat-coc-xe-vf2
-VF 8 All New|||powertrain|power_kw|170|kW|https://vinfastauto.com/vn_vi/dat-coc-xe-vf8-the-all-new-2026
-VF 8 All New|||powertrain|torque_nm|330|Nm|https://vinfastauto.com/vn_vi/dat-coc-xe-vf8-the-all-new-2026
-VF 8 All New|||powertrain|battery_kwh|60|kWh|https://vinfastauto.com/vn_vi/dat-coc-xe-vf8-the-all-new-2026
-VF 8 All New|||dimension|length_mm|4701|mm|https://vinfastauto.com/vn_vi/dat-coc-xe-vf8-the-all-new-2026
-VF 8 All New|||dimension|width_mm|1872|mm|https://vinfastauto.com/vn_vi/dat-coc-xe-vf8-the-all-new-2026
-VF 8 All New|||dimension|height_mm|1670|mm|https://vinfastauto.com/vn_vi/dat-coc-xe-vf8-the-all-new-2026
-VF 8 All New|||interior|seats|5||https://vinfastauto.com/vn_vi/dat-coc-xe-vf8-the-all-new-2026
-VF 8 All New|||powertrain|fast_charge_min|30|phút|https://vinfastauto.com/vn_vi/dat-coc-xe-vf8-the-all-new-2026
-VF 8 All New|||exterior|wheel_size_inch|19|inch|https://vinfastauto.com/vn_vi/dat-coc-xe-vf8-the-all-new-2026
-VF 8 All New|||interior|display_inch|12.9|inch|https://vinfastauto.com/vn_vi/dat-coc-xe-vf8-the-all-new-2026
-VF 8 All New|||interior|second_row|điều chỉnh hướng||https://vinfastauto.com/vn_vi/dat-coc-xe-vf8-the-all-new-2026
-VF 8|Eco||powertrain|power_kw|201|kW|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-vf8.html
-VF 8|Plus||powertrain|power_kw|402|kW|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-vf8.html
-VF 8|Eco||powertrain|range_km|562|km|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-vf8.html
-VF 8|Plus||powertrain|range_km|457|km|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-vf8.html
-VF 9|||powertrain|range_km|626|km|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-vf9.html
+VF MPV 7|||battery|range_km|450|km|https://vinfastauto.com/vn_vi/dat-coc-xe-vf-mpv7
+VF MPV 7|||battery|battery_kwh|60.13|kWh|https://vinfastauto.com/vn_vi/dat-coc-xe-vf-mpv7
+VF MPV 7|||battery|dc_charge_kw|80|kW|https://vinfastauto.com/vn_vi/dat-coc-xe-vf-mpv7
+VF MPV 7|||powertrain|drivetrain|FWD||https://vinfastauto.com/vn_vi/dat-coc-xe-vf-mpv7

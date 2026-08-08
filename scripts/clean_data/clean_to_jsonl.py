@@ -16,7 +16,7 @@ Each line = one chunk:
 Rules:
   * Prices (VNĐ) NEVER go into vector text — stripped at clean time and
     extracted to hot rows (Postgres) only from authoritative VinFast pages.
-  * Chunking: heading-based first, then sentence-aware split (max_len=400,
+  * Chunking: heading-based first, then sentence-aware split (max_len=800,
     overlap = last complete sentence), khớp cửa sổ embedding ~128 token.
 """
 
@@ -204,7 +204,8 @@ def infer_model_raw(path: Path) -> str | None:
     for key, model in [("vfe34", "VFE34"), ("mpv7", "VFMPV7"),
                        ("vf2", "VF2"), ("vf3", "VF3"), ("vf5", "VF5"),
                        ("vf6", "VF6"), ("vf7", "VF7"),
-                       ("vf8theallnew", "VF8NEW"), ("vf8", "VF8"), ("vf9", "VF9")]:
+                       ("vf8theallnew", "VF8NEW"), ("vf8thenew", "VF8NEW"),
+                       ("vf8allnew", "VF8NEW"), ("vf8", "VF8"), ("vf9", "VF9")]:
         if key in name:
             return model
     return None
@@ -236,8 +237,11 @@ def classify_raw(path: Path, meta: dict[str, Any]) -> dict[str, Any] | None:
             return route("vivu_policy", "chinh_sach_dich_vu", 1.0, "policy")
         return route("vivu_product_info", "thong_tin_san_pham", 0.9, "other")
 
-    # PDF extracts: sổ bảo hành / brochure (warranty & service terms)
+    # Chỉ brochure PDF có chữ "brochure" trong tên/URL vào product info.
+    # Các file *_svc* và *_wb* là sổ bảo hành dù tên file có mã model.
     if stype == "pdf":
+        if model and ("brochure" in name or "brochure" in url.lower()):
+            return route("vivu_product_info", "thong_tin_san_pham", 0.9, "brochure")
         return route("vivu_policy", "chinh_sach_dich_vu", 0.9, "pdf-manual")
 
     # Web articles / dealer pages — prose mô tả/so sánh model → vivu_product_info
@@ -424,8 +428,22 @@ _JUNK_TEXT_RE = re.compile(
     r"d[ăa]ng nh[ậa]p\s*/\s*[đd][ăa]ng k[ýy] tr[ưu]ớc khi mua h[àa]ng|"
     r"gi[áa] b[áa]n t[ừu] đ[ặa]t c[ọo]c đ[ăa]ng k[ýy] l[áa]i th[ửu]|"
     r"vinfast s[ẽe] li[êe]n h[ệe] t[ưu] v[ấa]n|"
-    r"c[ảa]m [ơo]n qu[ýy] kh[áa]ch đ[ãa] quan t[âa]m",
+    r"c[ảa]m [ơo]n qu[ýy] kh[áa]ch đ[ãa] quan t[âa]m|"
+    r"tra cứu tài liệu hướng dẫn|"
+    r"vf\s*\d+\s+hero banner|"
+    r"checkbox label label\s+consent leg\.interest|"
+    r"^\s*-\s*công ty\s*-\s*ô tô điện\s*-\s*xe máy điện\s*$|"
+    r"đặt lịch sửa chữa\s+đặt lịch sửa chữa",
     re.IGNORECASE,
+)
+_JUNK_TEXT_NORM_RE = re.compile(
+    r"doi mat khau thanh cong|"
+    r"thay doi thanh cong mat khau|"
+    r"tra cuu tai lieu huong dan|"
+    r"dat lich sua chua\s+dat lich sua chua|"
+    r"tim showroom\s*&\s*tram sac.*cau hoi thuong gap|"
+    r"san pham dang cap, gia tot, chinh sach hau mai vuot troi",
+    re.IGNORECASE | re.DOTALL,
 )
 _NAV_ITEM_RE = re.compile(
     r"^-\s*(gi[áa] b[áa]n|gi[ớo]i thi[ệe]u|ngo[ạa]i th[ấa]t|n[ộo]i th[ấa]t|"
@@ -443,7 +461,8 @@ def _is_junk_chunk(chunk: dict[str, Any]) -> bool:
         if no_diacritics(sp).lower().strip() in _JUNK_SECTION_NORM:
             return True
     # (2) text khớp modal/newsletter/price-button
-    if _JUNK_TEXT_RE.search(text):
+    if (_JUNK_TEXT_RE.search(text)
+            or _JUNK_TEXT_NORM_RE.search(no_diacritics(text))):
         return True
     # (3) nav menu leak: KHÔNG có section title (chunk gốc) + text là/mở đầu bằng nav items
     if len(chunk.get("section_path", [])) <= 1:
@@ -713,7 +732,7 @@ def chunks_from_text(text: str, meta: dict[str, Any], cls: dict[str, Any],
     return chunks
 
 
-# ── Sentence-aware chunking (max_len=400, overlap last sentence) ───────────
+# ── Sentence-aware chunking (max_len=800, overlap last sentence) ───────────
 def split_sentences(text: str, max_len: int) -> list[str]:
     parts = re.split(r"(?<=[.!?])\s+|\n+", text)
     sents: list[str] = []
@@ -772,7 +791,7 @@ def split_table(text: str, max_len: int) -> list[str]:
     return [p for p in pieces if p.strip()] or [text]
 
 
-def split_by_sentences(text: str, max_len: int = 400) -> list[str]:
+def split_by_sentences(text: str, max_len: int = 800) -> list[str]:
     """Sentence-aware split: gom câu tới max_len, cắt ở biên câu,
     overlap = câu cuối hoàn chỉnh của mảnh trước."""
     sents = split_sentences(text, max_len)
@@ -799,7 +818,7 @@ def split_by_sentences(text: str, max_len: int = 400) -> list[str]:
     return [p for p in final if len(p.strip()) >= 20]
 
 
-def apply_chunking(chunks: list[dict[str, Any]], max_len: int = 400) -> list[dict[str, Any]]:
+def apply_chunking(chunks: list[dict[str, Any]], max_len: int = 800) -> list[dict[str, Any]]:
     """Chunk > max_len -> cắt theo câu (bảng thì lặp header). Giữ metadata gốc."""
     out: list[dict[str, Any]] = []
     for chunk in chunks:
@@ -859,7 +878,7 @@ def link_only_files() -> dict[str, list[str]]:
 
 
 # ── Run / Main ──────────────────────────────────────────────────────────────
-def run(version: str = "v1", max_len: int = 400) -> int:
+def run(version: str = "v1", max_len: int = 800) -> int:
     """Clean raw -> intermediate JSONL. Trả 0 nếu OK, 1 nếu lỗi."""
     version_dir = CLEAN_DIR / version
     intermediate_dir = version_dir / "intermediate"
@@ -1003,8 +1022,8 @@ def run(version: str = "v1", max_len: int = 400) -> int:
 def main() -> int:
     ap = argparse.ArgumentParser(description="Clean raw crawled files into intermediate JSONL.")
     ap.add_argument("--version", default="v1", help="Output version folder (default: v1)")
-    ap.add_argument("--max-len", type=int, default=400,
-                    help="Chunk max length in chars (embedding window ~400 chars)")
+    ap.add_argument("--max-len", type=int, default=800,
+                    help="Chunk max length in chars (default 800; use 400 for finer retrieval)")
     args = ap.parse_args()
     return run(args.version, args.max_len)
 

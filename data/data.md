@@ -68,18 +68,27 @@
 | PP3 | `https://vinfastauto.com/vn_vi/node/9072` | ⚠️ Hướng dẫn đặt lịch bảo dưỡng (mis-scrape) | — | 403 — node/9072 thực chất là trang "đăng ký lái thử xe máy điện", KHÔNG phải đặt lịch bảo dưỡng. URL đúng chưa xác nhận → out-of-scope (xem §9) |
 | PP4 | `https://vinfastauto.com/vn_vi/dang-ky-lai-thu-xe-dien` | Đăng ký lái thử | `09_dat_lich_lai_thu/huong_dan_dat_lich.md` | 403 |
 
-### Brochure PDF (tải về, extract bằng PyMuPDF/pdfplumber)
+### Brochure PDF (tải về, extract → clean OCR)
 
-| # | URL | Model | → Đích | Ghi chú |
+> ⚠️ **Đa số brochure là PDF scan (không có text layer)** — `pdftotext`/pymupdf rút text
+> trả rỗng. Phải **OCR** (Với bản này dùng tệp markdown đã rút + sửa lỗi chữ bằng
+> `scripts/clean_data/fix_ocr.py`: Cyrillic homoglyph → Latin, khôi phục U+FFFD,
+> từ điển OCR → tiếng Việt). Danh sách link thật nằm trong `data/raw/link_brochure.md`.
+
+| # | Model | File `data/raw/` | → Đích | Ghi chú |
 |---|---|---|---|---|
-| B1 | `https://static-cms-prod.vinfastauto.com/brochure_vf_2.pdf` | VF 2 | `02_thong_so_ky_thuat/vf2_brochure.md` | 1.1 MB, 2 trang |
-| B2 | `https://storage.googleapis.com/vinfast-data-01/brochure/09042026/VFVN_VF%205_Brochure%20B%E1%BA%A3n%20s%E1%BB%ADa%20290126_1333PM.pdf` | VF 5 | `02_thong_so_ky_thuat/vf5_brochure.md` | 1.8 MB |
-| B3 | `https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf` | VF 6 | `02_thong_so_ky_thuat/vf6_brochure.md` | >10 MB |
-| B4 | `https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf` | VF 8 | `02_thong_so_ky_thuat/vf8_brochure.md` | |
-| B5 | `https://static-cms-prod.vinfastauto.com/brochure/26052026/VF%208%20The%20he%20moi_Brochure_final%2020.05.pdf` | VF 8 2026 | `02_thong_so_ky_thuat/vf8_2026_brochure.md` | |
-| B6 | `https://storage.googleapis.com/vinfast-data-01/brochure/VF%209_%20Brochure.pdf` | VF 9 | `02_thong_so_ky_thuat/vf9_brochure.md` | 2.5 MB |
+| B1 | VF 2 | `vf2.md` | `02_thong_so_ky_thuat/vf2_brochure.md` | Sạch, Firecrawl |
+| B2 | VF 3 | `vf3.md` | `02_thong_so_ky_thuat/vf3_specs.md` | Scan, OCR nặng |
+| B3 | VF 5 | `vf5.md` | `02_thong_so_ky_thuat/vf5_brochure.md` | Firecrawl |
+| B4 | VF 6 | `vf6.md` | `02_thong_so_ky_thuat/vf6_brochure.md` | Scan, OCR nặng |
+| B5 | VF 7 | `vf7.md` | `02_thong_so_ky_thuat/vf7_specs.md` | Scan, OCR nặng |
+| B6 | VF 8 | `vf8.md` | `02_thong_so_ky_thuat/vf8_brochure.md` | Scan, OCR nặng |
+| B7 | VF 8 All New | `vf8-the-new.md` | `02_thong_so_ky_thuat/vf8_2026_brochure.md` | Sạch, Firecrawl |
+| B8 | VF 9 | `vf9.md` | `02_thong_so_ky_thuat/vf9_brochure.md` | Scan, OCR nặng |
 
-> ⚠️ **Thiếu PDF cho: VF 3, VF 7, VF e34, VF MPV7** — data cho các xe này chỉ có từ landing page + API (mỏng hơn). Nếu user cung cấp thêm PDF, thêm vào bảng trên.
+> ⚠️ **Thiếu PDF cho: VF e34, VF MPV7** — data cho các xe này chỉ từ landing page + API.
+> Brochure VF 3 và VF 8 All New dùng layout *"tất cả nhãn trước, tất cả giá trị sau"* —
+> `parse_specs.py` chưa hỗ trợ format này nên range/DC/FWD của VF 8 All New có thể bị bỏ sót.
 
 ### Bảo dưỡng — Không crawl, chỉ trả link gốc
 
@@ -151,7 +160,7 @@ list_available_models(segment: str = None) -> list[{model_code, model_name, segm
 get_price(model_code: str, version: str) -> {price_vnd, effective_date, source_url}
 
 get_specs(model_code: str, version: str = None) -> list[{spec_key, spec_value, spec_unit, version_name}]
-# Trả thông số kỹ thuật chính xác từ bảng car_specs. Ví dụ: get_specs("VF 8", "Eco") → [{cong_suat_kw: "150", ...}]
+# Trả thông số kỹ thuật chính xác từ bảng car_specs. Ví dụ: get_specs("VF 8", "Eco") → [{power_kw: "150", torque_nm: "310", ...}]
 # Tool này cần vì embed text phẳng dễ bị LLM bẻ cong số — bảng thông số phải là structured data
 
 get_onroad_cost_link(model_code: str = None) -> {url: str}
@@ -582,7 +591,7 @@ Raw HTML (rendered via Playwright)
 | `carModel` API | `01_thong_tin_san_pham/` | `car_catalog` | — | Xe xăng (Fadil, Lux, President) |
 | `shop.vinfastauto.com` giá + version + giá ưu đãi | `01_thong_tin_san_pham/` | `car_pricing` (price_vnd, promo_price_vnd, battery_price_vnd, color_premium_vnd) | — | — |
 | `shop.vinfastauto.com` mô tả sản phẩm + bảo hành | `01_thong_tin_san_pham/` | — | `product_page` (strip giá) | Giá (strip trước khi embed) |
-| `shop.vinfastauto.com` spec cơ bản | `01_thong_tin_san_pham/` | `car_specs` (cong_suat_kw, quang_duong_km, ...) | — | — |
+| `shop.vinfastauto.com` / brochure spec cơ bản | `01_thong_tin_san_pham/`, `02_thong_so_ky_thuat/` | `car_specs` (power_kw, torque_nm, range_km, battery_kwh, length_mm, seats...) | — | — |
 | Brochure PDF — phần marketing | `02_thong_so_ky_thuat/` | — | `brochure` | Disclaimer lặp, bảng giá |
 | Brochure PDF — bảng thông số | `02_thong_so_ky_thuat/` | `car_specs` (chi tiết hơn landing page) | — | — |
 | Policy/bảo hành (vinfastauto.com) | `04_ho_tro_mua_xe/`, `05_chinh_sach_dich_vu/` | — | `policy` | Nav/footer/CTA |
@@ -640,7 +649,7 @@ car_specs (
   id SERIAL PRIMARY KEY,
   model_code TEXT REFERENCES car_catalog,
   version_name TEXT,        -- nullable nếu spec áp dụng chung mọi version
-  spec_key TEXT,            -- "cong_suat_kw", "quang_duong_km", "chieu_dai_co_so_mm"...
+  spec_key TEXT,            -- "power_kw", "torque_nm", "range_km", "battery_kwh", "length_mm", "seats"... (xem docs/SPEC_SCHEMA.md)
   spec_value TEXT,          -- "150", "500", "2840" — giữ string để linh hoạt đơn vị
   spec_unit TEXT,            -- "kW", "km", "mm", "hp"...
   source_url TEXT,
