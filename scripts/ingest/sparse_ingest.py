@@ -20,6 +20,7 @@ Usage:
 import argparse
 import json
 import math
+import os
 import re
 import sys
 import unicodedata
@@ -27,11 +28,13 @@ import uuid
 from collections import Counter
 from pathlib import Path
 
+from dotenv import load_dotenv
 from qdrant_client import QdrantClient
 from qdrant_client.models import (Distance, PointStruct, SparseIndexParams,
                                   SparseVector, SparseVectorParams)
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+load_dotenv(REPO_ROOT / ".env")
 VECTOR_DIR = REPO_ROOT / "data" / "clean" / "{version}" / "vector"
 SPARSE_INDEX_PATH = REPO_ROOT / "data" / "clean" / "{version}" / "sparse_index.json"
 
@@ -98,7 +101,7 @@ def run(version: str = "v1", url: str = DEFAULT_QDRANT_URL, recreate: bool = Fal
     print(f"  vocab={len(vocab)}  avgdl={avgdl:.1f}")
 
     # 2. Client
-    client = QdrantClient(url=url)
+    client = QdrantClient(url=url, api_key=os.environ.get("QDRANT_API_KEY", "") or None)
     if recreate and client.collection_exists(sparse_collection):
         client.delete_collection(sparse_collection)
     if not client.collection_exists(sparse_collection):

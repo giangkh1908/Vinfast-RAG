@@ -12,10 +12,10 @@ retriever sử dụng.
 ## 1. Yêu cầu
 
 - Python 3.11+
-- Docker Desktop
 - OpenRouter API key trong `.env`
 - Crawl4AI + Chromium cho brochure PDF
-- Qdrant và PostgreSQL chạy bằng Docker
+- Qdrant Cloud + Neon (Postgres) — cấu hình trong `.env`
+- Docker chỉ cần khi chạy fallback local (xem `docker-compose.local.yml`)
 
 ## 2. Cài đặt
 
@@ -41,16 +41,41 @@ Tạo `.env` từ `.env.example` và điền:
 OPENROUTER_API_KEY=...
 OPENROUTER_CHAT_MODEL=openai/gpt-4o-mini
 OPENROUTER_EMBED_MODEL=openai/text-embedding-3-small
-QDRANT_URL=http://localhost:16333
-PG_DSN=postgresql://vivu:vivu@localhost:15432/vivu
+QDRANT_URL=https://<cluster-id>.aws.cloud.qdrant.io
+QDRANT_API_KEY=...
+PG_DSN=postgresql://<user>:<password>@<host>.neon.tech/neondb?sslmode=require
 ```
 
-Khởi động database:
+Database mặc định chạy cloud (Qdrant Cloud + Neon), không cần Docker cho
+production. Nếu cloud lỗi / muốn chạy local chỉ để test, xem mục dưới.
 
-```powershell
-docker compose up -d
-docker compose ps
-```
+### 2.1. Fallback local bằng Docker (khi cloud lỗi / offline)
+
+Docker chạy Qdrant + PostgreSQL local thay cho cloud. Chỉ cần đổi `.env` và bật
+compose; code không phải sửa gì (mọi script đọc biến từ `.env`):
+
+1. Khởi động DB local:
+   ```powershell
+   docker compose -f docker-compose.local.yml up -d
+   docker compose -f docker-compose.local.yml ps
+   ```
+   (Kiểm tra: Qdrant `http://localhost:16333`, PostgreSQL `localhost:15432`.)
+
+2. Đổi `.env` sang local (bỏ api_key, port dùng của compose):
+   ```dotenv
+   QDRANT_URL=http://localhost:16333
+   QDRANT_API_KEY=
+   PG_DSN=postgresql://vivu:vivu@localhost:15432/vivu
+   ```
+
+3. Chạy lại pipeline (lần đầu cần `--recreate` để tạo collection local):
+   ```powershell
+   .\.venv\Scripts\python.exe scripts/run_pipeline.py --version v1 --recreate --promote
+   ```
+
+4. Quay lại cloud: khôi phục `.env` về `QDRANT_URL`/`QDRANT_API_KEY`/`PG_DSN`
+   cloud rồi chạy lại pipeline (`--recreate --promote` để đẩy data lên cloud).
+   Có thể tắt compose local: `docker compose -f docker-compose.local.yml down`.
 
 ## 3. Crawl dữ liệu
 
@@ -176,17 +201,17 @@ data/clean/v1/
 Get-Content data/clean/v1/_manifest.json
 ```
 
-Kiểm tra specs:
+Kiểm tra specs (Neon):
 
 ```powershell
-docker exec vivu_postgres psql -U vivu -d vivu -c `
+psql $env:PG_DSN -c `
   "SELECT model_code, version_name, spec_key, spec_value, spec_unit FROM car_specs ORDER BY model_code, version_name, spec_key;"
 ```
 
-Kiểm tra Qdrant:
+Kiểm tra Qdrant Cloud:
 
 ```powershell
-curl http://localhost:16333/collections
+curl -u ":$env:QDRANT_API_KEY" "$env:QDRANT_URL/collections"
 ```
 
 ## 9. Rerun và versioning

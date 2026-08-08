@@ -36,6 +36,7 @@ from lib import openrouter  # noqa: E402
 from scripts import version_manager  # noqa: E402
 
 QDRANT_URL = os.environ.get("QDRANT_URL", "http://localhost:16333")
+QDRANT_API_KEY = os.environ.get("QDRANT_API_KEY", "")
 PG_DSN = os.environ.get("PG_DSN", "postgresql://vivu:vivu@localhost:15432/vivu")
 
 
@@ -58,7 +59,7 @@ def preflight(version: str, want_qdrant: bool, want_pg: bool) -> int:
     if want_qdrant:
         try:
             from qdrant_client import QdrantClient
-            QdrantClient(url=QDRANT_URL).get_collections()
+            QdrantClient(url=QDRANT_URL, api_key=QDRANT_API_KEY or None).get_collections()
         except Exception as e:  # noqa: BLE001
             print(f"[preflight] không kết nối được Qdrant tại {QDRANT_URL}: {e}",
                   file=sys.stderr)

@@ -170,8 +170,8 @@ query bằng cùng vocab/idf):
 
 ## 3. Schema PostgreSQL
 
-- **DSN mặc định:** `postgresql://vivu:vivu@localhost:5432/vivu`
-- **Container:** `vivu_postgres` (image `postgres:16-alpine`, xem `docker-compose.yml`)
+- **DSN mặc định:** lấy từ `PG_DSN` trong `.env` (Neon cloud; fallback local
+  `postgresql://vivu:vivu@localhost:15432/vivu` qua `docker-compose.local.yml`).
 - **Charset:** UTF-8. CSV nguồn dùng delimiter `|`.
 
 ### 3.1. DDL đầy đủ
@@ -536,28 +536,38 @@ quãng đường, kích thước, pin...) → `car_specs` để retriever query 
 
 | Thành phần | Giá trị |
 |---|---|
-| Qdrant | `qdrant/qdrant:latest`, port `6333` (REST) + `6334` (gRPC) |
-| PostgreSQL | `postgres:16-alpine`, port `5432`, user/db/pass `vivu` |
+| Qdrant | Mặc định cloud; fallback local `qdrant/qdrant:latest` port `16333` (REST) + `16334` (gRPC) |
+| PostgreSQL | Mặc định Neon cloud; fallback local `postgres:16-alpine` port `15432`, user/db/pass `vivu` |
 | Embed model | `openai/text-embedding-3-small` (1536-dim, OpenRouter) |
 | API key | `OPENROUTER_API_KEY` trong `.env` (không commit) |
 | Thư viện | `qdrant-client`, `psycopg2-binary`, `requests`, `python-dotenv` |
 
+> **Fallback local bằng Docker** (khi cloud lỗi/offline): khởi động
+> `docker compose -f docker-compose.local.yml up -d`, đổi trong `.env` về
+> `QDRANT_URL=http://localhost:16333`, `QDRANT_API_KEY=` (rỗng),
+> `PG_DSN=postgresql://vivu:vivu@localhost:15432/vivu`, rồi chạy lại pipeline.
+> Lệnh kiểm tra local dùng `docker exec -it vivu_postgres psql -U vivu -d vivu ...`.
+
 **Lệnh ingest (run order):**
 ```bash
-docker compose up -d
-python scripts/clean_data/clean_to_jsonl.py --version v1
+python scripts/clean_data/clean_to_jsonl.py --version v1 --max-len 800
 python scripts/clean_data/split_cold_hot.py --version v1 --commit $(git rev-parse --short HEAD)
-python scripts/clean_data/parse_specs.py    --version v1     # → postgres/specs.csv (car_specs)
+python scripts/clean_data/parse_specs.py    --version v1 --crawl-brochures  # → postgres/specs.csv (car_specs)
 python scripts/ingest/vector_ingest.py   --version v1 --recreate
 python scripts/ingest/sparse_ingest.py   --version v1 --recreate
 python scripts/ingest/postgres_ingest.py --version v1
 ```
 
-**Kiểm tra:**
+Hoặc một lệnh full (khuyến nghị):
 ```bash
-curl http://localhost:6333/collections
-docker exec -it vivu_postgres psql -U vivu -d vivu -c "SELECT * FROM price_list WHERE model_id='VF9';"
-docker exec -it vivu_postgres psql -U vivu -d vivu -c \
+python scripts/run_pipeline.py --version v1 --recreate --promote
+```
+
+**Kiểm tra (cloud):**
+```bash
+curl -u ":$QDRANT_API_KEY" "$QDRANT_URL/collections"
+psql "$PG_DSN" -c "SELECT * FROM price_list WHERE model_id='VF9';"
+psql "$PG_DSN" -c \
   "SELECT model_code, version_name, spec_key, spec_value, spec_unit FROM car_specs WHERE model_code='VF 8' AND spec_key='power_kw';"
 ```
 
