@@ -4,7 +4,6 @@
 
 - Python 3.11+
 - API key TokenRouter (hoặc OpenAI)
-- Qdrant Cloud + Neon PostgreSQL (đã có trong .env)
 
 ---
 
@@ -26,7 +25,7 @@ OPENAI_BASE_URL=https://api.tokenrouter.com/v1
 LLM_MODEL=openai/gpt-4o-mini
 
 POSTGRES_URL=postgresql+asyncpg://neondb_owner:...@neon.tech/neondb?sslmode=require
-PG_DSN=postgresql://neondb_owner:...@neon.tech/neondb?sslmode=require
+PG_DSN=postgresql://neondb_owner:...@neon.tech/neon.db?sslmode=require
 
 QDRANT_URL=https://xxx.eu-central-1-0.aws.cloud.qdrant.io
 QDRANT_API_KEY=eyJhbGci...
@@ -44,7 +43,7 @@ SCOPE_VERSIONS=Eco,Plus
 uvicorn app.main:app --reload --port 8000
 ```
 
-Mở http://localhost:8000
+Mo http://localhost:8000
 
 ---
 
@@ -52,18 +51,18 @@ Mở http://localhost:8000
 
 ### PostgreSQL (Neon Cloud)
 
-Dùng VS Code extension **Database Client** (đã cài):
+Dung VS Code extension **Database Client**:
 
-1. Sidebar trái → icon **Database** (hình trụ)
-2. Click **+** → **PostgreSQL**
-3. Điền:
+1. Sidebar trai -> icon **Database** (hinh tru)
+2. Click **+** -> **PostgreSQL**
+3. Dien:
    - Host: `ep-falling-band-az3x86f6.c-3.ap-southeast-1.aws.neon.tech`
    - Port: `5432`
    - User: `neondb_owner`
    - Password: `npg_Sf6WZ9FalKDE`
    - Database: `neondb`
    - SSL: ✅
-4. Query thử:
+4. Query thu:
 
 ```sql
 SELECT * FROM edition_active;
@@ -73,7 +72,7 @@ SELECT * FROM price_list_active;
 
 ### Qdrant Cloud
 
-Dùng Python:
+Dung Python:
 
 ```python
 from qdrant_client import QdrantClient
@@ -87,13 +86,13 @@ for c in client.get_collections().collections:
     print(c.name)
 ```
 
-Hoặc mở https://cloud.qdrant.io → Dashboard.
+Hoac mo https://cloud.qdrant.io -> Dashboard.
 
 ---
 
 ## 5. Check Logs
 
-### Xem logs trong session hiện tại
+### Xem logs trong session hien tai
 
 ```bash
 curl http://localhost:8000/api/logs
@@ -107,7 +106,7 @@ curl http://localhost:8000/api/logs/export > logs.jsonl
 
 ### Log schema (P0 — 30 fields)
 
-Mỗi request log:
+Moi request log:
 
 ```json
 {
@@ -147,7 +146,7 @@ Mỗi request log:
 
 ## 6. Eval — Batch Runner (P0)
 
-Chạy test cases qua API, export JSONL:
+Chay test cases qua API, export JSONL:
 
 ```bash
 python scripts/batch_runner.py --input eval/smoke_test.csv --output eval/smoke_results.jsonl
@@ -157,37 +156,37 @@ Input CSV format:
 
 ```csv
 test_id,user_query
-TF-SM-01,VF 6 có những phiên bản nào?
-TF-SM-02,Xe đi được bao xa sau một lần sạc?
+TF-SM-01,VF 6 co nhung phien ban nao?
+TF-SM-02,Xe di duoc bao xa sau mot lan sac?
 ```
 
-Output: JSONL với P0 schema per request.
+Output: JSONL voi P0 schema per request.
 
 ---
 
 ## 7. Eval — RAGAS (Automated Metrics)
 
-### Chạy RAGAS eval
+### Chay RAGAS eval
 
 ```bash
 python scripts/ragas_eval.py --input eval/golden_dataset.csv --output eval/ragas_results.jsonl
 ```
 
-Input CSV cần thêm cột `expected_answer`:
+Input CSV can them cot `expected_answer`:
 
 ```csv
 test_id,user_query,expected_decision,expected_answer
-TF-ANS-01,VF 6 có những phiên bản nào?,answer,VF 6 có 2 phiên bản: Eco và Plus.
+TF-ANS-01,VF 6 co nhung phien ban nao?,answer,VF 6 co 2 phien ban: Eco va Plus.
 ```
 
 ### RAGAS Metrics
 
-| Metric | Ý nghĩa | Range |
+| Metric | Y nghia | Range |
 |---|---|---|
-| **Faithfulness** | Answer có dựa trên retrieved context không? | 0-1 |
-| **Answer Relevancy** | Answer có liên quan đến question không? | 0-1 |
-| **Context Precision** | Retrieved chunks có đúng không? | 0-1 |
-| **Context Recall** | Ground truth có nằm trong retrieved chunks không? | 0-1 |
+| **Faithfulness** | Answer co dua tren retrieved context khong? | 0-1 |
+| **Answer Relevancy** | Answer co lien quan den question khong? | 0-1 |
+| **Context Precision** | Retrieved chunks co dung khong? | 0-1 |
+| **Context Recall** | Ground truth co nam trong retrieved chunks khong? | 0-1 |
 
 ### Output
 
@@ -219,15 +218,15 @@ PHOENIX_ENABLED=true
 python -m phoenix.server.main serve
 ```
 
-Mở http://localhost:6006
+Mo http://localhost:6006
 
-### Chạy app với Phoenix
+### Chay app voi Phoenix
 
 ```bash
 uvicorn app.main:app --reload --port 8000
 ```
 
-Phoenix tự động capture:
+Phoenix tu dong capture:
 - OpenAI API calls (LLM + Embedding)
 - Latency per call
 - Token usage
@@ -237,18 +236,18 @@ Phoenix tự động capture:
 
 ## 9. Test Queries
 
-| Query | Decision mong đợi | Tool |
+| Query | Decision mong doi | Tool |
 |---|---|---|
-| VF 6 có mấy phiên bản? | `answer` | get_specs / list_models |
-| VF 6 Eco công suất bao nhiêu? | `answer` | get_specs |
-| Xe đi được bao xa? | `clarify` (missing_model) | — |
-| Cho tôi biết về VF 6 | `clarify` (missing_topic) | — |
-| So sánh VF 6 và VF 8 | `out_of_scope` | — |
-| Giá VF 8 bao nhiêu? | `out_of_scope` | — |
+| VF 6 co may phien ban? | `answer` | get_specs / list_models |
+| VF 6 Eco cong suat bao nhieu? | `answer` | get_specs |
+| Xe di duoc bao xa? | `clarify` (missing_model) | — |
+| Cho toi biet ve VF 6 | `clarify` (missing_topic) | — |
+| So sanh VF 6 va VF 8 | `out_of_scope` | — |
+| Gia VF 8 bao nhieu? | `out_of_scope` | — |
 
 ---
 
-## Cấu trúc thư mục
+## Cau truc thu muc
 
 ```
 vivu/
@@ -273,7 +272,7 @@ vivu/
 │   └── static/index.html            # Chat UI
 │
 ├── scripts/
-│   ├── batch_runner.py              # Eval: CSV → API → JSONL
+│   ├── batch_runner.py              # Eval: CSV -> API -> JSONL
 │   ├── ragas_eval.py                # Eval: RAGAS automated scoring
 │   ├── run_pipeline.py              # Data pipeline orchestrator
 │   └── ...
@@ -290,13 +289,13 @@ vivu/
 
 ---
 
-## Lỗi thường gặp
+## Loi thuong gap
 
-| Lỗi | Nguyên nhân | Fix |
+| Loi | Nguyen nhan | Fix |
 |---|---|---|
-| `Connection refused` Qdrant | Sai URL hoặc API key | Check `.env` QDRANT_URL, QDRANT_API_KEY |
+| `Connection refused` Qdrant | Sai URL hoac API key | Check `.env` QDRANT_URL, QDRANT_API_KEY |
 | `Connection refused` PostgreSQL | Sai PG_DSN | Check `.env` PG_DSN |
 | `403 Forbidden` OpenAI | Sai API key | Check `.env` OPENAI_API_KEY |
-| `ModuleNotFoundError: ragas` | Chưa install | `pip install ragas datasets` |
-| `RAGAS scoring failed` | Thiếu ground_truth | CSV phải có cột `expected_answer` |
-| `Phoenix not installed` | Chưa install | `pip install arize-phoenix openinference-instrumentation-openai` |
+| `ModuleNotFoundError: ragas` | Chua install | `pip install ragas datasets` |
+| `RAGAS scoring failed` | Thieu ground_truth | CSV phai co cot `expected_answer` |
+| `Phoenix not installed` | Chua install | `pip install arize-phoenix openinference-instrumentation-openai` |
