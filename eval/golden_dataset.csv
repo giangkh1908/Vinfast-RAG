@@ -1,0 +1,11 @@
+test_id,user_query,expected_decision,expected_answer
+TF-ANS-01,VF 6 có những phiên bản nào?,answer,VF 6 có 2 phiên bản: Eco và Plus.
+TF-ANS-02,VF 6 Eco công suất bao nhiêu?,answer,VF 6 Eco có công suất 130 kW.
+TF-ANS-03,VF 8 Plus pin bao nhiêu kWh?,answer,VF 8 Plus có pin 87.7 kWh.
+TF-ANS-04,VF 6 đi được bao xa sau một lần sạc?,answer,VF 6 Eco đi được khoảng 485 km sau một lần sạc.
+TF-ANS-05,VF 8 có mấy túi khí?,answer,VF 8 Eco có 10 túi khí Plus có 11 túi khí.
+TF-CL-01,Xe đi được bao xa sau một lần sạc?,clarify,Bạn muốn hỏi về VF 6 hay VF 8?
+TF-CL-02,Cho tôi biết về VF 6.,clarify,Bạn muốn tìm thông tin nào về VF 6?
+TF-OOS-01,So sánh VF 6 và VF 8.,out_of_scope,Hiện tại mình chưa hỗ trợ so sánh xe.
+TF-OOS-02,Giá VF 8 bao nhiêu?,out_of_scope,Nội dung giá/ưu đãi/chính sách chưa thuộc phạm vi hỗ trợ.
+TF-OOS-03,Nên mua xe nào?,out_of_scope,Gợi ý xe theo nhu cầu chưa được hỗ trợ.
