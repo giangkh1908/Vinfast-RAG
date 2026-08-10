@@ -196,6 +196,24 @@ class AgentLoop:
         force_tool = classify_result.topic is not None
         final_response = ""
 
+        # Semantic pre-filter: guide LLM with specificity info
+        from app.agent.semantic_prefilter import classify_specificity
+        specificity = classify_specificity(query)
+        has_model = bool(classify_result.entities.get("model_code"))
+
+        if specificity.specific and has_model:
+            # Specific query with model → answer directly
+            guidance = f"[System] Query có topic rõ ràng: {specificity.category}. Model: {classify_result.entities['model_code']}. Trả lời trực tiếp bằng tool, KHÔNG gọi ask_clarification."
+            messages.append({"role": "user", "content": guidance})
+        elif not has_model:
+            # No model → must clarify
+            guidance = "[System] Query thiếu model (VF 6 hay VF 8). PHẢI gọi ask_clarification."
+            messages.append({"role": "user", "content": guidance})
+        elif not specificity.specific and has_model:
+            # Broad query with model → clarify topic
+            guidance = f"[System] Query quá chung chung (specificity={specificity.top_score}). Model: {classify_result.entities['model_code']}. Gọi ask_clarification với model_id."
+            messages.append({"role": "user", "content": guidance})
+
         t_retrieve_start = time.time()
         for i in range(self.MAX_ITERATIONS):
             try:
@@ -399,6 +417,21 @@ class AgentLoop:
         tool_schemas = await build_tool_schemas()
         tool_results = []
         force_tool = classify_result.topic is not None
+
+        # Semantic pre-filter: guide LLM with specificity info
+        from app.agent.semantic_prefilter import classify_specificity
+        specificity = classify_specificity(query)
+        has_model = bool(classify_result.entities.get("model_code"))
+
+        if specificity.specific and has_model:
+            guidance = f"[System] Query có topic rõ ràng: {specificity.category}. Model: {classify_result.entities['model_code']}. Trả lời trực tiếp bằng tool, KHÔNG gọi ask_clarification."
+            messages.append({"role": "user", "content": guidance})
+        elif not has_model:
+            guidance = "[System] Query thiếu model (VF 6 hay VF 8). PHẢI gọi ask_clarification."
+            messages.append({"role": "user", "content": guidance})
+        elif not specificity.specific and has_model:
+            guidance = f"[System] Query quá chung chung (specificity={specificity.top_score}). Model: {classify_result.entities['model_code']}. Gọi ask_clarification với model_id."
+            messages.append({"role": "user", "content": guidance})
 
         t_retrieve_start = time.time()
         for i in range(self.MAX_ITERATIONS):

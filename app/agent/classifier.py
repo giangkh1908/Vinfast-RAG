@@ -19,10 +19,10 @@ TOPIC_PATTERNS = {
 # Out-of-scope patterns — only enforced when scope_enabled
 OOS_PATTERNS = {
     "comparison": r"(so\s+s[aá]nh|compare|\bvs\b|kh[aá]c\s+g[ìi]|hon\s+nhau|h[aơn]+\s+nhau)",
-    "recommendation": r"(n[êê]n\s+mua|ph[ùù]?\s*h[ợợ]p\s+v[ớới]|g[ợợi]\s+[ýy]|t[ưu]\s+v[ấấn]|ng[âân]\s+s[aá]ch.*mua)",
+    "recommendation": r"(n[êê]n\s+mua|mu[aố]n\s+mua|ph[ùù]?\s*h[ợợ]p\s+v[ớới]|g[ợợi]\s+[ýy]|t[ưu]\s+v[ấấn]|ng[âân]\s+s[aá]ch.*mua)",
     "pricing": r"(gi[aá]\s|bao\s+nhi[êe]u\s+ti[ềề]n|ni[êe]m\s+y[ếe]t|[uư]u\s+[đd][ãa]i|khuy[ếe]n\s+m[aã]i|gi[aả]m\s+gi[aá]|voucher|[đd][ặặ]t\s+c[ọọc]|l[aă]n\s+b[aá]nh|tr[aả]\s+g[oó]p|vay|l[aã]i\s+su[aấ]t|khuy[aã]n\s+m[aại])",
     "warranty_maintenance": r"(b[aảo]+\s+d[uư][oõ]ng|b[aảo]+\s+h[aà]nh|thay\s+d[aầu]+|l[oọc]\s+gi[oó]|b[aảo]+\s+tr[iì]|h[uớo]ng\s+d[aẫn]+|manual|l[aị]ch\s+s[uử]\s+b[aảo]+\s+d[uư][oõ]ng|VIN)",
-    "diagnostics": r"(l[oỗ]i|c[aản]nh?\s+b[aá]o|s[uự]\s+c[oố]|h[oỏ]ng|s[uửa]\s+ch[uữ]a|x[uử]\s+l[yý]|ch[aẩn]\s+[đd][oá]n|b[aáo]\s+l[oỗ]i)",
+    "diagnostics": r"(\bl[oỗ]i\b|\bc[aản]nh?\s+b[aá]o\b|\bs[uự]\s+c[oố]|\bh[oỏ]ng\b|\bs[uửa]\s+ch[uữ]a|\bx[uử]\s+l[yý]|\bch[aẩn]\s+[đd][oá]n|\bb[aáo]\s+l[oỗ]i\b)",
     "hotline_showroom": r"(hotline|showroom|tr[aạm]\s+s[aạc]|[đd][aạ]i\s+l[yý]|l[aá]i\s+th[uử]|test\s*drive|[đd][aặ]t\s+l[iị]ch|li[êên]\s+h[ệệ]|[đd][aă]ng\s+k[yý])",
     "external_source": r"(internet|di[aễn]\s+[đd][aà]n|review|[đd][aá]nh\s+gi[aá]|google|facebook|youtube)",
     "personal_data": r"(VIN|l[aị]ch\s+s[uử]\s+d[aị]ch\s+v[uụ]|t[aà]i\s+kh[oỏ]n|d[aữữ]\s+li[eệ]u\s+c[aá]\s+nh[ââ]n)",
