@@ -51,7 +51,7 @@ def qdrant_id(chunk_id: str) -> str:
 
 
 def make_payload(chunk: dict[str, Any]) -> dict[str, Any]:
-    return {k: v for k, v in chunk.items() if k not in {"id", "text", "is_hot"}}
+    return {k: v for k, v in chunk.items() if k not in {"id", "is_hot"}}
 
 
 def probe_dimension() -> int:
