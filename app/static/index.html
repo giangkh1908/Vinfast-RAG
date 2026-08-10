@@ -59,17 +59,20 @@ function addSources(sources) {
   if (!sources || !sources.length) return;
   const details = document.createElement('details');
   details.className = 'sources';
+  details.open = true;
   details.innerHTML = '<summary>Nguồn tham khảo (' + sources.length + ')</summary>';
   sources.forEach(s => {
     const url = s.url || s.source_url || '';
     if (!url || !url.startsWith('http')) return;
     const p = document.createElement('div');
     p.style.marginTop = '4px';
+    p.style.fontSize = '13px';
+    const score = s.score ? ' (' + (s.score * 100).toFixed(0) + '%)' : '';
     const a = document.createElement('a');
     a.href = url;
     a.target = '_blank';
     a.rel = 'noopener noreferrer';
-    a.textContent = s.text || url;
+    a.textContent = (s.text || url) + score;
     p.appendChild(a);
     details.appendChild(p);
   });

@@ -140,11 +140,11 @@ class AgentLoop:
 
         context_numbers = _extract_numbers(" ".join(context_parts))
 
-        # Only check "significant" numbers — specs values are typically >= 100
-        # or have decimal points (e.g., 59.6, 87.7, 5.58)
+        # Only check "significant" numbers — skip model versions (6, 8), counts (2)
+        # Keep spec values: >= 100 (4241, 1580) or decimals (59.6, 87.7, 5.58)
         for num in response_numbers:
-            if num < 100 and "." not in str(num):
-                continue
+            if num < 100 and num == int(num):
+                continue  # skip round numbers under 100 (versions, counts)
             if num not in context_numbers:
                 return False
 
@@ -452,14 +452,19 @@ class AgentLoop:
         if citations:
             seen = set()
             formatted = []
-            for c in citations:
+            # Sort by score descending, dedup by URL, limit to 5
+            sorted_citations = sorted(citations, key=lambda c: c.get("score", 0), reverse=True)
+            for c in sorted_citations:
                 url = c.get("source_url", "")
                 if not url or not url.startswith("http") or url in seen:
                     continue
                 seen.add(url)
                 model = c.get("model_code", "")
                 label = c.get("source_type", "")
+                score = round(c.get("score", 0), 3)
                 text = f"{model} — {label}" if model and label else (label or url)
-                formatted.append({"text": text, "url": url, "type": label})
+                formatted.append({"text": text, "url": url, "type": label, "score": score})
+                if len(formatted) >= 5:
+                    break
             if formatted:
                 yield {"type": "sources", "content": formatted}
