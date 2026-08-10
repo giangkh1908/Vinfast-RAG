@@ -90,7 +90,6 @@ MODEL_LABEL = {
     "VF8NEW": "VF 8 All New",
     "VF9": "VF 9",
     "VFMPV7": "VF MPV 7",
-    "VFE34": "VF e34",
     "ECVAN": "EC Van",
     "FADIL": "Fadil",
     "HERIO": "Herio Green",
@@ -198,14 +197,19 @@ def parse_raw_file(path: Path) -> tuple[dict[str, Any], str]:
 
 
 def infer_model_raw(path: Path) -> str | None:
-    """Infer model_id from raw filename (vf3, vf5, vf8-the-all-new, mpv7, e34...)."""
+    """Infer model_id from raw filename (vf3, vf5, vf8-the-all-new, mpv7...)."""
     name = re.sub(r"[^a-z0-9]", "", path.stem.lower())
-    # thứ tự quan trọng: e34 trước vf3, mpv7 trước vf7
-    for key, model in [("vfe34", "VFE34"), ("mpv7", "VFMPV7"),
-                       ("vf2", "VF2"), ("vf3", "VF3"), ("vf5", "VF5"),
-                       ("vf6", "VF6"), ("vf7", "VF7"),
-                       ("vf8theallnew", "VF8NEW"), ("vf8thenew", "VF8NEW"),
-                       ("vf8allnew", "VF8NEW"), ("vf8", "VF8"), ("vf9", "VF9")]:
+    # Sắp xếp key dài → ngắn để tránh false match:
+    # VD "vf206" match "vf2" trước "vf6" → sai; "vf8theallnew" match trước "vf8".
+    _MODEL_KEYS = sorted([
+        ("mpv7", "VFMPV7"),
+        ("vf206", "VF6"), ("vf6", "VF6"),
+        ("vf2", "VF2"), ("vf3", "VF3"), ("vf5", "VF5"),
+        ("vf7", "VF7"), ("vf8theallnew", "VF8NEW"),
+        ("vf8thenew", "VF8NEW"), ("vf8allnew", "VF8NEW"),
+        ("vf8", "VF8"), ("vf9", "VF9"),
+    ], key=lambda x: -len(x[0]))
+    for key, model in _MODEL_KEYS:
         if key in name:
             return model
     return None
@@ -296,6 +300,9 @@ NOISE_PATTERNS = [
     r"^\s*Xin hãy gọi ngay.*$",
 ]
 NOISE_RE = [re.compile(p, flags=re.IGNORECASE) for p in NOISE_PATTERNS]
+
+# Page marker từ crawl PDF: --- Trang N ---
+PAGE_MARKER_RE = re.compile(r"---\s*Trang\s*(\d+)\s*---")
 
 # Unicode private-use (PUA) — ký tự lạ từ PDF/WingDings như  (bullet)
 PUA_RE = re.compile(r"[-]")
@@ -393,8 +400,8 @@ COMPETING_BRANDS = (
 def _is_offmodel_noise(chunk: dict[str, Any]) -> bool:
     """True nếu chunk tag model VinFast nhưng text chỉ nói brand đối thủ.
 
-    So khớp nhiều form model trong text: compact ("vf7"), catalog ("vf 7",
-    "vf e34" — từ MODEL_LABEL). Nếu text nhắc model hoặc "vinfast" → giữ.
+    So khớp nhiều form model trong text: compact ("vf7"), catalog ("vf 7").
+    Nếu text nhắc model hoặc "vinfast" → giữ.
     """
     mid = chunk.get("model_id")
     if not mid:
@@ -642,11 +649,13 @@ def chunks_from_text(text: str, meta: dict[str, Any], cls: dict[str, Any],
     chunks: list[dict[str, Any]] = []
     section_stack: list[tuple[int, str]] = []
     buf: list[str] = []
+    current_page = 0  # track PDF page from --- Trang N --- markers
 
     def current_section_title() -> str:
         return section_stack[-1][1] if section_stack else ""
 
     def emit() -> None:
+        nonlocal current_page
         if not buf:
             return
         paragraphs = [clean_line(line) for line in buf]
@@ -681,6 +690,7 @@ def chunks_from_text(text: str, meta: dict[str, Any], cls: dict[str, Any],
         section_path = [cls.get("category", "thong_tin_san_pham")]
         if section_title:
             section_path.append(section_title)
+            body_text = f"{section_title}\n{body_text}"
 
         text_type = "prose"
         if "|" in body_text and "---" in body_text:
@@ -713,10 +723,19 @@ def chunks_from_text(text: str, meta: dict[str, Any], cls: dict[str, Any],
             "ingested_at": "",
             "is_hot": False,
         }
+        # Ghi số trang PDF nếu có page marker
+        if current_page:
+            chunk["page"] = current_page
         chunks.append(chunk)
         buf.clear()
 
     for raw in lines:
+        # Page marker: --- Trang N ---  →  gán page cho chunk sắp emit
+        pm = PAGE_MARKER_RE.match(raw.strip())
+        if pm:
+            emit()
+            current_page = int(pm.group(1))
+            continue
         m = re.match(r"^(#{1,6})\s+(.*)", raw.strip())
         if m:
             emit()

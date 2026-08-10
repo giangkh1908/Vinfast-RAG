@@ -39,7 +39,8 @@ VECTOR_DIR = REPO_ROOT / "data" / "clean" / "{version}" / "vector"
 SPARSE_INDEX_PATH = REPO_ROOT / "data" / "clean" / "{version}" / "sparse_index.json"
 
 SPARSE_COLLECTION_BASE = "sparse"
-DEFAULT_QDRANT_URL = "http://localhost:16333"
+DEFAULT_QDRANT_URL = os.environ.get("QDRANT_URL", "http://localhost:16333")
+QDRANT_TIMEOUT = int(os.environ.get("QDRANT_TIMEOUT", "300"))
 
 # BM25 params
 K1 = 1.5
@@ -101,7 +102,8 @@ def run(version: str = "v1", url: str = DEFAULT_QDRANT_URL, recreate: bool = Fal
     print(f"  vocab={len(vocab)}  avgdl={avgdl:.1f}")
 
     # 2. Client
-    client = QdrantClient(url=url, api_key=os.environ.get("QDRANT_API_KEY", "") or None)
+    client = QdrantClient(url=url, api_key=os.environ.get("QDRANT_API_KEY", "") or None,
+                          timeout=QDRANT_TIMEOUT)
     if recreate and client.collection_exists(sparse_collection):
         client.delete_collection(sparse_collection)
     if not client.collection_exists(sparse_collection):

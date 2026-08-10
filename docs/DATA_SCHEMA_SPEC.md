@@ -129,6 +129,7 @@ bộ trường (JSON, 1 dòng compact):**
   "source_type":  "raw_html",     // raw_html | raw_pdf | brochure | product_page | faq | ...
   "fetched_at":   "2026-07-30T21:32:01",
   "ingested_at":  "2026-08-03T07:21:26Z",
+	  "page":         11,             // số trang PDF (nullable, chỉ brochure có)
   "is_hot":       false           // flag cold/hot — KHÔNG được đưa vào Qdrant payload
 }
 ```
@@ -138,7 +139,7 @@ bộ trường (JSON, 1 dòng compact):**
 ```
 collection, vector_version, model_id, edition_id, category, section_path,
 text, text_type, structured, language, tags, confidence, source_file, source_url,
-source_type, fetched_at, ingested_at
+source_type, fetched_at, ingested_at, page
 ```
 
 ### 2.3. Sparse collection (BM25)
@@ -404,6 +405,7 @@ hành"*; con số lấy từ Postgres lúc query.
 | `source_type` | string | ✓ | `raw_html` \| `raw_pdf` \| `brochure` \| `product_page` \| `faq` \| `policy_legal` \| `maintenance_link` \| `specs_json` ... |
 | `fetched_at` | string | ✓ | ISO timestamp lúc crawl |
 | `ingested_at` | string | ✓ | ISO timestamp lúc clean |
+| `page` | int\|null | ✗ | Số trang PDF gốc (chỉ có ở chunk từ brochure). `null`/absent nếu không phải PDF. Dùng để render citation → user biết trang trong brochure |
 | `is_hot` | bool | ✓ | Flag cold/hot cho pipeline. **BỎ khỏi payload Qdrant** (`make_payload` giữ lại toàn bộ trừ `{id, is_hot}`) |
 
 ### 5.3. PostgreSQL — từng bảng

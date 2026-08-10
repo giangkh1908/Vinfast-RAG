@@ -29,8 +29,15 @@ import uuid
 from pathlib import Path
 from typing import Any
 
+from dotenv import load_dotenv
 from qdrant_client import QdrantClient
-from qdrant_client.models import Distance, PointStruct, VectorParams
+from qdrant_client.http import models as qdrant_models
+from qdrant_client.models import Distance, PayloadSchemaType, PointStruct, VectorParams
+
+load_dotenv(Path(__file__).resolve().parents[2] / ".env")
+
+# Timeout dài cho upsert nhiều points lên cloud
+QDRANT_TIMEOUT = int(os.environ.get("QDRANT_TIMEOUT", "300"))
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "backend"))
 from lib.openrouter import (API_KEY, EMBED_MODEL, embed_texts,  # noqa: E402
@@ -40,7 +47,7 @@ from lib.vector_cache import VectorCache, content_hash  # noqa: E402
 REPO_ROOT = Path(__file__).resolve().parents[2]
 VECTOR_DIR = REPO_ROOT / "data" / "clean" / "{version}" / "vector"
 
-DEFAULT_QDRANT_URL = "http://localhost:16333"
+DEFAULT_QDRANT_URL = os.environ.get("QDRANT_URL", "http://localhost:16333")
 BATCH_SIZE = 64
 UPSERT_BATCH = 100
 
@@ -125,6 +132,13 @@ def ingest_file(client: QdrantClient, path: Path, recreate: bool,
             collection_name=collection_name,
             vectors_config=VectorParams(size=dim, distance=Distance.COSINE),
         )
+        # Payload indexes cho filter thường dùng (model_id, category, source_type)
+        for field in ("model_id", "category", "source_type"):
+            client.create_payload_index(
+                collection_name=collection_name,
+                field_name=field,
+                field_schema=PayloadSchemaType.KEYWORD,
+            )
         print(f"  created {collection_name} (dim={dim})")
 
     # Embed miss qua OpenRouter
@@ -181,7 +195,8 @@ def run(version: str = "v1", url: str = DEFAULT_QDRANT_URL, recreate: bool = Fal
         print(f"[vector_ingest] vector dir not found: {vector_dir}", file=sys.stderr)
         return 1
 
-    client = QdrantClient(url=url, api_key=os.environ.get("QDRANT_API_KEY", "") or None)
+    client = QdrantClient(url=url, api_key=os.environ.get("QDRANT_API_KEY", "") or None,
+                          timeout=QDRANT_TIMEOUT)
     try:
         client.get_collections()
     except Exception as e:
