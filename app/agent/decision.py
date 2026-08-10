@@ -281,6 +281,7 @@ def assess_evidence(tool_results: list[dict], query: str) -> tuple[str, list[dic
                     "text": f"{s.get('key', '')}: {s.get('value', '')} {s.get('unit', '')}",
                     "source_url": result.get("source_url", ""),
                     "source_type": "specs",
+                    "score": 1.0,
                 })
             has_direct = True
 
@@ -292,6 +293,7 @@ def assess_evidence(tool_results: list[dict], query: str) -> tuple[str, list[dic
                     "text": f"{p.get('version_name', '')}: {p.get('price_vnd', '')}",
                     "source_url": result.get("source_url", ""),
                     "source_type": "pricing",
+                    "score": 1.0,
                 })
             has_direct = True
 
