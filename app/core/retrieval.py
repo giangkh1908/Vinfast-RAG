@@ -184,9 +184,10 @@ async def _search_dense_collection(col: str, client, dense_vector, search_filter
             with_payload=True,
         )
         return response.points
-    except Exception:
-        # Fallback: retry without filter (index may not exist for model_id)
-        if search_filter:
+    except Exception as e:
+        err_msg = str(e)
+        # Only fallback on index-missing error, not network errors
+        if search_filter and "Index required" in err_msg:
             response = client.query_points(
                 collection_name=col,
                 query=dense_vector,
