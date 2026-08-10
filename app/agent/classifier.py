@@ -128,6 +128,21 @@ class QueryClassifier:
                     if pm:
                         entities["model_code"] = pm
 
+        # 2b. Follow-up detection — inherit model from history
+        followup = re.search(
+            r"(chi\s+ti[eế]t|th[êê]m\s+th[ôo]ng\s+tin|n[oó]i\s+r[oõ]\s+h[oơ]n|gi[ớoi]i\s+thi[eệ]u\s+chi|bi[eế]t\s+th[êê]m|[đđ]i\s+s[ââu]\s+h[oơ]n)",
+            query, re.IGNORECASE,
+        )
+        if followup and history and not entities.get("model_code"):
+            # Inherit model from the most recent assistant message
+            for msg in reversed(history):
+                if msg.get("role") == "assistant":
+                    content = msg.get("content", "")
+                    pm, _ = self._detect_model(content)
+                    if pm:
+                        entities["model_code"] = pm
+                        break
+
         # 3. Detect version
         version_match = re.search(
             r"(Eco|Plus|Ti[êe]u chu[ẩẩ]n|N[ââ]ng cao|Cao c[ấấ]p)",
@@ -198,7 +213,21 @@ class QueryClassifier:
                     source="regex",
                 )
             # Fallback: if model detected but no topic → clarify
+            # Exception: follow-up queries should let LLM handle with conversation context
             if entities.get("model_code"):
+                is_followup = bool(re.search(
+                    r"(chi\s+ti[eế]t|th[êê]m\s+th[ôo]ng\s+tin|n[oó]i\s+r[oõ]\s+h[oơ]n|gi[ớoi]i\s+thi[eệ]u\s+chi|bi[eế]t\s+th[êê]m|[đđ]i\s+s[ââu]\s+h[oơ]n|n[ữữ]a|ti[eế]p)",
+                    query, re.IGNORECASE,
+                ))
+                if is_followup and history:
+                    return ClassifyResult(
+                        intents=["followup"],
+                        topic=None,
+                        decision="answer",
+                        reason="follow-up query, inherit context from history",
+                        entities=entities,
+                        source="regex",
+                    )
                 return ClassifyResult(
                     intents=["need_topic"],
                     topic=None,
