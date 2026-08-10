@@ -1,9 +1,15 @@
 import asyncpg
+import time
 
 from app.config import settings
 
 # Tools exposed in BDS mode (Trust Foundation slice)
 BDS_TOOL_NAMES = {"get_specs", "search_knowledge_base", "list_available_models"}
+
+# TTL cache (5 minutes)
+_schemas_cache = None
+_schemas_cache_time = 0
+_CACHE_TTL = 300
 
 
 async def _get_model_list() -> list[str]:
@@ -61,6 +67,9 @@ async def _get_spec_categories() -> list[str]:
 
 
 async def build_tool_schemas() -> list[dict]:
+    global _schemas_cache, _schemas_cache_time
+    if _schemas_cache and (time.time() - _schemas_cache_time) < _CACHE_TTL:
+        return _schemas_cache
     models = await _get_model_list()
     versions = await _get_version_list()
     categories = await _get_spec_categories()
@@ -237,5 +246,9 @@ async def build_tool_schemas() -> list[dict]:
     ]
 
     if settings.scope_enabled:
-        return [s for s in all_schemas if s["function"]["name"] in BDS_TOOL_NAMES]
-    return all_schemas
+        result = [s for s in all_schemas if s["function"]["name"] in BDS_TOOL_NAMES]
+    else:
+        result = all_schemas
+    _schemas_cache = result
+    _schemas_cache_time = time.time()
+    return result

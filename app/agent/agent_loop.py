@@ -10,8 +10,7 @@ from openai import AsyncOpenAI
 from app.config import settings
 from app.agent.schemas import build_tool_schemas
 from app.agent.tools import TOOL_REGISTRY
-from app.agent.prompts import get_system_prompt, SYNTHESIZE_PROMPT, get_prompt_hash
-from app.agent.context_builder import build_structured_context
+from app.agent.prompts import get_system_prompt, get_prompt_hash
 from app.agent.classifier import get_classifier
 from app.agent.decision import (
     assess_evidence,
@@ -97,8 +96,6 @@ class AgentLoop:
         if not tool_results:
             return False
 
-        # Only check grounding for search_knowledge_base (hay hallucinate)
-        # get_specs and get_price return exact data from DB — no need to re-verify
         has_kb = any(
             tr.get("success") and tr["tool"] == "search_knowledge_base"
             for tr in tool_results
@@ -140,11 +137,9 @@ class AgentLoop:
 
         context_numbers = _extract_numbers(" ".join(context_parts))
 
-        # Only check "significant" numbers — skip model versions (6, 8), counts (2)
-        # Keep spec values: >= 100 (4241, 1580) or decimals (59.6, 87.7, 5.58)
         for num in response_numbers:
             if num < 100 and num == int(num):
-                continue  # skip round numbers under 100 (versions, counts)
+                continue
             if num not in context_numbers:
                 return False
 
@@ -176,8 +171,6 @@ class AgentLoop:
 
     async def run(self, query: str, history: list[dict]) -> AgentResult:
         t0 = time.time()
-        t_retrieval = 0.0
-        t_generation = 0.0
 
         classify_result = self.classifier.classify(query, history)
 
@@ -210,16 +203,17 @@ class AgentLoop:
                 decision_log=dlog.to_dict(),
             )
 
-        # Decision Order Step 5: Retrieve evidence
+        # Decision Order Step 5: Retrieve + Generate in ONE LLM call
         messages = await self._build_messages(query, history)
         tool_schemas = await build_tool_schemas()
         tool_results = []
         force_tool = classify_result.topic is not None
+        final_response = ""
 
         t_retrieve_start = time.time()
         for i in range(self.MAX_ITERATIONS):
             try:
-                response = await self.llm.chat.completions.create(
+                resp = await self.llm.chat.completions.create(
                     model=settings.llm_model,
                     messages=messages,
                     tools=tool_schemas,
@@ -240,20 +234,60 @@ class AgentLoop:
                     decision_log=dlog.to_dict(),
                 )
 
-            choice = response.choices[0]
+            choice = resp.choices[0]
+
+            # LLM returned text directly (no more tool calls) — this IS the final answer
             if not choice.message.tool_calls:
+                final_response = choice.message.content or ""
                 break
 
+            # Execute tools
             results = await self._execute_tools_parallel(choice.message.tool_calls)
             tool_results.extend(results)
 
+            # Append tool call + results to messages for next iteration
             messages.append(choice.message)
             for tc, res in zip(choice.message.tool_calls, results):
                 messages.append({"role": "tool", "tool_call_id": tc.id, "content": json.dumps(res["result"], ensure_ascii=False)})
 
+            # After tool execution, if we have results, let LLM answer in next iteration
+            # (loop continues — LLM will see tool results and generate final answer)
+
         t_retrieval = time.time() - t_retrieve_start
 
-        # Decision Order Step 5-6: Evidence assessment
+        # If LLM never produced text (all iterations were tool calls), force one more call
+        if not final_response and tool_results:
+            t_gen_start = time.time()
+            try:
+                # Add instruction to answer directly
+                messages.append({"role": "user", "content": "Dựa vào kết quả tool trên, trả lời câu hỏi gốc. Dẫn nguồn URL khi có."})
+                resp = await self.llm.chat.completions.create(
+                    model=settings.llm_model,
+                    messages=messages,
+                    tools=tool_schemas,
+                    tool_choice="none",  # Force text output, no more tools
+                )
+                final_response = resp.choices[0].message.content or ""
+            except Exception as e:
+                t_generation = time.time() - t_gen_start
+                dlog = make_decision_log(
+                    query, classify_result, tool_results, REFUSAL_MESSAGES["system_error"], [],
+                    **self._build_log_kwargs(t0, t_retrieval, t_generation),
+                    error_stage="generation", error_type=type(e).__name__, error_message=str(e)[:200],
+                )
+                log_store.add(dlog)
+                return AgentResult(
+                    response=REFUSAL_MESSAGES["system_error"],
+                    sources=tool_results,
+                    decision="refuse",
+                    classify_result={"decision": "refuse", "reason_code": "system_error"},
+                    decision_log=dlog.to_dict(),
+                )
+            t_generation = time.time() - t_gen_start
+        else:
+            t_generation = time.time() - t_retrieve_start - t_retrieval
+
+        # Evidence assessment
         assessment, valid_sources = assess_evidence(tool_results, query)
 
         if assessment == "insufficient":
@@ -269,39 +303,9 @@ class AgentLoop:
                 decision_log=dlog.to_dict(),
             )
 
-        # Decision Order Step 7: Validity check — filter citations
+        # Citation check
         citations = validate_citations(valid_sources)
 
-        # Synthesize response
-        context = build_structured_context(tool_results)
-        system_prompt = await get_system_prompt()
-        synth_messages = [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": SYNTHESIZE_PROMPT.format(context=context, query=query)},
-        ]
-
-        t_gen_start = time.time()
-        try:
-            synth_response = await self.llm.chat.completions.create(model=settings.llm_model, messages=synth_messages)
-            final_response = synth_response.choices[0].message.content or ""
-        except Exception as e:
-            t_generation = time.time() - t_gen_start
-            dlog = make_decision_log(
-                query, classify_result, tool_results, REFUSAL_MESSAGES["system_error"], [],
-                **self._build_log_kwargs(t0, t_retrieval, t_generation),
-                error_stage="generation", error_type=type(e).__name__, error_message=str(e)[:200],
-            )
-            log_store.add(dlog)
-            return AgentResult(
-                response=REFUSAL_MESSAGES["system_error"],
-                sources=tool_results,
-                decision="refuse",
-                classify_result={"decision": "refuse", "reason_code": "system_error"},
-                decision_log=dlog.to_dict(),
-            )
-        t_generation = time.time() - t_gen_start
-
-        # Decision Order Step 8: Citation check
         if not citations and final_response:
             has_numbers = bool(re.search(r"\d[\d.,]+", final_response))
             if has_numbers:
@@ -317,7 +321,7 @@ class AgentLoop:
                     decision_log=dlog.to_dict(),
                 )
 
-        # Decision Order Step 9: Grounding check
+        # Grounding check
         if not self._check_grounding(final_response, tool_results):
             final_response = REFUSAL_MESSAGES["grounding_fail"]
             dlog = make_decision_log(query, classify_result, tool_results, final_response, citations, **self._build_log_kwargs(t0, t_retrieval, t_generation))
@@ -331,7 +335,7 @@ class AgentLoop:
                 decision_log=dlog.to_dict(),
             )
 
-        # Decision Order Step 9: Answer
+        # Answer
         dlog = make_decision_log(query, classify_result, tool_results, final_response, citations, **self._build_log_kwargs(t0, t_retrieval, t_generation))
         log_store.add(dlog)
         logger.info("BDS decision=answer reason_code=%s latency=%.0fms", dlog.reason_code, dlog.latency_total_ms)
@@ -378,7 +382,7 @@ class AgentLoop:
         t_retrieve_start = time.time()
         for i in range(self.MAX_ITERATIONS):
             try:
-                response = await self.llm.chat.completions.create(
+                resp = await self.llm.chat.completions.create(
                     model=settings.llm_model, messages=messages, tools=tool_schemas,
                     tool_choice="required" if force_tool and i == 0 else "auto", stream=False,
                 )
@@ -394,8 +398,12 @@ class AgentLoop:
                 yield {"type": "done"}
                 return
 
-            choice = response.choices[0]
+            choice = resp.choices[0]
+
             if not choice.message.tool_calls:
+                # LLM answered directly
+                final_response = choice.message.content or ""
+                t_retrieval = time.time() - t_retrieve_start
                 break
 
             results = await self._execute_tools_parallel(choice.message.tool_calls)
@@ -407,9 +415,31 @@ class AgentLoop:
             messages.append(choice.message)
             for tc, res in zip(choice.message.tool_calls, results):
                 messages.append({"role": "tool", "tool_call_id": tc.id, "content": json.dumps(res["result"], ensure_ascii=False)})
+        else:
+            # Loop exhausted — force final answer
+            t_retrieval = time.time() - t_retrieve_start
+            final_response = ""
 
-        t_retrieval = time.time() - t_retrieve_start
+        # If no final_response yet, stream final answer
+        if not final_response:
+            t_gen_start = time.time()
+            messages.append({"role": "user", "content": "Dựa vào kết quả tool trên, trả lời câu hỏi gốc. Dẫn nguồn URL khi có."})
+            stream = await self.llm.chat.completions.create(model=settings.llm_model, messages=messages, tools=tool_schemas, tool_choice="none", stream=True)
 
+            final_response = ""
+            async for chunk in stream:
+                delta = chunk.choices[0].delta if chunk.choices else None
+                if delta and delta.content:
+                    final_response += delta.content
+                    yield {"type": "token", "content": delta.content}
+
+            t_generation = time.time() - t_gen_start
+        else:
+            # LLM already answered — stream it token by token (simulate)
+            t_generation = time.time() - t_retrieve_start
+            yield {"type": "token", "content": final_response}
+
+        # Evidence assessment
         assessment, valid_sources = assess_evidence(tool_results, query)
 
         if assessment == "insufficient":
@@ -422,27 +452,7 @@ class AgentLoop:
 
         citations = validate_citations(valid_sources)
 
-        context = build_structured_context(tool_results)
-        system_prompt = await get_system_prompt()
-        synth_messages = [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": SYNTHESIZE_PROMPT.format(context=context, query=query)},
-        ]
-
-        t_gen_start = time.time()
-        stream = await self.llm.chat.completions.create(model=settings.llm_model, messages=synth_messages, stream=True)
-
-        final_response = ""
-        async for chunk in stream:
-            delta = chunk.choices[0].delta if chunk.choices else None
-            if delta and delta.content:
-                final_response += delta.content
-                yield {"type": "token", "content": delta.content}
-
-        t_generation = time.time() - t_gen_start
-
         if not self._check_grounding(final_response, tool_results):
-            final_response += "\n\n" + REFUSAL_MESSAGES["grounding_fail"]
             yield {"type": "token", "content": "\n\n" + REFUSAL_MESSAGES["grounding_fail"]}
 
         dlog = make_decision_log(query, classify_result, tool_results, final_response, citations, **self._build_log_kwargs(t0, t_retrieval, t_generation))
@@ -452,7 +462,6 @@ class AgentLoop:
         if citations:
             seen = set()
             formatted = []
-            # Sort by score descending, dedup by URL, limit to 5
             sorted_citations = sorted(citations, key=lambda c: c.get("score", 0), reverse=True)
             for c in sorted_citations:
                 url = c.get("source_url", "")

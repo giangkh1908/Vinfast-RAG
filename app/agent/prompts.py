@@ -1,6 +1,12 @@
 import asyncpg
+import time
 
 from app.config import settings
+
+# TTL cache (5 minutes)
+_prompt_cache = None
+_prompt_cache_time = 0
+_CACHE_TTL = 300
 
 
 BDS_SYSTEM_PROMPT = """Bạn là trợ lý tư vấn xe VinFast tại Việt Nam, lát cắt Trust Foundation.
@@ -55,6 +61,10 @@ FULL_SYSTEM_PROMPT = """Bạn là trợ lý tư vấn xe VinFast tại Việt Na
 
 
 async def get_system_prompt() -> str:
+    global _prompt_cache, _prompt_cache_time
+    if _prompt_cache and (time.time() - _prompt_cache_time) < _CACHE_TTL:
+        return _prompt_cache
+
     pg_url = settings.postgres_url.replace("postgresql+asyncpg://", "postgresql://")
     conn = await asyncpg.connect(pg_url)
 
@@ -87,12 +97,16 @@ async def get_system_prompt() -> str:
     if settings.scope_enabled:
         model_scope = ", ".join(settings.scope_models)
         version_scope = ", ".join(settings.scope_versions)
-        return BDS_SYSTEM_PROMPT.format(
+        result = BDS_SYSTEM_PROMPT.format(
             model_list=model_list,
             model_scope=model_scope,
             version_scope=version_scope,
         )
-    return FULL_SYSTEM_PROMPT.format(model_list=model_list)
+    else:
+        result = FULL_SYSTEM_PROMPT.format(model_list=model_list)
+    _prompt_cache = result
+    _prompt_cache_time = time.time()
+    return result
 
 
 SYNTHESIZE_PROMPT = """Bạn là trợ lý tư vấn xe VinFast. Tổng hợp thông tin dưới đây thành câu trả lời ngắn gọn, chính xác.
