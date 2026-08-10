@@ -97,11 +97,13 @@ class AgentLoop:
         if not tool_results:
             return False
 
-        has_factual = any(
-            tr.get("success") and tr["tool"] in ("get_specs", "search_knowledge_base", "get_price")
+        # Only check grounding for search_knowledge_base (hay hallucinate)
+        # get_specs and get_price return exact data from DB — no need to re-verify
+        has_kb = any(
+            tr.get("success") and tr["tool"] == "search_knowledge_base"
             for tr in tool_results
         )
-        if not has_factual:
+        if not has_kb:
             return True
 
         def _extract_numbers(text: str) -> set[float]:
