@@ -189,21 +189,7 @@ class AgentLoop:
                 decision_log=dlog.to_dict(),
             )
 
-        # Decision Order Step 2-4: Clarify checks
-        if classify_result.decision == "clarify":
-            response = self._generate_clarification(classify_result)
-            dlog = make_decision_log(query, classify_result, [], response, [], **self._build_log_kwargs(t0, 0, 0))
-            log_store.add(dlog)
-            logger.info("BDS decision=%s reason_code=%s", "clarify", dlog.reason_code)
-            return AgentResult(
-                response=response,
-                needs_clarification=True,
-                decision="clarify",
-                classify_result={"decision": "clarify", "reason_code": dlog.reason_code, "entities": classify_result.entities},
-                decision_log=dlog.to_dict(),
-            )
-
-        # Decision Order Step 5: Retrieve + Generate in ONE LLM call
+        # Retrieve + Generate — LLM handles clarification via ask_clarification tool
         messages = await self._build_messages(query, history)
         tool_schemas = await build_tool_schemas()
         tool_results = []
@@ -244,6 +230,23 @@ class AgentLoop:
             # Execute tools
             results = await self._execute_tools_parallel(choice.message.tool_calls)
             tool_results.extend(results)
+
+            # Check if LLM called ask_clarification → return immediately
+            for tc, res in zip(choice.message.tool_calls, results):
+                if tc.function.name == "ask_clarification" and res.get("success"):
+                    clarify_result = res["result"]
+                    response_text = clarify_result.get("message", "Bạn muốn tìm thông tin nào?")
+                    dlog = make_decision_log(query, classify_result, tool_results, response_text, [], **self._build_log_kwargs(t0, time.time() - t_retrieve_start, 0))
+                    dlog.reason_code = "missing_topic"
+                    log_store.add(dlog)
+                    return AgentResult(
+                        response=response_text,
+                        needs_clarification=True,
+                        decision="clarify",
+                        sources=tool_results,
+                        classify_result={"decision": "clarify", "reason_code": "missing_topic", "entities": classify_result.entities},
+                        decision_log=dlog.to_dict(),
+                    )
 
             # Append tool call + results to messages for next iteration
             messages.append(choice.message)
@@ -362,15 +365,6 @@ class AgentLoop:
             yield {"type": "done"}
             return
 
-        if classify_result.decision == "clarify":
-            response = self._generate_clarification(classify_result)
-            dlog = make_decision_log(query, classify_result, [], response, [], **self._build_log_kwargs(t0, 0, 0))
-            log_store.add(dlog)
-            yield {"type": "decision", "content": "clarify"}
-            yield {"type": "clarify", "content": response}
-            yield {"type": "done"}
-            return
-
         yield {"type": "decision", "content": "answer"}
         yield {"type": "classify", "content": {"topic": classify_result.topic, "entities": classify_result.entities}}
 
@@ -408,6 +402,19 @@ class AgentLoop:
 
             results = await self._execute_tools_parallel(choice.message.tool_calls)
             tool_results.extend(results)
+
+            # Check if LLM called ask_clarification → yield and return
+            for tc, res in zip(choice.message.tool_calls, results):
+                if tc.function.name == "ask_clarification" and res.get("success"):
+                    clarify_result = res["result"]
+                    response_text = clarify_result.get("message", "Bạn muốn tìm thông tin nào?")
+                    dlog = make_decision_log(query, classify_result, tool_results, response_text, [], **self._build_log_kwargs(t0, time.time() - t_retrieve_start, 0))
+                    dlog.reason_code = "missing_topic"
+                    log_store.add(dlog)
+                    yield {"type": "clarify", "content": response_text}
+                    yield {"type": "sources", "content": []}
+                    yield {"type": "done"}
+                    return
 
             for r in results:
                 yield {"type": "tool_call", "content": {"tool": r["tool"], "success": r["success"]}}

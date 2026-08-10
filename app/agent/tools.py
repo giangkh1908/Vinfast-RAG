@@ -196,6 +196,21 @@ async def get_maintenance_link(car_model: str, year: int = None) -> dict:
     }
 
 
+async def ask_clarification(model_id: str = None, suggested_categories: list[str] = None) -> dict:
+    """LLM calls this when query is too broad. Returns available categories for the model."""
+    categories = suggested_categories or [
+        "phiên_bản", "thông_số_kỹ_thuật", "kích_thước",
+        "pin_sạc", "phạm_vi_di_chuyển", "an_toàn",
+        "nội_thất", "ngoại_thất", "tính_năng"
+    ]
+    return {
+        "action": "clarify",
+        "model_id": model_id,
+        "available_categories": categories,
+        "message": f"Bạn muốn tìm thông tin nào{(' về ' + model_id) if model_id else ''}?",
+    }
+
+
 TOOL_REGISTRY = {
     "get_price": get_price,
     "get_specs": get_specs,
@@ -207,4 +222,5 @@ TOOL_REGISTRY = {
     "get_showroom_charging_link": get_showroom_charging_link,
     "get_booking_link": get_booking_link,
     "get_maintenance_link": get_maintenance_link,
+    "ask_clarification": ask_clarification,
 }

@@ -2,24 +2,68 @@
 """
 ragas_eval.py — Automated eval using RAGAS metrics.
 
-Runs test cases through the agent, collects (question, answer, contexts, ground_truth),
-then scores with RAGAS.
+Supports two input formats:
+1. golden_dataset.csv: test_id, user_query, expected_answer
+2. smoke_test.csv: test_id, user_query, expected_facts (JSON array), expected_decision
 
 Usage:
+    python scripts/ragas_eval.py --input eval/smoke_test.csv --output eval/ragas_results.jsonl
     python scripts/ragas_eval.py --input eval/golden_dataset.csv --output eval/ragas_results.jsonl
-    python scripts/ragas_eval.py --input eval/golden_dataset.csv --output eval/ragas_results.jsonl --api-url http://localhost:8000
 """
 
 import argparse
+import csv
 import json
 import sys
 import time
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
-import pandas as pd
 import requests
+
+
+def load_test_cases(input_path: str) -> list[dict]:
+    """Load test cases from CSV. Auto-detect format."""
+    cases = []
+    with open(input_path, encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            test_id = row.get("test_id", "").strip()
+            query = row.get("user_query", "").strip()
+            if not test_id or not query:
+                continue
+
+            # Format 1: golden_dataset.csv (has expected_answer)
+            if "expected_answer" in row:
+                ground_truth = row["expected_answer"].strip()
+            # Format 2: smoke_test.csv (has expected_facts as JSON array)
+            elif "expected_facts" in row:
+                try:
+                    facts = json.loads(row["expected_facts"])
+                    ground_truth = ". ".join(facts) if facts else ""
+                except json.JSONDecodeError:
+                    ground_truth = row["expected_facts"].strip()
+            else:
+                ground_truth = ""
+
+            # Skip cases without ground_truth (clarify/refuse/OOS)
+            expected_decision = row.get("expected_decision", "").strip()
+            if expected_decision in ("clarify", "refuse", "out_of_scope"):
+                continue
+            if not ground_truth:
+                continue
+
+            cases.append({
+                "test_id": test_id,
+                "query": query,
+                "ground_truth": ground_truth,
+                "expected_decision": expected_decision,
+                "conversation_id": row.get("conversation_id", "").strip(),
+                "turn_index": int(row.get("turn_index", 1) or 1),
+            })
+
+    return cases
 
 
 def run_eval(input_path: str, output_path: str, api_url: str):
@@ -30,23 +74,33 @@ def run_eval(input_path: str, output_path: str, api_url: str):
         print(f"Input file not found: {input_file}", file=sys.stderr)
         return 1
 
-    run_id = f"eval_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:6]}"
+    run_id = f"ragas_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:6]}"
     print(f"[ragas_eval] run_id={run_id}")
     print(f"[ragas_eval] input={input_file}")
     print(f"[ragas_eval] output={output_file}")
     print()
 
-    # Load golden dataset
-    df = pd.read_csv(input_file)
-    required_cols = {"test_id", "user_query", "expected_answer"}
-    if not required_cols.issubset(set(df.columns)):
-        print(f"CSV must have columns: {required_cols}", file=sys.stderr)
+    cases = load_test_cases(str(input_file))
+    if not cases:
+        print("No evaluable test cases found (need answer-type cases with ground_truth).", file=sys.stderr)
         return 1
 
-    print(f"Found {len(df)} test cases")
+    print(f"Found {len(cases)} evaluable cases (answer-type with ground_truth)")
     print()
 
-    # Run each test case through agent
+    # Group by conversation for multi-turn
+    conversations = {}
+    singles = []
+    for case in cases:
+        conv_id = case.get("conversation_id", "")
+        if conv_id:
+            if conv_id not in conversations:
+                conversations[conv_id] = []
+            conversations[conv_id].append(case)
+        else:
+            singles.append(case)
+
+    # Run test cases
     questions = []
     answers = []
     contexts_list = []
@@ -54,50 +108,30 @@ def run_eval(input_path: str, output_path: str, api_url: str):
     test_ids = []
     latencies = []
 
-    for i, row in df.iterrows():
-        test_id = row["test_id"]
-        query = row["user_query"]
-        expected = row["expected_answer"]
+    # Single-turn cases
+    for case in singles:
+        result = run_single_case(case, [], api_url)
+        questions.append(result["query"])
+        answers.append(result["answer"])
+        contexts_list.append(result["contexts"])
+        ground_truths.append(result["ground_truth"])
+        test_ids.append(result["test_id"])
+        latencies.append(result["latency_ms"])
 
-        print(f"[{i+1}/{len(df)}] {test_id}: {query[:50]}...", end=" ")
-
-        t0 = time.time()
-        try:
-            resp = requests.post(
-                f"{api_url}/api/chat",
-                json={"message": query, "history": []},
-                timeout=120,
-            )
-            resp.raise_for_status()
-            data = resp.json()
-            latency = (time.time() - t0) * 1000
-
-            answer = data.get("response", "")
-            dlog = data.get("decision_log", {})
-            chunks = dlog.get("retrieved_chunks", [])
-
-            # Extract contexts from retrieved chunks
-            context_texts = [c.get("content", "") for c in chunks if c.get("content")]
-
-            questions.append(query)
-            answers.append(answer)
-            contexts_list.append(context_texts)
-            ground_truths.append(expected)
-            test_ids.append(test_id)
-            latencies.append(latency)
-
-            decision = dlog.get("decision", "?")
-            print(f"-> {decision} {latency:.0f}ms ({len(chunks)} chunks)")
-
-        except Exception as e:
-            latency = (time.time() - t0) * 1000
-            questions.append(query)
-            answers.append(f"ERROR: {e}")
-            contexts_list.append([])
-            ground_truths.append(expected)
-            test_ids.append(test_id)
-            latencies.append(latency)
-            print(f"-> ERROR: {e}")
+    # Multi-turn cases
+    for conv_id, turns in conversations.items():
+        turns.sort(key=lambda x: x["turn_index"])
+        history = []
+        for case in turns:
+            result = run_single_case(case, history, api_url)
+            questions.append(result["query"])
+            answers.append(result["answer"])
+            contexts_list.append(result["contexts"])
+            ground_truths.append(result["ground_truth"])
+            test_ids.append(result["test_id"])
+            latencies.append(result["latency_ms"])
+            history.append({"role": "user", "content": case["query"]})
+            history.append({"role": "assistant", "content": result["answer"]})
 
     print()
 
@@ -133,7 +167,7 @@ def run_eval(input_path: str, output_path: str, api_url: str):
         # Save detailed results
         output_file.parent.mkdir(parents=True, exist_ok=True)
         with output_file.open("w", encoding="utf-8") as f:
-            for i, row in df.iterrows():
+            for i in range(len(questions)):
                 record = {
                     "run_id": run_id,
                     "test_id": test_ids[i],
@@ -149,12 +183,10 @@ def run_eval(input_path: str, output_path: str, api_url: str):
                 }
                 f.write(json.dumps(record, ensure_ascii=False) + "\n")
 
-        print(f"[ragas_eval] Results saved to {output_file}")
-
         # Save summary
         summary = {
             "run_id": run_id,
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "total_cases": len(questions),
             "avg_faithfulness": round(float(scores["faithfulness"].mean()), 3),
             "avg_answer_relevancy": round(float(scores["answer_relevancy"].mean()), 3),
@@ -164,12 +196,12 @@ def run_eval(input_path: str, output_path: str, api_url: str):
         }
         summary_path = output_file.with_suffix(".summary.json")
         summary_path.write_text(json.dumps(summary, indent=2, ensure_ascii=False), encoding="utf-8")
-        print(f"[ragas_eval] Summary saved to {summary_path}")
+        print(f"[ragas_eval] Results: {output_file}")
+        print(f"[ragas_eval] Summary: {summary_path}")
 
     except Exception as e:
         print(f"[ragas_eval] RAGAS scoring failed: {e}", file=sys.stderr)
         print("[ragas_eval] Saving raw results without RAGAS scores...")
-
         output_file.parent.mkdir(parents=True, exist_ok=True)
         with output_file.open("w", encoding="utf-8") as f:
             for i in range(len(questions)):
@@ -184,15 +216,55 @@ def run_eval(input_path: str, output_path: str, api_url: str):
                     "ragas_error": str(e),
                 }
                 f.write(json.dumps(record, ensure_ascii=False) + "\n")
-        print(f"[ragas_eval] Raw results saved to {output_file}")
-        return 1
+        print(f"[ragas_eval] Raw results: {output_file}")
 
     return 0
 
 
+def run_single_case(case: dict, history: list[dict], api_url: str) -> dict:
+    query = case["query"]
+    t0 = time.time()
+    try:
+        resp = requests.post(
+            f"{api_url}/api/chat",
+            json={"message": query, "history": history},
+            timeout=120,
+        )
+        resp.raise_for_status()
+        data = resp.json()
+        latency = (time.time() - t0) * 1000
+
+        answer = data.get("response", "")
+        dlog = data.get("decision_log", {})
+        chunks = dlog.get("retrieved_chunks", [])
+        context_texts = [c.get("content", "") for c in chunks if c.get("content")]
+
+        print(f"  {case['test_id']}: {dlog.get('decision', '?')} {latency:.0f}ms ({len(chunks)} chunks)")
+
+        return {
+            "test_id": case["test_id"],
+            "query": query,
+            "answer": answer,
+            "contexts": context_texts,
+            "ground_truth": case["ground_truth"],
+            "latency_ms": latency,
+        }
+    except Exception as e:
+        latency = (time.time() - t0) * 1000
+        print(f"  {case['test_id']}: ERROR {e}")
+        return {
+            "test_id": case["test_id"],
+            "query": query,
+            "answer": f"ERROR: {e}",
+            "contexts": [],
+            "ground_truth": case["ground_truth"],
+            "latency_ms": latency,
+        }
+
+
 def main():
     ap = argparse.ArgumentParser(description="RAGAS eval runner")
-    ap.add_argument("--input", required=True, help="CSV with test_id,user_query,expected_answer")
+    ap.add_argument("--input", required=True, help="CSV test file")
     ap.add_argument("--output", default="eval/ragas_results.jsonl", help="Output JSONL")
     ap.add_argument("--api-url", default="http://localhost:8000", help="API base URL")
     args = ap.parse_args()

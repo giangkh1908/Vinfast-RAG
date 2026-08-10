@@ -4,7 +4,7 @@ import time
 from app.config import settings
 
 # Tools exposed in BDS mode (Trust Foundation slice)
-BDS_TOOL_NAMES = {"get_specs", "search_knowledge_base", "list_available_models"}
+BDS_TOOL_NAMES = {"get_specs", "search_knowledge_base", "list_available_models", "ask_clarification"}
 
 # TTL cache (5 minutes)
 _schemas_cache = None
@@ -240,6 +240,34 @@ async def build_tool_schemas() -> list[dict]:
                         },
                     },
                     "required": ["car_model"],
+                },
+            },
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "ask_clarification",
+                "description": "Gọi khi câu hỏi về xe quá chung chung, chưa đủ cụ thể để trả lời trực tiếp. Liệt kê các khía cạnh có thể hỏi.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "model_id": {
+                            "type": "string",
+                            "enum": models,
+                            "description": "Model xe người dùng đang hỏi (nếu biết)",
+                        },
+                        "suggested_categories": {
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "enum": ["phiên_bản", "thông_số_kỹ_thuật", "kích_thước",
+                                         "pin_sạc", "phạm_vi_di_chuyển", "an_toàn",
+                                         "nội_thất", "ngoại_thất", "tính_năng"],
+                            },
+                            "description": "Các khía cạnh có thể hỏi",
+                        },
+                    },
+                    "required": [],
                 },
             },
         },
