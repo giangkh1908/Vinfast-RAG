@@ -7,8 +7,8 @@ from collections import Counter
 from pathlib import Path
 
 import requests
-from qdrant_client import QdrantClient
-from qdrant_client.models import Filter, FieldCondition, MatchValue, SparseVector, Prefetch, Query
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 from app.config import settings
 
@@ -19,7 +19,6 @@ DENSE_COLLECTIONS = ["vivu_product_info", "vivu_policy", "vivu_maintenance"]
 SPARSE_COLLECTION = "sparse"
 SPARSE_INDEX_PATH = Path(__file__).resolve().parents[2] / "data" / "clean" / "v1" / "sparse_index.json"
 
-# Vietnamese stopwords
 STOPWORDS = set("""
 và của là đã đang sẽ được với cho từ đến tại cũng như hay hoặc nhưng nếu thì
 khi mà nên vì thế nên để lại vẫn còn rất chỉ mỗi này kia nào đó đây những các
@@ -45,14 +44,13 @@ def _load_sparse_index() -> dict:
     return _sparse_index
 
 
-def _query_to_sparse(query: str) -> SparseVector | None:
+def _query_to_sparse(query: str) -> dict | None:
     idx = _load_sparse_index()
     if not idx or "vocab" not in idx:
         return None
 
     vocab = idx["vocab"]
     idf_list = idx["idf"]
-    n_docs = idx.get("n_docs", 2212)
     k1 = idx.get("k1", 1.5)
     b = idx.get("b", 0.75)
     avgdl = idx.get("avgdl", 47.5)
@@ -77,9 +75,7 @@ def _query_to_sparse(query: str) -> SparseVector | None:
         return None
 
     order = sorted(range(len(indices)), key=lambda i: indices[i])
-    indices = [indices[i] for i in order]
-    values = [values[i] for i in order]
-    return SparseVector(indices=indices, values=values)
+    return {"indices": [indices[i] for i in order], "values": [values[i] for i in order]}
 
 
 def _openrouter_embed(texts: list[str]) -> list[list[float]]:
@@ -94,9 +90,96 @@ def _openrouter_embed(texts: list[str]) -> list[list[float]]:
     return [x["embedding"] for x in data]
 
 
-class CohereReranker:
-    """Cohere rerank API wrapper."""
+# ── Qdrant REST API helper ─────────────────────────────────────────────────
+class QdrantREST:
+    """Thin wrapper around Qdrant REST API (bypass broken qdrant_client library)."""
 
+    def __init__(self, url: str, api_key: str = ""):
+        self.base = url.rstrip("/")
+        self.session = requests.Session()
+        if api_key:
+            self.session.headers["api-key"] = api_key
+        self.session.headers["Content-Type"] = "application/json"
+        adapter = HTTPAdapter(pool_connections=10, pool_maxsize=10)
+        self.session.mount("https://", adapter)
+        self.session.mount("http://", adapter)
+
+    def _build_filter(self, model_id: str = None) -> dict | None:
+        if not model_id:
+            return None
+        return {"must": [{"key": "model_id", "match": {"value": model_id}}]}
+
+    def search(self, collection: str, vector: list[float], model_id: str = None, limit: int = 10) -> list[dict]:
+        body = {
+            "vector": vector,
+            "limit": limit,
+            "with_payload": True,
+            "with_vector": False,
+        }
+        f = self._build_filter(model_id)
+        if f:
+            body["filter"] = f
+
+        try:
+            r = self.session.post(
+                f"{self.base}/collections/{collection}/points/search",
+                json=body,
+                timeout=30,
+            )
+            r.raise_for_status()
+            return r.json().get("result", [])
+        except Exception as e:
+            # Fallback without filter on index error
+            if model_id and "Index required" in str(e):
+                body.pop("filter", None)
+                r = self.session.post(
+                    f"{self.base}/collections/{collection}/points/search",
+                    json=body,
+                    timeout=30,
+                )
+                r.raise_for_status()
+                return r.json().get("result", [])
+            raise
+
+    def search_sparse(self, collection: str, sparse: dict, model_id: str = None, limit: int = 10) -> list[dict]:
+        body = {
+            "vector": {
+                "name": "sparse",
+                "indices": sparse["indices"],
+                "values": sparse["values"],
+            },
+            "limit": limit,
+            "with_payload": True,
+            "with_vector": False,
+        }
+        f = self._build_filter(model_id)
+        if f:
+            body["filter"] = f
+
+        try:
+            r = self.session.post(
+                f"{self.base}/collections/{collection}/points/search",
+                json=body,
+                timeout=30,
+            )
+            r.raise_for_status()
+            return r.json().get("result", [])
+        except Exception:
+            return []
+
+
+_qdrant: QdrantREST | None = None
+
+
+def get_qdrant() -> QdrantREST:
+    global _qdrant
+    if _qdrant is None:
+        _qdrant = QdrantREST(settings.qdrant_url, settings.qdrant_api_key)
+    return _qdrant
+
+
+# ── Reranker ───────────────────────────────────────────────────────────────
+class CohereReranker:
     def __init__(self, api_key: str):
         self.api_key = api_key
         self.base_url = "https://api.cohere.ai/v1/rerank"
@@ -109,30 +192,20 @@ class CohereReranker:
     def predict(self, pairs: list[tuple[str, str]]) -> list[float]:
         if not pairs:
             return []
-
         query = pairs[0][0]
         documents = [doc for _, doc in pairs]
-
         try:
             r = self.session.post(
                 self.base_url,
-                json={
-                    "model": "rerank-multilingual-v3.0",
-                    "query": query,
-                    "documents": documents,
-                    "top_n": len(documents),
-                },
+                json={"model": "rerank-multilingual-v3.0", "query": query, "documents": documents, "top_n": len(documents)},
                 timeout=30,
             )
             r.raise_for_status()
             results = r.json().get("results", [])
-
             scores = [0.0] * len(pairs)
             for item in results:
-                idx = item.get("index", 0)
-                scores[idx] = item.get("relevance_score", 0.0)
+                scores[item.get("index", 0)] = item.get("relevance_score", 0.0)
             return scores
-
         except Exception as e:
             import logging
             logging.getLogger("retrieval").warning("Cohere rerank failed: %s", e)
@@ -150,13 +223,7 @@ def get_reranker():
     return _reranker
 
 
-def get_qdrant_client() -> QdrantClient:
-    kwargs = {"url": settings.qdrant_url, "prefer_grpc": False}
-    if settings.qdrant_api_key:
-        kwargs["api_key"] = settings.qdrant_api_key
-    return QdrantClient(**kwargs)
-
-
+# ── Fusion ─────────────────────────────────────────────────────────────────
 def _rrf_score(rank: int, k: int = 60) -> float:
     return 1.0 / (k + rank)
 
@@ -166,7 +233,7 @@ def _rrf_fusion(result_lists: list[list], k: int = 60) -> list[tuple]:
     hit_data = {}
     for results in result_lists:
         for rank, hit in enumerate(results):
-            pid = str(hit.id)
+            pid = hit.get("id", "")
             scores[pid] = scores.get(pid, 0) + _rrf_score(rank, k)
             if pid not in hit_data:
                 hit_data[pid] = hit
@@ -174,67 +241,28 @@ def _rrf_fusion(result_lists: list[list], k: int = 60) -> list[tuple]:
     return [(hit_data[pid], scores[pid]) for pid in sorted_ids]
 
 
-async def _search_dense_collection(col: str, client, dense_vector, search_filter, limit):
-    try:
-        response = client.query_points(
-            collection_name=col,
-            query=dense_vector,
-            query_filter=search_filter,
-            limit=limit,
-            with_payload=True,
-        )
-        return response.points
-    except Exception as e:
-        err_msg = str(e)
-        # Only fallback on index-missing error, not network errors
-        if search_filter and "Index required" in err_msg:
-            response = client.query_points(
-                collection_name=col,
-                query=dense_vector,
-                limit=limit,
-                with_payload=True,
-            )
-            return response.points
-        raise
-
-
+# ── Main search ────────────────────────────────────────────────────────────
 async def hybrid_search(query: str, model_id: str = None, top_k: int = 5) -> list[dict]:
-    client = get_qdrant_client()
+    qdrant = get_qdrant()
     dense_vector = _openrouter_embed([query])[0]
-
-    search_filter = None
-    if model_id:
-        search_filter = Filter(must=[FieldCondition(key="model_id", match=MatchValue(value=model_id))])
+    limit = top_k * 2
 
     # 1. Parallel dense search across 3 collections
-    limit = top_k * 2
-    tasks = [
-        _search_dense_collection(col, client, dense_vector, search_filter, limit)
-        for col in DENSE_COLLECTIONS
-    ]
-    results_lists = await asyncio.gather(*tasks, return_exceptions=True)
-
     all_dense = []
-    for i, result in enumerate(results_lists):
-        if isinstance(result, Exception):
+    for col in DENSE_COLLECTIONS:
+        try:
+            results = qdrant.search(col, dense_vector, model_id=model_id, limit=limit)
+            all_dense.extend(results)
+        except Exception as e:
             import logging
-            logging.getLogger("retrieval").warning("search %s failed: %s", DENSE_COLLECTIONS[i], result)
-        else:
-            all_dense.extend(result)
+            logging.getLogger("retrieval").warning("search %s failed: %s", col, e)
 
     # 2. Sparse search (BM25)
     sparse_results = []
     sparse_vec = _query_to_sparse(query)
     if sparse_vec:
         try:
-            response = client.query_points(
-                collection_name=SPARSE_COLLECTION,
-                query=sparse_vec,
-                query_filter=search_filter,
-                limit=limit,
-                with_payload=True,
-            )
-            sparse_results = response.points
+            sparse_results = qdrant.search_sparse(SPARSE_COLLECTION, sparse_vec, model_id=model_id, limit=limit)
         except Exception:
             pass
 
@@ -242,18 +270,16 @@ async def hybrid_search(query: str, model_id: str = None, top_k: int = 5) -> lis
     if sparse_results:
         fused = _rrf_fusion([all_dense, sparse_results])
     else:
-        fused = [(hit, hit.score) for hit in all_dense]
+        fused = [(hit, hit.get("score", 0)) for hit in all_dense]
 
     # 4. Rerank
     reranker = get_reranker()
     if reranker and len(fused) > 0:
-        pairs = [(query, hit.payload.get("text", "")) for hit, _ in fused]
-        # Filter out empty text pairs for reranking
+        pairs = [(query, hit.get("payload", {}).get("text", "")) for hit, _ in fused]
         non_empty = [(i, q, d) for i, (q, d) in enumerate(pairs) if d.strip()]
         if non_empty:
             rerank_pairs = [(q, d) for _, q, d in non_empty]
             rerank_scores = reranker.predict(rerank_pairs)
-            # Map scores back
             scores = [0.0] * len(pairs)
             for j, (orig_idx, _, _) in enumerate(non_empty):
                 scores[orig_idx] = rerank_scores[j]
@@ -263,16 +289,17 @@ async def hybrid_search(query: str, model_id: str = None, top_k: int = 5) -> lis
     # 5. Return top_k (skip chunks without text)
     results = []
     for hit, score in fused:
-        text = hit.payload.get("text", "")
+        payload = hit.get("payload", {})
+        text = payload.get("text", "")
         if not text or not text.strip():
             continue
         results.append({
             "text": text,
-            "model_id": hit.payload.get("model_id"),
-            "edition_id": hit.payload.get("edition_id"),
-            "text_type": hit.payload.get("text_type", ""),
-            "source_type": hit.payload.get("source_type", ""),
-            "source_url": hit.payload.get("source_url", ""),
+            "model_id": payload.get("model_id"),
+            "edition_id": payload.get("edition_id"),
+            "text_type": payload.get("text_type", ""),
+            "source_type": payload.get("source_type", ""),
+            "source_url": payload.get("source_url", ""),
             "score": round(score, 4),
         })
         if len(results) >= top_k:
