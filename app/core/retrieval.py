@@ -8,7 +8,7 @@ from pathlib import Path
 
 import requests
 from qdrant_client import QdrantClient
-from qdrant_client.models import Filter, FieldCondition, MatchValue, SparseVector
+from qdrant_client.models import Filter, FieldCondition, MatchValue, SparseVector, Prefetch, Query
 
 from app.config import settings
 
@@ -175,13 +175,26 @@ def _rrf_fusion(result_lists: list[list], k: int = 60) -> list[tuple]:
 
 
 async def _search_dense_collection(col: str, client, dense_vector, search_filter, limit):
-    return client.search(
-        collection_name=col,
-        query_vector=dense_vector,
-        query_filter=search_filter,
-        limit=limit,
-        with_payload=True,
-    )
+    try:
+        response = client.query_points(
+            collection_name=col,
+            query=dense_vector,
+            query_filter=search_filter,
+            limit=limit,
+            with_payload=True,
+        )
+        return response.points
+    except Exception:
+        # Fallback: retry without filter (index may not exist for model_id)
+        if search_filter:
+            response = client.query_points(
+                collection_name=col,
+                query=dense_vector,
+                limit=limit,
+                with_payload=True,
+            )
+            return response.points
+        raise
 
 
 async def hybrid_search(query: str, model_id: str = None, top_k: int = 5) -> list[dict]:
@@ -213,13 +226,14 @@ async def hybrid_search(query: str, model_id: str = None, top_k: int = 5) -> lis
     sparse_vec = _query_to_sparse(query)
     if sparse_vec:
         try:
-            sparse_results = client.search(
+            response = client.query_points(
                 collection_name=SPARSE_COLLECTION,
-                query_vector=("sparse", sparse_vec),
+                query=sparse_vec,
                 query_filter=search_filter,
                 limit=limit,
                 with_payload=True,
             )
+            sparse_results = response.points
         except Exception:
             pass
 
@@ -233,15 +247,26 @@ async def hybrid_search(query: str, model_id: str = None, top_k: int = 5) -> lis
     reranker = get_reranker()
     if reranker and len(fused) > 0:
         pairs = [(query, hit.payload.get("text", "")) for hit, _ in fused]
-        scores = reranker.predict(pairs)
-        fused = [(hit, float(score)) for (hit, _), score in zip(fused, scores)]
-        fused.sort(key=lambda x: x[1], reverse=True)
+        # Filter out empty text pairs for reranking
+        non_empty = [(i, q, d) for i, (q, d) in enumerate(pairs) if d.strip()]
+        if non_empty:
+            rerank_pairs = [(q, d) for _, q, d in non_empty]
+            rerank_scores = reranker.predict(rerank_pairs)
+            # Map scores back
+            scores = [0.0] * len(pairs)
+            for j, (orig_idx, _, _) in enumerate(non_empty):
+                scores[orig_idx] = rerank_scores[j]
+            fused = [(hit, float(score)) for (hit, _), score in zip(fused, scores)]
+            fused.sort(key=lambda x: x[1], reverse=True)
 
-    # 5. Return top_k
+    # 5. Return top_k (skip chunks without text)
     results = []
-    for hit, score in fused[:top_k]:
+    for hit, score in fused:
+        text = hit.payload.get("text", "")
+        if not text or not text.strip():
+            continue
         results.append({
-            "text": hit.payload.get("text", ""),
+            "text": text,
             "model_id": hit.payload.get("model_id"),
             "edition_id": hit.payload.get("edition_id"),
             "text_type": hit.payload.get("text_type", ""),
@@ -249,5 +274,7 @@ async def hybrid_search(query: str, model_id: str = None, top_k: int = 5) -> lis
             "source_url": hit.payload.get("source_url", ""),
             "score": round(score, 4),
         })
+        if len(results) >= top_k:
+            break
 
     return results
