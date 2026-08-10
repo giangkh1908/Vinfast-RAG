@@ -6,7 +6,7 @@ from app.config import settings
 # BDS topics in scope
 TOPIC_PATTERNS = {
     "phiên_bản": r"(phi[eê]n\s+b[aả]n|b[aả]n\s+n[aà]o|c[oó]\s+m[aấ]y\s+b[aả]n|version|edition)",
-    "thông_số_kỹ_thuật": r"(th[oô]ng\s+s[oố]|k[yỹ]\s+thu[aậ]t|specs?|c[oô]ng\s+su[aấ]t|Nm|m[oô]\s+men|t[oố]c\s+[đd][ộộ]\s+t[oố]i\s+[đd]a|t[aă]ng\s+t[oố]c|0[-–]?100|tr[oọ]ng\s+l[uư][ợợ]ng|t[aả]i\s+tr[oọ]ng)",
+    "thông_số_kỹ_thuật": r"(th[oô]ng\s+s[oố]|k[yỹ]\s+thu[aậ]t|specs?|c[oô]ng\s+su[aấ]t|Nm|m[oô]\s+men|t[oố]c\s+[đd][ộo]\s+t[oố]i\s+[đd]a|t[aă]ng\s+t[oố]c|0[-–]?100|tr[oọ]ng\s+l[uư][ợo]ng|t[aả]i\s+tr[oọ]ng)",
     "tính_năng_nổi_bật": r"(t[ií]nh\s+n[aă]ng(?!\s+(an\s+to[aà]n|an\s+to[aà]|s[aạ]c|pin|n[oộ]i\s+th[aấ]t|ngo[aạ]i\s+th[aấ]t))|c[oô]ng\s+ngh[eệ]|n[oổ]i\s+b[aậ]t|[đd][aặ]c\s+[đd]i[eể]m|tr[oợ]?\s+l[aá]i|ADAS|cruise\s*control|phanh\s+kh[aẩ]n\s+c[aấ]p|camera|c[aả]m\s+bi[eế]n)",
     "kích_thước": r"(k[ií]ch\s+th[uư][ớơo]c|chi[eề]u\s+d[aà]i|chi[eề]u\s+r[oộ]ng|chi[eề]u\s+cao|kho[aả]ng\s+s[aá]ng|c[aơ]\s+s[oở])",
     "pin_và_sạc": r"(\bpin\b|dung\s+l[uư][ợợ]ng\s+pin|kWh|s[aạ]c\s+nhanh|s[aạ]c\s+ch[aậ]m|tr[aạm]m?\s+s[aạ]c|lo[aạ]i\s+pin|th[oờ]i\s+gian\s+s[aạ]c|d[aạ]c\s+pin)",
