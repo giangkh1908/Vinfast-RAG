@@ -183,19 +183,31 @@ class QueryClassifier:
 
         # 7. Missing topic (broad query)
         broad_queries = re.search(
-            r"(c[óó] g[ìì]|th[ếế] n[àà]o|gi[ớiới] thi[ệệ]u|th[ôông] tin|bi[ếết] v[ềề]|n[óói] v[ềề]|cho t[ôôi]|k[ểể]|t[ôôi] mu[ốốn])",
+            r"(c[óó] g[ìì]|th[ếế] n[àà]o|gi[ớiới] thi[ệệ]u|th[ôông] tin|bi[ếết] v[ềề]|n[óói] v[ềề]|cho t[ôôi]|k[ểể]|t[ôôi] mu[ốốn]|muon hoi|muốn hỏi)",
             query, re.IGNORECASE,
         )
-        if settings.scope_enabled and broad_queries and not topic and len(matched_topics) == 0:
-            return ClassifyResult(
-                intents=["need_topic"],
-                topic=None,
-                decision="clarify",
-                reason="BDS-05: query too broad, missing topic",
-                entities=entities,
-                missing_fields=["topic"],
-                source="regex",
-            )
+        if settings.scope_enabled and not topic and len(matched_topics) == 0:
+            if broad_queries:
+                return ClassifyResult(
+                    intents=["need_topic"],
+                    topic=None,
+                    decision="clarify",
+                    reason="BDS-05: query too broad, missing topic",
+                    entities=entities,
+                    missing_fields=["topic"],
+                    source="regex",
+                )
+            # Fallback: if model detected but no topic → clarify
+            if entities.get("model_code"):
+                return ClassifyResult(
+                    intents=["need_topic"],
+                    topic=None,
+                    decision="clarify",
+                    reason="BDS-05: model detected but no specific topic",
+                    entities=entities,
+                    missing_fields=["topic"],
+                    source="regex",
+                )
 
         # 8. Multiple topics ambiguous
         if settings.scope_enabled and len(matched_topics) > 1:
