@@ -22,6 +22,7 @@ import csv
 import json
 import sys
 from datetime import datetime, timezone
+import os
 from pathlib import Path
 from typing import Any
 
@@ -34,7 +35,7 @@ POSTGRES_DIR = REPO_ROOT / "data" / "clean" / "{version}" / "postgres"
 
 load_dotenv(REPO_ROOT / ".env")
 
-DEFAULT_DSN = "postgresql://vivu:vivu@localhost:15432/vivu"
+DEFAULT_DSN = os.environ.get("PG_DSN", "postgresql://vivu:vivu@localhost:5432/vivu")
 
 # DDL versioned: cột `version` trong PK + FK; VIEW active cho consumer.
 DDL = """

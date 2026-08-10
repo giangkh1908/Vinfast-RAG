@@ -29,6 +29,11 @@ import uuid
 from pathlib import Path
 from typing import Any
 
+from dotenv import dotenv_values
+_env = dotenv_values(Path(__file__).resolve().parents[2] / ".env")
+os.environ.setdefault("QDRANT_URL", _env.get("QDRANT_URL", ""))
+os.environ.setdefault("QDRANT_API_KEY", _env.get("QDRANT_API_KEY", ""))
+
 from qdrant_client import QdrantClient
 from qdrant_client.models import Distance, PointStruct, VectorParams
 
@@ -40,7 +45,7 @@ from lib.vector_cache import VectorCache, content_hash  # noqa: E402
 REPO_ROOT = Path(__file__).resolve().parents[2]
 VECTOR_DIR = REPO_ROOT / "data" / "clean" / "{version}" / "vector"
 
-DEFAULT_QDRANT_URL = "http://localhost:16333"
+DEFAULT_QDRANT_URL = os.environ.get("QDRANT_URL", "http://localhost:6333")
 BATCH_SIZE = 64
 UPSERT_BATCH = 100
 

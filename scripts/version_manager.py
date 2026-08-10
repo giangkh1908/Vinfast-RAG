@@ -40,9 +40,9 @@ load_dotenv(REPO_ROOT / ".env")
 
 from scripts.ingest import postgres_ingest  # noqa: E402
 
-QDRANT_URL = os.environ.get("QDRANT_URL", "http://localhost:16333")
+QDRANT_URL = os.environ.get("QDRANT_URL", "http://localhost:6333")
 QDRANT_API_KEY = os.environ.get("QDRANT_API_KEY", "")
-PG_DSN = os.environ.get("PG_DSN", "postgresql://vivu:vivu@localhost:15432/vivu")
+PG_DSN = os.environ.get("PG_DSN", "postgresql://vivu:vivu@localhost:5432/vivu")
 
 SPARSE_ALIAS = "sparse"
 DENSE_ALIASES = ["vivu_product_info", "vivu_policy", "vivu_maintenance"]

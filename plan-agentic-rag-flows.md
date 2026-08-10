@@ -1,6 +1,7 @@
+
 # Agentic RAG — 11 Luồng hoạt động chính
 
->  Mỗi flow bao gồm: components tham gia, tool calls, số LLM interactions, và response format.
+> Mỗi flow bao gồm: components tham gia, tool calls, số LLM interactions, và response format.
 
 ---
 
@@ -34,14 +35,14 @@ User query
 
 **6 tools sau khi merge:**
 
-| # | Tool | Nguồn dữ liệu | Loại |
-|---|---|---|---|
-| 1 | `search_knowledge_base` | Qdrant (hybrid dense + native sparse IDF, rerank) | RAG |
-| 2 | `list_available_models` | PostgreSQL `car_catalog` | DB lookup |
-| 3 | `get_price` | PostgreSQL `car_pricing` | DB lookup |
-| 4 | `get_active_promotions` | PostgreSQL `promotion` | DB lookup |
-| 5 | `get_utility_link` | PostgreSQL `utility_link` | Static link |
-| 6 | `get_maintenance_link` | PostgreSQL `maintenance_link` | DB lookup |
+| # | Tool                      | Nguồn dữ liệu                                  | Loại       |
+| - | ------------------------- | ------------------------------------------------- | ----------- |
+| 1 | `search_knowledge_base` | Qdrant (hybrid dense + native sparse IDF, rerank) | RAG         |
+| 2 | `list_available_models` | PostgreSQL`car_catalog`                         | DB lookup   |
+| 3 | `get_price`             | PostgreSQL`car_pricing`                         | DB lookup   |
+| 4 | `get_active_promotions` | PostgreSQL`promotion`                           | DB lookup   |
+| 5 | `get_utility_link`      | PostgreSQL`utility_link`                        | Static link |
+| 6 | `get_maintenance_link`  | PostgreSQL`maintenance_link`                    | DB lookup   |
 
 ---
 
@@ -493,20 +494,20 @@ LLM calls: 2 | Tool calls: 1
 
 ## Bảng tổng hợp
 
-| Flow | Query mẫu | LLM calls | Tool calls | Tools dùng | Ghi chú |
-|---|---|---|---|---|---|
-| **A** | "VF8 Plus giá bao nhiêu?" | 2 | 1 | `get_price` | Price + source + date |
-| **B** | "So sánh VF8 và VF9" | 2 | 4 | `get_price` ×2 + `search_knowledge_base` ×2 | Parallel execution |
-| **C** | "Chi phí lăn bánh VF8" | 2 | 1 | `get_utility_link` | Trả link, không tính |
-| **D** | "VF3 khuyến mãi gì?" | 2 | 1 | `get_active_promotions` | Source + date bắt buộc |
-| **E** | "VF8 có mấy màu?" | 2 | 1 | `search_knowledge_base` | RAG: dense+native sparse+rerank |
-| **F** | "Thay dầu VF8 hướng dẫn" | 2 | 1 | `get_maintenance_link` | Trả link, không content |
-| **G** | "Tesla tốt hơn VF8?" | 0 | 0 | — | Guardrail chặn |
-| **H** | "Thời tiết hôm nay?" | 1 | 0 | — | LLM từ chối trực tiếp |
-| **I** | "VF10 giá bao nhiêu?" | 3 | 2 | `get_price` → `list_available_models` | LLM tự fallback |
-| **J** | Mọi câu (stream) | — | — | — | Thêm event: status, tool_call |
-| **K** | "Còn VF9 thì sao?" | 2 | 1 | `get_price` | History context tự resolve |
-| **L** | "Tôi muốn mua xe" | 1+1 | 0→1+ | clarify → `get_price` + `search_knowledge_base` | Clarification cycle |
+| Flow        | Query mẫu                   | LLM calls | Tool calls | Tools dùng                                         | Ghi chú                        |
+| ----------- | ---------------------------- | --------- | ---------- | --------------------------------------------------- | ------------------------------- |
+| **A** | "VF8 Plus giá bao nhiêu?"  | 2         | 1          | `get_price`                                       | Price + source + date           |
+| **B** | "So sánh VF8 và VF9"       | 2         | 4          | `get_price` ×2 + `search_knowledge_base` ×2   | Parallel execution              |
+| **C** | "Chi phí lăn bánh VF8"    | 2         | 1          | `get_utility_link`                                | Trả link, không tính         |
+| **D** | "VF3 khuyến mãi gì?"      | 2         | 1          | `get_active_promotions`                           | Source + date bắt buộc        |
+| **E** | "VF8 có mấy màu?"         | 2         | 1          | `search_knowledge_base`                           | RAG: dense+native sparse+rerank |
+| **F** | "Thay dầu VF8 hướng dẫn" | 2         | 1          | `get_maintenance_link`                            | Trả link, không content       |
+| **G** | "Tesla tốt hơn VF8?"       | 0         | 0          | —                                                  | Guardrail chặn                 |
+| **H** | "Thời tiết hôm nay?"      | 1         | 0          | —                                                  | LLM từ chối trực tiếp       |
+| **I** | "VF10 giá bao nhiêu?"      | 3         | 2          | `get_price` → `list_available_models`          | LLM tự fallback                |
+| **J** | Mọi câu (stream)           | —        | —         | —                                                  | Thêm event: status, tool_call  |
+| **K** | "Còn VF9 thì sao?"         | 2         | 1          | `get_price`                                       | History context tự resolve     |
+| **L** | "Tôi muốn mua xe"          | 1+1       | 0→1+      | clarify →`get_price` + `search_knowledge_base` | Clarification cycle             |
 
 ---
 
@@ -574,5 +575,3 @@ Tổng: 2 lần tương tác, 3 LLM calls, 2 tool calls
 ```
 
 ---
-
-

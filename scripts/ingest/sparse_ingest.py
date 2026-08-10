@@ -39,7 +39,7 @@ VECTOR_DIR = REPO_ROOT / "data" / "clean" / "{version}" / "vector"
 SPARSE_INDEX_PATH = REPO_ROOT / "data" / "clean" / "{version}" / "sparse_index.json"
 
 SPARSE_COLLECTION_BASE = "sparse"
-DEFAULT_QDRANT_URL = "http://localhost:16333"
+DEFAULT_QDRANT_URL = os.environ.get("QDRANT_URL", "http://localhost:6333")
 
 # BM25 params
 K1 = 1.5
