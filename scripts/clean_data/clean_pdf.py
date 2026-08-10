@@ -26,6 +26,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+import unicodedata
+
 REPO_ROOT = Path(__file__).resolve().parents[2]
 RAW_PDF_DIR = REPO_ROOT / "data" / "raw_pdf"
 CLEAN_DIR = REPO_ROOT / "data" / "clean"
@@ -140,6 +142,19 @@ DISCLAIMER_FULL = (
 )
 DISCLAIMER_PREFIX = "Hình ảnh mang tính chất minh họa"
 
+# Thêm disclaimer patterns (không prefix match, nhưng có phrase key)
+DISCLAIMER_PHRASES = [
+    "mot so tinh nang se chua co san",
+    "chua duoc kich hoat tai thoi diem giao xe",
+    "se duoc cap nhat phan mem tu xa",
+    "quang duong di chuyen duoc tinh toan dua tren",
+    "quang duong di chuyen thuc te co the giam",
+    "phu thuoc vao toc do lai xe, nhiet do, dia hinh",
+    "de dam bao an toan, toi uu tuoi tho",
+    "khuyen cao nguoi su dung cac dong xe dien",
+    "chi nen su dung pin chinh hang",
+]
+
 # Footnote: "(*)" ở đầu dòng hoặc "*Phiên bản", "** Phiên bản"
 FOOTNOTE_RE = re.compile(
     r"^\s*\*{1,2}\s*(?:Phiên bản).*$",
@@ -158,8 +173,29 @@ SPEC_FOOTNOTE_RE = re.compile(
 # Page marker: --- Trang N ---  (giữ lại để track, không xoá)
 PAGE_MARKER_RE = re.compile(r"---\s*Trang\s*(\d+)\s*---")
 
+# Spec sheet / table residue (không có pipe nhưng là header table)
+SPEC_SHEET_RE = re.compile(
+    r"^(thông số kỹ thuật|kích thước|màn hình và kết nối|tính năng điều khiển thông minh)",
+    flags=re.IGNORECASE,
+)
+TABLE_HEADER_RESIDUE_RE = re.compile(
+    r"^(kích thước|tính năng|điều khiển thông minh)\s+vf\s+\d+\s+(eco|plus)",
+    flags=re.IGNORECASE,
+)
+
 # PUA characters (Unicode private-use)
 PUA_RE = re.compile(r"[-]")
+
+# Soft hyphen & invisible chars
+SOFT_HYPHEN_RE = re.compile(r"­|​|‌|‍")
+
+
+def no_diacritics(s: str) -> str:
+    """Bỏ dấu + đổi đ→d để match kể cả OCR lỗi dấu."""
+    s = s.lower()
+    s = "".join(c for c in unicodedata.normalize("NFD", s)
+                 if unicodedata.category(c) != "Mn")
+    return s.replace("đ", "d").replace("­", "")
 
 
 # ── Parsing ──────────────────────────────────────────────────────────────────
@@ -199,6 +235,8 @@ def is_disclaimer(line: str) -> bool:
     line = clean_line(line)
     if not line:
         return False
+    line_nd = no_diacritics(line)
+
     # Full match
     if line == DISCLAIMER_FULL:
         return True
@@ -209,6 +247,15 @@ def is_disclaimer(line: str) -> bool:
     if "thông số kỹ thuật" in line.lower() and "có thể thay đổi" in line.lower():
         return True
     if "khác so với xe thực tế" in line.lower():
+        return True
+    # Disclaimer phrases — match trên no_diacritics (chịu được OCR lỗi dấu)
+    for phrase in DISCLAIMER_PHRASES:
+        if phrase in line_nd:
+            return True
+    # Thêm pattern chung: "Hình ảnh mang tính chất minh hoạ" (OCR hay sai a/ă/ạ)
+    if "hinh anh mang tinh chat minh hoa" in line_nd:
+        return True
+    if "thong so ky thuat" in line_nd and "co the thay doi" in line_nd:
         return True
     return False
 
@@ -340,6 +387,14 @@ def clean_page(page: dict[str, Any]) -> dict[str, Any]:
             continue
         if FOOTNOTE_PAREN_RE.match(stripped):
             continue
+        # Spec sheet header / table residue (không pipe nhưng là table)
+        if SPEC_SHEET_RE.match(stripped):
+            continue
+        if TABLE_HEADER_RESIDUE_RE.match(stripped):
+            continue
+        # Dòng chỉ toàn "ECO" / "PLUS" (table edition label)
+        if stripped.strip() in ("ECO", "PLUS", "VF 6 ECO", "VF 6 PLUS"):
+            continue
         # Table residue có | nhưng ko bắt đầu bằng |
         if "|" in stripped:
             # Strip | và trim
@@ -366,8 +421,10 @@ def chunks_from_page(page: dict[str, Any], cls: dict[str, Any],
     page_num = page["page"]
     model_id = cls.get("model_id")
 
-    # Page nhỏ → 1 chunk
+    # Page nhỏ → 1 chunk (bỏ nếu quá ngắn)
     if len(text) <= 800:
+        if len(text.strip()) < 30:
+            return []
         return [_make_chunk(text, page_num, model_id, "prose", cls, meta, path)]
 
     # Page lớn → split theo dòng trống

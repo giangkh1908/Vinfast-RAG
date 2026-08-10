@@ -106,12 +106,14 @@ CREATE TABLE IF NOT EXISTS car_specs (
     model_code     TEXT NOT NULL,      -- "VF 8" (MODEL_LABEL, có dấu cách)
     version_name   TEXT,               -- "Eco"|"Plus"|...|NULL (= chung mọi bản)
     version_code   TEXT,               -- NULL (raw không có mã nội bộ)
-    spec_category  TEXT NOT NULL,      -- dimension|powertrain|interior|safety|exterior
-    spec_key       TEXT NOT NULL,      -- power_kw|range_km|battery_kwh|length_mm|...
-    spec_value     TEXT NOT NULL,      -- "150"|"87.7"|"5" (string)
-    spec_unit      TEXT,               -- "kW"|"km"|"kWh"|"mm"|""|NULL
-    source_url     TEXT,
-    updated_at     TIMESTAMPTZ DEFAULT now()
+    spec_category      TEXT NOT NULL,   -- dimension|powertrain|interior|safety|exterior
+    spec_category_vn   TEXT,            -- "Kích thước & trọng lượng" (VN label)
+    spec_key           TEXT NOT NULL,   -- power_kw|range_km|battery_kwh|length_mm|...
+    spec_key_vn        TEXT,            -- "Công suất tối đa" (VN label)
+    spec_value         TEXT NOT NULL,   -- "150"|"87.7"|"5" (string)
+    spec_unit          TEXT,            -- "kW"|"km"|"kWh"|"mm"|""|NULL
+    source_url         TEXT,
+    updated_at         TIMESTAMPTZ DEFAULT now()
 );
 CREATE UNIQUE INDEX IF NOT EXISTS uniq_car_specs ON car_specs
     (model_code, COALESCE(version_code,''), COALESCE(version_name,''), spec_category, spec_key);
@@ -207,13 +209,15 @@ def upsert_specs(conn, rows: list[dict[str, Any]]) -> int:
     cur.execute("TRUNCATE car_specs RESTART IDENTITY")
     sql = """
     INSERT INTO car_specs (model_code, version_name, version_code, spec_category,
-                            spec_key, spec_value, spec_unit, source_url)
+                           spec_category_vn, spec_key, spec_key_vn,
+                           spec_value, spec_unit, source_url)
     VALUES %s
     """
     values = [
         (r["model_code"], r["version_name"] or None, r["version_code"] or None,
-         r["spec_category"], r["spec_key"], r["spec_value"],
-         r["spec_unit"] or None, r["source_url"] or None)
+         r["spec_category"], r.get("spec_category_vn", ""),
+         r["spec_key"], r.get("spec_key_vn", ""),
+         r["spec_value"], r["spec_unit"] or None, r["source_url"] or None)
         for r in rows
     ]
     execute_values(cur, sql, values)
