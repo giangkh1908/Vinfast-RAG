@@ -1,16 +1,17 @@
 # Nguồn: https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
-# Crawl lúc: 2026-08-10T13:59:09
+# Crawl lúc: 2026-08-10T16:06:47
 # Loại: pdf
-# Selector: (toàn trang / N/A với PDF)
+# Trang: 1–13
 
 ================================================================================
 
 --- Trang 1 ---
+
 MẠNH MẼ, NĂNG ĐỘNG,
 SỰ LỰA CHỌN LÝ TƯỞNG CỦA GIA ĐÌNH TRẺ!
 
-
 --- Trang 2 ---
+
 VF 6 mang đậm dấu ấn hiện đại và thanh lịch, được sáng tạo bởi 
 Studio Torino Design – những chuyên gia hàng đầu thế giới. 
 Từng đường nét đều toát lên sự đột phá, phù hợp với phong cách của 
@@ -26,16 +27,16 @@ Giải thưởng do Người tiêu dùng và Hội đồng thẩm định bình 
 MẠNH MẼ, NĂNG ĐỘNG,
 SỰ LỰA CHỌN LÝ TƯỞNG CỦA GIA ĐÌNH TRẺ!
 
-
 --- Trang 3 ---
+
 TRẢI NGHIỆM THƯ THÁI
 
-
 --- Trang 4 ---
+
 THOẢI MÁI KHÔNG GIAN
 
-
 --- Trang 5 ---
+
 Chiều dài cơ sở 2.730mm 
 La-zăng Hợp Kim Nhôm 18 inch*
 Đèn Pha tự động*
@@ -54,8 +55,8 @@ Biểu tượng của VinFast tỏa sáng và đầy tinh tế
 Khỏe khoắn & cứng cáp
 *Phiên bản VF 6 Plus
 
-
 --- Trang 6 ---
+
 *Phiên bản VF 6 Plus
 **Phiên bản VF 6 Eco
 **Theo tiêu chuẩn NEDC
@@ -75,8 +76,8 @@ lên tới 485 KM**
 Mô Men Xoắn Cực Đại 
 310Nm*
 
-
 --- Trang 7 ---
+
 ĐA DẠNG MUÔN TÍNH NĂNG
  TRẢI NGHIỆM
  THƯ THÁI 
@@ -101,8 +102,8 @@ HỆ THỐNG
 tư vấn bán hàng tại Showroom gần nhất hoặc Hotline 1900 23 23 89
 *Phiên bản VF 6 Plus
 
-
 --- Trang 8 ---
+
 KHÔNG GIAN THOẢI MÁI
 SỐNG TRỌN MỌI KHOẢNH KHẮC
 Màn hình giải trí 12.9 inch 
@@ -118,8 +119,8 @@ Ghế ngồi với chất liệu da nhân tạo
 *Phiên bản VF 6 Plus
 *Phiên bản VF 6 Plus
 
-
 --- Trang 9 ---
+
 KẾT NỐI THÔNG MINH 
 CHO TRẢI NGHIỆM THÊM LIỀN MẠCH
 BẢNG MÀU PHONG PHÚ CHO GIA ĐÌNH LỰA CHỌN 
@@ -159,8 +160,8 @@ MÀU CƠ BẢN
 MÀU NÂNG CAO
 *Tùy chọn màu Urban Mint
 
-
 --- Trang 10 ---
+
 BETTER CHOICE AWARDS 2024
 Giải thưởng do Người tiêu dùng và Hội đồng thẩm định bình chọn
 XE QUỐC DÂN
@@ -170,270 +171,112 @@ TIÊN PHONG
 MUÔN YẾU TỐ ĐỒNG ĐIỆU,
 MỘT LỰA CHỌN HÀI HOÀ
 
-
 --- Trang 11 ---
-Thông số kỹ thuật VF 6 tại Việt Nam
-*Một số tính năng sẽ chưa có sẵn hoặc chưa được kích hoạt tại thời điểm giao xe cho Khách hàng. Những 
-tính năng này sẽ được cập nhật phần mềm từ xa qua kết nối không dây hoặc cập nhật tại xưởng dịch vụ 
-VinFast.
-Quãng đường di chuyển được tính toán dựa trên kết quả kiểm định theo quy chuẩn toàn cầu (NEDC). 
-Quãng đường di chuyển thực tế có thể giảm so với kết quả kiểm định, phụ thuộc vào tốc độ lái xe, nhiệt độ, 
-địa hình, thói quen sử dụng của người lái, chế độ lái được cài đặt, số lượng hành khách, và các điều kiện 
-giao thông khác.
-Để đảm bảo an toàn, tối ưu tuổi thọ và hiệu suất hoạt động, VinFast khuyến cáo người sử dụng các dòng 
-xe điện VinFast chỉ nên sử dụng pin chính hãng và các giải pháp sạc do VinFast cung cấp.
-Hình ảnh mang tính chất minh hoạ, sử dụng hình ảnh của sản phẩm trong giai đoạn tiền thương mại. Các 
-thông tin sản phẩm có thể thay đổi mà không cần báo trước.
-Dài x Rộng x Cao (mm)
-Chiều dài cơ sở (mm)
-Khoảng sáng gầm xe không tải (mm)
-HỆ THỐNG TRUYỀN ĐỘNG
-ĐỘNG CƠ
-Công suất tối đa (kW)
-Mô men xoắn cực đại (Nm)
-PIN
-Quãng đường chạy một lần sạc đầy (km) (NEDC)
-Dung lượng pin khả dụng (kWh)
-Dây sạc di động (kW)
-Bộ sạc tại nhà (kW)
-Thời gian nạp pin nhanh nhất (phút)
-THÔNG SỐ TRUYỀN ĐỘNG KHÁC
-Dẫn động
-Chế độ lái
-KHUNG GẦM
-Kích thước la-zăng
-Hệ thống treo - trước
-Hệ thống treo - sau
-NGOẠI THẤT
-ĐÈN NGOẠI THẤT
-Đèn chiếu sáng phía trước
-Tự động bật/tắt đèn
-Đèn chiếu sáng ban ngày
-Tự động bật/tắt chế độ chiếu xa
-Đèn hậu
-Đèn nhận diện thương hiệu phía trước
-Đèn nhận diện thương hiệu phía sau
-NGOẠI THẤT KHÁC
-Gương chiếu hậu chỉnh điện, tích hợp đèn báo rẽ
-Gương chiếu hậu gập điện, sấy mặt gương, tự động
-chỉnh phía hành khách khi lùi
-Gạt mưa trước tự động
-Chìa khóa thông minh
-NỘI THẤT & TIỆN NGHI
-ĐIỀU HÒA KHÔNG KHÍ
-Hệ thống điều hòa
-Hệ thống lọc bụi mịn Combi 1.0
-Chức năng kiểm soát chất lượng không khí
-Chức năng ion hóa không khí
-4.241 x 1.834 x 1.580
-2.730 
-170
-130
-250
-485
-59,6
-Phụ kiện (AFS 3,5kW)
-Phụ kiện (AFS 7,4kW)
-25 phút (từ 10% - 70%)
-Cầu trước (FWD)
-Eco/ Normal/ Sport
-17 inch
-Độc lập, MacPherson
-Thanh điều hướng đa điểm
-LED
-Không
-LED
-Không
-LED
-Có
-Không
-Có
-Không
-Không
-Có
-Tự động 1 vùng
-Không
-Không
-Không
-4.241 x 1.834 x 1.580
-2.730 
-170
-150
-310
-460
-59,6
-Phụ kiện (AFS 3,5kW)
-Phụ kiện (AFS 7,4kW)
-25 phút (từ 10% - 70%)
-Cầu trước (FWD)
-Eco/ Normal/ Sport
-18 inch
-Độc lập, MacPherson
-Thanh điều hướng đa điểm
-LED
-Có
-LED
-Có
-LED
-Có
-Có
-Có
-Có
-Có
-Có
-Tự động, 2 vùng
-Có
-Có
-Có
-Trợ lái trên cao tốc/di chuyển khi tắc đường
-Hỗ trợ tự động chuyển làn
-Giám sát hành trình
-Nhận biết biển báo giao thông
-Điều chỉnh tốc độ thông minh
-Cảnh báo chệch làn
-Hỗ trợ giữ làn
-Hỗ trợ giữ làn khẩn cấp
-Phanh tự động khẩn cấp trước/sau
-Cảnh báo va chạm phía trước
-Cảnh báo điểm mù
-Cảnh báo phương tiện cắt ngang phía sau
-Cảnh báo mở cửa
-Hỗ trợ đỗ xe phía sau
-Camera lùi
-Camera 360
-Đèn pha tự động
-Cảnh báo tài xế buồn ngủ và mất tập trung
-Cảnh báo chống trộm
-Tính năng khóa động cơ khi có trộm
-MÀN HÌNH VÀ KẾT NỐI
-Màn hình hiển thị thông tin trên kính lái (HUD)
-Màn hình giải trí cảm ứng
-Kết nối với Android Auto và Apple CarPlay
-Hệ thống loa
-TIỆN NGHI
-Ghế lái
-Ghế bọc da nhân tạo
-Kính cửa sổ chỉnh điện, lên/xuống một chạm
-Phanh đỗ điện tử và chế độ tự động giữ phanh
-AN TOÀN & AN NINH
-Số lượng túi khí
-Hệ thống chống bó cứng phanh ABS
-Chức năng phân phối lực phanh điện tử EBD
-Hỗ trợ phanh khẩn cấp BA
-Hệ thống cân bằng điện tử ESC
-Chức năng kiểm soát lực kéo TCS
-Hỗ trợ khởi hành ngang dốc HSA
-Giám sát áp suất lốp
-Không
-12,9 inch
-Có
-6
-Chỉnh cơ 6 hướng
-Có
-Có, lên/xuống một chạm tất cả các vị trí
-Có
-4
-Có
-Có
-Có
-Có
-Có
-Có
-Có
-Không
-Không
-Tiêu chuẩn
-Không
-Không
-Không
-Không
-Không
-Không
-Không
-Có
-Không
-Không
-Có
-Có
-Không
-Không
-Không
-Có
-Có
-Có
-12,9 inch
-Có
-6
-Chỉnh điện 8 hướng
-Có
-Có, lên/xuống một chạm tất cả các vị trí
-Có
-7
-Có
-Có
-Có
-Có
-Có
-Có
-Có
-Có
-Có
-Thích ứng
-Có
-Có
-Có
-Có
-Có
-Có
-Có
-Có
-Có
-Có
-Có
-Có
-Có
-Có
-Có
-Có
-Có
-Có
-Có
-Có
-Có
-Có
-Có
-Có
-Có
-Có
-Có
-Có
-Có
-Có
-Có
-Có
-Có
-Có
-Có
-VF 6 ECO
-VF 6 PLUS
-KÍCH THƯỚC
-TÍNH NĂNG ĐIỀU KHIỂN THÔNG MINH
-Lựa chọn chế độ vận hành đặc biệt
-Giải trí trực tuyến
-Điều hướng & dẫn đường trên màn hình trung tâm
-Trò chơi
-Trình duyệt web
-Tự chẩn đoán lỗi
-Cập nhật phần mềm từ xa
-Trợ lý ảo
-Ứng dụng điện thoạit
-VF 6 ECO
-VF 6 PLUS
-VF 6 ECO
-VF 6 PLUS
 
+| Dài x Rộng x Cao (mm) | 4.241 x 1.834 x 1.580 | 4.241 x 1.834 x 1.580 |
+| --- | --- | --- |
+| Chiều dài cơ sở (mm) | 2.730 | 2.730 |
+| Khoảng sáng gầm xe không tải (mm) | 170 | 170 |
+| HỆ THỐNG TRUYỀN ĐỘNG |  |  |
+| ĐỘNG CƠ |  |  |
+| Công suất tối đa (kW) | 130 | 150 |
+| Mô men xoắn cực đại (Nm) | 250 | 310 |
+| PIN |  |  |
+| Quãng đường chạy một lần sạc đầy (km) (NEDC) | 485 | 460 |
+| Dung lượng pin khả dụng (kWh) | 59,6 | 59,6 |
+| Dây sạc di động (kW) | Phụ kiện (AFS 3,5kW) | Phụ kiện (AFS 3,5kW) |
+| Bộ sạc tại nhà (kW) | Phụ kiện (AFS 7,4kW) | Phụ kiện (AFS 7,4kW) |
+| Thời gian nạp pin nhanh nhất (phút) | 25 phút (từ 10% - 70%) | 25 phút (từ 10% - 70%) |
+| THÔNG SỐ TRUYỀN ĐỘNG KHÁC |  |  |
+| Dẫn động | Cầu trước (FWD) | Cầu trước (FWD) |
+| Chế độ lái | Eco/ Normal/ Sport | Eco/ Normal/ Sport |
+| KHUNG GẦM |  |  |
+| Kích thước la-zăng | 17 inch | 18 inch |
+| Hệ thống treo - trước | Độc lập, MacPherson | Độc lập, MacPherson |
+| Hệ thống treo - sau | Thanh điều hướng đa điểm | Thanh điều hướng đa điểm |
+| NGOẠI THẤT |  |  |
+| ĐÈN NGOẠI THẤT |  |  |
+| Đèn chiếu sáng phía trước | LED | LED |
+| Tự động bật/tắt đèn | Không | Có |
+| Đèn chiếu sáng ban ngày | LED | LED |
+| Tự động bật/tắt chế độ chiếu xa | Không | Có |
+| Đèn hậu | LED | LED |
+| Đèn nhận diện thương hiệu phía trước | Có | Có |
+| Đèn nhận diện thương hiệu phía sau | Không | Có |
+| NGOẠI THẤT KHÁC |  |  |
+| Gương chiếu hậu chỉnh điện, tích hợp đèn báo rẽ | Có | Có |
+| Gương chiếu hậu gập điện, sấy mặt gương, tự động
+chỉnh phía hành khách khi lùi | Không | Có |
+| Gạt mưa trước tự động | Không | Có |
+| Chìa khóa thông minh | Có | Có |
+| NỘI THẤT & TIỆN NGHI |  |  |
+| ĐIỀU HÒA KHÔNG KHÍ |  |  |
+| Hệ thống điều hòa | Tự động 1 vùng | Tự động, 2 vùng |
+| Hệ thống lọc bụi mịn Combi 1.0 | Không | Có |
+| Chức năng kiểm soát chất lượng không khí | Không | Có |
+| Chức năng ion hóa không khí | Không | Có |
+
+| Màn hình hiển thị thông tin trên kính lái (HUD) | Không | Có |
+| --- | --- | --- |
+| Màn hình giải trí cảm ứng | 12,9 inch | 12,9 inch |
+| Kết nối với Android Auto và Apple CarPlay | Có | Có |
+| Hệ thống loa | 6 | 6 |
+| TIỆN NGHI |  |  |
+| Ghế lái | Chỉnh cơ 6 hướng | Chỉnh điện 8 hướng |
+| Ghế bọc da nhân tạo | Có | Có |
+| Kính cửa sổ chỉnh điện, lên/xuống một chạm | Có, lên/xuống một chạm tất cả các vị trí | Có, lên/xuống một chạm tất cả các vị trí |
+| Phanh đỗ điện tử và chế độ tự động giữ phanh | Có | Có |
+| AN TOÀN & AN NINH |  |  |
+| Số lượng túi khí | 4 | 7 |
+| Hệ thống chống bó cứng phanh ABS | Có | Có |
+| Chức năng phân phối lực phanh điện tử EBD | Có | Có |
+| Hỗ trợ phanh khẩn cấp BA | Có | Có |
+| Hệ thống cân bằng điện tử ESC | Có | Có |
+| Chức năng kiểm soát lực kéo TCS | Có | Có |
+| Hỗ trợ khởi hành ngang dốc HSA | Có | Có |
+| Giám sát áp suất lốp | Có | Có |
+| Trợ lái trên cao tốc/di chuyển khi tắc đường | Không | Có |
+| Hỗ trợ tự động chuyển làn | Không | Có |
+| Giám sát hành trình | Tiêu chuẩn | Thích ứng |
+| Nhận biết biển báo giao thông | Không | Có |
+| Điều chỉnh tốc độ thông minh | Không | Có |
+| Cảnh báo chệch làn | Không | Có |
+| Hỗ trợ giữ làn | Không | Có |
+| Hỗ trợ giữ làn khẩn cấp | Không | Có |
+| Phanh tự động khẩn cấp trước/sau | Không | Có |
+| Cảnh báo va chạm phía trước | Không | Có |
+| Cảnh báo điểm mù | Có | Có |
+| Cảnh báo phương tiện cắt ngang phía sau | Không | Có |
+| Cảnh báo mở cửa | Không | Có |
+| Hỗ trợ đỗ xe phía sau | Có | Có |
+| Camera lùi | Có | Có |
+| Camera 360 | Không | Có |
+| Đèn pha tự động | Không | Có |
+| Cảnh báo tài xế buồn ngủ và mất tập trung | Không | Có |
+| Cảnh báo chống trộm | Có | Có |
+| Tính năng khóa động cơ khi có trộm | Có | Có |
+
+| Lựa chọn chế độ vận hành đặc biệt | Có | Có |
+| --- | --- | --- |
+| Giải trí trực tuyến | Có | Có |
+| Điều hướng & dẫn đường trên màn hình trung tâm | Có | Có |
+| Trò chơi | Có | Có |
+| Trình duyệt web | Có | Có |
+| Tự chẩn đoán lỗi | Có | Có |
+| Cập nhật phần mềm từ xa | Có | Có |
+| Trợ lý ảo | Có | Có |
+| Ứng dụng điện thoạit | Có | Có |
+
+Thông số kỹ thuật VF 6 tại Việt Nam
+*Một số tính năng sẽ chưa có sẵn hoặc chưa được kích hoạt tại thời điểm giao xe cho Khách hàng. Những tính năng này sẽ được cập nhật phần mềm từ xa qua kết nối không dây hoặc cập nhật tại xưởng dịch vụ VinFast.
+Quãng đường di chuyển được tính toán dựa trên kết quả kiểm định theo quy chuẩn toàn cầu (NEDC).
+Quãng đường di chuyển thực tế có thể giảm so với kết quả kiểm định, phụ thuộc vào tốc độ lái xe, nhiệt độ, địa hình, thói quen sử dụng của người lái, chế độ lái được cài đặt, số lượng hành khách, và các điều kiện giao thông khác.
+Để đảm bảo an toàn, tối ưu tuổi thọ và hiệu suất hoạt động, VinFast khuyến cáo người sử dụng các dòng xe điện VinFast chỉ nên sử dụng pin chính hãng và các giải pháp sạc do VinFast cung cấp.
+Hình ảnh mang tính chất minh hoạ, sử dụng hình ảnh của sản phẩm trong giai đoạn tiền thương mại. Các thông tin sản phẩm có thể thay đổi mà không cần báo trước.
+MÀN HÌNH VÀ KẾT NỐI VF 6 ECO VF 6 PLUS KÍCH THƯỚC TÍNH NĂNG ĐIỀU KHIỂN THÔNG MINH VF 6 ECO VF 6 PLUS VF 6 ECO VF 6 PLUS
 
 --- Trang 12 ---
+
 ĐẶT KHÁCH HÀNG LÀM TRỌNG TÂM
 TRẠM SẠC & NHÀ PHÂN PHỐI
 Hệ thống Showroom & Xưởng dịch vụ 
@@ -461,8 +304,8 @@ Chính sách
 bảo hành tốt 
 nhất thị trường
 
-
 --- Trang 13 ---
+
 CHỦ ĐỘNG KẾ HOẠCH DI CHUYỂN
 VỚI GIẢI PHÁP SẠC DI ĐỘNG VINFAST
 Nhằm giúp người dùng chủ động kế hoạch di chuyển, tiết kiệm thời gian và chi 

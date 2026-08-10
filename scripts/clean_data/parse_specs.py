@@ -59,6 +59,7 @@ from scripts.clean_data.clean_to_jsonl import (  # noqa: E402
 )
 
 RAW_DIR = REPO_ROOT / "data" / "raw"
+RAW_PDF_DIR = REPO_ROOT / "data" / "raw_pdf"
 CLEAN_DIR = REPO_ROOT / "data" / "clean"
 
 # Ưu tiên nguồn khi conflict giá trị (chính thống nhất → trước).
@@ -957,6 +958,117 @@ def aggregate(all_rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
                 # chỉ có row chung (không phân edition) → giữ.
                 collapsed.extend(nulls)
     return collapsed
+
+
+# ── PDF brochure spec extraction ──────────────────────────────────────────────
+def extract_specs_from_pdf(path: Path) -> list[dict[str, Any]]:
+    """Trích spec từ file raw_pdf (brochure).
+
+    Brochure PDF có bảng so sánh dạng pipe (| label | val1 | val2 |) nhưng
+    thường không có edition keyword trong header → dùng MODEL_EDITIONS gán
+    cột 1 = edition đầu, cột 2 = edition cuối (theo thứ tự giá).
+    """
+    meta, body = parse_raw_file(path)
+    model_id = infer_model_raw(path)
+    if not model_id:
+        return []
+    model_code = MODEL_LABEL.get(model_id, model_id)
+    source_url = meta.get("source_url", "")
+    model_editions = MODEL_EDITIONS.get(model_id, [])
+
+    rows: list[dict[str, Any]] = []
+    seen: set[tuple[str, str | None, str]] = set()
+
+    lines = body.splitlines()
+    i = 0
+    while i < len(lines):
+        if not (TABLE_ROW_RE.match(lines[i]) and i + 1 < len(lines)
+                and SEP_RE.match(lines[i + 1])):
+            i += 1
+            continue
+
+        # lines[i] = header, lines[i+1] = separator, data từ i+2
+        header_cells = split_cells(lines[i])
+        sep_line = lines[i + 1]
+        data_start = i + 2
+
+        # Phát hiện edition từ header
+        edition_cols: dict[int, str] = {}
+        for ci in range(1, len(header_cells)):
+            ed = detect_edition(header_cells[ci])
+            if ed:
+                edition_cols[ci] = ed
+
+        # Header trống edition + 3 cột + model có 2 editions → gán theo MODEL_EDITIONS
+        has_data_cols = len(header_cells) >= 3 and any(
+            c.strip() for c in header_cells[1:]
+        )
+        if not edition_cols and has_data_cols and len(model_editions) >= 2:
+            edition_cols[1] = model_editions[0]
+            edition_cols[2] = model_editions[1]
+        # 3 cột nhưng cột 1 rỗng, cột 2 có data → 1 edition = model_editions[-1]
+        elif not edition_cols and has_data_cols and len(model_editions) == 1:
+            for ci in range(1, len(header_cells)):
+                if header_cells[ci].strip():
+                    edition_cols[ci] = model_editions[0]
+                    break
+
+        j = data_start
+        while j < len(lines) and TABLE_ROW_RE.match(lines[j]) and not SEP_RE.match(lines[j]):
+            cells = split_cells(lines[j])
+            if not cells:
+                j += 1
+                continue
+            label = norm(cells[0])
+            if not label or is_section_header(label) or is_price_row(label):
+                j += 1
+                continue
+
+            if not edition_cols:
+                # Không có edition → vertical list: cột 1 = value chung
+                if len(cells) >= 2 and cells[1]:
+                    raw_tuples = [(label, cells[1], None)]
+                else:
+                    raw_tuples = []
+            else:
+                raw_tuples = [
+                    (label, cells[ci], ed)
+                    for ci, ed in edition_cols.items()
+                    if ci < len(cells) and cells[ci]
+                ]
+
+            for label_norm, value_raw, edition in raw_tuples:
+                mapped = lookup_label(label_norm)
+                if not mapped:
+                    continue
+                spec_key, spec_unit, category = mapped
+                if spec_key not in BASIC_SPECS and spec_key != "dimension_triple":
+                    continue
+                if spec_key == "dimension_triple":
+                    for sub_key, sub_val in parse_dimension_triple(value_raw):
+                        if not sub_val:
+                            continue
+                        k = (sub_key, edition)
+                        if k in seen:
+                            continue
+                        seen.add(k)
+                        rows.append(_row(model_code, edition, "dimension",
+                                         sub_key, sub_val, "mm", source_url))
+                    continue
+                value = clean_value(spec_key, value_raw)
+                if value is None:
+                    continue
+                k = (spec_key, edition)
+                if k in seen:
+                    continue
+                seen.add(k)
+                cat, unit = BASIC_SPECS.get(spec_key, (category, spec_unit))
+                rows.append(_row(model_code, edition, cat, spec_key,
+                                 value, unit, source_url))
+            j += 1
+        i = j if j > i + 1 else i + 1
+
+    return rows
 
 
 # ── Run ─────────────────────────────────────────────────────────────────────

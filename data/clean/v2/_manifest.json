@@ -1,37 +1,37 @@
 {
   "version": "v2",
-  "created_at": "2026-08-10T07:32:48Z",
+  "created_at": "2026-08-10T09:59:35Z",
   "created_by": "scripts/clean_to_jsonl.py + scripts/split_cold_hot.py",
-  "prev_version": "test_page",
+  "prev_version": "v1",
   "repo_commit": "",
   "vector": {
     "collections": {
       "vivu_policy": {
         "file": "vector/vivu_policy.jsonl",
-        "chunks": 421,
-        "added": 310,
-        "modified": 103,
-        "removed": 113
+        "chunks": 230,
+        "added": 106,
+        "modified": 116,
+        "removed": 80
       },
       "vivu_product_info": {
         "file": "vector/vivu_product_info.jsonl",
-        "chunks": 433,
-        "added": 304,
-        "modified": 125,
-        "removed": 123
+        "chunks": 209,
+        "added": 55,
+        "modified": 137,
+        "removed": 45
       },
       "vivu_maintenance": {
         "file": "vector/vivu_maintenance.jsonl",
-        "chunks": 83,
-        "added": 54,
-        "modified": 29,
-        "removed": 6
+        "chunks": 36,
+        "added": 2,
+        "modified": 6,
+        "removed": 1
       }
     },
-    "total_chunks": 937,
-    "total_added": 668,
-    "total_modified": 257,
-    "total_removed": 242
+    "total_chunks": 475,
+    "total_added": 163,
+    "total_modified": 259,
+    "total_removed": 126
   },
   "postgres": {
     "tables": {

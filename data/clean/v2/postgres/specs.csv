@@ -1,0 +1,226 @@
+model_code|version_name|version_code|spec_category|spec_key|spec_value|spec_unit|source_url
+VF 6|Eco||dimension|wheelbase_mm|2.730|mm|https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Plus||dimension|wheelbase_mm|2.730|mm|https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Eco||dimension|ground_clearance_mm|170|mm|https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Plus||dimension|ground_clearance_mm|170|mm|https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Eco||powertrain|power_kw|130|kW|https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Plus||powertrain|power_kw|150|kW|https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Eco||powertrain|torque_nm|250|Nm|https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Plus||powertrain|torque_nm|310|Nm|https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Eco||battery|range_km|485|km|https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Plus||battery|range_km|460|km|https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Eco||battery|battery_kwh|59,6|kWh|https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Plus||battery|battery_kwh|59,6|kWh|https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Eco||powertrain|mobile_charger_type|Phụ kiện (AFS 3,5kW)||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Plus||powertrain|mobile_charger_type|Phụ kiện (AFS 3,5kW)||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Eco||powertrain|home_charger_type|Phụ kiện (AFS 7,4kW)||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Plus||powertrain|home_charger_type|Phụ kiện (AFS 7,4kW)||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Eco||powertrain|drivetrain|Cầu trước (FWD)||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Plus||powertrain|drivetrain|Cầu trước (FWD)||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Eco||powertrain|drive_modes|Eco/ Normal/ Sport||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Plus||powertrain|drive_modes|Eco/ Normal/ Sport||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Eco||exterior|wheel_size_inch|17 inch|inch|https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Plus||exterior|wheel_size_inch|18 inch|inch|https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Eco||chassis|front_suspension_type|Độc lập, MacPherson||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Plus||chassis|front_suspension_type|Độc lập, MacPherson||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Eco||chassis|rear_suspension_type|Thanh điều hướng đa điểm||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Plus||chassis|rear_suspension_type|Thanh điều hướng đa điểm||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Eco||exterior|headlight_type|LED||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Plus||exterior|headlight_type|LED||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Eco||exterior|auto_headlights|Không||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Plus||exterior|auto_headlights|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Eco||exterior|drl_type|LED||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Plus||exterior|drl_type|LED||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Eco||exterior|auto_high_beam|Không||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Plus||exterior|auto_high_beam|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Eco||exterior|tail_light_type|LED||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Plus||exterior|tail_light_type|LED||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Eco||exterior|front_brand_light|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Plus||exterior|front_brand_light|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Eco||exterior|rear_brand_light|Không||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Plus||exterior|rear_brand_light|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Eco||exterior|power_folding_mirrors|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Plus||exterior|power_folding_mirrors|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Eco||infotainment|smartphone_integration|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Plus||infotainment|smartphone_integration|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Eco||interior|speakers|6|số lượng|https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Plus||interior|speakers|6|số lượng|https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Eco||interior|leatherette_seats|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Plus||interior|leatherette_seats|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Eco||exterior|one_touch_windows|Có, lên/xuống một chạm tất cả các vị trí||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Plus||exterior|one_touch_windows|Có, lên/xuống một chạm tất cả các vị trí||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Eco||convenience|epb_auto_hold|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Plus||convenience|epb_auto_hold|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Eco||safety|airbags|4||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Plus||safety|airbags|7||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Eco||safety|abs|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Plus||safety|abs|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Eco||safety|ebd|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Plus||safety|ebd|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Eco||safety|brake_assist|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Plus||safety|brake_assist|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Eco||safety|esc|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Plus||safety|esc|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Eco||safety|tcs|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Plus||safety|tcs|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Eco||safety|hsa|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Plus||safety|hsa|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Eco||adas|highway_driving_assist|Không||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Plus||adas|highway_driving_assist|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Eco||adas|auto_lane_change|Không||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Plus||adas|auto_lane_change|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Eco||adas|adaptive_cruise_control|Không||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Plus||adas|adaptive_cruise_control|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Eco||adas|lane_departure_warning|Không||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Plus||adas|lane_departure_warning|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Eco||adas|lane_keep_assist|Không||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Plus||adas|lane_keep_assist|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Eco||adas|emergency_lane_keep|Không||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Plus||adas|emergency_lane_keep|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Eco||adas|aeb_front_rear|Không||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Plus||adas|aeb_front_rear|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Eco||adas|forward_collision_warning|Không||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Plus||adas|forward_collision_warning|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Eco||adas|blind_spot_warning|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Plus||adas|blind_spot_warning|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Eco||adas|rear_cross_traffic_alert|Không||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Plus||adas|rear_cross_traffic_alert|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Eco||adas|door_open_warning|Không||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Plus||adas|door_open_warning|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Eco||adas|rear_parking_assist|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Plus||adas|rear_parking_assist|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Eco||adas|rearview_camera|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Plus||adas|rearview_camera|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Eco||adas|surround_view_camera|Không||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Plus||adas|surround_view_camera|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Eco||adas|driver_monitoring|Không||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Plus||adas|driver_monitoring|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Eco||security|anti_theft_alarm|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Plus||security|anti_theft_alarm|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Eco||security|immobilizer|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Plus||security|immobilizer|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Eco||infotainment|navigation|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Plus||infotainment|navigation|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Eco||infotainment|gaming|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Plus||infotainment|gaming|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Eco||infotainment|web_browser|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Plus||infotainment|web_browser|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Eco||infotainment|self_diagnosis|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Plus||infotainment|self_diagnosis|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Eco||infotainment|ota_update|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Plus||infotainment|ota_update|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Eco||infotainment|phone_app|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 6|Plus||infotainment|phone_app|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
+VF 8|Eco||dimension|wheelbase_mm|2.950|mm|https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Plus||dimension|wheelbase_mm|2.950|mm|https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Eco||dimension|length_mm|4750|mm|https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Eco||dimension|width_mm|1934|mm|https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Eco||dimension|height_mm|1667|mm|https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Plus||dimension|length_mm|4750|mm|https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Plus||dimension|width_mm|1934|mm|https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Plus||dimension|height_mm|1667|mm|https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Eco||dimension|ground_clearance_mm|162|mm|https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Plus||dimension|ground_clearance_mm|157|mm|https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Eco||dimension|trunk_capacity|376/1.373|L|https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Plus||dimension|trunk_capacity|376/1.373|L|https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Eco||dimension|curb_weight_kg|2.328 Kg||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Plus||dimension|curb_weight_kg|2.520 Kg||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Eco||dimension|roof_load_kg|70||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Plus||dimension|roof_load_kg|70||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Eco||powertrain|drivetrain|FWD/Cầu trước||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Plus||powertrain|drivetrain|AWD/ 2 cầu toàn thời gian||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Eco||powertrain|power_kw|150/201|kW|https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Plus||powertrain|power_kw|300/402|kW|https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Eco||powertrain|torque_nm|310|Nm|https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Plus||powertrain|torque_nm|620|Nm|https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Eco||powertrain|acceleration_0_100_s|11,8|s|https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Plus||powertrain|acceleration_0_100_s|5,58|s|https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Eco||battery|battery_kwh|87,7|kWh|https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Plus||battery|battery_kwh|87,7|kWh|https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Eco||battery|range_km|562 (NEDC)|km|https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Plus||battery|range_km|457 (WLTP)|km|https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Eco||powertrain|drive_modes|Eco/Normal/Sport||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Plus||powertrain|drive_modes|Eco/Normal/Sport||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Eco||powertrain|battery_heater|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Plus||powertrain|battery_heater|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Eco||chassis|front_suspension_type|Treo độc lập thông minh||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Plus||chassis|front_suspension_type|Treo độc lập thông minh||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Eco||chassis|rear_suspension_type|Thanh điều hướng đa điểm||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Plus||chassis|rear_suspension_type|Thanh điều hướng đa điểm||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Eco||chassis|brake_type|Đĩa thông gió/Đĩa thông gió||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Plus||chassis|brake_type|Đĩa thông gió/Đĩa thông gió||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Eco||exterior|wheel_size_inch|Hợp kim 19inch|inch|https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Plus||exterior|wheel_size_inch|Hợp kim 20inch|inch|https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Eco||chassis|steering_assist_type|Trợ lực điện||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Plus||chassis|steering_assist_type|Trợ lực điện||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Eco||exterior|headlight_feature|LED, Tự động bật/tắt,||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Eco||interior|seats|5||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Plus||interior|seats|5||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Eco||interior|seat_material_type|Giả da||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Plus||interior|seat_material_type|Da nhân tạo||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Eco||safety|airbags|2||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Plus||safety|airbags|2||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Eco||adas|traffic_jam_assist|Không||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Plus||adas|traffic_jam_assist|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Eco||adas|highway_assist|Không||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Plus||adas|highway_assist|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Eco||adas|lane_departure_warning|Không||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Plus||adas|lane_departure_warning|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Eco||adas|lane_keep_assist|Không||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Plus||adas|lane_keep_assist|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Eco||adas|lane_centering|Không||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Plus||adas|lane_centering|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Eco||adas|cruise_control_type|Ga tự động cơ bản||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Plus||adas|cruise_control_type|Ga tự động thích ứng||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Eco||adas|adaptive_cruise_control|Không||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Plus||adas|adaptive_cruise_control|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Eco||adas|forward_collision_warning|Không||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Plus||adas|forward_collision_warning|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Eco||adas|rear_cross_traffic_alert|Không||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Plus||adas|rear_cross_traffic_alert|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Eco||adas|blind_spot_warning|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Plus||adas|blind_spot_warning|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Eco||adas|door_open_warning|Không||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Plus||adas|door_open_warning|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Eco||adas|aeb_front|Không||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Plus||adas|aeb_front|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Eco||adas|emergency_lane_keep|Không||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Plus||adas|emergency_lane_keep|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Eco||exterior|adaptive_headlights|Không||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Plus||exterior|adaptive_headlights|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Eco||infotainment|vehicle_modes|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Plus||infotainment|vehicle_modes|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Eco||infotainment|smartphone_integration|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Plus||infotainment|smartphone_integration|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Eco||infotainment|ev_routing|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Plus||infotainment|ev_routing|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Eco||infotainment|basic_widgets|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Plus||infotainment|basic_widgets|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Eco||infotainment|web_browser|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Plus||infotainment|web_browser|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Eco||infotainment|vehicle_status_assist|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Plus||infotainment|vehicle_status_assist|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Eco||infotainment|voice_control|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Plus||infotainment|voice_control|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Eco||infotainment|voice_search|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Plus||infotainment|voice_search|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Eco||infotainment|voice_navigation|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Plus||infotainment|voice_navigation|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Eco||infotainment|voice_greeting|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Plus||infotainment|voice_greeting|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Eco||connected|account_sync|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Plus||connected|account_sync|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Eco||connected|vehicle_status_notification|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Plus||connected|vehicle_status_notification|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Eco||general|charging_etc|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Plus||general|charging_etc|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Eco||connected|charge_management|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Plus||connected|charge_management|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Eco||connected|charger_map|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Plus||connected|charger_map|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Eco||connected|service_booking|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Plus||connected|service_booking|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Eco||connected|online_accessory_shop|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Plus||connected|online_accessory_shop|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Eco||infotainment|ota_update|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
+VF 8|Plus||infotainment|ota_update|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf
