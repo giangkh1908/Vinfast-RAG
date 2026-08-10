@@ -473,6 +473,25 @@ class AgentLoop:
             t_generation = time.time() - t_retrieve_start
             yield {"type": "token", "content": final_response}
 
+        # Refuse detection for stream
+        REFUSAL_PATTERNS_STREAM = [
+            r"chưa thể xác nhận",
+            r"không có thông tin",
+            r"không đủ thông tin",
+            r"không được cung cấp",
+            r"không tìm thấy",
+            r"không có dữ liệu",
+        ]
+        is_refusal = any(re.search(p, final_response, re.IGNORECASE) for p in REFUSAL_PATTERNS_STREAM)
+        if is_refusal:
+            dlog = make_decision_log(query, classify_result, tool_results, final_response, [], **self._build_log_kwargs(t0, t_retrieval, 0))
+            dlog.decision = "refuse"
+            dlog.reason_code = "insufficient_evidence"
+            log_store.add(dlog)
+            yield {"type": "sources", "content": []}
+            yield {"type": "done"}
+            return
+
         # Evidence assessment
         assessment, valid_sources = assess_evidence(tool_results, query)
 
