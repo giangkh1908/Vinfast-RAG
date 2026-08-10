@@ -133,11 +133,11 @@ bộ trường (JSON, 1 dòng compact):**
 }
 ```
 
-**Payload thực tế ghi vào Qdrant** = toàn bộ trường **TRỪ** `{id, text, is_hot}`:
+**Payload thực tế ghi vào Qdrant** = toàn bộ trường **TRỪ** `{id, is_hot}`:
 
 ```
 collection, vector_version, model_id, edition_id, category, section_path,
-text_type, structured, language, tags, confidence, source_file, source_url,
+text, text_type, structured, language, tags, confidence, source_file, source_url,
 source_type, fetched_at, ingested_at
 ```
 
@@ -393,7 +393,7 @@ hành"*; con số lấy từ Postgres lúc query.
 | `edition_id` | string\|null | ✓* | `Eco`, `Plus`, `PlusCaptain`, `TieuChuan`, `NangCao`, `CaoCap`. `null` nếu không theo phiên bản (v1 hiện null cho mọi chunk) |
 | `category` | string | ✓ | Category ngữ nghĩa: `thong_so_ky_thuat` / `thong_tin_san_pham` / `chinh_sach_dich_vu` / `dat_lich_bao_duong` / `ho_tro_mua_xe` |
 | `section_path` | string[] | ✓ | Bread-crumb heading. `[0]` = category, `[-1]` = section hiện tại |
-| `text` | string | ✓ | Nội dung clean. **Không chứa số tiền** (guard `has_money` ở split, drop chunk nếu vi phạm) |
+| `text` | string | ✓ | Nội dung clean. **Không chứa số tiền** (guard `has_money` ở split, drop chunk nếu vi phạm). **Vào payload Qdrant** — dùng để hiển thị kết quả search + rerank |
 | `text_type` | enum | ✓ | `prose` \| `table` \| `list` \| `key_value` \| `qa_pair` \| `legal_clause` \| `link_list` |
 | `structured` | object | ✓ | Trường hoá structured (vd `{"dimension": {...}}`). `{}` nếu không có |
 | `language` | string | ✓ | Mặc định `vi` |
@@ -404,7 +404,7 @@ hành"*; con số lấy từ Postgres lúc query.
 | `source_type` | string | ✓ | `raw_html` \| `raw_pdf` \| `brochure` \| `product_page` \| `faq` \| `policy_legal` \| `maintenance_link` \| `specs_json` ... |
 | `fetched_at` | string | ✓ | ISO timestamp lúc crawl |
 | `ingested_at` | string | ✓ | ISO timestamp lúc clean |
-| `is_hot` | bool | ✓ | Flag cold/hot cho pipeline. **BỎ khỏi payload Qdrant** (xem `make_payload`) |
+| `is_hot` | bool | ✓ | Flag cold/hot cho pipeline. **BỎ khỏi payload Qdrant** (`make_payload` giữ lại toàn bộ trừ `{id, is_hot}`) |
 
 ### 5.3. PostgreSQL — từng bảng
 
