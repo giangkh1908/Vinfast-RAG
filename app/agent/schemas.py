@@ -152,6 +152,33 @@ async def build_tool_schemas() -> list[dict]:
         {
             "type": "function",
             "function": {
+                "name": "search_all",
+                "description": f"Tìm kiếm THÔNG SỐ KỸ THUẬT + KNOWLEDGE BASE song song. Dùng khi câu hỏi về tính năng, trang bị, hoặc bất kỳ thông tin nào có thể nằm trong cả 2 nguồn (specs + mô tả). Models: {model_list_str}.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "model_code": {
+                            "type": "string",
+                            "enum": models,
+                            "description": "Mã xe VinFast",
+                        },
+                        "query": {
+                            "type": "string",
+                            "description": "Câu hỏi hoặc từ khóa tìm kiếm",
+                        },
+                        "version": {
+                            "type": "string",
+                            "enum": versions,
+                            "description": "Phiên bản. Để trống = lấy tất cả.",
+                        },
+                    },
+                    "required": ["model_code", "query"],
+                },
+            },
+        },
+        {
+            "type": "function",
+            "function": {
                 "name": "list_available_models",
                 "description": "Liệt kê các model VinFast đang bán. Dùng để xác nhận model tồn tại trước khi gọi tool khác.",
                 "parameters": {
@@ -247,7 +274,7 @@ async def build_tool_schemas() -> list[dict]:
             "type": "function",
             "function": {
                 "name": "ask_clarification",
-                "description": "Gọi khi câu hỏi về xe quá chung chung, chưa đủ cụ thể để trả lời trực tiếp. Liệt kê các khía cạnh có thể hỏi.",
+                "description": "Gọi khi: (1) câu hỏi thiếu model, hoặc (2) câu hỏi thiếu phiên bản (Eco/Plus) mà thông số khác nhau giữa các phiên bản (range, battery, power). VD: 'VF 8 đi được bao nhiêu km?' → hỏi lại 'Eco hay Plus?'.",
                 "parameters": {
                     "type": "object",
                     "properties": {
@@ -273,10 +300,6 @@ async def build_tool_schemas() -> list[dict]:
         },
     ]
 
-    if settings.scope_enabled:
-        result = [s for s in all_schemas if s["function"]["name"] in BDS_TOOL_NAMES]
-    else:
-        result = all_schemas
-    _schemas_cache = result
+    _schemas_cache = all_schemas
     _schemas_cache_time = time.time()
-    return result
+    return all_schemas

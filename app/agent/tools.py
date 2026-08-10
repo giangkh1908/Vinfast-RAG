@@ -1,3 +1,4 @@
+import asyncio
 import json
 from collections import Counter
 
@@ -31,9 +32,27 @@ async def get_price(model_code: str, version: str = None) -> dict:
             "FROM price_list_active WHERE model_id=$1 ORDER BY price_list_vnd",
             mid,
         )
+
+    related = await conn.fetch(
+        "SELECT model_id, edition_id, price_list_vnd, price_promo_vnd "
+        "FROM price_list_active WHERE model_id != $1 ORDER BY price_list_vnd LIMIT 10",
+        mid,
+    )
     await conn.close()
 
     source_url = rows[0]["source_url"] if rows and rows[0].get("source_url") else ""
+    related_models = []
+    seen = set()
+    for r in related:
+        rm = r["model_id"]
+        if rm not in seen:
+            seen.add(rm)
+            related_models.append({
+                "model_code": rm,
+                "price_vnd": r["price_list_vnd"],
+                "version_name": r["edition_id"],
+            })
+
     return {
         "model_code": model_code,
         "source_url": source_url,
@@ -46,6 +65,8 @@ async def get_price(model_code: str, version: str = None) -> dict:
             }
             for r in rows
         ],
+        "related_models": related_models,
+        "note": "Giá niêm yết chưa bao gồm chi phí lăn bánh. Khuyến mãi có thể thay đổi theo thời gian và khu vực.",
     }
 
 
@@ -72,10 +93,17 @@ async def get_specs(model_code: str, version: str = None, category: str = None) 
         f"FROM car_specs WHERE {where} ORDER BY spec_category, spec_key, version_name",
         *params,
     )
+
+    related = await conn.fetch(
+        "SELECT DISTINCT model_code FROM car_specs WHERE model_code != $1 ORDER BY model_code LIMIT 10",
+        model_code,
+    )
     await conn.close()
 
     source_urls = set(r["source_url"] for r in rows if r["source_url"])
     primary_source = source_urls.pop() if source_urls else ""
+
+    related_models = [{"model_code": r["model_code"]} for r in related]
 
     return {
         "model_code": model_code,
@@ -90,6 +118,8 @@ async def get_specs(model_code: str, version: str = None, category: str = None) 
             }
             for r in rows
         ],
+        "related_models": related_models,
+        "note": "Thông số có thể khác nhau giữa các phiên bản. Tham khảo thêm model liên quan để so sánh.",
     }
 
 
@@ -197,17 +227,36 @@ async def get_maintenance_link(car_model: str, year: int = None) -> dict:
 
 
 async def ask_clarification(model_id: str = None, suggested_categories: list[str] = None) -> dict:
-    """LLM calls this when query is too broad. Returns available categories for the model."""
+    """LLM calls this when query is too broad or missing version. Returns available categories for the model."""
     categories = suggested_categories or [
         "phiên_bản", "thông_số_kỹ_thuật", "kích_thước",
         "pin_sạc", "phạm_vi_di_chuyển", "an_toàn",
         "nội_thất", "ngoại_thất", "tính_năng"
     ]
+    if model_id:
+        return {
+            "action": "clarify",
+            "model_id": model_id,
+            "available_categories": categories,
+            "available_versions": settings.scope_versions,
+            "message": f"Bạn muốn hỏi phiên bản nào của {model_id}? ({', '.join(settings.scope_versions)})",
+        }
     return {
         "action": "clarify",
         "model_id": model_id,
         "available_categories": categories,
-        "message": f"Bạn muốn tìm thông tin nào{(' về ' + model_id) if model_id else ''}?",
+        "message": "Bạn muốn tìm thông tin nào về xe VinFast?",
+    }
+
+
+async def search_all(model_code: str, query: str, version: str = None) -> dict:
+    specs_task = get_specs(model_code, version=version)
+    kb_task = search_knowledge_base(query, model_id=model_code)
+    specs_result, kb_result = await asyncio.gather(specs_task, kb_task)
+    return {
+        "model_code": model_code,
+        "specs": specs_result,
+        "knowledge_base": kb_result,
     }
 
 
@@ -215,6 +264,7 @@ TOOL_REGISTRY = {
     "get_price": get_price,
     "get_specs": get_specs,
     "search_knowledge_base": search_knowledge_base,
+    "search_all": search_all,
     "list_available_models": list_available_models,
     "get_active_promotions": get_active_promotions,
     "get_onroad_cost_link": get_onroad_cost_link,

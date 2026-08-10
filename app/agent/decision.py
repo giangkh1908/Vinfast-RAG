@@ -69,7 +69,7 @@ _REASON_MAP = {
 
 def resolve_reason_code(reason: str) -> str:
     """Map classifier reason string → ReasonCode enum value."""
-    for prefix, code in _REASON_MAP.items():
+    for prefix, code in sorted(_REASON_MAP.items(), key=lambda x: -len(x[0])):
         if prefix in reason:
             return code.value
     return ReasonCode.SUFFICIENT_DIRECT_EVIDENCE.value
@@ -254,7 +254,7 @@ def get_clarify_messages() -> dict[str, str]:
     return {
         "model_code": f"Bạn muốn hỏi về {ml}?",
         "topic": "Bạn muốn tìm thông tin nào về {model}: phiên bản, thông số kỹ thuật, tính năng, kích thước, pin/sạc, phạm vi di chuyển, an toàn, nội thất hay ngoại thất?",
-        "version": "Bạn muốn hỏi về phiên bản Eco hay Plus?",
+        "version": f"Bạn muốn hỏi phiên bản nào? ({', '.join(settings.scope_versions)})",
     }
 
 
@@ -315,12 +315,49 @@ def assess_evidence(tool_results: list[dict], query: str) -> tuple[str, list[dic
                     else:
                         has_partial = True
 
+        elif tool == "search_all":
+            sub_specs = result.get("specs", {})
+            if sub_specs.get("specs"):
+                for s in sub_specs["specs"]:
+                    valid_sources.append({
+                        "tool": "get_specs",
+                        "model_code": sub_specs.get("model_code", ""),
+                        "text": f"{s.get('key', '')}: {s.get('value', '')} {s.get('unit', '')}",
+                        "source_url": sub_specs.get("source_url", ""),
+                        "source_type": "specs",
+                        "score": 1.0,
+                    })
+                has_direct = True
+            sub_kb = result.get("knowledge_base", {})
+            if sub_kb.get("results"):
+                for r in sub_kb["results"]:
+                    score = r.get("score", 0)
+                    if score >= 0.3:
+                        valid_sources.append({
+                            "tool": "search_knowledge_base",
+                            "text": r.get("text", "")[:200],
+                            "source_url": r.get("source_url", ""),
+                            "source_type": r.get("source_type", ""),
+                            "score": score,
+                            "chunk_id": r.get("id", ""),
+                            "model_id": r.get("model_id", ""),
+                        })
+                        if score >= 0.5:
+                            has_direct = True
+                        else:
+                            has_partial = True
+
         elif tool == "list_available_models" and result.get("models"):
-            valid_sources.append({
-                "tool": tool,
-                "text": f"{len(result['models'])} models available",
-                "source_type": "system",
-            })
+            for m in result["models"]:
+                vers = ", ".join(m.get("versions", []))
+                valid_sources.append({
+                    "tool": tool,
+                    "model_code": m.get("model_code", ""),
+                    "text": f"{m.get('model_code', '')} — Phiên bản: {vers}",
+                    "source_url": m.get("source_url", ""),
+                    "source_type": "catalog",
+                    "score": 1.0,
+                })
             has_direct = True
 
     if has_direct:
@@ -446,7 +483,7 @@ def make_decision_log(
 ) -> DecisionLog:
     model = classify_result.entities.get("model_code", "unknown")
     version = classify_result.entities.get("version", "all_versions")
-    topic = classify_result.topic or "unknown"
+    topic = getattr(classify_result, "specificity", "unknown")
 
     assessment, _ = assess_evidence(tool_results, query) if tool_results else ("not_run", [])
 

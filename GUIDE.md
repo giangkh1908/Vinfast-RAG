@@ -135,11 +135,11 @@ Moi request log:
 
 ### Reason codes (21 enum)
 
-| Decision | Reason codes |
-|---|---|
-| `answer` | `sufficient_direct_evidence`, `partial_direct_evidence` |
-| `clarify` | `missing_model`, `missing_version`, `missing_topic`, `ambiguous_context` |
-| `refuse` | `insufficient_evidence`, `indirect_evidence`, `invalid_source`, `source_conflict`, `citation_failure`, `system_error`, `grounding_failure` |
+| Decision         | Reason codes                                                                                                                                                                                                                                      |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `answer`       | `sufficient_direct_evidence`, `partial_direct_evidence`                                                                                                                                                                                       |
+| `clarify`      | `missing_model`, `missing_version`, `missing_topic`, `ambiguous_context`                                                                                                                                                                  |
+| `refuse`       | `insufficient_evidence`, `indirect_evidence`, `invalid_source`, `source_conflict`, `citation_failure`, `system_error`, `grounding_failure`                                                                                          |
 | `out_of_scope` | `unsupported_model`, `unsupported_comparison`, `unsupported_recommendation`, `unsupported_pricing_policy`, `unsupported_after_sales`, `unsupported_safety_diagnosis`, `unsupported_contact_workflow`, `external_source_requested` |
 
 ---
@@ -149,7 +149,7 @@ Moi request log:
 Chay test cases qua API, export JSONL:
 
 ```bash
-python scripts/batch_runner.py --input eval/smoke_test.csv --output eval/smoke_results.jsonl
+python scripts/eval_runner.py --input eval/smoke_test.csv --output eval/eval_report.jsonl
 ```
 
 Input CSV format:
@@ -181,12 +181,12 @@ TF-ANS-01,VF 6 co nhung phien ban nao?,answer,VF 6 co 2 phien ban: Eco va Plus.
 
 ### RAGAS Metrics
 
-| Metric | Y nghia | Range |
-|---|---|---|
-| **Faithfulness** | Answer co dua tren retrieved context khong? | 0-1 |
-| **Answer Relevancy** | Answer co lien quan den question khong? | 0-1 |
-| **Context Precision** | Retrieved chunks co dung khong? | 0-1 |
-| **Context Recall** | Ground truth co nam trong retrieved chunks khong? | 0-1 |
+| Metric                      | Y nghia                                           | Range |
+| --------------------------- | ------------------------------------------------- | ----- |
+| **Faithfulness**      | Answer co dua tren retrieved context khong?       | 0-1   |
+| **Answer Relevancy**  | Answer co lien quan den question khong?           | 0-1   |
+| **Context Precision** | Retrieved chunks co dung khong?                   | 0-1   |
+| **Context Recall**    | Ground truth co nam trong retrieved chunks khong? | 0-1   |
 
 ### Output
 
@@ -227,6 +227,7 @@ uvicorn app.main:app --reload --port 8000
 ```
 
 Phoenix tu dong capture:
+
 - OpenAI API calls (LLM + Embedding)
 - Latency per call
 - Token usage
@@ -236,14 +237,14 @@ Phoenix tu dong capture:
 
 ## 9. Test Queries
 
-| Query | Decision mong doi | Tool |
-|---|---|---|
-| VF 6 co may phien ban? | `answer` | get_specs / list_models |
-| VF 6 Eco cong suat bao nhieu? | `answer` | get_specs |
-| Xe di duoc bao xa? | `clarify` (missing_model) | — |
-| Cho toi biet ve VF 6 | `clarify` (missing_topic) | — |
-| So sanh VF 6 va VF 8 | `out_of_scope` | — |
-| Gia VF 8 bao nhieu? | `out_of_scope` | — |
+| Query                         | Decision mong doi           | Tool                    |
+| ----------------------------- | --------------------------- | ----------------------- |
+| VF 6 co may phien ban?        | `answer`                  | get_specs / list_models |
+| VF 6 Eco cong suat bao nhieu? | `answer`                  | get_specs               |
+| Xe di duoc bao xa?            | `clarify` (missing_model) | —                      |
+| Cho toi biet ve VF 6          | `clarify` (missing_topic) | —                      |
+| So sanh VF 6 va VF 8          | `out_of_scope`            | —                      |
+| Gia VF 8 bao nhieu?           | `out_of_scope`            | —                      |
 
 ---
 
@@ -291,11 +292,11 @@ vivu/
 
 ## Loi thuong gap
 
-| Loi | Nguyen nhan | Fix |
-|---|---|---|
-| `Connection refused` Qdrant | Sai URL hoac API key | Check `.env` QDRANT_URL, QDRANT_API_KEY |
-| `Connection refused` PostgreSQL | Sai PG_DSN | Check `.env` PG_DSN |
-| `403 Forbidden` OpenAI | Sai API key | Check `.env` OPENAI_API_KEY |
-| `ModuleNotFoundError: ragas` | Chua install | `pip install ragas datasets` |
-| `RAGAS scoring failed` | Thieu ground_truth | CSV phai co cot `expected_answer` |
-| `Phoenix not installed` | Chua install | `pip install arize-phoenix openinference-instrumentation-openai` |
+| Loi                               | Nguyen nhan          | Fix                                                                |
+| --------------------------------- | -------------------- | ------------------------------------------------------------------ |
+| `Connection refused` Qdrant     | Sai URL hoac API key | Check`.env` QDRANT_URL, QDRANT_API_KEY                           |
+| `Connection refused` PostgreSQL | Sai PG_DSN           | Check`.env` PG_DSN                                               |
+| `403 Forbidden` OpenAI          | Sai API key          | Check`.env` OPENAI_API_KEY                                       |
+| `ModuleNotFoundError: ragas`    | Chua install         | `pip install ragas datasets`                                     |
+| `RAGAS scoring failed`          | Thieu ground_truth   | CSV phai co cot`expected_answer`                                 |
+| `Phoenix not installed`         | Chua install         | `pip install arize-phoenix openinference-instrumentation-openai` |

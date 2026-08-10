@@ -27,6 +27,9 @@ uvicorn>=0.24
 asyncpg>=0.29
 openai>=1.6
 
+# Agent graph
+langgraph>=0.2
+
 # Eval
 ragas>=0.1
 datasets>=2.14

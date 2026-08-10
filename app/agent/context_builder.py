@@ -14,6 +14,11 @@ def build_structured_context(tool_results: list[dict]) -> str:
             sections.append(_format_specs(result))
         elif tool == "search_knowledge_base":
             sections.append(_format_search_results(result))
+        elif tool == "search_all":
+            if result.get("specs"):
+                sections.append(_format_specs(result["specs"]))
+            if result.get("knowledge_base"):
+                sections.append(_format_search_results(result["knowledge_base"]))
         elif tool == "list_available_models":
             sections.append(_format_models(result))
         elif tool == "get_active_promotions":
@@ -41,6 +46,15 @@ def _format_prices(result: dict) -> str:
         lines.append(f"  - {p['version_name']}: Giá niêm yết {price} | Giá ưu đãi {promo}")
     if source_url:
         lines.append(f"\n  Nguồn: {source_url}")
+    related = result.get("related_models", [])
+    if related:
+        lines.append("\n  Model liên quan:")
+        for rm in related:
+            rm_price = f"{rm['price_vnd']:,} VNĐ" if rm.get("price_vnd") else "N/A"
+            lines.append(f"    - {rm['model_code']} ({rm.get('version_name', '')}): từ {rm_price}")
+    note = result.get("note", "")
+    if note:
+        lines.append(f"\n  Lưu ý: {note}")
     return "\n".join(lines)
 
 
@@ -60,6 +74,14 @@ def _format_specs(result: dict) -> str:
             lines.append(f"    {ver} — {s['key']}: {s['value']}{unit}")
     if source_url:
         lines.append(f"\n  Nguồn: {source_url}")
+    related = result.get("related_models", [])
+    if related:
+        lines.append("\n  Model liên quan:")
+        for rm in related:
+            lines.append(f"    - {rm['model_code']}")
+    note = result.get("note", "")
+    if note:
+        lines.append(f"\n  Lưu ý: {note}")
     return "\n".join(lines)
 
 
