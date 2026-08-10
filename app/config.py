@@ -24,8 +24,9 @@ class Settings:
         self.embedding_model: str = _env.get("EMBEDDING_MODEL", "nvidia/llama-nemotron-embed-vl-1b-v2:free")
         self.embedding_dim: int = int(_env.get("EMBEDDING_DIM", "2048"))
         self.rerank_enabled: bool = _env.get("RERANK_ENABLED", "true").lower() == "true"
-        self.rerank_model: str = _env.get("RERANK_MODEL", "nvidia/llama-nemotron-rerank-vl-1b-v2:free")
+        self.rerank_model: str = _env.get("RERANK_MODEL", "cohere")
         self.rerank_top_k: int = int(_env.get("RERANK_TOP_K", "20"))
+        self.cohere_api_key: str = _env.get("COHERE_API_KEY", "")
 
 
 settings = Settings()

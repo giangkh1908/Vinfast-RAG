@@ -94,11 +94,59 @@ def _openrouter_embed(texts: list[str]) -> list[list[float]]:
     return [x["embedding"] for x in data]
 
 
+class CohereReranker:
+    """Cohere rerank API wrapper."""
+
+    def __init__(self, api_key: str):
+        self.api_key = api_key
+        self.base_url = "https://api.cohere.ai/v1/rerank"
+        self.session = requests.Session()
+        self.session.headers.update({
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+        })
+
+    def predict(self, pairs: list[tuple[str, str]]) -> list[float]:
+        if not pairs:
+            return []
+
+        query = pairs[0][0]
+        documents = [doc for _, doc in pairs]
+
+        try:
+            r = self.session.post(
+                self.base_url,
+                json={
+                    "model": "rerank-multilingual-v3.0",
+                    "query": query,
+                    "documents": documents,
+                    "top_n": len(documents),
+                },
+                timeout=30,
+            )
+            r.raise_for_status()
+            results = r.json().get("results", [])
+
+            scores = [0.0] * len(pairs)
+            for item in results:
+                idx = item.get("index", 0)
+                scores[idx] = item.get("relevance_score", 0.0)
+            return scores
+
+        except Exception as e:
+            import logging
+            logging.getLogger("retrieval").warning("Cohere rerank failed: %s", e)
+            return [0.0] * len(pairs)
+
+
 def get_reranker():
     global _reranker
     if _reranker is None and settings.rerank_enabled:
-        from sentence_transformers import CrossEncoder
-        _reranker = CrossEncoder(settings.rerank_model)
+        if settings.cohere_api_key:
+            _reranker = CohereReranker(settings.cohere_api_key)
+        else:
+            from sentence_transformers import CrossEncoder
+            _reranker = CrossEncoder(settings.rerank_model)
     return _reranker
 
 
@@ -144,7 +192,7 @@ async def hybrid_search(query: str, model_id: str = None, top_k: int = 5) -> lis
     if model_id:
         search_filter = Filter(must=[FieldCondition(key="model_id", match=MatchValue(value=model_id))])
 
-    # 1. Parallel dense search across 4 collections
+    # 1. Parallel dense search across 3 collections
     limit = top_k * 2
     tasks = [
         _search_dense_collection(col, client, dense_vector, search_filter, limit)
