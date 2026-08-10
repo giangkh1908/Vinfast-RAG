@@ -1,14 +1,15 @@
-# SPEC_SCHEMA — Thông số kỹ thuật cơ bản (car_specs)
+# SPEC_SCHEMA — Thông số kỹ thuật (car_specs)
 
 > Contract cho bảng `car_specs` (Postgres) / `data/clean/<ver>/postgres/specs.csv`.
-> Parser `scripts/clean_data/parse_specs.py` **chỉ** nhận các `spec_key` trong
-> `BASIC_SPECS` (whitelist) dưới đây. Key ngoài whitelist → drop (không tạo row).
 >
-> Phạm vi: **spec cơ bản phục vụ tư vấn mua xe cá nhân** — power/torque/range/pin/
-> kích thước/chỗ ngồi. Không lấy spec chi tiết (nội thất, ngoại thất, an toàn,
-> màn hình, loa, tiêu thụ...) — không phải yếu tố quyết định việc mua xe.
+> **Nguồn duy nhất: `data/raw_pdf/*.txt`** (brochure PDF pipe-tables) — extract
+> **toàn bộ** spec (BASIC_SPECS lẫn feature specs: nội thất, ngoại thất, an toàn,
+> ADAS, túi khí, giải trí...). Không dùng `data/raw/*.txt` dat-coc pages.
+>
+> Script: `parse_pdf_specs.py` lookup LABEL_MAP trước, fallback FEATURE_NORM_MAP
+> (150+ feature aliases) nếu label không phải spec cơ bản.
 
-## Whitelist (12 key, 4 category)
+## BASIC_SPECS Whitelist (12 key, 4 category)
 
 | Category | Key | Nhãn VN | unit | Ghi chú |
 |---|---|---|---|---|
@@ -25,6 +26,10 @@
 | `battery` | dc_charge_kw | Sạc nhanh DC | kW | |
 | `interior` | seats | Số chỗ ngồi | — | |
 
+Ngoài BASIC_SPECS, `parse_pdf_specs.py` còn extract **feature specs** (mở rộng):
+nội thất, ngoại thất, ADAS, an toàn, túi khí, giải trí, kết nối, tiện nghi —
+từ bảng so sánh edition trong brochure PDF.
+
 ## Chuẩn hóa value
 
 - `spec_value` chỉ chứa số / thuần text; đơn vị tách riêng `spec_unit` (riêng
@@ -35,19 +40,13 @@
   (VinFast marketing dùng NEDC).
 - `dimension` label dạng "Dài x Rộng x Cao" → tách 3 row `length_mm`/`width_mm`/`height_mm`.
 
-## Nguồn & caveat đơn vị `power_kw`
+## Nguồn
 
-- Nguồn mặc định: dat-coc pages (`data/raw/*.txt`) + brochure PDF đã crawl/extract.
-  Có thể chạy `parse_specs.py --crawl-brochures` để Crawl4AI tải PDF từ
-  `data/raw/link_brochure.md` và LLM map về whitelist này. Conflict → ưu tiên
-  `shop.vinfastauto.com`.
-- Một số brochure là image-only PDF (ví dụ VF3), không có text layer để Crawl4AI
-  đọc. Pipeline fallback sang render ảnh + vision LLM OCR; nếu vision thất bại
-  thì giữ fallback từ dat-coc/raw và không tự bịa edition từ ảnh.
+- Chỉ từ `data/raw_pdf/*.txt` (brochure PDF VF6, VF8 — chạy `parse_pdf_specs.py`).
+- Không dùng `data/raw/*.txt` dat-coc pages (tránh spec lẫn giữa model không chính xác).
 - ⚠️ **`power_kw` lấy token số đầu tiên của label `Công suất tối đa`**. Nếu label có
-  dạng `(kW/Hp)` / `(hp/kW)` (VD VF 8: `150/201`, VF 9: `402/300`), parser lấy **hp**
-  thay vì kW → cảnh báo dữ liệu nhưng hiện chưa tự đổi. Khi cần chính xác phải xử lý
-  riêng unit-order (chưa làm).
+  dạng `(kW/Hp)` / `(hp/kW)` (VD VF 8: `150/201`), parser lấy **hp** thay vì kW →
+  cảnh báo dữ liệu nhưng hiện chưa tự đổi.
 - ⚠️ **VF 8 All New** (brochure layout "labels-then-values") chưa get được range/DC/FWD.
 
 ## Metadata / version
@@ -55,11 +54,10 @@
 - `model_code`, `version_name`, `version_code` chuẩn hóa từ `car_catalog` (API
   `omapi.vinfastauto.com/fe/v1/carModel`), không tự bịa.
 - `source_url` = link nguồn crawl (để trích dẫn + audit).
-- Conflict giá trị giữa nhiều nguồn → ưu tiên `shop.vinfastauto.com` >
-  `vinfastauto.com` (`SOURCE_PRIORITY`).
 
 ## Liên quan
 
 - Bảng: `docs/DATA_SCHEMA_SPEC.md` §5.x `car_specs`.
-- Pipeline: `docs/DATA_PIPELINE.md` bước 3/6 `parse_specs.py`.
-- Tool đọc: `get_specs(model_code, version)` — trả `[{spec_key, spec_value, spec_unit}]`.
+- Pipeline: `docs/DATA_PIPELINE.md` bước 3/6 `parse_pdf_specs.py`.
+- Tool đọc: `get_specs(model_code, version)` — nên dùng VIEW `car_specs_active` thay vì query trực tiếp base table (hỗ trợ rollback version).
+- Versioning: `car_specs` có `ingest_version` column — rollback specs được support (cùng với edition/price_list).

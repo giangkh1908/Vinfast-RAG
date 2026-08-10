@@ -3,7 +3,13 @@
 Pipeline xử lý dữ liệu VinFast:
 
 ```text
-data/raw/ -> clean/chunk -> split -> specs -> embedding -> Qdrant/PostgreSQL
+data/raw/*.txt ──────────> clean_to_jsonl ──> intermediate ──> split_cold_hot ──> postgres/{edition,price_list}.csv
+
+data/raw_pdf/*.txt ──────> clean_to_jsonl ──> intermediate ──> split_cold_hot ──> vector/*.jsonl  (prose)
+                    └────> parse_pdf_specs ──────────────────────────────────────> postgres/specs.csv  (specs)
+
+Tất cả CSV ──────────────> postgres_ingest ──────────────────────────────────────> PostgreSQL
+vector/*.jsonl ──────────> vector_ingest + sparse_ingest ────────────────────────> Qdrant
 ```
 
 Pipeline chạy fail-fast. Mỗi version được build riêng, sau đó mới promote để
@@ -114,19 +120,17 @@ OCR khi cần, parse specs, embed, ingest và activate version:
 Đây là lệnh duy nhất cần dùng sau khi cài đặt. `--recreate` là tùy chọn an
 toàn khi rebuild sạch; bỏ nó nếu chỉ muốn chạy incremental.
 
-### 4.2. Chạy nhanh, bỏ qua brochure LLM
+### 4.2. Chạy nhanh (không crawl)
 
-Dùng khi brochure không thay đổi và chỉ muốn cập nhật raw HTML:
+Pipeline chỉ dùng raw_pdf local — không crawl online:
 
 ```powershell
 .\.venv\Scripts\python.exe scripts/run_pipeline.py `
-  --version v1 `
-  --no-crawl-brochures
+  --version v1
 ```
 
-Mặc định pipeline gọi LLM qua Crawl4AI cho 8 brochure PDF, vì vậy chạy lâu hơn
-và tốn token. PDF có text layer dùng extraction thường; PDF image-only fallback
-sang render ảnh + vision LLM OCR.
+`parse_pdf_specs` chỉ xử lý file `data/raw_pdf/*.txt` local (VF6, VF8 brochures).
+Không cần Crawl4AI/LLM.
 
 ### 4.3. Chạy từng version nhưng chưa activate
 
@@ -148,15 +152,15 @@ Nếu không dùng `--promote`, version chỉ được build, chưa active:
 
 | Bước | Thành phần | Kết quả |
 |---|---|---|
-| 1 | `clean_to_jsonl.py` | Làm sạch raw, loại giá khỏi vector, chunk tối đa 800 ký tự |
+| 1 | `clean_to_jsonl.py` | Làm sạch **raw + raw_pdf**, loại giá khỏi vector, chunk tối đa 800 ký tự |
 | 2 | `split_cold_hot.py` | Chia vector collections và PostgreSQL CSV |
-| 3 | `parse_specs.py` | Tạo `postgres/specs.csv`; có thể Crawl4AI + LLM brochure |
+| 3 | `parse_pdf_specs.py` | Extract spec từ **raw_pdf** brochure (basic + feature), không dùng raw dat-coc |
 | 4 | `vector_ingest.py` | Embed và ingest Qdrant dense |
 | 5 | `sparse_ingest.py` | Build BM25 sparse, có thể bỏ bằng `--no-sparse` |
 | 6 | `postgres_ingest.py` | UPSERT edition, prices, specs và ingest version |
 
 Spec số liệu không đi vào vector. Chúng được lưu ở `car_specs` để query chính
-xác theo model/edition.
+xác theo model/edition. Nguồn spec duy nhất: **brochure PDF** (`data/raw_pdf/`).
 
 ## 6. Output
 
@@ -182,12 +186,16 @@ data/clean/v1/
 `postgres/price_list.csv`. `specs.csv` theo contract ở
 [`SPEC_SCHEMA.md`](./SPEC_SCHEMA.md).
 
+Prose từ `data/raw_pdf/` (brochure marketing) đi vào `vector/` cùng với
+`data/raw/` prose. Spec tables từ PDF brochure đi vào `specs.csv` (bao gồm
+cả BASIC_SPECS lẫn feature specs).
+
 ## 7. Chạy từng bước
 
 ```powershell
 .\.venv\Scripts\python.exe scripts/clean_data/clean_to_jsonl.py --version v1 --max-len 800
 .\.venv\Scripts\python.exe scripts/clean_data/split_cold_hot.py --version v1 --commit $(git rev-parse --short HEAD)
-.\.venv\Scripts\python.exe scripts/clean_data/parse_specs.py --version v1 --crawl-brochures
+.\.venv\Scripts\python.exe scripts/clean_data/parse_pdf_specs.py --version v1
 .\.venv\Scripts\python.exe scripts/ingest/vector_ingest.py --version v1 --recreate
 .\.venv\Scripts\python.exe scripts/ingest/sparse_ingest.py --version v1 --recreate
 .\.venv\Scripts\python.exe scripts/ingest/postgres_ingest.py --version v1
@@ -220,7 +228,7 @@ curl -u ":$env:QDRANT_API_KEY" "$env:QDRANT_URL/collections"
 - Không có `--recreate`: vector cache giúp tránh embed lại nội dung không đổi.
 - `--prev`: chỉ định version trước để tính diff; mặc định tự tìm từ manifest.
 - `--promote`: đổi alias active sau khi ingest thành công.
-- Full pipeline mặc định chạy `--crawl-brochures`; dùng `--no-crawl-brochures`
-  nếu chỉ muốn cập nhật raw HTML mà không gọi vision/LLM.
+- Pipeline chỉ dùng `parse_pdf_specs` với local `data/raw_pdf/` — không crawl online.
+  Spec extract từ brochure PDF (VF6, VF8), không dùng dat-coc pages.
 
 Chi tiết promote/rollback xem [`VERSIONING.md`](./VERSIONING.md).

@@ -15,13 +15,12 @@ promote/rollback atomic, biết version mới đổi gì so cũ, incremental emb
   **Promote** = swap alias + `is_current`. **Rollback** = swap alias về version cũ
   + `is_current` (instant — version cũ vẫn còn data).
 - **Consumer** (retriever / team khác): query **alias** `<col>` (Qdrant, tên ổn
-  định) + VIEW `edition_active` / `price_list_active` (PG, không filter version).
+  định) + VIEW `edition_active` / `price_list_active` / `car_specs_active` (PG, không filter version).
   KHÔNG query collection vật lý `__<version>` hay base table trực tiếp.
-- **`car_specs` KHÔNG version** (lookup table): spec kỹ thuật không tag version,
-  full-refresh mỗi ingest (`TRUNCATE` + insert từ `specs.csv`). Retriever query
-  `car_specs` trực tiếp (không qua VIEW, không filter version). Hệ quả: rollback
-  vector/price **KHÔNG rollback specs** — specs luôn là snapshot mới nhất từ raw
-  (spec ít đổi, trade-off chấp nhận được).
+- **`car_specs` versioned** (từ migration thêm `ingest_version` column): mỗi ingest
+  xoá + insert data của version đó, giữ nguyên data version khác. Retriever nên query
+  VIEW `car_specs_active` để chỉ lấy version active. Promote/rollback specs được
+  support cùng với edition/price_list.
 
 ## Lifecycle
 

@@ -1,22 +1,22 @@
 #!/usr/bin/env python3
 """
-run_pipeline.py — End-to-end data pipeline cho dữ liệu hiện có.
+run_pipeline.py — End-to-end data pipeline.
 
 Chạy đủ bước theo thứ tự cho 1 version:
-  data/raw/*.txt
+  data/raw/*.txt + data/raw_pdf/*.txt
     → 1. clean (clean_to_jsonl)      → intermediate/{vector,hot}.jsonl + link_only.json
     → 2. split cold/hot (split_cold_hot) → vector/*.jsonl + postgres/*.csv + _manifest.json
-    → 3. parse_specs → postgres/specs.csv (Crawl4AI/vision brochure + raw fallback)
+    → 3. parse_pdf_specs → postgres/specs.csv (feature specs từ raw_pdf brochure)
     → 4. embed + ingest Qdrant dense (vector_ingest)
     → 5. BM25 sparse → Qdrant sparse (sparse_ingest)   [bỏ qua nếu --no-sparse]
     → 6. UPSERT PostgreSQL (postgres_ingest)
 
-Fail-fast: nếu 1 bước trả mã ≠0, dừng ngay, không chạy bước sau.
+Specs chỉ lấy từ data/raw_pdf/*.txt (brochure PDF pipe-tables) qua parse_pdf_specs.
+Không dùng parse_specs (data/raw/*.txt dat-coc pages) — vì dễ lẫn spec giữa các model.
 
 Usage:
     python scripts/run_pipeline.py --version v1 --recreate --promote
-    python scripts/run_pipeline.py --version v1 --no-crawl-brochures  # bỏ PDF/LLM
-    python scripts/run_pipeline.py --version v1 --no-sparse            # bỏ BM25
+    python scripts/run_pipeline.py --version v1 --no-sparse  # bỏ BM25
 """
 
 import argparse
@@ -30,7 +30,8 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT))
 sys.path.insert(0, str(REPO_ROOT / "backend"))
 
-from scripts.clean_data import clean_to_jsonl, split_cold_hot, parse_specs  # noqa: E402
+from scripts.clean_data import clean_to_jsonl, split_cold_hot  # noqa: E402
+from scripts.clean_data import parse_pdf_specs  # noqa: E402
 from scripts.ingest import vector_ingest, sparse_ingest, postgres_ingest  # noqa: E402
 from lib import openrouter  # noqa: E402
 from scripts import version_manager  # noqa: E402
@@ -50,6 +51,10 @@ def preflight(version: str, want_qdrant: bool, want_pg: bool) -> int:
     if not raw.exists() or not any(raw.iterdir()):
         print(f"[preflight] data/raw rỗng hoặc không tồn tại: {raw}", file=sys.stderr)
         return 1
+
+    raw_pdf = REPO_ROOT / "data" / "raw_pdf"
+    if not raw_pdf.exists() or not any(raw_pdf.iterdir()):
+        print(f"[preflight] data/raw_pdf trống — pipeline sẽ không có spec data")
 
     if not openrouter.API_KEY:
         print("[preflight] OPENROUTER_API_KEY chưa set trong .env (xem .env.example)",
@@ -91,8 +96,7 @@ def _step(idx: str, label: str, fn, *args, **kwargs) -> int:
 
 
 def run(version: str, recreate: bool, no_sparse: bool, commit: str,
-       max_len: int = 800, prev: str | None = None, promote: bool = False,
-       crawl_brochures: bool = True) -> int:
+       max_len: int = 800, prev: str | None = None, promote: bool = False) -> int:
     want_qdrant = True
     want_pg = True
     if preflight(version, want_qdrant, want_pg) != 0:
@@ -106,8 +110,8 @@ def run(version: str, recreate: bool, no_sparse: bool, commit: str,
          (version,), {"max_len": max_len}),
         ("2/6", "split cold/hot → vector + postgres CSV", split_cold_hot.run,
         (version,), {"commit": commit, "prev": prev}),
-        ("3/6", "parse_specs → postgres/specs.csv (car_specs)", parse_specs.run,
-         (version,), {"crawl_brochures": crawl_brochures}),
+        ("3/6", "parse_pdf_specs → postgres/specs.csv (feature specs từ brochure)", parse_pdf_specs.run,
+         (version,), {}),
         ("4/6", "embed + ingest Qdrant dense (incremental)", vector_ingest.run,
          (version,), {"url": QDRANT_URL, "recreate": recreate}),
     ]
@@ -158,11 +162,9 @@ def main() -> int:
                     help="Version trước để diff (mặc định: auto-detect)")
     ap.add_argument("--promote", action="store_true",
                     help="Sau khi ingest xong, tự activate version (alias swap + is_current)")
-    ap.add_argument("--no-crawl-brochures", action="store_true",
-                    help="Bỏ qua Crawl4AI/vision brochure (chạy nhanh, dùng raw fallback)")
     args = ap.parse_args()
     return run(args.version, args.recreate, args.no_sparse, args.commit,
-               args.max_len, args.prev, args.promote, not args.no_crawl_brochures)
+               args.max_len, args.prev, args.promote)
 
 
 if __name__ == "__main__":

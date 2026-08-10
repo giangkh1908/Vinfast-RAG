@@ -221,6 +221,7 @@ def cmd_delete(args) -> int:
         cur = conn.cursor()
         cur.execute("DELETE FROM price_list WHERE version = %s", (version,))
         cur.execute("DELETE FROM edition WHERE version = %s", (version,))
+        cur.execute("DELETE FROM car_specs WHERE ingest_version = %s", (version,))
         cur.execute("DELETE FROM ingest_version WHERE version = %s", (version,))
         conn.commit()
     finally:
@@ -228,7 +229,7 @@ def cmd_delete(args) -> int:
     print(f"[delete] version={version}")
     print(f"  dropped collections: {dropped}")
     print(f"  removed dangling aliases: {dangling}")
-    print(f"  deleted PG rows (edition/price_list/ingest_version) for version={version}")
+    print(f"  deleted PG rows (edition/price_list/car_specs/ingest_version) for version={version}")
     print(f"  (folder data/clean/{version}/ giữ nguyên — audit)")
     return 0
 

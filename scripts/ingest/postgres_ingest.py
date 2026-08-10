@@ -97,12 +97,12 @@ SELECT * FROM edition WHERE version = (SELECT version FROM ingest_version WHERE 
 CREATE OR REPLACE VIEW price_list_active AS
 SELECT * FROM price_list WHERE version = (SELECT version FROM ingest_version WHERE is_current LIMIT 1);
 
--- car_specs: bảng lookup thông số kỹ thuật (EAV), KHÔNG version — retriever query
--- trực tiếp cho spec chính xác (tránh nhầm Eco/Plus khi embed vector na ná nhau).
--- Full-refresh mỗi ingest (TRUNCATE + insert) → không orphan khi đổi version.
--- Nguồn: parse_specs.py trích union từ data/raw (prefer shop.vinfastauto.com).
+-- car_specs: lookup thông số kỹ thuật (EAV), versioned qua ingest_version column.
+-- Consumer nên query VIEW car_specs_active (chỉ trả version đang active).
+-- Nhiều version tồn tại song song trong cùng bảng → rollback = đổi is_current.
 CREATE TABLE IF NOT EXISTS car_specs (
     id             SERIAL PRIMARY KEY,
+    ingest_version TEXT NOT NULL DEFAULT '',
     model_code     TEXT NOT NULL,      -- "VF 8" (MODEL_LABEL, có dấu cách)
     version_name   TEXT,               -- "Eco"|"Plus"|...|NULL (= chung mọi bản)
     version_code   TEXT,               -- NULL (raw không có mã nội bộ)
@@ -115,8 +115,15 @@ CREATE TABLE IF NOT EXISTS car_specs (
     source_url         TEXT,
     updated_at         TIMESTAMPTZ DEFAULT now()
 );
+DROP INDEX IF EXISTS uniq_car_specs;
 CREATE UNIQUE INDEX IF NOT EXISTS uniq_car_specs ON car_specs
-    (model_code, COALESCE(version_code,''), COALESCE(version_name,''), spec_category, spec_key);
+    (ingest_version, model_code, COALESCE(version_code,''), COALESCE(version_name,''), spec_category, spec_key);
+CREATE INDEX IF NOT EXISTS idx_car_specs_ingest_version ON car_specs(ingest_version);
+
+-- VIEW active: chỉ trả rows của version đang active (dùng cho consumer query)
+CREATE OR REPLACE VIEW car_specs_active AS
+SELECT * FROM car_specs
+WHERE ingest_version = (SELECT version FROM ingest_version WHERE is_current LIMIT 1);
 """
 
 # DDL nâng cấp ingest_version từ schema cũ (cho migrate-v1 — chỉ thêm cột mới,
@@ -127,6 +134,19 @@ ALTER TABLE ingest_version ADD COLUMN IF NOT EXISTS is_current     BOOLEAN DEFAU
 ALTER TABLE ingest_version ADD COLUMN IF NOT EXISTS rolled_back_at  TIMESTAMPTZ;
 CREATE UNIQUE INDEX IF NOT EXISTS uniq_ingest_current
 ON ingest_version(is_current) WHERE is_current;
+"""
+
+# DDL migrate car_specs từ unversioned → versioned (chạy 1 lần trên production).
+# ALTER TABLE ADD COLUMN là additive → không break query cũ.
+_MIGRATE_CAR_SPECS_VERSION_DDL = """
+ALTER TABLE car_specs ADD COLUMN IF NOT EXISTS ingest_version TEXT NOT NULL DEFAULT '';
+DROP INDEX IF EXISTS uniq_car_specs;
+CREATE UNIQUE INDEX IF NOT EXISTS uniq_car_specs ON car_specs
+    (ingest_version, model_code, COALESCE(version_code,''), COALESCE(version_name,''), spec_category, spec_key);
+CREATE INDEX IF NOT EXISTS idx_car_specs_ingest_version ON car_specs(ingest_version);
+CREATE OR REPLACE VIEW car_specs_active AS
+SELECT * FROM car_specs
+WHERE ingest_version = (SELECT version FROM ingest_version WHERE is_current LIMIT 1);
 """
 
 
@@ -201,20 +221,23 @@ def upsert_price_list(conn, version: str, rows: list[dict[str, Any]]) -> int:
     return len(rows)
 
 
-def upsert_specs(conn, rows: list[dict[str, Any]]) -> int:
-    """Full-refresh car_specs: TRUNCATE + bulk insert (KHÔNG version — lookup table)."""
+def upsert_specs(conn, version: str, rows: list[dict[str, Any]]) -> int:
+    """Upsert car_specs cho 1 version: xoá rows cũ của version này + insert mới.
+
+    Không dùng TRUNCATE (giữ nguyên data version khác) → hỗ trợ rollback.
+    """
     if not rows:
         return 0
     cur = conn.cursor()
-    cur.execute("TRUNCATE car_specs RESTART IDENTITY")
+    cur.execute("DELETE FROM car_specs WHERE ingest_version = %s", (version,))
     sql = """
-    INSERT INTO car_specs (model_code, version_name, version_code, spec_category,
-                           spec_category_vn, spec_key, spec_key_vn,
+    INSERT INTO car_specs (ingest_version, model_code, version_name, version_code,
+                           spec_category, spec_category_vn, spec_key, spec_key_vn,
                            spec_value, spec_unit, source_url)
     VALUES %s
     """
     values = [
-        (r["model_code"], r["version_name"] or None, r["version_code"] or None,
+        (version, r["model_code"], r["version_name"] or None, r["version_code"] or None,
          r["spec_category"], r.get("spec_category_vn", ""),
          r["spec_key"], r.get("spec_key_vn", ""),
          r["spec_value"], r["spec_unit"] or None, r["source_url"] or None)
@@ -306,7 +329,7 @@ def run(version: str = "v1", dsn: str = DEFAULT_DSN) -> int:
 
     n_edition = upsert_edition(conn, version, edition_rows)
     n_price = upsert_price_list(conn, version, price_rows)
-    n_specs = upsert_specs(conn, specs_rows)
+    n_specs = upsert_specs(conn, version, specs_rows)
     record_manifest(conn, version, version_dir)
 
     print(f"[postgres_ingest] version={version}  edition={n_edition}  price_list={n_price}  "

@@ -44,19 +44,20 @@
 PostgreSQL, được tra tại thời điểm query → không bao giờ trả giá cũ.
 
 ```
-data/raw/*.txt ──► clean_to_jsonl.py ──► intermediate/{vector,hot}.jsonl + link_only.json
-                                          │
-                                          ▼
-                                     split_cold_hot.py
-                                          │
-                    ┌─────────────────────┴─────────────────────┐
-                    ▼                                            ▼
-        data/clean/<ver>/vector/*.jsonl                data/clean/<ver>/postgres/*.csv
-                    │                                            │
-          vector_ingest.py + sparse_ingest.py          postgres_ingest.py
-                    │                                            │
-                    ▼                                            ▼
-              Qdrant (dense + sparse)                    PostgreSQL
+data/raw/*.txt ─┐
+                ├──► clean_to_jsonl.py ──► intermediate/{vector,hot}.jsonl + link_only.json
+data/raw_pdf/*.txt ┘                           │
+                                                ▼
+                                           split_cold_hot.py
+                                                │
+                          ┌─────────────────────┴─────────────────────┐
+                          ▼                                            ▼
+              data/clean/<ver>/vector/*.jsonl                data/clean/<ver>/postgres/*.csv
+                          │                                            │
+                vector_ingest.py + sparse_ingest.py          postgres_ingest.py
+                          │                                            │
+                          ▼                                            ▼
+                    Qdrant (dense + sparse)                    PostgreSQL
 ```
 
 **Chunking 1 lần, phân nhiều thùng.** Cắt chunk chỉ diễn ra **1 lần** ở bước
@@ -67,7 +68,8 @@ data/raw/*.txt ──► clean_to_jsonl.py ──► intermediate/{vector,hot}.j
 `vector/<collection>.jsonl` (1 file = 1 Qdrant collection). Tổng chunk không đổi:
 1068 = 452 + 530 + 86 (xem §2.1). Spec số liệu cấu trúc + junk boilerplate đã bỏ khỏi
 vector → spec ở PostgreSQL `car_specs` (xem §3.1, §5.3). Không còn collection `vivu_specs`.
-(`vivu_product_info` tăng 218→452 nhờ 8 brochure PDF prose marketing vào embed corpus.)
+(`vivu_product_info` tăng 218→452 nhờ PDF brochure prose marketing vào embed corpus.
+Từ v3, data/raw_pdf/*.txt cũng được clean_to_jsonl xử lý → chunk tăng thêm.)
 
 ---
 
@@ -237,12 +239,11 @@ CREATE OR REPLACE VIEW edition_active AS
 CREATE OR REPLACE VIEW price_list_active AS
     SELECT * FROM price_list WHERE version = (SELECT version FROM ingest_version WHERE is_current LIMIT 1);
 
--- car_specs: lookup thông số kỹ thuật (EAV), KHÔNG version — retriever query trực tiếp
--- cho spec chính xác (tránh nhầm Eco/Plus khi embed vector na ná nhau). Full-refresh
--- mỗi ingest (TRUNCATE + insert). Nguồn: parse_specs.py trích union từ data/raw
--- (prefer shop.vinfastauto.com). Xem §5.3.
+-- car_specs: lookup thông số kỹ thuật (EAV), versioned qua ingest_version column.
+-- Consumer nên query VIEW car_specs_active (chỉ trả version đang active).
 CREATE TABLE IF NOT EXISTS car_specs (
     id             SERIAL PRIMARY KEY,
+    ingest_version TEXT NOT NULL DEFAULT '',
     model_code     TEXT NOT NULL,      -- "VF 8" (MODEL_LABEL, có dấu cách)
     version_name   TEXT,               -- "Eco"|"Plus"|...|NULL (= chung mọi bản)
     version_code   TEXT,               -- NULL (raw không có mã nội bộ)
@@ -254,7 +255,13 @@ CREATE TABLE IF NOT EXISTS car_specs (
     updated_at     TIMESTAMPTZ DEFAULT now()
 );
 CREATE UNIQUE INDEX IF NOT EXISTS uniq_car_specs ON car_specs
-    (model_code, COALESCE(version_code,''), COALESCE(version_name,''), spec_category, spec_key);
+    (ingest_version, model_code, COALESCE(version_code,''), COALESCE(version_name,''), spec_category, spec_key);
+CREATE INDEX IF NOT EXISTS idx_car_specs_ingest_version ON car_specs(ingest_version);
+
+-- VIEW active: chỉ trả rows của version đang active
+CREATE OR REPLACE VIEW car_specs_active AS
+SELECT * FROM car_specs
+WHERE ingest_version = (SELECT version FROM ingest_version WHERE is_current LIMIT 1);
 ```
 
 **Upsert semantics** (xem `postgres_ingest.py`):
@@ -264,11 +271,11 @@ CREATE UNIQUE INDEX IF NOT EXISTS uniq_car_specs ON car_specs
 | `edition` | `(version, model_id, edition_id)` | model_label, edition_label, year_range, is_active, updated_at |
 | `price_list` | `(version, model_id, edition_id, valid_from)` | price_list_vnd, price_promo_vnd, promo_label, vat_included, battery_included, valid_to, updated_at, source_url |
 | `ingest_version` | `(version)` | created_at, prev_version, repo_commit, chunks added/modified/removed, pg_rows (từ `_manifest.json`); KHÔNG đụng `is_current` (ingest ≠ active) |
-| `car_specs` | *(KHÔNG version)* | **Full-refresh**: `TRUNCATE car_specs` + bulk insert từ `specs.csv` mỗi ingest (lookup table, không UPSERT) |
+| `car_specs` | `(ingest_version, model_code, ...)` | **Per-version refresh**: `DELETE FROM car_specs WHERE ingest_version = %s` + bulk insert; giữ nguyên data version khác. Consumer query VIEW `car_specs_active`. |
 
 > **Consumer contract:** retriever / team khác query VIEW `edition_active` /
-> `price_list_active` (= active version) — KHÔNG query base table `edition` /
-> `price_list` trực tiếp (chứa nhiều version). Xem `docs/VERSIONING.md`.
+> `price_list_active` / `car_specs_active` (= active version) — KHÔNG query base table
+> `edition` / `price_list` / `car_specs` trực tiếp (chứa nhiều version). Xem `docs/VERSIONING.md`.
 
 ### 3.2. CSV nguồn (đầu vào ingest)
 
@@ -286,7 +293,7 @@ model_id|edition_id|price_list_vnd|price_promo_vnd|promo_label|vat_included|batt
 VF3|Eco|285000000|270750000|Ưu đãi đặt cọc 2026|t|t|2026-07-01||2026-08-03T07:21:28Z|https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf3.html
 ```
 
-**`postgres/specs.csv`** (sinh bởi `parse_specs.py` — chạy sau `split_cold_hot`)
+**`postgres/specs.csv`** (sinh bởi `parse_pdf_specs.py` — chạy sau `split_cold_hot`)
 ```
 model_code|version_name|version_code|spec_category|spec_key|spec_value|spec_unit|source_url
 VF 2|||powertrain|power_kw|30|kW|https://vinfastauto.com/vn_vi/dat-coc-xe-vf2
@@ -330,8 +337,8 @@ Index mỗi version (`data/clean/<ver>/_manifest.json`). Schema đầy đủ:
     },
     "total_rows_upserted": 28
   },
-  // car_specs KHÔNG nằm trong manifest (không version, full-refresh) — sinh bởi
-  // parse_specs.py (chạy sau split_cold_hot) → postgres/specs.csv → TRUNCATE+insert.
+  // car_specs KHÔNG nằm trong manifest (versioned, per-version refresh) — sinh bởi
+  // parse_pdf_specs.py (chạy sau split_cold_hot) → postgres/specs.csv → upsert theo version.
 
   "link_only": {
     "maintenance_url":    "https://vinfastauto.com/vn_vi/dich-vu-bao-duong-oto",
@@ -359,7 +366,7 @@ chunk đổi). Chi tiết lifecycle + lệnh xem **[`VERSIONING.md`](./VERSIONIN
   Retriever query alias (tên ổn định). Promote/rollback = swap alias (atomic).
 - **PostgreSQL**: hot tables có cột `version` trong PK → nhiều version song song;
   active = `ingest_version.is_current`. Consumer query VIEW `edition_active` /
-  `price_list_active` (không filter version).
+  `price_list_active` / `car_specs_active` (không filter version).
 - **Incremental embed**: cache vector theo content-hash (`data/.vector_cache/`).
   Chunk không đổi = cache hit = 0 API call. Đổi 1 file = chỉ embed chunk đổi.
 - **Chunk diff**: `split_cold_hot` so chunk_id + content-hash vs `prev_version`
@@ -434,23 +441,23 @@ của VinFast + text chung từ collection `vivu_maintenance` (xem §5.4).
 pg upserted, commit repo. Đánh version **sau khi thu thập xong cả đợt**
 (crawl → clean → verify), KHÔNG đánh giữa chừng.
 
-**`car_specs`** — lookup thông số kỹ thuật (EAV), **KHÔNG version**. Retriever
-query trực tiếp (không qua VIEW, không filter version) khi user hỏi spec chính xác
-(công suất, momen, quãng đường, kích thước, pin...). Mỗi row = 1 spec của 1
-(model, edition): `spec_key` (power_kw, range_km, battery_kwh, length_mm, seats...)
+**`car_specs`** — lookup thông số kỹ thuật (EAV), **versioned** (có `ingest_version` column).
+Mỗi version giữ data riêng: `ingest_version='v2'` = data từ phiên bản thứ 2.
+Consumer nên query `car_specs_active` VIEW (chỉ trả version active).
+Retriever query khi user hỏi spec chính xác (công suất, momen, quãng đường, kích thước, pin...).
+Mỗi row = 1 spec của 1 (model, edition): `spec_key` (power_kw, range_km, battery_kwh, length_mm, seats...)
 + `spec_value` (string) + `spec_unit`. `version_name=NULL` = spec chung mọi bản
 (VF8 Eco/Plus cùng 87.7 kWh pin → 1 row NULL); có giá trị khác giữa Eco/Plus →
 2 row (VD power_kw: Eco=150, Plus=300).
 
-**Nguồn**: `parse_specs.py` trích **union từ toàn bộ `data/raw/*.txt`** (dat-coc
-chính thức, bài so-sanh, thong-so, brochure, product page) — file nào có spec thì
-extract, conflict giá trị → prefer `shop.vinfastauto.com`. Đây là lý do spec rời
-khỏi vector: embed spec Eco vs Plus / VF8 vs VF9 na ná nhau → vector search nhầm
-model/edition; đưa vào SQL → query chính xác. **Full-refresh** mỗi ingest
-(`TRUNCATE` + insert) → không orphan, không phụ thuộc version.
+**Nguồn**: `parse_pdf_specs.py` trích từ **`data/raw_pdf/*.txt`** (brochure PDF pipe-tables
+chính hãng) — cả basic specs (công suất, pin, kích thước) lẫn feature specs (nội thất,
+ngoại thất, ADAS, an toàn). Không dùng `data/raw/*.txt` dat-coc pages (tránh spec lẫn
+giữa model/edition không chính xác). **Per-version refresh** mỗi ingest
+(`DELETE WHERE ingest_version = %s` + insert) → giữ nguyên data version khác.
 
-> **Caveat rollback**: `car_specs` không version nên rollback vector/price
-> (promote/rollback version) **KHÔNG rollback specs** — specs luôn là snapshot
+> **Rollback**: `car_specs` giờ **có version** (giống edition/price_list). Promote/rollback
+> version flip is_current → `car_specs_active` trả đúng specs của version đó.
 > mới nhất từ raw. Đây là trade-off chấp nhận được (spec ít đổi, lookup table).
 
 **Query chuẩn** (retriever):
@@ -521,9 +528,9 @@ vào Postgres. PDF extract → `vivu_policy`. Article/dealer → `vivu_product_i
 (confidence thấp hơn). Bài so sánh/đối chiếu → `vivu_product_info` (prose mô tả/
 so sánh model).
 
-**Spec số liệu → `car_specs` (SQL), KHÔNG vào vector** (`parse_specs.py`): section
-"Thông số kỹ thuật" của dat-coc và bảng spec so-sanh bị drop khỏi vector ở bước
-clean — chỉ giữ prose mô tả/so sánh. Cụ thể, `clean_to_jsonl.py` drop chunk khi:
+**Spec số liệu → `car_specs` (SQL), KHÔNG vào vector** (`parse_pdf_specs.py`): bảng spec
+pipe-delimited từ brochure PDF bị drop khỏi vector ở bước clean — chỉ giữ prose mô tả.
+Cụ thể, `clean_to_jsonl.py` drop chunk khi:
 (a) section_path có tiêu đề == "thông số kỹ thuật"; (b) **content-based** — chunk
 ở `vivu_product_info` có ≥4 ký tự `|` VÀ chứa label spec (công suất / mô men /
 pin / quãng đường / tải trọng...) → bắt bảng spec pipe-delimited bị gán nhãn
@@ -554,7 +561,7 @@ quãng đường, kích thước, pin...) → `car_specs` để retriever query 
 ```bash
 python scripts/clean_data/clean_to_jsonl.py --version v1 --max-len 800
 python scripts/clean_data/split_cold_hot.py --version v1 --commit $(git rev-parse --short HEAD)
-python scripts/clean_data/parse_specs.py    --version v1 --crawl-brochures  # → postgres/specs.csv (car_specs)
+python scripts/clean_data/parse_pdf_specs.py --version v1  # → postgres/specs.csv (car_specs)
 python scripts/ingest/vector_ingest.py   --version v1 --recreate
 python scripts/ingest/sparse_ingest.py   --version v1 --recreate
 python scripts/ingest/postgres_ingest.py --version v1
