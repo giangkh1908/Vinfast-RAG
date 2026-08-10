@@ -347,10 +347,13 @@ class AgentLoop:
             r"không được cung cấp",
             r"không tìm thấy",
             r"không có dữ liệu",
+            r"không có trong danh sách",
+            r"không nằm trong phạm vi",
         ]
         is_refusal = any(re.search(p, final_response, re.IGNORECASE) for p in REFUSAL_PATTERNS)
-        if is_refusal and not citations:
+        if is_refusal:
             dlog = make_decision_log(query, classify_result, tool_results, final_response, [], **self._build_log_kwargs(t0, t_retrieval, t_generation))
+            dlog.decision = "refuse"
             dlog.reason_code = "insufficient_evidence"
             log_store.add(dlog)
             logger.info("BDS decision=refuse reason_code=insufficient_evidence (LLM refusal detected)")
