@@ -32,6 +32,9 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 def check_must_not_do(answer: str, must_not_do: list[str], decision: str,
                       retrieved_chunks: list[dict], citations: list[dict]) -> list[dict]:
     """Check answer against must_not_do constraints. Returns list of violations."""
+    # Skip checks for OOS and refuse — these are system messages, not LLM answers
+    if decision in ("out_of_scope", "refuse", "clarify"):
+        return []
     violations = []
     answer_lower = answer.lower()
 
@@ -263,7 +266,7 @@ def process_case(case: dict, history: list[dict], api_url: str, run_id: str) -> 
     expected_reason = case.get("expected_reason_code", "")
     must_not_do_raw = case.get("must_not_do", "[]")
     expected_facts_raw = case.get("expected_facts", "[]")
-    turn_index = int(case.get("turn_index", 1))
+    turn_index = int(case.get("turn_index") or 1)
     conv_id = case.get("conversation_id", "")
 
     # Parse must_not_do

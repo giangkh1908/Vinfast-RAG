@@ -237,6 +237,7 @@ class AgentLoop:
                     clarify_result = res["result"]
                     response_text = clarify_result.get("message", "Bạn muốn tìm thông tin nào?")
                     dlog = make_decision_log(query, classify_result, tool_results, response_text, [], **self._build_log_kwargs(t0, time.time() - t_retrieve_start, 0))
+                    dlog.decision = "clarify"
                     dlog.reason_code = "missing_topic"
                     log_store.add(dlog)
                     return AgentResult(
@@ -335,6 +336,29 @@ class AgentLoop:
                 sources=tool_results,
                 decision="refuse",
                 classify_result={"decision": "refuse", "reason_code": "grounding_failure"},
+                decision_log=dlog.to_dict(),
+            )
+
+        # Refuse detection — if LLM response contains refusal patterns, override to refuse
+        REFUSAL_PATTERNS = [
+            r"chưa thể xác nhận",
+            r"không có thông tin",
+            r"không đủ thông tin",
+            r"không được cung cấp",
+            r"không tìm thấy",
+            r"không có dữ liệu",
+        ]
+        is_refusal = any(re.search(p, final_response, re.IGNORECASE) for p in REFUSAL_PATTERNS)
+        if is_refusal and not citations:
+            dlog = make_decision_log(query, classify_result, tool_results, final_response, [], **self._build_log_kwargs(t0, t_retrieval, t_generation))
+            dlog.reason_code = "insufficient_evidence"
+            log_store.add(dlog)
+            logger.info("BDS decision=refuse reason_code=insufficient_evidence (LLM refusal detected)")
+            return AgentResult(
+                response=final_response,
+                sources=tool_results,
+                decision="refuse",
+                classify_result={"decision": "refuse", "reason_code": "insufficient_evidence"},
                 decision_log=dlog.to_dict(),
             )
 
