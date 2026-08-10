@@ -159,6 +159,20 @@ def run(version: str = "v1", url: str = DEFAULT_QDRANT_URL, recreate: bool = Fal
     total = client.count(collection_name=sparse_collection).count
     print(f"[sparse_ingest] done. sparse points: {total}  collection={sparse_collection}")
     print(f"  index saved: {index_path}")
+
+    # Create model_id index for sparse collection
+    if recreate:
+        from qdrant_client.models import PayloadSchemaType
+        try:
+            client.create_payload_index(
+                collection_name=sparse_collection,
+                field_name="model_id",
+                field_schema=PayloadSchemaType.KEYWORD,
+            )
+            print(f"  [index] {sparse_collection}.model_id created")
+        except Exception as e:
+            print(f"  [index] {sparse_collection}.model_id: {e}")
+
     return 0
 
 

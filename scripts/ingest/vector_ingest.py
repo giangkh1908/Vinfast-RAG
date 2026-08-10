@@ -210,6 +210,22 @@ def run(version: str = "v1", url: str = DEFAULT_QDRANT_URL, recreate: bool = Fal
     finally:
         cache.close()
 
+    # Create model_id index for all collections (required for filtering)
+    if recreate:
+        from qdrant_client.models import PayloadSchemaType
+        all_cols = [f"vivu_product_info__{version}", f"vivu_policy__{version}",
+                    f"vivu_maintenance__{version}"]
+        for col in all_cols:
+            try:
+                client.create_payload_index(
+                    collection_name=col,
+                    field_name="model_id",
+                    field_schema=PayloadSchemaType.KEYWORD,
+                )
+                print(f"  [index] {col}.model_id created")
+            except Exception as e:
+                print(f"  [index] {col}.model_id: {e}")
+
     sm = summarize_metrics()
     tot = sm["total"]
     print(f"[vector_ingest] done. points={total_points}  "
