@@ -7,6 +7,7 @@ Deterministic: same query → same result every time.
 
 import numpy as np
 import requests
+from dataclasses import dataclass
 
 from app.config import settings
 
@@ -138,18 +139,6 @@ def _get_example_embeddings() -> dict[str, list[list[float]]]:
         _example_embeddings[cat] = embeddings[start:end]
 
     return _example_embeddings
-
-
-@dataclass
-class SpecificityResult:
-    specific: bool
-    category: str | None
-    top_score: float
-    gap: float
-    all_scores: dict[str, float]
-
-
-from dataclasses import dataclass
 
 
 @dataclass

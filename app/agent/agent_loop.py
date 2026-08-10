@@ -196,23 +196,10 @@ class AgentLoop:
         force_tool = classify_result.topic is not None
         final_response = ""
 
-        # Semantic pre-filter: guide LLM with specificity info
+        # Semantic pre-filter: used for post-processing only (not added to messages)
         from app.agent.semantic_prefilter import classify_specificity
         specificity = classify_specificity(query)
         has_model = bool(classify_result.entities.get("model_code"))
-
-        if specificity.specific and has_model:
-            # Specific query with model → answer directly
-            guidance = f"[System] Query có topic rõ ràng: {specificity.category}. Model: {classify_result.entities['model_code']}. Trả lời trực tiếp bằng tool, KHÔNG gọi ask_clarification."
-            messages.append({"role": "user", "content": guidance})
-        elif not has_model:
-            # No model → must clarify
-            guidance = "[System] Query thiếu model (VF 6 hay VF 8). PHẢI gọi ask_clarification."
-            messages.append({"role": "user", "content": guidance})
-        elif not specificity.specific and has_model:
-            # Broad query with model → clarify topic
-            guidance = f"[System] Query quá chung chung (specificity={specificity.top_score}). Model: {classify_result.entities['model_code']}. Gọi ask_clarification với model_id."
-            messages.append({"role": "user", "content": guidance})
 
         t_retrieve_start = time.time()
         for i in range(self.MAX_ITERATIONS):
@@ -249,23 +236,36 @@ class AgentLoop:
             results = await self._execute_tools_parallel(choice.message.tool_calls)
             tool_results.extend(results)
 
-            # Check if LLM called ask_clarification → return immediately
+            # Check if LLM called ask_clarification
             for tc, res in zip(choice.message.tool_calls, results):
                 if tc.function.name == "ask_clarification" and res.get("success"):
-                    clarify_result = res["result"]
-                    response_text = clarify_result.get("message", "Bạn muốn tìm thông tin nào?")
-                    dlog = make_decision_log(query, classify_result, tool_results, response_text, [], **self._build_log_kwargs(t0, time.time() - t_retrieve_start, 0))
-                    dlog.decision = "clarify"
-                    dlog.reason_code = "missing_topic"
-                    log_store.add(dlog)
-                    return AgentResult(
-                        response=response_text,
-                        needs_clarification=True,
-                        decision="clarify",
-                        sources=tool_results,
-                        classify_result={"decision": "clarify", "reason_code": "missing_topic", "entities": classify_result.entities},
-                        decision_log=dlog.to_dict(),
-                    )
+                    # Override: if query is specific with model, don't clarify — force answer
+                    if specificity.specific and has_model:
+                        logger.info("ask_clarification overridden: specific=%s category=%s", specificity.specific, specificity.category)
+                        # Add instruction to answer directly instead
+                        messages.append(choice.message)
+                        for tc2, res2 in zip(choice.message.tool_calls, results):
+                            messages.append({"role": "tool", "tool_call_id": tc2.id, "content": json.dumps(res2["result"], ensure_ascii=False)})
+                        messages.append({"role": "user", "content": f"Câu hỏi có topic rõ ràng ({specificity.category}). Trả lời trực tiếp bằng tool get_specs hoặc search_knowledge_base. KHÔNG gọi lại ask_clarification."})
+                        break  # Continue loop — LLM will answer next iteration
+                    else:
+                        clarify_result = res["result"]
+                        response_text = clarify_result.get("message", "Bạn muốn tìm thông tin nào?")
+                        dlog = make_decision_log(query, classify_result, tool_results, response_text, [], **self._build_log_kwargs(t0, time.time() - t_retrieve_start, 0))
+                        dlog.decision = "clarify"
+                        dlog.reason_code = "missing_topic"
+                        log_store.add(dlog)
+                        return AgentResult(
+                            response=response_text,
+                            needs_clarification=True,
+                            decision="clarify",
+                            sources=tool_results,
+                            classify_result={"decision": "clarify", "reason_code": "missing_topic", "entities": classify_result.entities},
+                            decision_log=dlog.to_dict(),
+                        )
+                else:
+                    # Non-clarification tool — append normally
+                    pass
 
             # Append tool call + results to messages for next iteration
             messages.append(choice.message)
@@ -418,20 +418,10 @@ class AgentLoop:
         tool_results = []
         force_tool = classify_result.topic is not None
 
-        # Semantic pre-filter: guide LLM with specificity info
+        # Semantic pre-filter: used for post-processing only
         from app.agent.semantic_prefilter import classify_specificity
         specificity = classify_specificity(query)
         has_model = bool(classify_result.entities.get("model_code"))
-
-        if specificity.specific and has_model:
-            guidance = f"[System] Query có topic rõ ràng: {specificity.category}. Model: {classify_result.entities['model_code']}. Trả lời trực tiếp bằng tool, KHÔNG gọi ask_clarification."
-            messages.append({"role": "user", "content": guidance})
-        elif not has_model:
-            guidance = "[System] Query thiếu model (VF 6 hay VF 8). PHẢI gọi ask_clarification."
-            messages.append({"role": "user", "content": guidance})
-        elif not specificity.specific and has_model:
-            guidance = f"[System] Query quá chung chung (specificity={specificity.top_score}). Model: {classify_result.entities['model_code']}. Gọi ask_clarification với model_id."
-            messages.append({"role": "user", "content": guidance})
 
         t_retrieve_start = time.time()
         for i in range(self.MAX_ITERATIONS):
@@ -463,18 +453,33 @@ class AgentLoop:
             results = await self._execute_tools_parallel(choice.message.tool_calls)
             tool_results.extend(results)
 
-            # Check if LLM called ask_clarification → yield and return
+            # Check if LLM called ask_clarification
+            clarified = False
             for tc, res in zip(choice.message.tool_calls, results):
                 if tc.function.name == "ask_clarification" and res.get("success"):
-                    clarify_result = res["result"]
-                    response_text = clarify_result.get("message", "Bạn muốn tìm thông tin nào?")
-                    dlog = make_decision_log(query, classify_result, tool_results, response_text, [], **self._build_log_kwargs(t0, time.time() - t_retrieve_start, 0))
-                    dlog.reason_code = "missing_topic"
-                    log_store.add(dlog)
-                    yield {"type": "clarify", "content": response_text}
-                    yield {"type": "sources", "content": []}
-                    yield {"type": "done"}
-                    return
+                    # Override: if query is specific with model, don't clarify
+                    if specificity.specific and has_model:
+                        logger.info("ask_clarification overridden (stream): specific=%s", specificity.specific)
+                        messages.append(choice.message)
+                        for tc2, res2 in zip(choice.message.tool_calls, results):
+                            messages.append({"role": "tool", "tool_call_id": tc2.id, "content": json.dumps(res2["result"], ensure_ascii=False)})
+                        messages.append({"role": "user", "content": f"Câu hỏi có topic rõ ràng ({specificity.category}). Trả lời trực tiếp bằng tool. KHÔNG gọi lại ask_clarification."})
+                        clarified = False
+                        break
+                    else:
+                        clarify_result = res["result"]
+                        response_text = clarify_result.get("message", "Bạn muốn tìm thông tin nào?")
+                        dlog = make_decision_log(query, classify_result, tool_results, response_text, [], **self._build_log_kwargs(t0, time.time() - t_retrieve_start, 0))
+                        dlog.decision = "clarify"
+                        dlog.reason_code = "missing_topic"
+                        log_store.add(dlog)
+                        yield {"type": "clarify", "content": response_text}
+                        yield {"type": "sources", "content": []}
+                        yield {"type": "done"}
+                        return
+
+            if clarified:
+                continue
 
             for r in results:
                 yield {"type": "tool_call", "content": {"tool": r["tool"], "success": r["success"]}}
