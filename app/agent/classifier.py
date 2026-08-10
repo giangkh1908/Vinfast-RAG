@@ -8,12 +8,12 @@ TOPIC_PATTERNS = {
     "phiên_bản": r"(phi[eê]n\s+b[aả]n|b[aả]n\s+n[aà]o|c[oó]\s+m[aấ]y\s+b[aả]n|version|edition)",
     "thông_số_kỹ_thuật": r"(th[oô]ng\s+s[oố]|k[yỹ]\s+thu[aậ]t|specs?|c[oô]ng\s+su[aấ]t|Nm|m[oô]\s+men|t[oố]c\s+[đd][ộộ]\s+t[oố]i\s+[đd]a|t[aă]ng\s+t[oố]c|0[-–]?100|tr[oọ]ng\s+l[uư][ợợ]ng|t[aả]i\s+tr[oọ]ng)",
     "tính_năng_nổi_bật": r"(t[ií]nh\s+n[aă]ng(?!\s+(an\s+to[aà]n|an\s+to[aà]|s[aạ]c|pin|n[oộ]i\s+th[aấ]t|ngo[aạ]i\s+th[aấ]t))|c[oô]ng\s+ngh[eệ]|n[oổ]i\s+b[aậ]t|[đd][aặ]c\s+[đd]i[eể]m|tr[oợ]?\s+l[aá]i|ADAS|cruise\s*control|phanh\s+kh[aẩ]n\s+c[aấ]p|camera|c[aả]m\s+bi[eế]n)",
-    "kích_thước": r"(k[ií]ch\s+th[uư][ớơ]c|chi[eề]u\s+d[aà]i|chi[eề]u\s+r[oộ]ng|chi[eề]u\s+cao|kho[aả]ng\s+s[aá]ng|c[aơ]\s+s[oở])",
+    "kích_thước": r"(k[ií]ch\s+th[uư][ớơo]c|chi[eề]u\s+d[aà]i|chi[eề]u\s+r[oộ]ng|chi[eề]u\s+cao|kho[aả]ng\s+s[aá]ng|c[aơ]\s+s[oở])",
     "pin_và_sạc": r"(\bpin\b|dung\s+l[uư][ợợ]ng\s+pin|kWh|s[aạ]c\s+nhanh|s[aạ]c\s+ch[aậ]m|tr[aạm]m?\s+s[aạ]c|lo[aạ]i\s+pin|th[oờ]i\s+gian\s+s[aạ]c|d[aạ]c\s+pin)",
     "phạm_vi_di_chuyển": r"(ph[aạm]m\s+vi|qu[aã]ng\s+[đd][ưu][ờơ]ng|[đd]i\s+[đd][ưu][ợơ]c\s+bao\s+xa|t[aầ]m\s+[đd]i|[đd][ộộ]\s+di\s+chuy[eển]n|\brange\b|NEDC|WLTP)",
     "an_toàn": r"(an\s+to[aà]n|t[uú]i\s+kh[ií]|phanh|c[aả]m\s+bi[eế]n|c[aản]nh?\s+b[aá]o|ADAS|tr[oợ]?\s+l[aá]i|camera\s*360|camera\s+l[uù]i)",
     "nội_thất": r"(n[ộộo]i?\s*th[ấấa]t|gh[eế]e?\s|m[aà]n\s+h[ìi]nh|b[aả]ng\s+[đd]i[eề]u\s+khi[eể]n|[đd]i[eề]u\s+ho[aà]|khoang\s+h[aà]nh\s+kh[aá]ch|c[oổ]ng\s+s[aạ]c\s+kh[oô]ng\s+d[aây])",
-    "ngoại_thất": r"(ngo[aạ]i?\s*th[ấấa]t|m[aà]u\s+s[aắ]c?|[đd][èe]n|m[aâ]m|thi[eế]k[eế]|d[aá]ng|body|[đd][ầâu]\s+xe|[đd]u[oô]i\s+xe|g[uư][ơơn]ng)",
+    "ngoại_thất": r"(ngo[aạ]i?\s*th[ấấa]t|\bm[aà]u\b|m[aà]u\s+s[aắ]c?|[đd][èe]n|m[aâ]m|thi[eế]k[eế]|d[aá]ng|body|[đd][ầâu]\s+xe|[đd]u[oô]i\s+xe|g[uư][ơơn]ng)",
 }
 
 # Out-of-scope capability patterns — only enforced when scope_enabled

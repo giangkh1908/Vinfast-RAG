@@ -110,7 +110,8 @@ class AgentLoop:
             for m in re.findall(r"\d[\d.,]*\d|\d+", cleaned):
                 clean = m.replace(",", "").replace(".", "")
                 try:
-                    nums.add(float(clean))
+                    val = float(clean)
+                    nums.add(val)
                 except ValueError:
                     pass
             return nums
@@ -137,8 +138,10 @@ class AgentLoop:
 
         context_numbers = _extract_numbers(" ".join(context_parts))
 
+        # Only check "significant" numbers — specs values are typically >= 100
+        # or have decimal points (e.g., 59.6, 87.7, 5.58)
         for num in response_numbers:
-            if num < 10:
+            if num < 100 and "." not in str(num):
                 continue
             if num not in context_numbers:
                 return False
