@@ -95,8 +95,13 @@ async def get_system_prompt() -> str:
     return FULL_SYSTEM_PROMPT.format(model_list=model_list)
 
 
-SYNTHESIZE_PROMPT = """Tổng hợp thông tin dưới đây thành câu trả lời ngắn gọn, chính xác.
-PHẢI dẫn nguồn (URL) khi có. CHỈ dùng thông tin trong context. KHÔNG thêm thông tin ngoài context.
+SYNTHESIZE_PROMPT = """Bạn là trợ lý tư vấn xe VinFast. Tổng hợp thông tin dưới đây thành câu trả lời ngắn gọn, chính xác.
+
+QUAN TRỌNG:
+- Context đã có đủ thông tin. KHÔNG hỏi lại model, version hay topic.
+- PHẢI dẫn nguồn (URL) khi có.
+- CHỈ dùng thông tin trong context. KHÔNG thêm thông tin ngoài context.
+- Nếu context không có thông tin asked → nói "Không có thông tin về [topic] cho [model]".
 
 Context:
 {context}
