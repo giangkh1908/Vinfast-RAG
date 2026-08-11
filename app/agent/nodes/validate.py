@@ -179,7 +179,8 @@ def _check_grounding(response: str, tool_results: list[dict]) -> bool:
     resp_has_price = bool(PRICE_KW.search(response))
 
     for num in response_numbers:
-        if num < 100 and num == int(num):
+        # Skip trivially small counts (1-9) — likely ordinals/counts
+        if 1 <= num <= 9 and num == int(num):
             continue
         if num not in all_ctx:
             return False

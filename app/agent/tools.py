@@ -89,7 +89,7 @@ async def get_specs(model_code: str, version: str = None, category: str = None) 
 
     where = " AND ".join(conditions)
     rows = await conn.fetch(
-        f"SELECT version_name, version_code, spec_category, spec_key, spec_value, spec_unit, source_url "
+        f"SELECT version_name, version_code, spec_category, spec_key, spec_value, spec_unit, source_url, page "
         f"FROM car_specs WHERE {where} ORDER BY spec_category, spec_key, version_name",
         *params,
     )
@@ -115,6 +115,7 @@ async def get_specs(model_code: str, version: str = None, category: str = None) 
                 "key": r["spec_key"],
                 "value": r["spec_value"],
                 "unit": r["spec_unit"] or "",
+                "page": r["page"] or "",
             }
             for r in rows
         ],

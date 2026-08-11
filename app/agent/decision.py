@@ -143,6 +143,7 @@ class RetrievedChunk:
     topic: str = ""
     approval_status: str = "approved"
     retrieval_score: float = 0.0
+    page: str = ""
 
 
 @dataclass
@@ -362,13 +363,16 @@ def assess_evidence(tool_results: list[dict], query: str) -> tuple[str, list[dic
         if tool == "get_specs" and result.get("specs"):
             for s in result["specs"]:
                 score = _spec_relevance_score(qtokens, s.get("key", ""), s.get("value", ""))
+                page = s.get("page", "")
+                page_str = f" (trang {page})" if page else ""
                 valid_sources.append({
                     "tool": tool,
                     "model_code": result.get("model_code", ""),
-                    "text": f"{s.get('key', '')}: {s.get('value', '')} {s.get('unit', '')}",
+                    "text": f"{s.get('key', '')}: {s.get('value', '')} {s.get('unit', '')}{page_str}",
                     "source_url": result.get("source_url", ""),
                     "source_type": "specs",
                     "score": score,
+                    "page": page,
                 })
                 if score >= 0.7:
                     has_direct = True
@@ -410,13 +414,16 @@ def assess_evidence(tool_results: list[dict], query: str) -> tuple[str, list[dic
             if sub_specs.get("specs"):
                 for s in sub_specs["specs"]:
                     score = _spec_relevance_score(qtokens, s.get("key", ""), s.get("value", ""))
+                    page = s.get("page", "")
+                    page_str = f" (trang {page})" if page else ""
                     valid_sources.append({
                         "tool": "get_specs",
                         "model_code": sub_specs.get("model_code", ""),
-                        "text": f"{s.get('key', '')}: {s.get('value', '')} {s.get('unit', '')}",
+                        "text": f"{s.get('key', '')}: {s.get('value', '')} {s.get('unit', '')}{page_str}",
                         "source_url": sub_specs.get("source_url", ""),
                         "source_type": "specs",
                         "score": score,
+                        "page": page,
                     })
                     if score >= 0.7:
                         has_direct = True
@@ -507,18 +514,21 @@ def build_retrieved_chunks(tool_results: list[dict], query: str = "") -> list[di
             for s in result["specs"]:
                 rank += 1
                 score = _spec_relevance_score(qtokens, s.get("key", ""), s.get("value", "")) if qtokens else 0.5
+                page = s.get("page", "")
+                page_str = f" (trang {page})" if page else ""
                 chunks.append(RetrievedChunk(
                     rank=rank,
                     chunk_id=f"spec_{result.get('model_code', '')}_{s.get('key', '')}",
                     source_id="car_specs",
                     source_title=f"Specs {result.get('model_code', '')}",
                     source_url=result.get("source_url", ""),
-                    content=f"{s.get('key', '')}: {s.get('value', '')} {s.get('unit', '')}",
+                    content=f"{s.get('key', '')}: {s.get('value', '')} {s.get('unit', '')}{page_str}",
                     vehicle_model=result.get("model_code", ""),
                     vehicle_version=s.get("version_name", "all_versions"),
                     topic="thông_số_kỹ_thuật",
                     approval_status="approved",
                     retrieval_score=score,
+                    page=page,
                 ).__dict__)
 
         elif tool == "get_price" and result.get("prices"):

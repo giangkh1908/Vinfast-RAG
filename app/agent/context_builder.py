@@ -67,11 +67,12 @@ def _format_specs(result: dict) -> str:
             current_cat = s["category"]
             lines.append(f"\n  [{current_cat.upper()}]")
         unit = f" {s['unit']}" if s["unit"] else ""
+        page = f" [trang {s['page']}]" if s.get("page") else ""
         ver = s["version_name"]
         if ver == "ALL":
-            lines.append(f"    {s['key']}: {s['value']}{unit}")
+            lines.append(f"    {s['key']}: {s['value']}{unit}{page}")
         else:
-            lines.append(f"    {ver} — {s['key']}: {s['value']}{unit}")
+            lines.append(f"    {ver} — {s['key']}: {s['value']}{unit}{page}")
     if source_url:
         lines.append(f"\n  Nguồn: {source_url}")
     related = result.get("related_models", [])
