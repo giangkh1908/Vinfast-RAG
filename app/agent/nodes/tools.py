@@ -80,6 +80,15 @@ async def execute_tools_node(state: AgentState) -> dict:
     choice = resp.choices[0]
 
     if not choice.message.tool_calls:
+        # If we have tool results, let generate_node create the response
+        # from structured context (prevents LLM from inventing data from raw JSON)
+        if tool_results:
+            return {
+                "final_response": "",
+                "messages": messages,
+                "iteration": iteration + 1,
+                "t_retrieve_start": t_retrieve_start,
+            }
         return {
             "final_response": choice.message.content or "",
             "messages": messages,

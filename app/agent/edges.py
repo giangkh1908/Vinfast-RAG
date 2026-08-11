@@ -33,6 +33,8 @@ def route_after_tools(state: AgentState) -> str:
         return "respond"
     if state.get("final_response"):
         return "validate"
+    if state.get("tool_results"):
+        return "generate"
     if state.get("iteration", 0) >= MAX_ITERATIONS:
         return "generate"
     return "execute_tools"

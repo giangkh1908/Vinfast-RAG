@@ -130,7 +130,9 @@ QUAN TRỌNG:
 - Context đã có đủ thông tin. KHÔNG hỏi lại model, version hay topic.
 - PHẢI dẫn nguồn (URL) khi có.
 - CHỈ dùng thông tin trong context. KHÔNG thêm thông tin ngoài context.
-- Nếu context không có thông tin asked → nói "Không có thông tin về [topic] cho [model]".
+- KHÔNG tự bịa số liệu, thời gian, phần trăm, hay bất kỳ con số nào không có trong context.
+- Nếu context không có thông tin được hỏi → nói rõ: "Thông tin về [topic] hiện chưa có trong dữ liệu đã được phê duyệt cho [model] [version]."
+- Nếu context chỉ có một phần thông tin → trả lời phần có, nói rõ phần chưa có.
 
 Context:
 {context}
