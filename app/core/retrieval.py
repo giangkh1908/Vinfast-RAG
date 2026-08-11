@@ -374,11 +374,13 @@ async def hybrid_search(query: str, model_id: str = None, top_k: int = 5) -> lis
         if non_empty:
             rerank_pairs = [(q, d) for _, q, d in non_empty]
             rerank_scores = reranker.predict(rerank_pairs)
-            scores = [0.0] * len(pairs)
-            for j, (orig_idx, _, _) in enumerate(non_empty):
-                scores[orig_idx] = rerank_scores[j]
-            fused = [(hit, float(score)) for (hit, _), score in zip(fused, scores)]
-            fused.sort(key=lambda x: x[1], reverse=True)
+            # Only apply rerank if at least one score is non-zero (rerank succeeded)
+            if any(s > 0 for s in rerank_scores):
+                scores = [0.0] * len(pairs)
+                for j, (orig_idx, _, _) in enumerate(non_empty):
+                    scores[orig_idx] = rerank_scores[j]
+                fused = [(hit, float(score)) for (hit, _), score in zip(fused, scores)]
+                fused.sort(key=lambda x: x[1], reverse=True)
 
     # 5. Return top_k (skip chunks without text)
     results = []

@@ -130,7 +130,7 @@ def _check_text_grounding(response: str, tool_results: list[dict]) -> bool:
     return True
 
 
-def _check_grounding(response: str, tool_results: list[dict]) -> bool:
+def _check_grounding(response: str, tool_results: list[dict], query: str = "") -> bool:
     if not tool_results:
         return False
 
@@ -140,6 +140,9 @@ def _check_grounding(response: str, tool_results: list[dict]) -> bool:
     response_numbers = _extract_numbers(_strip_non_factual_numbers(response))
     if not response_numbers:
         return True
+
+    # Skip numbers that appear in the user's query (user mentioned them, not LLM invention)
+    query_numbers = _extract_numbers(query) if query else set()
 
     price_numbers: set[float] = set()
     spec_numbers: set[float] = set()
@@ -182,6 +185,9 @@ def _check_grounding(response: str, tool_results: list[dict]) -> bool:
         # Skip trivially small counts (1-9) — likely ordinals/counts
         if 1 <= num <= 9 and num == int(num):
             continue
+        # Skip numbers from user's query (e.g., "camera 360" → 360 is user's term)
+        if num in query_numbers:
+            continue
         if num not in all_ctx:
             return False
         if resp_has_price and has_price and num not in price_numbers:
@@ -223,7 +229,7 @@ async def validate_node(state: AgentState) -> dict:
             "grounding_ok": False,
         }
 
-    grounding_ok = _check_grounding(final_response, tool_results)
+    grounding_ok = _check_grounding(final_response, tool_results, state.get("query", ""))
 
     if not grounding_ok:
         return {
