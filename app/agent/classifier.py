@@ -92,7 +92,15 @@ _EXTERNAL_SOURCE_RE = re.compile(
     r"google|tìm\s*kiếm|nguồn\s*khác|website\s*khác|"
     r"so\s*sánh\s*với\s*xe\s*khác\s*hãng)",
     re.IGNORECASE,
+)
 
+_PERSONAL_DATA_RE = re.compile(
+    r"(VIN\b|số\s*VIN|mã\s*VIN|"
+    r"lịch\s*sử\s*(dịch\s*vụ|bảo\s*dưỡng)\s*theo|"
+    r"tài\s*khoản|đăng\s*nhập|"
+    r"dữ\s*liệu\s*cá\s*nhân|thông\s*tin\s*cá\s*nhân|"
+    r"kiểm\s*tra\s*lịch\s*sử|tra\s*cứu\s*VIN)",
+    re.IGNORECASE,
 )
 
 
@@ -147,6 +155,14 @@ class QueryClassifier:
             return ClassifyResult(
                 decision="out_of_scope",
                 reason="diagnostics: safety diagnosis not supported",
+                entities=entities, specificity="unclear",
+            )
+
+        # Personal data / transaction (VIN, account, service history lookup)
+        if _PERSONAL_DATA_RE.search(query):
+            return ClassifyResult(
+                decision="out_of_scope",
+                reason="personal_data: personal data or transaction not supported",
                 entities=entities, specificity="unclear",
             )
 

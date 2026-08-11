@@ -77,7 +77,7 @@ class AgentLoop:
                     elif not yielded_tokens:
                         yield {"type": "token", "content": result.response}
 
-                    if result.sources:
+                    if result.sources and result.decision == "answer":
                         seen = set()
                         formatted = []
                         for c in sorted(result.sources, key=lambda x: x.get("score", 0), reverse=True):

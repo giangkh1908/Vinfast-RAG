@@ -46,6 +46,7 @@ class ReasonCode(str, Enum):
     UNSUPPORTED_SAFETY_DIAGNOSIS = "unsupported_safety_diagnosis"
     UNSUPPORTED_CONTACT_WORKFLOW = "unsupported_contact_workflow"
     EXTERNAL_SOURCE_REQUESTED = "external_source_requested"
+    PERSONAL_DATA_OR_TRANSACTION = "personal_data_or_transaction"
 
 
 # Map classifier reason strings → ReasonCode
@@ -53,7 +54,24 @@ _REASON_MAP = {
     "BDS-01": ReasonCode.SUFFICIENT_DIRECT_EVIDENCE,
     "BDS-02": ReasonCode.MISSING_MODEL,
     "BDS-02A": ReasonCode.UNSUPPORTED_MODEL,
+    "BDS-03": ReasonCode.MISSING_VERSION,
+    "BDS-04": ReasonCode.SUFFICIENT_DIRECT_EVIDENCE,
     "BDS-05": ReasonCode.MISSING_TOPIC,
+    "BDS-06": ReasonCode.INSUFFICIENT_EVIDENCE,
+    "BDS-07A": ReasonCode.INDIRECT_EVIDENCE,
+    "BDS-07B": ReasonCode.PARTIAL_DIRECT_EVIDENCE,
+    "BDS-08": ReasonCode.INVALID_SOURCE,
+    "BDS-09": ReasonCode.SOURCE_CONFLICT,
+    "BDS-10": ReasonCode.AMBIGUOUS_CONTEXT,
+    "BDS-11": ReasonCode.UNSUPPORTED_COMPARISON,
+    "BDS-12": ReasonCode.UNSUPPORTED_RECOMMENDATION,
+    "BDS-13": ReasonCode.UNSUPPORTED_PRICING_POLICY,
+    "BDS-14": ReasonCode.UNSUPPORTED_AFTER_SALES,
+    "BDS-15": ReasonCode.UNSUPPORTED_SAFETY_DIAGNOSIS,
+    "BDS-16": ReasonCode.UNSUPPORTED_CONTACT_WORKFLOW,
+    "BDS-17": ReasonCode.EXTERNAL_SOURCE_REQUESTED,
+    "BDS-18": ReasonCode.CITATION_FAILURE,
+    "BDS-19": ReasonCode.SYSTEM_ERROR,
     "insufficient_evidence": ReasonCode.INSUFFICIENT_EVIDENCE,
     "no_citation": ReasonCode.CITATION_FAILURE,
     "grounding_fail": ReasonCode.GROUNDING_FAILURE,
@@ -65,7 +83,14 @@ _REASON_MAP = {
     "diagnostics": ReasonCode.UNSUPPORTED_SAFETY_DIAGNOSIS,
     "hotline_showroom": ReasonCode.UNSUPPORTED_CONTACT_WORKFLOW,
     "external_source": ReasonCode.EXTERNAL_SOURCE_REQUESTED,
+    "personal_data": ReasonCode.PERSONAL_DATA_OR_TRANSACTION,
     "model_oos": ReasonCode.UNSUPPORTED_MODEL,
+    "ambiguous_context": ReasonCode.AMBIGUOUS_CONTEXT,
+    "missing_model": ReasonCode.MISSING_MODEL,
+    "missing_version": ReasonCode.MISSING_VERSION,
+    "missing_topic": ReasonCode.MISSING_TOPIC,
+    "missing_context": ReasonCode.AMBIGUOUS_CONTEXT,
+    "sufficient_direct": ReasonCode.SUFFICIENT_DIRECT_EVIDENCE,
 }
 
 
@@ -74,7 +99,8 @@ def resolve_reason_code(reason: str) -> str:
     for prefix, code in sorted(_REASON_MAP.items(), key=lambda x: -len(x[0])):
         if prefix in reason:
             return code.value
-    return ReasonCode.SUFFICIENT_DIRECT_EVIDENCE.value
+    logger.warning("Unmapped classifier reason: %r — defaulting to system_error for safety", reason)
+    return ReasonCode.SYSTEM_ERROR.value
 
 
 # ── Version helpers ────────────────────────────────────────────────────────
@@ -272,6 +298,7 @@ def get_oos_messages() -> dict[str, str]:
         "diagnostics": "Nội dung chẩn đoán hoặc xử lý sự cố kỹ thuật không thuộc phạm vi hiện tại.",
         "hotline_showroom": "Workflow liên hệ/showroom/lái thử chưa được hỗ trợ trong lát cắt này.",
         "external_source": "Mình chỉ dùng approved data sources trong lát cắt này.",
+        "personal_data": "Truy cập VIN, lịch sử dịch vụ và dữ liệu cá nhân không được hỗ trợ trong lát cắt này.",
         "model_oos": f"Lát cắt hiện tại chỉ phục vụ {ml}, chưa hỗ trợ các mẫu xe khác.",
     }
 
@@ -287,18 +314,37 @@ def get_clarify_messages() -> dict[str, str]:
 
 # ── Evidence Assessment ────────────────────────────────────────────────────
 _SPEC_QUERY_KEYWORDS = {
-    "công_suất": ["power_kw", "power", "công suất"],
-    "mômen_xoắn": ["torque_nm", "torque", "mô-men", "xoắn"],
-    "tốc_độ": ["top_speed", "speed", "tốc độ"],
-    "pin": ["battery_kwh", "battery", "pin", "dung lượng"],
-    "quãng_đường": ["range_km", "range", "quãng đường", "phạm vi"],
-    "sạc": ["charge", "sạc", "charging", "charger"],
-    "kích_thước": ["length", "width", "height", "wheelbase", "ground_clearance", "kích thước", "chiều dài", "chiều rộng", "chiều cao"],
-    "an_toàn": ["airbag", "abs", "ebd", "esc", "tcs", "hsa", "aeb", "collision", "túi khí", "an toàn", "phanh"],
-    "nội_thất": ["seat", "ghế", "leatherette", "speaker", "loa", "màn hình", "display", "nội thất"],
-    "ngoại_thất": ["headlight", "đèn", "wheel", "la-zăng", "mirror", "gương", "ngoại thất"],
-    "giá": ["price", "giá", "giá niêm yết", "ưu đãi"],
-    "adas": ["adas", "cruise", "lane", "blind_spot", "parking", "camera", "adasi"],
+    "công_suất": ["power_kw", "power", "công suất", "mã lực", "hp", "công suât"],
+    "mômen_xoắn": ["torque_nm", "torque", "mô-men", "mô men", "xoắn", "mo men"],
+    "tốc_độ": ["top_speed", "speed", "tốc độ", "tối đa", "tốc do"],
+    "pin": ["battery_kwh", "battery", "pin", "dung lượng", "dung luong", "kwh", "kWh"],
+    "quãng_đường": ["range_km", "range", "quãng đường", "quãng đường", "phạm vi", "di chuyển",
+                     "đi được", "bao xa", "bao nhiêu km", "sạc đầy", "một lần sạc", "autonomy"],
+    "sạc": ["charge", "sạc", "charging", "charger", "nạp pin", "thời gian sạc",
+            "sạc nhanh", "sạc chậm", "phút", "10%", "70%"],
+    "kích_thước": ["length_mm", "width_mm", "height_mm", "wheelbase_mm", "ground_clearance_mm",
+                   "length", "width", "height", "wheelbase", "ground_clearance",
+                   "kích thước", "chiều dài", "chiều rộng", "chiều cao",
+                   "khoảng sáng gầm", "dài", "rộng", "cao"],
+    "trọng_lượng": ["curb_weight_kg", "curb_weight", "trọng lượng", "nặng", "kg"],
+    "an_toàn": ["airbag", "abs", "ebd", "esc", "tcs", "hsa", "aeb", "collision",
+                "túi khí", "an toàn", "phanh", "camera 360", "surround_view",
+                "rearview", "parking", "blind_spot", "lane_keep", "lane_departure",
+                "forward_collision", "emergency", "brake"],
+    "nội_thất": ["seat", "ghế", "leatherette", "speaker", "loa", "màn hình", "display",
+                 "nội thất", "HUD", "head-up", "khoang xe", "vô lăng", "điều hòa",
+                 "seats", "trunk_capacity", "steering"],
+    "ngoại_thất": ["headlight", "đèn", "wheel", "la-zăng", "mâm", "mirror", "gương",
+                   "ngoại thất", "màu", "body", "design", "drl", "tail_light",
+                   "wheel_size_inch", "adaptive_headlights"],
+    "giá": ["price", "giá", "giá niêm yết", "ưu đãi", "giá bán"],
+    "adas": ["adas", "cruise", "lane", "blind_spot", "parking", "camera", "adasi",
+             "highway", "traffic_jam", "lane_centering", "auto_lane_change",
+             "hỗ trợ lái", "tự lái", "cấp"],
+    "phiên_bản": ["edition", "version", "phiên bản", "bản", "eco", "plus"],
+    "tính_năng": ["tính năng", "trang bị", "công nghệ", "thông minh", "tiện nghi",
+                  "ota", "navigation", "bluetooth", "carplay", "android", "gaming",
+                  "voice", "phone_app", "web_browser", "smartphone"],
 }
 
 _TOKEN_RE = re.compile(r"[a-zà-ỹ0-9]+", re.UNICODE)
@@ -326,7 +372,10 @@ def _spec_relevance_score(query_tokens: set[str], spec_key: str, spec_value: str
     key_tokens = set(_TOKEN_RE.findall(key_lower + " " + value_lower))
 
     for group_tokens in _SPEC_QUERY_KEYWORDS.values():
-        group_set = {t.lower() for t in group_tokens}
+        # Tokenize multi-word phrases (e.g. "công suất" → {"công", "suất"})
+        group_set: set[str] = set()
+        for phrase in group_tokens:
+            group_set.update(_TOKEN_RE.findall(phrase.lower()))
         query_match = group_set & query_tokens
         spec_match = group_set & key_tokens
         if query_match and spec_match:
@@ -345,6 +394,62 @@ def _price_relevance_score(query_tokens: set[str]) -> float:
     return 0.5
 
 
+def _rerank_texts(query: str, texts: list[str]) -> list[float] | None:
+    """Score texts against query using embedding cosine similarity.
+
+    Uses the same embedding model as retrieval (OpenRouter text-embedding-3-small).
+    Returns list of floats (0.0-1.0) or None if embedding unavailable.
+    """
+    if not texts:
+        return None
+    try:
+        from app.core.retrieval import _openrouter_embed
+        all_texts = [query] + texts
+        embeddings = _openrouter_embed(all_texts)
+        if len(embeddings) < len(all_texts):
+            return None
+        query_emb = embeddings[0]
+        import numpy as np
+        query_arr = np.array(query_emb)
+        query_norm = np.linalg.norm(query_arr)
+        if query_norm == 0:
+            return None
+        scores = []
+        for i in range(1, len(embeddings)):
+            doc_arr = np.array(embeddings[i])
+            doc_norm = np.linalg.norm(doc_arr)
+            if doc_norm == 0:
+                scores.append(0.0)
+            else:
+                sim = float(np.dot(query_arr, doc_arr) / (query_norm * doc_norm))
+                scores.append(max(0.0, min(1.0, sim)))
+        return scores
+    except Exception as e:
+        logger.warning("Embedding score failed: %s", e)
+        return None
+
+
+def _score_specs_rerank(query: str, specs: list[dict], qtokens: set[str]) -> list[float]:
+    """Score specs using embedding similarity + keyword matching (hybrid).
+
+    Takes max of both scores per spec — embedding provides semantic ranking,
+    keyword matching provides reliable scores for known term mappings.
+    Falls back to keyword-only if embedding unavailable.
+    """
+    spec_texts = [
+        f"{s.get('key', '')}: {s.get('value', '')} {s.get('unit', '')}"
+        for s in specs
+    ]
+    embed_scores = _rerank_texts(query, spec_texts)
+    keyword_scores = [
+        _spec_relevance_score(qtokens, s.get("key", ""), s.get("value", ""))
+        for s in specs
+    ]
+    if embed_scores is not None and len(embed_scores) == len(specs):
+        return [max(e, k) for e, k in zip(embed_scores, keyword_scores)]
+    return keyword_scores
+
+
 def assess_evidence(tool_results: list[dict], query: str) -> tuple[str, list[dict]]:
     if not tool_results:
         return "insufficient", []
@@ -361,8 +466,10 @@ def assess_evidence(tool_results: list[dict], query: str) -> tuple[str, list[dic
         tool = tr["tool"]
 
         if tool == "get_specs" and result.get("specs"):
-            for s in result["specs"]:
-                score = _spec_relevance_score(qtokens, s.get("key", ""), s.get("value", ""))
+            specs = result["specs"]
+            scores = _score_specs_rerank(query, specs, qtokens)
+            for i, s in enumerate(specs):
+                score = scores[i] if i < len(scores) else 0.0
                 page = s.get("page", "")
                 page_str = f" (trang {page})" if page else ""
                 valid_sources.append({
@@ -371,12 +478,13 @@ def assess_evidence(tool_results: list[dict], query: str) -> tuple[str, list[dic
                     "text": f"{s.get('key', '')}: {s.get('value', '')} {s.get('unit', '')}{page_str}",
                     "source_url": result.get("source_url", ""),
                     "source_type": "specs",
-                    "score": score,
+                    "score": round(score, 4),
                     "page": page,
                 })
-                if score >= 0.7:
+                if score >= 0.5:
                     has_direct = True
-            has_direct = True
+                elif score >= 0.2:
+                    has_partial = True
 
         elif tool == "get_price" and result.get("prices"):
             score = _price_relevance_score(qtokens)
@@ -389,7 +497,10 @@ def assess_evidence(tool_results: list[dict], query: str) -> tuple[str, list[dic
                     "source_type": "pricing",
                     "score": score,
                 })
-            has_direct = True
+            if score >= 0.7:
+                has_direct = True
+            else:
+                has_partial = True
 
         elif tool == "search_knowledge_base" and result.get("results"):
             for r in result["results"]:
@@ -416,8 +527,10 @@ def assess_evidence(tool_results: list[dict], query: str) -> tuple[str, list[dic
         elif tool == "search_all":
             sub_specs = result.get("specs", {})
             if sub_specs.get("specs"):
-                for s in sub_specs["specs"]:
-                    score = _spec_relevance_score(qtokens, s.get("key", ""), s.get("value", ""))
+                specs = sub_specs["specs"]
+                scores = _score_specs_rerank(query, specs, qtokens)
+                for i, s in enumerate(specs):
+                    score = scores[i] if i < len(scores) else 0.0
                     page = s.get("page", "")
                     page_str = f" (trang {page})" if page else ""
                     valid_sources.append({
@@ -426,13 +539,13 @@ def assess_evidence(tool_results: list[dict], query: str) -> tuple[str, list[dic
                         "text": f"{s.get('key', '')}: {s.get('value', '')} {s.get('unit', '')}{page_str}",
                         "source_url": sub_specs.get("source_url", ""),
                         "source_type": "specs",
-                        "score": score,
+                        "score": round(score, 4),
                         "page": page,
                     })
-                    if score >= 0.7:
+                    if score >= 0.5:
                         has_direct = True
-            if sub_specs.get("specs"):
-                has_direct = True
+                    elif score >= 0.2:
+                        has_partial = True
             sub_kb = result.get("knowledge_base", {})
             if sub_kb.get("results"):
                 for r in sub_kb["results"]:
@@ -458,6 +571,7 @@ def assess_evidence(tool_results: list[dict], query: str) -> tuple[str, list[dic
 
         elif tool == "list_available_models" and result.get("models"):
             mentioned = _query_models(query)
+            found_any = False
             for m in result["models"]:
                 mc = m.get("model_code", "")
                 mc_compact = mc.upper().replace(" ", "")
@@ -472,7 +586,9 @@ def assess_evidence(tool_results: list[dict], query: str) -> tuple[str, list[dic
                     "source_type": "catalog",
                     "score": 0.9,
                 })
-            has_direct = True
+                found_any = True
+            if found_any:
+                has_direct = True
 
     if has_direct:
         return "direct_support", valid_sources
@@ -481,12 +597,24 @@ def assess_evidence(tool_results: list[dict], query: str) -> tuple[str, list[dic
     return "insufficient", valid_sources
 
 
-def validate_citations(sources: list[dict]) -> list[dict]:
+def validate_citations(sources: list[dict], query: str = "") -> list[dict]:
+    """Filter citations: must have valid URL AND be relevant to the query."""
     valid = []
+    qtokens = _query_tokens(query) if query else set()
     for s in sources:
         url = s.get("source_url", "")
         if not url or not url.startswith("http"):
             continue
+        # Content relevance gate: if we have query tokens, check that the
+        # source text has at least some overlap with the query.
+        text = s.get("text", "").lower()
+        score = s.get("score", 0)
+        if qtokens and text:
+            text_tokens = set(_TOKEN_RE.findall(text))
+            overlap = qtokens & text_tokens - {"xe", "vinfast", "vf", "của", "và", "là", "cho", "tôi", "bạn"}
+            # Accept if score is high (from reranker/embedding) OR has meaningful token overlap
+            if score < 0.3 and len(overlap) == 0:
+                continue
         valid.append(s)
     return valid
 
@@ -668,10 +796,11 @@ def make_decision_log(
     error_stage: str = "",
     error_type: str = "",
     error_message: str = "",
+    topic: str = "",
 ) -> DecisionLog:
     model = classify_result.entities.get("model_code", "unknown")
     version = classify_result.entities.get("version", "all_versions")
-    topic = getattr(classify_result, "specificity", "unknown")
+    detected_topic = topic or getattr(classify_result, "specificity", "unknown")
 
     assessment, _ = assess_evidence(tool_results, query) if tool_results else ("not_run", [])
 
@@ -692,7 +821,7 @@ def make_decision_log(
         user_query=query,
         detected_vehicle_model=model,
         detected_vehicle_version=version,
-        detected_topic=topic,
+        detected_topic=detected_topic,
         decision=classify_result.decision,
         reason_code=reason_code,
         retrieval_status=retrieval_status,

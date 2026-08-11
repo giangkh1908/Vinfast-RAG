@@ -4,24 +4,15 @@ from app.agent.graph_state import AgentState
 
 MAX_ITERATIONS = 3
 
-VERSION_QUERY_RE = re.compile(
-    r"(phi[eê]n\s+b[aả]n|b[aả]n\s+n[aà]o|c[oó]\s+m[aấ]y\s+b[aả]n|version|edition|có\s+mấy)",
-    re.IGNORECASE,
-)
-
 
 def route_after_classify(state: AgentState) -> str:
-    if state.get("decision") == "out_of_scope":
+    """Route after classify_node. Trust classify_node's decision."""
+    decision = state.get("decision", "answer")
+    if decision == "out_of_scope":
         return "respond"
-    if state.get("decision") == "clarify":
+    if decision == "clarify":
         return "respond"
-    entities = state.get("entities", {})
-    has_model = bool(entities.get("model_code"))
-    has_version = bool(entities.get("version"))
-    if has_model and not has_version:
-        query = state.get("query", "")
-        if VERSION_QUERY_RE.search(query):
-            return "build_messages"
+    if decision == "refuse":
         return "respond"
     return "build_messages"
 

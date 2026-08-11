@@ -68,6 +68,7 @@ async def respond_node(state: AgentState) -> dict:
             latency_ms=latency_ms,
             latency_retrieval_ms=latency_retrieval_ms,
             latency_generation_ms=latency_generation_ms,
+            topic=state.get("category", ""),
         )
         dlog.decision = decision
         dlog.reason_code = reason_code
@@ -78,6 +79,8 @@ async def respond_node(state: AgentState) -> dict:
         decision_log = {}
 
     sources = citations if citations else tool_results
+    if decision != "answer":
+        sources = []
 
     return {
         "result": AgentResult(

@@ -15,6 +15,8 @@ REFUSAL_PATTERNS = [
     r"không có dữ liệu",
     r"không có trong danh sách",
     r"không nằm trong phạm vi",
+    r"chưa có trong dữ liệu",
+    r"hiện chưa có",
 ]
 
 _FEATURE_RE = re.compile(
@@ -26,7 +28,7 @@ _FEATURE_RE = re.compile(
     r"nội.?thất|ngoại.?thất|an.?toàn|tiện.?nghi|thông.?minh|"
     r"navigation|gaming|ota|browser|phone.?app|diagnosis|"
     r"leatherette|speaker|drivetrain|suspension|brake|"
-    r"immobilizer|alarm|theft)",
+    r"immobilizer|alarm|theft|massage|tự.?lái|lội.?nước|bán kính|quay.?vòng)",
     re.IGNORECASE,
 )
 
@@ -110,8 +112,6 @@ def _check_text_grounding(response: str, tool_results: list[dict], query: str = 
     if not context_features and not raw_corpus:
         return True
 
-    # Features in negative claims ("không có X") don't need grounding —
-    # absence of a feature from context IS the evidence for the negative claim
     query_features = set(m.group().lower() for m in _FEATURE_RE.finditer(query)) if query else set()
     has_negative = bool(_NEGATIVE_CLAUSE_RE.search(response))
 
@@ -128,8 +128,16 @@ def _check_text_grounding(response: str, tool_results: list[dict], query: str = 
             if normalized in raw_corpus or feat in raw_corpus:
                 found = True
         if not found:
-            # If feature is from user's query and response is negative → OK
             if has_negative and feat in query_features:
+                # For negative claims about query features: only allow if evidence
+                # explicitly addresses the feature (i.e., feature appears in corpus).
+                # If evidence doesn't mention the feature at all, we can't confirm
+                # or deny → grounding fails → should refuse.
+                feat_in_corpus = normalized in raw_corpus or feat in raw_corpus
+                if feat_in_corpus:
+                    continue
+                # Feature not in evidence at all → can't confirm negative
+                unmatched.add(feat)
                 continue
             unmatched.add(feat)
 
@@ -155,7 +163,6 @@ def _check_grounding(response: str, tool_results: list[dict], query: str = "") -
     if not response_numbers:
         return True
 
-    # Skip numbers that appear in the user's query (user mentioned them, not LLM invention)
     query_numbers = _extract_numbers(query) if query else set()
 
     price_numbers: set[float] = set()
@@ -196,10 +203,8 @@ def _check_grounding(response: str, tool_results: list[dict], query: str = "") -
     resp_has_price = bool(PRICE_KW.search(response))
 
     for num in response_numbers:
-        # Skip trivially small counts (1-9) — likely ordinals/counts
         if 1 <= num <= 9 and num == int(num):
             continue
-        # Skip numbers from user's query (e.g., "camera 360" → 360 is user's term)
         if num in query_numbers:
             continue
         if num not in all_ctx:
@@ -221,17 +226,9 @@ async def validate_node(state: AgentState) -> dict:
 
     assessment, valid_sources = assess_evidence(tool_results, state["query"])
 
-    # Debug: log evidence assessment
     logger.info("VALIDATE: query=%s assessment=%s sources=%d tools=%s",
                 state.get("query", ""), assessment, len(valid_sources),
                 [tr.get("tool") for tr in tool_results if tr.get("success")])
-    for tr in tool_results:
-        if tr.get("success") and tr.get("tool") == "search_all":
-            r = tr["result"]
-            specs = r.get("specs", {}).get("specs", [])
-            logger.info("VALIDATE: search_all specs count=%d", len(specs))
-            for s in specs[:5]:
-                logger.info("VALIDATE: spec %s=%s", s.get("key"), s.get("value"))
 
     if assessment == "insufficient":
         return {
@@ -243,7 +240,7 @@ async def validate_node(state: AgentState) -> dict:
             "grounding_ok": False,
         }
 
-    citations = validate_citations(valid_sources)
+    citations = validate_citations(valid_sources, state.get("query", ""))
 
     if not citations and final_response and bool(re.search(r"\d[\d.,]+", _strip_non_factual_numbers(final_response))):
         return {

@@ -9,7 +9,12 @@ from app.agent.graph_state import AgentState
 logger = logging.getLogger("bds.graph.classify")
 
 VERSION_QUERY_RE = re.compile(
-    r"(phi[eê]n\s+b[aả]n|b[aả]n\s+n[aà]o|c[oó]\s+m[aấ]y\s+b[aả]n|version|edition|có\s+mấy)",
+    r"(phi[eê]n\s+b[aả]n|b[aả]n\s+n[aà]o|c[oó]\s+m[aấ]y\s+b[aả]n|version|edition|có\s*mấy)",
+    re.IGNORECASE,
+)
+
+_AMBIGUOUS_PRONOUN_RE = re.compile(
+    r"(xe\s*này|mẫu\s*này|chiếc\s*này|em\s*này)",
     re.IGNORECASE,
 )
 
@@ -81,10 +86,8 @@ _TOPIC_TOOLS = {
     "general": None,
 }
 
-# Topics where data is typically the same across versions (BDS-04)
-_VERSION_INDEPENDENT_TOPICS = {
-    "kích_thước", "phiên_bản",
-}
+# Topics where data typically differs between versions — require version (BDS-03)
+_VERSION_DEPENDENT_TOPICS = {"thông_số_kỹ_thuật", "phạm_vi_di_chuyển"}
 
 
 def _classify_topic(query: str) -> str:
@@ -98,11 +101,48 @@ def _is_broad_topic(query: str) -> bool:
     """Check if query is too broad (BDS-05)."""
     broad_patterns = [
         r"(cho\s*tôi\s*biết|thông\s*tin\s*về|giới\s*thiệu|"
-        r"có\s*gì\s*hay|thế\s*nào|như\s*thế\s*nào|"
-        r"xe\s*này|tổng\s*quan|overview)",
+        r"có\s*gì\s*hay|tổng\s*quan|overview)",
     ]
     broad_re = re.compile("|".join(broad_patterns), re.IGNORECASE)
     return bool(broad_re.search(query))
+
+
+def _extract_history_context(history: list[dict]) -> dict:
+    """Extract model, version, and topic from conversation history."""
+    ctx: dict = {"model_code": None, "version": None, "topic": None}
+    classifier = get_classifier()
+    for msg in history:
+        if msg.get("role") != "user":
+            continue
+        text = msg.get("content", "")
+        try:
+            cr = classifier.classify(text)
+            if cr.entities.get("model_code") and not ctx["model_code"]:
+                ctx["model_code"] = cr.entities["model_code"]
+            if cr.entities.get("version") and not ctx["version"]:
+                ctx["version"] = cr.entities["version"]
+        except Exception:
+            pass
+        t = _classify_topic(text)
+        if t != "general" and not ctx["topic"]:
+            ctx["topic"] = t
+    return ctx
+
+
+def _is_followup_to_clarify(history: list[dict]) -> bool:
+    """Check if conversation indicates a follow-up to a clarify question."""
+    if not history:
+        return False
+    for msg in reversed(history):
+        if msg.get("role") == "assistant":
+            content = msg.get("content", "").lower()
+            clarify_indicators = [
+                "bạn muốn hỏi", "bạn muốn tìm", "phiên bản nào",
+                "vf 6 hay vf 8", "vf6 hay vf8",
+                "thông tin nào", "chủ đề nào",
+            ]
+            return any(ind in content for ind in clarify_indicators)
+    return False
 
 
 async def classify_node(state: AgentState) -> dict:
@@ -141,24 +181,48 @@ async def classify_node(state: AgentState) -> dict:
             "specificity": "unclear",
         }
 
+    # ── Extract history context for multi-turn ──
+    hist_ctx = _extract_history_context(history)
+    is_followup = _is_followup_to_clarify(history)
+
+    # Merge history model/version into entities if current turn missing them
+    if not cr.entities.get("model_code") and hist_ctx["model_code"]:
+        cr.entities["model_code"] = hist_ctx["model_code"]
+    if not cr.entities.get("version") and hist_ctx["version"]:
+        cr.entities["version"] = hist_ctx["version"]
+
     has_model = bool(cr.entities.get("model_code"))
     has_version = bool(cr.entities.get("version"))
     topic = _classify_topic(query)
 
-    # 2. BDS-02: Missing model
-    if not has_model and topic != "general":
-        ml = " hoặc ".join(settings.scope_models)
-        return {
-            "decision": "clarify",
-            "reason_code": "missing_model",
-            "response_text": f"Bạn muốn hỏi về {ml}?",
-            "entities": cr.entities,
-            "specificity": "unclear",
-            "category": topic,
-        }
+    # Inherit topic from history if current query topic is general
+    if topic == "general" and hist_ctx["topic"]:
+        topic = hist_ctx["topic"]
 
-    # 3. BDS-05: Broad topic (when model is known but topic is vague)
-    if has_model and _is_broad_topic(query):
+    # 2. BDS-02: Missing model — check ambiguous pronoun first
+    if not has_model:
+        if _AMBIGUOUS_PRONOUN_RE.search(query):
+            return {
+                "decision": "clarify",
+                "reason_code": "ambiguous_context",
+                "response_text": f"Bạn muốn hỏi về {' hoặc '.join(settings.scope_models)}?",
+                "entities": cr.entities,
+                "specificity": "unclear",
+                "category": topic,
+            }
+        if topic != "general":
+            ml = " hoặc ".join(settings.scope_models)
+            return {
+                "decision": "clarify",
+                "reason_code": "missing_model",
+                "response_text": f"Bạn muốn hỏi về {ml}?",
+                "entities": cr.entities,
+                "specificity": "unclear",
+                "category": topic,
+            }
+
+    # 3. BDS-05: Broad topic (model known, topic vague, NOT a follow-up)
+    if has_model and _is_broad_topic(query) and not is_followup:
         model = cr.entities["model_code"]
         return {
             "decision": "clarify",
@@ -169,9 +233,9 @@ async def classify_node(state: AgentState) -> dict:
             "category": "general",
         }
 
-    # 4. BDS-03: Missing version (when data differs between versions)
+    # 4. BDS-03: Missing version (only for version-dependent topics)
     if has_model and not has_version and not VERSION_QUERY_RE.search(query):
-        if topic not in _VERSION_INDEPENDENT_TOPICS:
+        if topic in _VERSION_DEPENDENT_TOPICS:
             model = cr.entities["model_code"]
             return {
                 "decision": "clarify",

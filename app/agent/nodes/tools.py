@@ -100,7 +100,17 @@ async def execute_tools_node(state: AgentState) -> dict:
 
     for tc, res in zip(choice.message.tool_calls, results):
         if tc.function.name == "ask_clarification" and res.get("success"):
-            if specificity_flag and has_model and has_version:
+            category = state.get("category", "general")
+            # Version-independent topics: model known → don't clarify for version
+            _VERSION_INDEPENDENT = {"kích_thước", "phiên_bản", "pin_và_sạc", "tính_năng_nổi_bật", "an_toàn", "nội_thất", "ngoại_thất"}
+            if has_model and category in _VERSION_INDEPENDENT:
+                logger.info("ask_clarification overridden: version-independent topic=%s", category)
+                new_messages.append({
+                    "role": "user",
+                    "content": f"Thông tin '{category}' áp dụng cho cả hai phiên bản. Trả lời trực tiếp. KHÔNG gọi lại ask_clarification.",
+                })
+                break
+            elif specificity_flag and has_model and has_version:
                 logger.info("ask_clarification overridden: specific=%s category=%s", specificity_flag, specificity_category)
                 new_messages.append({
                     "role": "user",
