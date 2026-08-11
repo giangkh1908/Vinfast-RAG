@@ -93,20 +93,22 @@ Crawl HTML hoặc PDF vào `data/raw/`:
 ```
 
 `crawl.py` dùng Crawl4AI cho HTML và PyMuPDF cho PDF. Brochure PDF dùng cho
-spec được khai báo theo thứ tự VF2 -> VF9 trong:
+spec được crawl thủ công bằng `scripts/crawl_pdf.py` vào `data/raw_pdf/*.txt`
+(giữ layout bảng — pipeline đọc từ local, không crawl online):
 
-```text
-data/raw/link_brochure.md
+```powershell
+.\venv\Scripts\python.exe scripts/crawl_pdf.py <brochure_url>
 ```
 
-Không cần crawl brochure PDF thủ công. Full pipeline tự đọc các URL này.
+`data/raw/link_brochure.md` chỉ được dùng để ghi lại danh sách brochure URLs
+vào `_manifest.json` (link_only), không phải nguồn spec.
 
 ## 4. Chạy full pipeline
 
 ### 4.1. Một lệnh đầy đủ
 
-Dùng cho dev hằng ngày. Lệnh này tự clean, chunk, crawl brochure PDF, vision
-OCR khi cần, parse specs, embed, ingest và activate version:
+Dùng cho dev hằng ngày. Lệnh này tự clean, chunk, parse specs, embed, ingest
+và activate version:
 
 ```powershell
 .\.venv\Scripts\python.exe scripts/run_pipeline.py `
@@ -161,6 +163,28 @@ Nếu không dùng `--promote`, version chỉ được build, chưa active:
 
 Spec số liệu không đi vào vector. Chúng được lưu ở `car_specs` để query chính
 xác theo model/edition. Nguồn spec duy nhất: **brochure PDF** (`data/raw_pdf/`).
+
+### 5.1. Cấu trúc code
+
+```text
+scripts/
+|- config.py               # Paths + env chung (QDRANT_URL, PG_DSN, load .env)
+|- run_pipeline.py         # Orchestrator end-to-end (bước 1-6)
+|- version_manager.py      # Promote/rollback/delete version (alias Qdrant + PG)
+|- crawl.py / crawl_pdf.py # Crawl raw (HTML / PDF giữ layout bảng)
+|- clean_data/
+|  |- spec_common.py       # Dùng chung: MODEL_LABEL, no_diacritics, parse_raw_file, infer_model
+|  |- noise_patterns.py    # Lọc noise text (dòng/đoạn/PDF prose)
+|  |- chunk_filters.py     # Filter chunk (junk site, off-model, spec table)
+|  |- chunking.py          # Sentence-aware split (>max_len)
+|  |- clean_to_jsonl.py    # raw → intermediate JSONL (orchestrate 3 module trên)
+|  |- split_cold_hot.py    # intermediate → vector/*.jsonl + postgres/*.csv + manifest
+|  `- parse_pdf_specs.py   # raw_pdf → postgres/specs.csv (car_specs)
+`- ingest/
+   |- vector_ingest.py     # Embed + upsert Qdrant dense (incremental, cache)
+   |- sparse_ingest.py     # BM25 sparse → Qdrant
+   `- postgres_ingest.py   # CSV → PostgreSQL (versioned)
+```
 
 ## 6. Output
 

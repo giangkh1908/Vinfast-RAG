@@ -3,9 +3,8 @@
 parse_pdf_specs.py — Trích thông số kỹ thuật từ data/raw_pdf/*.txt (brochure)
 → data/clean/<version>/postgres/specs.csv
 
-Khác với parse_specs.py (chỉ giữ BASIC_SPECS), script này extract TOÀN BỘ row
-từ bảng spec trong brochure PDF — gồm cả spec số (công suất, pin…) lẫn spec
-tính năng (Có/Không, LED, v.v.).
+Script này extract TOÀN BỘ row từ bảng spec trong brochure PDF — gồm cả spec số
+(công suất, pin…) lẫn spec tính năng (Có/Không, LED, v.v.).
 
 Nguồn: data/raw_pdf/*.txt (output từ crawl_pdf.py). Chỉ extract pipe-table
 3 cột (bảng so sánh edition). Cột 1 = edition đầu, cột 2 = edition cuối
@@ -15,37 +14,20 @@ import argparse
 import csv
 import re
 import sys
-import unicodedata
 from pathlib import Path
 from typing import Any
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
-RAW_PDF_DIR = REPO_ROOT / "data" / "raw_pdf"
-CLEAN_DIR = REPO_ROOT / "data" / "clean"
+# Chạy trực tiếp (`python scripts/clean_data/parse_pdf_specs.py`) → repo root vào sys.path
+if __package__ in (None, ""):
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+
+from scripts.config import CLEAN_DIR, RAW_PDF_DIR  # noqa: E402
+from scripts.clean_data.spec_common import (  # noqa: E402
+    MODEL_EDITIONS, MODEL_LABEL, infer_model, no_diacritics, parse_raw_file,
+)
 
 # ── Mappings ─────────────────────────────────────────────────────────────────
-MODEL_LABEL = {
-    "VF2": "VF 2", "VF3": "VF 3", "VF5": "VF 5", "VF6": "VF 6",
-    "VF7": "VF 7", "VF8": "VF 8", "VF8NEW": "VF 8 All New",
-    "VF9": "VF 9", "VFMPV7": "VF MPV 7", "ECVAN": "EC Van",
-    "FADIL": "Fadil", "HERIO": "Herio Green", "LIMO": "Limo Green",
-    "LUXA": "LUX A", "LUXSA": "LUX SA", "MINIO": "Minio Green",
-    "NERIO": "Nerio Green",
-}
-
-MODEL_EDITIONS = {
-    "VF2": ["TieuChuan"],
-    "VF3": ["Eco", "Plus"],
-    "VF5": ["Plus"],
-    "VF6": ["Eco", "Plus"],
-    "VF7": ["Eco", "Plus", "PlusCaptain"],
-    "VF8": ["Eco", "Plus"],
-    "VF8NEW": ["Eco", "Plus"],
-    "VF9": ["Eco", "Plus"],
-    "VFMPV7": ["Eco", "Plus"],
-}
-
-# Label map từ parse_specs.py (subset cho các spec thường gặp)
+# Label map (đã normalize) — subset các spec thường gặp trong brochure
 LABEL_MAP = {
     "cong suat toi da (kw)": ("power_kw", "kW", "powertrain"),
     "cong suat toi da": ("power_kw", "kW", "powertrain"),
@@ -207,11 +189,9 @@ SPEC_KEY_VN_MAP = {
     "rear_suspension_type": "Hệ thống treo sau",
     "brake_type": "Hệ thống phanh trước/sau",
     "steering_assist_type": "Trợ lực lái",
-    "wheel_size_inch": "Kích thước la-zăng",
     # ── security ──
     "immobilizer": "Khoá động cơ khi có trộm",
     "anti_theft_alarm": "Cảnh báo chống trộm",
-    # ── convenience ──
     "epb_auto_hold": "Phanh đỗ điện tử & giữ phanh tự động",
     # ── connected ──
     "account_sync": "Đồng bộ tài khoản / ứng dụng / phân quyền",
@@ -220,9 +200,6 @@ SPEC_KEY_VN_MAP = {
     "charger_map": "Bản đồ trạm sạc",
     "service_booking": "Dịch vụ hậu mãi: đặt lịch sửa chữa, lái thử",
     "online_accessory_shop": "Mua bán phụ kiện",
-    # ── general ──
-    "charging_etc": "Sạc, v.v.",
-    "vehicle_modes": "Chế độ xe cơ bản (cắm trại, người lạ, thú cưng, rửa xe)",
 }
 
 # Section headers trong bảng — rows mà tất cả data cols rỗng
@@ -239,7 +216,7 @@ SECTION_HEADERS = {
     "cac tinh nang khac", "tinh nang thong minh",
     "he thong tin giai tri tren xe", "tro ly ao",
     "ung dung dien thoai", "kich thuoc & tai trong",
-    "noi that", "den ngoai that khac", "ghe phu",
+    "den ngoai that khac",
 }
 # Cũng check với norm lowercase + no diacritics
 
@@ -356,17 +333,11 @@ FEATURE_NORM_MAP = {
 }
 
 
-def no_diacritics(s: str) -> str:
-    """Bỏ dấu, lowercase, đổi đ → d."""
-    s = s.lower()
-    s = "".join(c for c in unicodedata.normalize("NFD", s)
-                 if unicodedata.category(c) != "Mn")
-    return s.replace("đ", "d")
-
-
 def norm(s: str) -> str:
     """Normalize label: bỏ dấu, lowercase, gom space, strip trailing punct."""
-    s = no_diacritics(s).lower()
+    # no_diacritics (common) KHÔNG lowercase — lower() trước để 'Đ' hoa cũng
+    # thành 'd' (giữ nguyên hành vi cũ của no_diacritics trong file này).
+    s = no_diacritics(s.lower())
     s = re.sub(r"\s+", " ", s).strip()
     return s.strip(":|-–— \t")
 
@@ -385,42 +356,6 @@ FEATURE_ALIASES_STRICT = {norm_strict(k): k for k in FEATURE_NORM_MAP}
 FEATURE_ALIASES_BY_LEN = sorted(FEATURE_ALIASES_STRICT.keys(), key=len, reverse=True)
 
 
-def infer_model_from_path(path: Path) -> str | None:
-    """Rút model_id từ tên file."""
-    name = re.sub(r"[^a-z0-9]", "", path.stem.lower())
-    keys = sorted([
-        ("mpv7", "VFMPV7"),
-        ("vf206", "VF6"), ("vf6", "VF6"),
-        ("vf2", "VF2"), ("vf3", "VF3"), ("vf5", "VF5"),
-        ("vf7", "VF7"), ("vf8theallnew", "VF8NEW"),
-        ("vf8thenew", "VF8NEW"), ("vf8allnew", "VF8NEW"),
-        ("vf8", "VF8"), ("vf9", "VF9"),
-    ], key=lambda x: -len(x[0]))
-    for key, model in keys:
-        if key in name:
-            return model
-    return None
-
-
-def parse_raw_file(path: Path) -> tuple[dict[str, Any], str]:
-    """Parse header metadata + body từ file raw_pdf."""
-    text = path.read_text(encoding="utf-8", errors="replace")
-    meta = {"source_url": "", "fetched_at": "", "source_type": "pdf"}
-    lines = text.splitlines()
-    body_start = 0
-    for i, line in enumerate(lines):
-        if line.startswith("# Nguồn:"):
-            meta["source_url"] = line.split(":", 1)[1].strip()
-        elif line.startswith("# Crawl lúc:"):
-            meta["fetched_at"] = line.split(":", 1)[1].strip()
-        elif line.startswith("# Loại:"):
-            meta["source_type"] = line.split(":", 1)[1].strip().lower()
-        elif re.match(r"^={5,}$", line.strip()):
-            body_start = i + 1
-            break
-    return meta, "\n".join(lines[body_start:])
-
-
 def is_section_header(norm_label: str) -> bool:
     return norm_label in SECTION_HEADERS
 
@@ -432,7 +367,7 @@ SEP_RE = re.compile(r"^\s*\|[\s\-:|]+\|")
 def parse_pdf_specs(path: Path) -> list[dict[str, Any]]:
     """Extract ALL spec rows from PDF brochure tables."""
     meta, body = parse_raw_file(path)
-    model_id = infer_model_from_path(path)
+    model_id = infer_model(path)
     if not model_id:
         print(f"  [skip] can't infer model from {path.name}", file=sys.stderr)
         return []
@@ -595,7 +530,7 @@ def make_row(model_code: str, edition: str, category: str,
     }
 
 
-def run(version: str = "v2") -> int:
+def run(version: str = "v1") -> int:
     """Main: read raw_pdf, extract all spec tables, write CSV."""
     version_dir = CLEAN_DIR / version
     pg_dir = version_dir / "postgres"
@@ -645,7 +580,7 @@ def run(version: str = "v2") -> int:
 
 def main() -> int:
     ap = argparse.ArgumentParser(description="Extract all spec rows from PDF brochure tables.")
-    ap.add_argument("--version", default="v2", help="Output version folder (default v2)")
+    ap.add_argument("--version", default="v1", help="Output version folder (default v1)")
     args = ap.parse_args()
     return run(args.version)
 

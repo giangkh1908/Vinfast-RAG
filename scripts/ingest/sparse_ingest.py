@@ -20,7 +20,6 @@ Usage:
 import argparse
 import json
 import math
-import os
 import re
 import sys
 import unicodedata
@@ -28,19 +27,21 @@ import uuid
 from collections import Counter
 from pathlib import Path
 
-from dotenv import load_dotenv
 from qdrant_client import QdrantClient
 from qdrant_client.models import (Distance, PointStruct, SparseIndexParams,
                                   SparseVector, SparseVectorParams)
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
-load_dotenv(REPO_ROOT / ".env")
-VECTOR_DIR = REPO_ROOT / "data" / "clean" / "{version}" / "vector"
-SPARSE_INDEX_PATH = REPO_ROOT / "data" / "clean" / "{version}" / "sparse_index.json"
+# Chạy trực tiếp (`python scripts/ingest/sparse_ingest.py`) → repo root vào sys.path
+if __package__ in (None, ""):
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+
+from scripts.config import CLEAN_DIR, QDRANT_API_KEY, QDRANT_TIMEOUT, QDRANT_URL  # noqa: E402
+
+VECTOR_DIR = CLEAN_DIR / "{version}" / "vector"
+SPARSE_INDEX_PATH = CLEAN_DIR / "{version}" / "sparse_index.json"
 
 SPARSE_COLLECTION_BASE = "sparse"
-DEFAULT_QDRANT_URL = os.environ.get("QDRANT_URL", "http://localhost:16333")
-QDRANT_TIMEOUT = int(os.environ.get("QDRANT_TIMEOUT", "300"))
+DEFAULT_QDRANT_URL = QDRANT_URL
 
 # BM25 params
 K1 = 1.5
@@ -102,7 +103,7 @@ def run(version: str = "v1", url: str = DEFAULT_QDRANT_URL, recreate: bool = Fal
     print(f"  vocab={len(vocab)}  avgdl={avgdl:.1f}")
 
     # 2. Client
-    client = QdrantClient(url=url, api_key=os.environ.get("QDRANT_API_KEY", "") or None,
+    client = QdrantClient(url=url, api_key=QDRANT_API_KEY or None,
                           timeout=QDRANT_TIMEOUT)
     if recreate and client.collection_exists(sparse_collection):
         client.delete_collection(sparse_collection)

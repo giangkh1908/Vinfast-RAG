@@ -23,9 +23,11 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
-DATA_DIR = REPO_ROOT / "data"
-CLEAN_DIR = DATA_DIR / "clean"
+# Chạy trực tiếp (`python scripts/clean_data/split_cold_hot.py`) → repo root vào sys.path
+if __package__ in (None, ""):
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+
+from scripts.config import CLEAN_DIR  # noqa: E402
 
 CSV_DELIMITER = "|"
 
@@ -306,7 +308,7 @@ def run(version: str = "v1", commit: str = "", prev: str | None = None) -> int:
     # Dọn output cũ — CHỈ file split sở hữu:
     #   vector/*.jsonl              (split viết hết → bỏ collection cũ như vivu_faq)
     #   postgres/edition.csv, price_list.csv
-    # KHÔNG xóa postgres/specs.csv (do parse_specs.py viết — bước kế tiếp trong pipeline).
+    # KHÔNG xóa postgres/specs.csv (do parse_pdf_specs.py viết — bước kế tiếp trong pipeline).
     if vector_dir.exists():
         for f in vector_dir.iterdir():
             if f.is_file():

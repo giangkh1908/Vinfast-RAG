@@ -22,32 +22,27 @@ Usage:
 
 import argparse
 import json
-import os
 import sys
 import time
 import uuid
 from pathlib import Path
 from typing import Any
 
-from dotenv import load_dotenv
 from qdrant_client import QdrantClient
-from qdrant_client.http import models as qdrant_models
 from qdrant_client.models import Distance, PayloadSchemaType, PointStruct, VectorParams
 
-load_dotenv(Path(__file__).resolve().parents[2] / ".env")
+# Chạy trực tiếp (`python scripts/ingest/vector_ingest.py`) → repo root vào sys.path
+if __package__ in (None, ""):
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-# Timeout dài cho upsert nhiều points lên cloud
-QDRANT_TIMEOUT = int(os.environ.get("QDRANT_TIMEOUT", "300"))
-
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "backend"))
+from scripts.config import CLEAN_DIR, QDRANT_API_KEY, QDRANT_TIMEOUT, QDRANT_URL  # noqa: E402
 from lib.openrouter import (API_KEY, EMBED_MODEL, embed_texts,  # noqa: E402
                             summarize_metrics)
 from lib.vector_cache import VectorCache, content_hash  # noqa: E402
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
-VECTOR_DIR = REPO_ROOT / "data" / "clean" / "{version}" / "vector"
+VECTOR_DIR = CLEAN_DIR / "{version}" / "vector"
 
-DEFAULT_QDRANT_URL = os.environ.get("QDRANT_URL", "http://localhost:16333")
+DEFAULT_QDRANT_URL = QDRANT_URL
 BATCH_SIZE = 64
 UPSERT_BATCH = 100
 
@@ -195,7 +190,7 @@ def run(version: str = "v1", url: str = DEFAULT_QDRANT_URL, recreate: bool = Fal
         print(f"[vector_ingest] vector dir not found: {vector_dir}", file=sys.stderr)
         return 1
 
-    client = QdrantClient(url=url, api_key=os.environ.get("QDRANT_API_KEY", "") or None,
+    client = QdrantClient(url=url, api_key=QDRANT_API_KEY or None,
                           timeout=QDRANT_TIMEOUT)
     try:
         client.get_collections()

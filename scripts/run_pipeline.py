@@ -12,7 +12,6 @@ Chạy đủ bước theo thứ tự cho 1 version:
     → 6. UPSERT PostgreSQL (postgres_ingest)
 
 Specs chỉ lấy từ data/raw_pdf/*.txt (brochure PDF pipe-tables) qua parse_pdf_specs.
-Không dùng parse_specs (data/raw/*.txt dat-coc pages) — vì dễ lẫn spec giữa các model.
 
 Usage:
     python scripts/run_pipeline.py --version v1 --recreate --promote
@@ -20,25 +19,20 @@ Usage:
 """
 
 import argparse
-import os
 import sys
 import time
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
-# Cho phép `from scripts... import` và `from lib... import`
-sys.path.insert(0, str(REPO_ROOT))
-sys.path.insert(0, str(REPO_ROOT / "backend"))
+# Chạy trực tiếp (`python scripts/run_pipeline.py`) → đưa repo root vào sys.path
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from scripts.config import PG_DSN, QDRANT_API_KEY, QDRANT_URL, REPO_ROOT  # noqa: E402
 
 from scripts.clean_data import clean_to_jsonl, split_cold_hot  # noqa: E402
 from scripts.clean_data import parse_pdf_specs  # noqa: E402
 from scripts.ingest import vector_ingest, sparse_ingest, postgres_ingest  # noqa: E402
 from lib import openrouter  # noqa: E402
 from scripts import version_manager  # noqa: E402
-
-QDRANT_URL = os.environ.get("QDRANT_URL", "http://localhost:16333")
-QDRANT_API_KEY = os.environ.get("QDRANT_API_KEY", "")
-PG_DSN = os.environ.get("PG_DSN", "postgresql://vivu:vivu@localhost:15432/vivu")
 
 
 def _bar(label: str) -> str:

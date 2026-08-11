@@ -34,7 +34,7 @@ Cách dùng::
     # Verbose — xem thông tin phát hiện cột / bảng
     python scripts/crawl_pdf.py <URL> -v
 
-Output mặc định: ``data/raw/<slug>_<timestamp>.txt``
+Output mặc định: ``data/raw_pdf/<slug>_pdf_<timestamp>.txt``
 """
 
 import argparse
@@ -663,6 +663,9 @@ def main() -> int:
     # ── Render output ───────────────────────────────────────────────────
     slug = slugify(args.url)
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+    # Output mặc định: data/raw_pdf/ (text / json / pdf gốc đều ở đây)
+    pdf_dir = os.path.join("data", "raw_pdf")
+    os.makedirs(pdf_dir, exist_ok=True)
 
     if args.json:
         data = render_output(results, fmt="json")
@@ -674,9 +677,6 @@ def main() -> int:
         if args.print:
             print(json.dumps(data, ensure_ascii=False, indent=2))
     else:
-        # Text output → thư mục riêng crawl_pdf/
-        pdf_dir = os.path.join("data", "raw_pdf")
-        os.makedirs(pdf_dir, exist_ok=True)
         out_txt = args.out or os.path.join(pdf_dir, f"{slug}_pdf_{ts}.txt")
         os.makedirs(os.path.dirname(out_txt) or ".", exist_ok=True)
         txt = render_output(results, fmt="txt")

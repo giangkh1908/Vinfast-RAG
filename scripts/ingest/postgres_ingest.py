@@ -26,15 +26,15 @@ from pathlib import Path
 from typing import Any
 
 import psycopg2
-from dotenv import load_dotenv
 from psycopg2.extras import execute_values
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
-POSTGRES_DIR = REPO_ROOT / "data" / "clean" / "{version}" / "postgres"
+# Chạy trực tiếp (`python scripts/ingest/postgres_ingest.py`) → repo root vào sys.path
+if __package__ in (None, ""):
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-load_dotenv(REPO_ROOT / ".env")
+from scripts.config import CLEAN_DIR, PG_DSN  # noqa: E402
 
-DEFAULT_DSN = "postgresql://vivu:vivu@localhost:15432/vivu"
+POSTGRES_DIR = CLEAN_DIR / "{version}" / "postgres"
 
 # DDL versioned: cột `version` trong PK + FK; VIEW active cho consumer.
 DDL = """
@@ -134,19 +134,6 @@ ALTER TABLE ingest_version ADD COLUMN IF NOT EXISTS is_current     BOOLEAN DEFAU
 ALTER TABLE ingest_version ADD COLUMN IF NOT EXISTS rolled_back_at  TIMESTAMPTZ;
 CREATE UNIQUE INDEX IF NOT EXISTS uniq_ingest_current
 ON ingest_version(is_current) WHERE is_current;
-"""
-
-# DDL migrate car_specs từ unversioned → versioned (chạy 1 lần trên production).
-# ALTER TABLE ADD COLUMN là additive → không break query cũ.
-_MIGRATE_CAR_SPECS_VERSION_DDL = """
-ALTER TABLE car_specs ADD COLUMN IF NOT EXISTS ingest_version TEXT NOT NULL DEFAULT '';
-DROP INDEX IF EXISTS uniq_car_specs;
-CREATE UNIQUE INDEX IF NOT EXISTS uniq_car_specs ON car_specs
-    (ingest_version, model_code, COALESCE(version_code,''), COALESCE(version_name,''), spec_category, spec_key);
-CREATE INDEX IF NOT EXISTS idx_car_specs_ingest_version ON car_specs(ingest_version);
-CREATE OR REPLACE VIEW car_specs_active AS
-SELECT * FROM car_specs
-WHERE ingest_version = (SELECT version FROM ingest_version WHERE is_current LIMIT 1);
 """
 
 
@@ -304,9 +291,9 @@ def set_current(conn, version: str, rollback: bool = False) -> None:
     conn.commit()
 
 
-def run(version: str = "v1", dsn: str = DEFAULT_DSN) -> int:
+def run(version: str = "v1", dsn: str = PG_DSN) -> int:
     """Upsert version-tagged edition + price_list + record ingest_version (is_current=false)."""
-    version_dir = REPO_ROOT / "data" / "clean" / version
+    version_dir = CLEAN_DIR / version
     pg_dir = version_dir / "postgres"
     if not pg_dir.exists():
         print(f"[postgres_ingest] postgres dir not found: {pg_dir}", file=sys.stderr)
@@ -341,7 +328,7 @@ def run(version: str = "v1", dsn: str = DEFAULT_DSN) -> int:
 def main() -> int:
     ap = argparse.ArgumentParser(description="Ingest postgres CSV into PostgreSQL (versioned).")
     ap.add_argument("--version", default="v1", help="Clean data version")
-    ap.add_argument("--dsn", default=DEFAULT_DSN, help="PostgreSQL connection string")
+    ap.add_argument("--dsn", default=PG_DSN, help="PostgreSQL connection string")
     args = ap.parse_args()
     return run(args.version, args.dsn)
 

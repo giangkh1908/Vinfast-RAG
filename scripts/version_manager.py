@@ -24,25 +24,17 @@ Usage:
 """
 
 import argparse
-import os
 import sys
 from pathlib import Path
 
 import psycopg2
-from dotenv import load_dotenv
 from qdrant_client import QdrantClient, models
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(REPO_ROOT))
-sys.path.insert(0, str(REPO_ROOT / "backend"))
+# Chạy trực tiếp (`python scripts/version_manager.py`) → đưa repo root vào sys.path
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-load_dotenv(REPO_ROOT / ".env")
-
+from scripts.config import CLEAN_DIR, PG_DSN, QDRANT_API_KEY, QDRANT_URL  # noqa: E402
 from scripts.ingest import postgres_ingest  # noqa: E402
-
-QDRANT_URL = os.environ.get("QDRANT_URL", "http://localhost:16333")
-QDRANT_API_KEY = os.environ.get("QDRANT_API_KEY", "")
-PG_DSN = os.environ.get("PG_DSN", "postgresql://vivu:vivu@localhost:15432/vivu")
 
 SPARSE_ALIAS = "sparse"
 DENSE_ALIASES = ["vivu_product_info", "vivu_policy", "vivu_maintenance"]
@@ -62,7 +54,7 @@ def _conn():
 
 def dense_stems_for_version(version: str) -> list[str]:
     """Tên collection dense của 1 version (từ vector/*.jsonl stems)."""
-    vdir = REPO_ROOT / "data" / "clean" / version / "vector"
+    vdir = CLEAN_DIR / version / "vector"
     if not vdir.exists():
         return list(DENSE_ALIASES)
     stems = sorted(p.stem for p in vdir.glob("*.jsonl"))
@@ -280,7 +272,7 @@ def _backfill_cache(client: QdrantClient, version: str) -> int:
 
     cache = VectorCache()
     ns = _uuid.UUID("6ba7b810-9dad-11d1-80b4-00c04fd430c8")
-    vdir = REPO_ROOT / "data" / "clean" / version / "vector"
+    vdir = CLEAN_DIR / version / "vector"
     n = 0
     for f in sorted(vdir.glob("*.jsonl")):
         col = f.stem
@@ -377,7 +369,7 @@ def cmd_migrate_v1(args=None) -> int:
         cur.execute(postgres_ingest.DDL)
         conn.commit()
         # ingest v1 CSV với version tag
-        version_dir = REPO_ROOT / "data" / "clean" / version
+        version_dir = CLEAN_DIR / version
         pg_dir = version_dir / "postgres"
         if pg_dir.exists():
             edition_rows = postgres_ingest.load_csv(pg_dir / "edition.csv")

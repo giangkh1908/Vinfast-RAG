@@ -68,11 +68,6 @@ def get_metrics() -> list[dict]:
     return list(_METRICS)
 
 
-def reset_metrics() -> None:
-    """Xóa metrics tích lũy — gọi đầu mỗi request để metrics chỉ tính request hiện tại."""
-    _METRICS.clear()
-
-
 def summarize_metrics() -> dict:
     """Tổng hợp metrics: số call, tổng latency, TTFT trung bình, token theo op."""
     by_op: dict[str, dict] = {}

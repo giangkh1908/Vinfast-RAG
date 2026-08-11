@@ -237,7 +237,7 @@ def _render_list(node, ordered: bool, depth: int = 0) -> str:
             elif child.name == "br":
                 text_parts.append(" ")
             else:
-                txt = _inline_text(child) if child.name in INLINE_TAGS else _inline_text(child)
+                txt = _inline_text(child)
                 if txt:
                     text_parts.append(txt)
         item = re.sub(r"\s+", " ", " ".join(text_parts)).strip()
