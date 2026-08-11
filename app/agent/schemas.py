@@ -1,7 +1,12 @@
-import asyncpg
+import asyncio
+import logging
 import time
 
+import asyncpg
+
 from app.config import settings
+
+logger = logging.getLogger("bds.schemas")
 
 # Tools exposed in BDS mode (Trust Foundation slice)
 BDS_TOOL_NAMES = {"get_specs", "search_knowledge_base", "list_available_models", "ask_clarification"}
@@ -11,58 +16,64 @@ _schemas_cache = None
 _schemas_cache_time = 0
 _CACHE_TTL = 300
 
+PG_URL = settings.postgres_url.replace("postgresql+asyncpg://", "postgresql://")
+
+
+async def _pg_fetch(sql: str, *params, retries: int = 2) -> list:
+    """Execute PG query with retry on connection failure (Neon serverless)."""
+    for attempt in range(retries + 1):
+        try:
+            conn = await asyncpg.connect(PG_URL)
+            try:
+                rows = await conn.fetch(sql, *params)
+                return rows
+            finally:
+                await conn.close()
+        except (asyncpg.exceptions.ConnectionDoesNotExistError,
+                asyncpg.InterfaceError, OSError) as e:
+            if attempt < retries:
+                logger.warning("PG connect retry %d/%d: %s", attempt + 1, retries, e)
+                await asyncio.sleep(0.5 * (attempt + 1))
+            else:
+                raise
+
 
 async def _get_model_list() -> list[str]:
-    pg_url = settings.postgres_url.replace("postgresql+asyncpg://", "postgresql://")
-    conn = await asyncpg.connect(pg_url)
-
     if settings.scope_enabled and settings.scope_models:
         placeholders = ", ".join(f"${i+1}" for i in range(len(settings.scope_models)))
-        rows = await conn.fetch(
+        rows = await _pg_fetch(
             f"SELECT DISTINCT model_label FROM edition_active "
             f"WHERE model_label IN ({placeholders}) ORDER BY model_label",
             *settings.scope_models,
         )
     else:
-        rows = await conn.fetch("SELECT DISTINCT model_label FROM edition_active ORDER BY model_label")
-
-    await conn.close()
+        rows = await _pg_fetch("SELECT DISTINCT model_label FROM edition_active ORDER BY model_label")
     return [r["model_label"] for r in rows]
 
 
 async def _get_version_list() -> list[str]:
-    pg_url = settings.postgres_url.replace("postgresql+asyncpg://", "postgresql://")
-    conn = await asyncpg.connect(pg_url)
-
     if settings.scope_enabled and settings.scope_models:
         placeholders = ", ".join(f"${i+1}" for i in range(len(settings.scope_models)))
-        rows = await conn.fetch(
+        rows = await _pg_fetch(
             f"SELECT DISTINCT edition_id FROM edition_active "
             f"WHERE model_label IN ({placeholders}) ORDER BY edition_id",
             *settings.scope_models,
         )
     else:
-        rows = await conn.fetch("SELECT DISTINCT edition_id FROM edition_active ORDER BY edition_id")
-
-    await conn.close()
+        rows = await _pg_fetch("SELECT DISTINCT edition_id FROM edition_active ORDER BY edition_id")
     return [r["edition_id"] for r in rows]
 
 
 async def _get_spec_categories() -> list[str]:
-    pg_url = settings.postgres_url.replace("postgresql+asyncpg://", "postgresql://")
-    conn = await asyncpg.connect(pg_url)
-
     if settings.scope_enabled and settings.scope_models:
         placeholders = ", ".join(f"${i+1}" for i in range(len(settings.scope_models)))
-        rows = await conn.fetch(
+        rows = await _pg_fetch(
             f"SELECT DISTINCT spec_category FROM car_specs "
             f"WHERE model_code IN ({placeholders}) ORDER BY spec_category",
             *settings.scope_models,
         )
     else:
-        rows = await conn.fetch("SELECT DISTINCT spec_category FROM car_specs ORDER BY spec_category")
-
-    await conn.close()
+        rows = await _pg_fetch("SELECT DISTINCT spec_category FROM car_specs ORDER BY spec_category")
     return [r["spec_category"] for r in rows]
 
 

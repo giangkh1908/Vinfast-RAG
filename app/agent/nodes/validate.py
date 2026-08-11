@@ -54,8 +54,10 @@ def _extract_numbers(text: str) -> set[float]:
     return nums
 
 
-def _extract_context_features(tool_results: list[dict]) -> set[str]:
+def _extract_context_features(tool_results: list[dict]) -> tuple[set[str], str]:
+    """Extract feature terms + raw text corpus from tool results."""
     features = set()
+    raw_parts = []
     for tr in tool_results:
         if not tr.get("success"):
             continue
@@ -66,23 +68,31 @@ def _extract_context_features(tool_results: list[dict]) -> set[str]:
                 features.add(s.get("key", "").lower())
                 features.update(m.group().lower() for m in _FEATURE_RE.finditer(s.get("key", "")))
                 features.update(m.group().lower() for m in _FEATURE_RE.finditer(s.get("value", "")))
+                raw_parts.append(s.get("key", ""))
+                raw_parts.append(s.get("value", ""))
         elif tool == "search_knowledge_base":
             for r in result.get("results", []):
-                features.update(m.group().lower() for m in _FEATURE_RE.finditer(r.get("text", "")))
+                txt = r.get("text", "")
+                features.update(m.group().lower() for m in _FEATURE_RE.finditer(txt))
+                raw_parts.append(txt)
         elif tool == "search_all":
             sub_specs = result.get("specs", {})
             for s in sub_specs.get("specs", []):
                 features.add(s.get("key", "").lower())
                 features.update(m.group().lower() for m in _FEATURE_RE.finditer(s.get("key", "")))
                 features.update(m.group().lower() for m in _FEATURE_RE.finditer(s.get("value", "")))
+                raw_parts.append(s.get("key", ""))
+                raw_parts.append(s.get("value", ""))
             sub_kb = result.get("knowledge_base", {})
             for r in sub_kb.get("results", []):
-                features.update(m.group().lower() for m in _FEATURE_RE.finditer(r.get("text", "")))
+                txt = r.get("text", "")
+                features.update(m.group().lower() for m in _FEATURE_RE.finditer(txt))
+                raw_parts.append(txt)
         elif tool == "get_price":
             for p in result.get("prices", []):
                 features.add("giá")
                 features.add("price")
-    return features
+    return features, " ".join(raw_parts).lower()
 
 
 def _check_text_grounding(response: str, tool_results: list[dict]) -> bool:
@@ -90,8 +100,8 @@ def _check_text_grounding(response: str, tool_results: list[dict]) -> bool:
     if not response_features:
         return True
 
-    context_features = _extract_context_features(tool_results)
-    if not context_features:
+    context_features, raw_corpus = _extract_context_features(tool_results)
+    if not context_features and not raw_corpus:
         return True
 
     unmatched = set()
@@ -103,6 +113,9 @@ def _check_text_grounding(response: str, tool_results: list[dict]) -> bool:
             if normalized in ctx_norm or ctx_norm in normalized:
                 found = True
                 break
+        if not found and raw_corpus:
+            if normalized in raw_corpus or feat in raw_corpus:
+                found = True
         if not found:
             unmatched.add(feat)
 
