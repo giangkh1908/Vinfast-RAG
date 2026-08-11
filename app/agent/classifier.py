@@ -116,6 +116,36 @@ class QueryClassifier:
         has_version = "version" in entities
         specificity = "clear" if has_model else "unclear"
 
+        # OOS: cross-model comparison (different models mentioned)
+        if settings.scope_enabled:
+            all_models_in_query = ALL_MODEL_RE.findall(query)
+            unique_models = {re.sub(r"\s+", " ", m.strip()).lower() for m in all_models_in_query}
+            if len(unique_models) > 1:
+                comparison_kw = re.compile(
+                    r"(so\s*sánh|hay|hay\s*là|vs|versus|khác\s*nhau|đối\s*chiếu)",
+                    re.IGNORECASE,
+                )
+                if comparison_kw.search(query):
+                    return ClassifyResult(
+                        decision="out_of_scope",
+                        reason="comparison: cross-model comparison not supported",
+                        entities=entities,
+                        specificity="unclear",
+                    )
+
+        # OOS: recommendation
+        recommend_kw = re.compile(
+            r"(nên\s*mua|xe\s*nào\s*tốt|gợi\s*y|recommend|phù\s*hợp\s*với|tư\s*vấn\s*mua|lựa\s*chọn)",
+            re.IGNORECASE,
+        )
+        if recommend_kw.search(query):
+            return ClassifyResult(
+                decision="out_of_scope",
+                reason="recommendation: purchase advice not supported",
+                entities=entities,
+                specificity="unclear",
+            )
+
         return ClassifyResult(
             decision="answer",
             reason="context sufficient, proceed to retrieval",
