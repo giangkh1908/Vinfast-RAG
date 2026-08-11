@@ -95,7 +95,13 @@ def _extract_context_features(tool_results: list[dict]) -> tuple[set[str], str]:
     return features, " ".join(raw_parts).lower()
 
 
-def _check_text_grounding(response: str, tool_results: list[dict]) -> bool:
+_NEGATIVE_CLAUSE_RE = re.compile(
+    r"(không\s*(có|được\s*trang\s*bị|hỗ\s*trợ|trang\s*bị)|chưa\s*(có|trang\s*bị))",
+    re.IGNORECASE,
+)
+
+
+def _check_text_grounding(response: str, tool_results: list[dict], query: str = "") -> bool:
     response_features = set(m.group().lower() for m in _FEATURE_RE.finditer(response))
     if not response_features:
         return True
@@ -103,6 +109,11 @@ def _check_text_grounding(response: str, tool_results: list[dict]) -> bool:
     context_features, raw_corpus = _extract_context_features(tool_results)
     if not context_features and not raw_corpus:
         return True
+
+    # Features in negative claims ("không có X") don't need grounding —
+    # absence of a feature from context IS the evidence for the negative claim
+    query_features = set(m.group().lower() for m in _FEATURE_RE.finditer(query)) if query else set()
+    has_negative = bool(_NEGATIVE_CLAUSE_RE.search(response))
 
     unmatched = set()
     for feat in response_features:
@@ -117,6 +128,9 @@ def _check_text_grounding(response: str, tool_results: list[dict]) -> bool:
             if normalized in raw_corpus or feat in raw_corpus:
                 found = True
         if not found:
+            # If feature is from user's query and response is negative → OK
+            if has_negative and feat in query_features:
+                continue
             unmatched.add(feat)
 
     if not unmatched:
@@ -134,7 +148,7 @@ def _check_grounding(response: str, tool_results: list[dict], query: str = "") -
     if not tool_results:
         return False
 
-    if not _check_text_grounding(response, tool_results):
+    if not _check_text_grounding(response, tool_results, query):
         return False
 
     response_numbers = _extract_numbers(_strip_non_factual_numbers(response))

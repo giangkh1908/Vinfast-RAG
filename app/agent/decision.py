@@ -431,6 +431,8 @@ def assess_evidence(tool_results: list[dict], query: str) -> tuple[str, list[dic
                     })
                     if score >= 0.7:
                         has_direct = True
+            if sub_specs.get("specs"):
+                has_direct = True
             sub_kb = result.get("knowledge_base", {})
             if sub_kb.get("results"):
                 for r in sub_kb["results"]:
