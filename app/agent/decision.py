@@ -395,14 +395,18 @@ def assess_evidence(tool_results: list[dict], query: str) -> tuple[str, list[dic
             for r in result["results"]:
                 score = r.get("score", 0)
                 if score >= 0.3:
+                    page = r.get("page", "")
+                    page_str = f" (trang {page})" if page else ""
+                    text = r.get("text", "")[:200]
                     valid_sources.append({
                         "tool": tool,
-                        "text": r.get("text", "")[:200],
+                        "text": f"{text}{page_str}",
                         "source_url": r.get("source_url", ""),
                         "source_type": r.get("source_type", ""),
                         "score": score,
                         "chunk_id": r.get("id", ""),
                         "model_id": r.get("model_id", ""),
+                        "page": page,
                     })
                     if score >= 0.5:
                         has_direct = True
@@ -432,14 +436,18 @@ def assess_evidence(tool_results: list[dict], query: str) -> tuple[str, list[dic
                 for r in sub_kb["results"]:
                     score = r.get("score", 0)
                     if score >= 0.3:
+                        page = r.get("page", "")
+                        page_str = f" (trang {page})" if page else ""
+                        text = r.get("text", "")[:200]
                         valid_sources.append({
                             "tool": "search_knowledge_base",
-                            "text": r.get("text", "")[:200],
+                            "text": f"{text}{page_str}",
                             "source_url": r.get("source_url", ""),
                             "source_type": r.get("source_type", ""),
                             "score": score,
                             "chunk_id": r.get("id", ""),
                             "model_id": r.get("model_id", ""),
+                            "page": page,
                         })
                         if score >= 0.5:
                             has_direct = True
@@ -496,18 +504,21 @@ def build_retrieved_chunks(tool_results: list[dict], query: str = "") -> list[di
         if tool == "search_knowledge_base" and result.get("results"):
             for r in result["results"]:
                 rank += 1
+                page = r.get("page", "")
+                page_str = f" (trang {page})" if page else ""
                 chunks.append(RetrievedChunk(
                     rank=rank,
                     chunk_id=r.get("id", f"kb_{rank}"),
                     source_id=r.get("source_type", ""),
                     source_title=r.get("source_type", ""),
                     source_url=r.get("source_url", ""),
-                    content=r.get("text", "")[:500],
+                    content=f"{r.get('text', '')[:500]}{page_str}",
                     vehicle_model=r.get("model_id", "") or "",
                     vehicle_version="all_versions",
                     topic="",
                     approval_status="approved",
                     retrieval_score=r.get("score", 0.0),
+                    page=page,
                 ).__dict__)
 
         elif tool == "get_specs" and result.get("specs"):
@@ -555,14 +566,18 @@ def build_retrieved_chunks(tool_results: list[dict], query: str = "") -> list[di
 def build_displayed_citations(citations: list[dict], retrieved_chunks: list[dict] | None = None) -> list[dict]:
     """Convert citations → P0 displayed_citations schema."""
     chunk_ids_by_url: dict[str, list[str]] = {}
+    pages_by_url: dict[str, set[str]] = {}
     if retrieved_chunks:
         for rc in retrieved_chunks:
             url = rc.get("source_url", "")
             cid = rc.get("chunk_id", "")
+            page = rc.get("page", "")
             if url and cid:
                 chunk_ids_by_url.setdefault(url, [])
                 if cid not in chunk_ids_by_url[url]:
                     chunk_ids_by_url[url].append(cid)
+            if url and page:
+                pages_by_url.setdefault(url, set()).add(str(page))
 
     seen = set()
     result = []
@@ -574,6 +589,10 @@ def build_displayed_citations(citations: list[dict], retrieved_chunks: list[dict
         model = c.get("model_code", "")
         label = c.get("source_type", "")
         text = f"{model} — {label}" if model and label else (label or url)
+        pages = sorted(pages_by_url.get(url, set()), key=lambda x: int(x) if x.isdigit() else 0)
+        if pages:
+            page_str = ", ".join(pages)
+            text += f" (trang {page_str})"
         cids = chunk_ids_by_url.get(url, [])
         if not cids and c.get("chunk_id"):
             cids = [c["chunk_id"]]

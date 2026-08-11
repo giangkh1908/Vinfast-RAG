@@ -182,17 +182,13 @@ class QueryClassifier:
                 entities=entities, specificity="unclear",
             )
 
-        # BDS-11: Comparison — cross-model only
+        # BDS-11: Comparison — ALL comparisons are OOS (same-model too)
         if _COMPARISON_RE.search(query):
-            if settings.scope_enabled:
-                all_models = ALL_MODEL_RE.findall(query)
-                unique = {re.sub(r"\s+", " ", m.strip()).lower() for m in all_models}
-                if len(unique) > 1:
-                    return ClassifyResult(
-                        decision="out_of_scope",
-                        reason="comparison: cross-model comparison not supported",
-                        entities=entities, specificity="unclear",
-                    )
+            return ClassifyResult(
+                decision="out_of_scope",
+                reason="comparison: comparison not supported in this slice",
+                entities=entities, specificity="unclear",
+            )
 
         # BDS-10: Multi-model, unclear intent
         if settings.scope_enabled and not has_model:

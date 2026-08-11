@@ -319,6 +319,7 @@ def _resolve_sparse_texts(qdrant: QdrantREST, sparse_results: list[dict]) -> lis
                 "source_url": payload.get("source_url", ""),
                 "edition_id": payload.get("edition_id", ""),
                 "text_type": payload.get("text_type", ""),
+                "page": payload.get("page", ""),
             }
 
     # Inject text into sparse results
@@ -393,6 +394,7 @@ async def hybrid_search(query: str, model_id: str = None, top_k: int = 5) -> lis
             "text_type": payload.get("text_type", ""),
             "source_type": payload.get("source_type", ""),
             "source_url": payload.get("source_url", ""),
+            "page": payload.get("page", ""),
             "score": round(score, 4),
         })
         if len(results) >= top_k:
