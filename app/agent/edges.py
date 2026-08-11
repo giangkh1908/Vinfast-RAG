@@ -13,6 +13,8 @@ VERSION_QUERY_RE = re.compile(
 def route_after_classify(state: AgentState) -> str:
     if state.get("decision") == "out_of_scope":
         return "respond"
+    if state.get("decision") == "clarify":
+        return "respond"
     entities = state.get("entities", {})
     has_model = bool(entities.get("model_code"))
     has_version = bool(entities.get("version"))

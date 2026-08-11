@@ -19,6 +19,7 @@ class AgentState(TypedDict, total=False):
     entities: dict[str, Any]
     specificity: str
     category: str | None
+    allowed_tools: set[str] | None
 
     assessment: str
     citations: list[dict[str, Any]]

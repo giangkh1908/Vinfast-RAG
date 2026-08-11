@@ -52,6 +52,13 @@ async def execute_tools_node(state: AgentState) -> dict:
     llm = AsyncOpenAI(api_key=settings.openai_api_key, base_url=settings.openai_base_url)
     tool_schemas = await build_tool_schemas()
 
+    # Constrain tools based on topic classification from classify node
+    allowed_tools = state.get("allowed_tools")
+    if allowed_tools is not None:
+        tool_schemas = [s for s in tool_schemas if s["function"]["name"] in allowed_tools]
+        if not tool_schemas:
+            tool_schemas = await build_tool_schemas()
+
     t_retrieve_start = state.get("t_retrieve_start") or time.time()
 
     try:
