@@ -113,6 +113,7 @@ CREATE TABLE IF NOT EXISTS car_specs (
     spec_value         TEXT NOT NULL,   -- "150"|"87.7"|"5" (string)
     spec_unit          TEXT,            -- "kW"|"km"|"kWh"|"mm"|""|NULL
     source_url         TEXT,
+    page               TEXT,            -- số trang PDF (nullable; từ --- Trang N ---)
     updated_at         TIMESTAMPTZ DEFAULT now()
 );
 DROP INDEX IF EXISTS uniq_car_specs;
@@ -134,6 +135,11 @@ ALTER TABLE ingest_version ADD COLUMN IF NOT EXISTS is_current     BOOLEAN DEFAU
 ALTER TABLE ingest_version ADD COLUMN IF NOT EXISTS rolled_back_at  TIMESTAMPTZ;
 CREATE UNIQUE INDEX IF NOT EXISTS uniq_ingest_current
 ON ingest_version(is_current) WHERE is_current;
+"""
+
+# Migration cho car_specs: thêm page (schema cũ chưa có)
+_MIGRATE_CAR_SPECS_DDL = """
+ALTER TABLE car_specs ADD COLUMN IF NOT EXISTS page TEXT;
 """
 
 
@@ -220,14 +226,15 @@ def upsert_specs(conn, version: str, rows: list[dict[str, Any]]) -> int:
     sql = """
     INSERT INTO car_specs (ingest_version, model_code, version_name, version_code,
                            spec_category, spec_category_vn, spec_key, spec_key_vn,
-                           spec_value, spec_unit, source_url)
+                           spec_value, spec_unit, source_url, page)
     VALUES %s
     """
     values = [
         (version, r["model_code"], r["version_name"] or None, r["version_code"] or None,
          r["spec_category"], r.get("spec_category_vn", ""),
          r["spec_key"], r.get("spec_key_vn", ""),
-         r["spec_value"], r["spec_unit"] or None, r["source_url"] or None)
+         r["spec_value"], r["spec_unit"] or None, r["source_url"] or None,
+         r.get("page") or None)
         for r in rows
     ]
     execute_values(cur, sql, values)
@@ -308,6 +315,7 @@ def run(version: str = "v1", dsn: str = PG_DSN) -> int:
 
     cur = conn.cursor()
     cur.execute(DDL)
+    cur.execute(_MIGRATE_CAR_SPECS_DDL)
     conn.commit()
 
     edition_rows = load_csv(pg_dir / "edition.csv")

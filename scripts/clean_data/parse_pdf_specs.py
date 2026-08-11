@@ -76,7 +76,8 @@ ALIASES_BY_LEN = sorted(LABEL_MAP.keys(), key=len, reverse=True)
 CSV_FIELDS = ["model_code", "version_name", "version_code",
               "spec_category", "spec_category_vn",
               "spec_key", "spec_key_vn",
-              "spec_value", "spec_unit", "source_url"]
+              "spec_value", "spec_unit", "source_url",
+              "page"]
 
 # ── Vietnamese labels ────────────────────────────────────────────────────────
 CATEGORY_VN_MAP = {
@@ -362,6 +363,7 @@ def is_section_header(norm_label: str) -> bool:
 
 TABLE_ROW_RE = re.compile(r"^\s*\|.*\|")
 SEP_RE = re.compile(r"^\s*\|[\s\-:|]+\|")
+PAGE_MARKER_RE = re.compile(r"---\s*Trang\s+(\d+)\s*---")
 
 
 def parse_pdf_specs(path: Path) -> list[dict[str, Any]]:
@@ -378,9 +380,18 @@ def parse_pdf_specs(path: Path) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
     seen: set[tuple[str, str]] = set()  # (spec_key, edition) — trùng trong file
 
+    current_page: int | None = None
+
     lines = body.splitlines()
     i = 0
     while i < len(lines):
+        # Track page markers
+        page_m = PAGE_MARKER_RE.match(lines[i].strip())
+        if page_m:
+            current_page = int(page_m.group(1))
+            i += 1
+            continue
+
         if not (TABLE_ROW_RE.match(lines[i]) and i + 1 < len(lines)
                 and SEP_RE.match(lines[i + 1])):
             i += 1
@@ -459,7 +470,8 @@ def parse_pdf_specs(path: Path) -> list[dict[str, Any]]:
                                 continue
                             seen.add(k)
                             rows.append(make_row(model_code, ed, "dimension",
-                                                 sub_key, sub_val, "mm", source_url))
+                                                 sub_key, sub_val, "mm", source_url,
+                                                 page=current_page))
                         continue
                 else:
                     # Không có trong LABEL_MAP → check FEATURE_NORM_MAP (tính năng)
@@ -490,7 +502,8 @@ def parse_pdf_specs(path: Path) -> list[dict[str, Any]]:
                     continue
 
                 rows.append(make_row(model_code, ed, spec_category,
-                                     spec_key, value_clean, spec_unit, source_url))
+                                     spec_key, value_clean, spec_unit, source_url,
+                                     page=current_page))
             j += 1
         i = j if j > i + 1 else i + 1
 
@@ -515,7 +528,8 @@ def parse_dimension_triple(value: str) -> list[tuple[str, str]]:
 
 
 def make_row(model_code: str, edition: str, category: str,
-             key: str, value: str, unit: str, url: str) -> dict[str, Any]:
+             key: str, value: str, unit: str, url: str,
+             page: int | None = None) -> dict[str, Any]:
     return {
         "model_code": model_code,
         "version_name": edition,
@@ -527,6 +541,7 @@ def make_row(model_code: str, edition: str, category: str,
         "spec_value": value,
         "spec_unit": unit,
         "source_url": url,
+        "page": page,
     }
 
 

@@ -28,8 +28,9 @@ from collections import Counter
 from pathlib import Path
 
 from qdrant_client import QdrantClient
-from qdrant_client.models import (Distance, PointStruct, SparseIndexParams,
-                                  SparseVector, SparseVectorParams)
+from qdrant_client.models import (Distance, PayloadSchemaType, PointStruct,
+                                  SparseIndexParams, SparseVector,
+                                  SparseVectorParams)
 
 # Chạy trực tiếp (`python scripts/ingest/sparse_ingest.py`) → repo root vào sys.path
 if __package__ in (None, ""):
@@ -42,6 +43,9 @@ SPARSE_INDEX_PATH = CLEAN_DIR / "{version}" / "sparse_index.json"
 
 SPARSE_COLLECTION_BASE = "sparse"
 DEFAULT_QDRANT_URL = QDRANT_URL
+
+# Payload fields cần filter khi search (retriever lọc theo model_id)
+PAYLOAD_INDEX_FIELDS = {"model_id": PayloadSchemaType.KEYWORD}
 
 # BM25 params
 K1 = 1.5
@@ -114,6 +118,17 @@ def run(version: str = "v1", url: str = DEFAULT_QDRANT_URL, recreate: bool = Fal
         )
         print(f"  created collection {sparse_collection}")
 
+    # Payload index cho filter (tạo nếu chưa có — kể cả khi upsert thường)
+    existing = set(client.get_collection(sparse_collection).payload_schema.keys())
+    for field, schema in PAYLOAD_INDEX_FIELDS.items():
+        if field not in existing:
+            client.create_payload_index(
+                collection_name=sparse_collection,
+                field_name=field,
+                field_schema=schema,
+            )
+            print(f"  [index] {sparse_collection}.{field} created")
+
     # 3. BM25 sparse vector từng chunk + upsert
     points: list[PointStruct] = []
     for (col, c), toks in zip(chunks, doc_tokens):
@@ -136,7 +151,8 @@ def run(version: str = "v1", url: str = DEFAULT_QDRANT_URL, recreate: bool = Fal
             id=qdrant_id(cid),
             vector={"sparse": SparseVector(indices=indices, values=values)},
             payload={"collection": col, "chunk_id": cid, "model_id": c.get("model_id"),
-                      "vector_version": c.get("vector_version", version)},
+                      "vector_version": c.get("vector_version", version),
+                      "text": c.get("text", "")},
         ))
         if len(points) >= 256:
             client.upsert(collection_name=sparse_collection, points=points, wait=True)

@@ -252,6 +252,7 @@ CREATE TABLE IF NOT EXISTS car_specs (
     spec_value     TEXT NOT NULL,      -- "150"|"87.7"|"5" (string, không phải number)
     spec_unit      TEXT,               -- "kW"|"km"|"kWh"|"mm"|""|NULL
     source_url     TEXT,
+    page           TEXT,               -- số trang PDF (nullable; từ --- Trang N ---)
     updated_at     TIMESTAMPTZ DEFAULT now()
 );
 CREATE UNIQUE INDEX IF NOT EXISTS uniq_car_specs ON car_specs
@@ -295,15 +296,16 @@ VF3|Eco|285000000|270750000|Ưu đãi đặt cọc 2026|t|t|2026-07-01||2026-08-
 
 **`postgres/specs.csv`** (sinh bởi `parse_pdf_specs.py` — chạy sau `split_cold_hot`)
 ```
-model_code|version_name|version_code|spec_category|spec_key|spec_value|spec_unit|source_url
-VF 2|||powertrain|power_kw|30|kW|https://vinfastauto.com/vn_vi/dat-coc-xe-vf2
-VF 8|Eco||powertrain|power_kw|150|kW|https://www.vinfastmiennam.vn/so-sanh-vf8-eco-va-vf8-plus
-VF 8|Plus||powertrain|power_kw|300|kW|https://www.vinfastmiennam.vn/so-sanh-vf8-eco-va-vf8-plus
+model_code|version_name|version_code|spec_category|spec_key|spec_value|spec_unit|source_url|page
+VF 2|||powertrain|power_kw|30|kW|https://vinfastauto.com/vn_vi/dat-coc-xe-vf2|
+VF 8|Eco||powertrain|power_kw|150|kW|https://www.vinfastmiennam.vn/so-sanh-vf8-eco-va-vf8-plus|18
+VF 8|Plus||powertrain|power_kw|300|kW|https://www.vinfastmiennam.vn/so-sanh-vf8-eco-va-vf8-plus|18
 ```
 
 > Bool trong CSV = `t`/`f`; cột trống = NULL. `price_promo_vnd` trống khi không
 > có ưu đãi; `valid_to` trống = vẫn còn hiệu lực. `specs.csv`: `version_name` trống
 > = spec chung mọi bản; `version_code` luôn trống (raw không có mã nội bộ).
+> `page` = PDF locator cho citation (nullable; số trang từ `--- Trang N ---` trong file raw).
 
 ---
 
@@ -462,7 +464,7 @@ giữa model/edition không chính xác). **Per-version refresh** mỗi ingest
 
 **Query chuẩn** (retriever):
 ```sql
-SELECT spec_value, spec_unit, version_name FROM car_specs
+SELECT spec_value, spec_unit, version_name, page FROM car_specs
 WHERE model_code='VF 8' AND spec_key='power_kw' [AND version_name='Plus'];
 ```
 

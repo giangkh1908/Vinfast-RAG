@@ -49,11 +49,29 @@ từ bảng so sánh edition trong brochure PDF.
   cảnh báo dữ liệu nhưng hiện chưa tự đổi.
 - ⚠️ **VF 8 All New** (brochure layout "labels-then-values") chưa get được range/DC/FWD.
 
+## CSV columns (`postgres/specs.csv`)
+
+```
+model_code|version_name|version_code|spec_category|spec_category_vn|spec_key|spec_key_vn|spec_value|spec_unit|source_url|page
+```
+
+| Cột | Ví dụ | Ghi chú |
+|---|---|---|
+| `model_code` | `VF 8` | MODEL_LABEL |
+| `version_name` | `Eco` | Edition; rỗng = chung mọi bản |
+| `spec_category` | `powertrain` | Category key |
+| `spec_key` | `range_km` | Spec key |
+| `spec_value` | `562 (NEDC)` | Giá trị gốc từ brochure |
+| `spec_unit` | `km` | Đơn vị |
+| `source_url` | `https://...pdf` | Link PDF gốc |
+| `page` | `18` | Số trang PDF (nullable; `--- Trang N ---` trong file raw) |
+
 ## Metadata / version
 
 - `model_code`, `version_name`, `version_code` chuẩn hóa từ `car_catalog` (API
   `omapi.vinfastauto.com/fe/v1/carModel`), không tự bịa.
 - `source_url` = link nguồn crawl (để trích dẫn + audit).
+- `page` = PDF locator (để citation builder render đúng vị trí).
 
 ## Liên quan
 
