@@ -267,10 +267,10 @@ def get_oos_messages() -> dict[str, str]:
     return {
         "comparison": f"Hiện tại mình chưa hỗ trợ so sánh xe trong lát cắt này. Bạn có thể hỏi thông tin sản phẩm cụ thể của {ml}.",
         "recommendation": f"Gợi ý xe theo nhu cầu chưa được hỗ trợ trong lát cắt này. Bạn có thể hỏi thông tin sản phẩm cụ thể của {ml}.",
-        "pricing": f"Nội dung giá/ưu đãi/chính sách chưa thuộc phạm vi hỗ trợ hiện tại. Bạn có thể hỏi thông tin sản phẩm của {ml}.",
-        "warranty_maintenance": f"Nhóm hỗ trợ sau mua chưa thuộc lát cắt này. Bạn có thể hỏi thông tin sản phẩm của {ml}.",
-        "diagnostics": "Nội dung chẩn đoán hoặc xử lý sự cố không thuộc phạm vi hiện tại.",
-        "hotline_showroom": "Workflow liên hệ/lái thử chưa được hỗ trợ trong lát cắt này.",
+        "pricing": "Nội dung giá/ưu đãi/chính sách chưa thuộc phạm vi hỗ trợ hiện tại.",
+        "warranty_maintenance": "Nhóm hỗ trợ sau mua (bảo hành, bảo dưỡng, hướng dẫn sử dụng) chưa thuộc lát cắt này.",
+        "diagnostics": "Nội dung chẩn đoán hoặc xử lý sự cố kỹ thuật không thuộc phạm vi hiện tại.",
+        "hotline_showroom": "Workflow liên hệ/showroom/lái thử chưa được hỗ trợ trong lát cắt này.",
         "external_source": "Mình chỉ dùng approved data sources trong lát cắt này.",
         "model_oos": f"Lát cắt hiện tại chỉ phục vụ {ml}, chưa hỗ trợ các mẫu xe khác.",
     }

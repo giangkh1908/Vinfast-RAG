@@ -40,6 +40,61 @@ ALL_MODEL_RE = re.compile(
     re.IGNORECASE,
 )
 
+# ── OOS Patterns (BDS-11..17) ──────────────────────────────────────────────
+
+_COMPARISON_RE = re.compile(
+    r"(so\s*sánh|khác\s*nhau\s*thế\s*nào|xe\s*nào\s*hơn|đối\s*chiếu|"
+    r"vs\.?|versus|tốt\s*hơn|nhanh\s*hơn|xịn\s*hơn|"
+    r"VF\s*\d+.*(?:hay|hoặc|vs).*VF\s*\d+)",
+    re.IGNORECASE,
+)
+
+_RECOMMENDATION_RE = re.compile(
+    r"(nên\s*mua|xe\s*nào\s*tốt|gợi\s*y|recommend|phù\s*hợp\s*với|"
+    r"tư\s*vấn\s*mua|lựa\s*chọn|ngân\s*sách|nhu\s*cầu|"
+    r"tôi\s*nên|có\s*nên|đáng\s*mua|ưu\s*điểm\s*nhược)",
+    re.IGNORECASE,
+)
+
+_PRICING_RE = re.compile(
+    r"(giá\s*(bán|niêm\s*yết|ưu\s*đãi|khuyến\s*mãi)|bao\s*nhiêu\s*tiền|"
+    r"chi\s*phí|trả\s*góp|lăn\s*bánh|đặt\s*cọc|"
+    r"khuyến\s*mãi|ưu\s*đãi|voucher|chính\s*sách\s*giá|"
+    r"giá\s*(VF|xe)|VNĐ|triệu\s*đồng)",
+    re.IGNORECASE,
+)
+
+_WARRANTY_RE = re.compile(
+    r"(bảo\s*hành|bảo\s*dưỡng|manual|hướng\s*dẫn\s*sử\s*dụng|"
+    r"thay\s*dầu|kiểm\s*tra|định\s*kỳ|lịch\s*bảo\s*dưỡng|"
+    r"phụ\s*tùng|sửa\s*chữa\s*định|service)",
+    re.IGNORECASE,
+)
+
+_DIAGNOSTICS_RE = re.compile(
+    r"(cảnh\s*báo\s*lỗi|xe\s*hỏng|sự\s*cố\s*kỹ\s*thuật|"
+    r"xử\s*lý\s*sự\s*cố|chẩn\s*đoán|sửa\s*chữa|"
+    r"lỗi|mã\s*lỗi|check\s*engine|khởi\s*động\s*lại|"
+    r"pin\s*chai|pin\s*chết|sạc\s*không\s*vào|"
+    r"phanh\s*không\s*ăn|vô\s*lăng\s*run)",
+    re.IGNORECASE,
+)
+
+_HOTLINE_RE = re.compile(
+    r"(hotline|showroom|lái\s*thử|test\s*drive|đăng\s*ký\s*lái|"
+    r"gặp\s*(sales|nhân\s*viên)|liên\s*hệ|số\s*điện\s*thoại|"
+    r"đại\s*lý|cửa\s*hàng|chi\s*nhánh)",
+    re.IGNORECASE,
+)
+
+_EXTERNAL_SOURCE_RE = re.compile(
+    r"(internet|diễn\s*đàn|review|forum|facebook|youtube|"
+    r"google|tìm\s*kiếm|nguồn\s*khác|website\s*khác|"
+    r"so\s*sánh\s*với\s*xe\s*khác\s*hãng)",
+    re.IGNORECASE,
+
+)
+
 
 @dataclass
 class ClassifyResult:
@@ -75,6 +130,85 @@ class QueryClassifier:
                 return m2.group(1).strip(), m2.group(1).strip()
         return None, None
 
+    def _detect_oos(self, query: str, entities: dict) -> ClassifyResult | None:
+        """Check all OOS patterns (BDS-11..17). Returns ClassifyResult if OOS, None otherwise."""
+        has_model = "model_code" in entities
+
+        # BDS-17: External source request (check first — highest priority)
+        if _EXTERNAL_SOURCE_RE.search(query):
+            return ClassifyResult(
+                decision="out_of_scope",
+                reason="external_source: external data sources not allowed",
+                entities=entities, specificity="unclear",
+            )
+
+        # BDS-15: Safety diagnostics
+        if _DIAGNOSTICS_RE.search(query):
+            return ClassifyResult(
+                decision="out_of_scope",
+                reason="diagnostics: safety diagnosis not supported",
+                entities=entities, specificity="unclear",
+            )
+
+        # BDS-16: Hotline/showroom/test drive
+        if _HOTLINE_RE.search(query):
+            return ClassifyResult(
+                decision="out_of_scope",
+                reason="hotline_showroom: contact workflow not supported",
+                entities=entities, specificity="unclear",
+            )
+
+        # BDS-14: Warranty/maintenance/manual
+        if _WARRANTY_RE.search(query):
+            return ClassifyResult(
+                decision="out_of_scope",
+                reason="warranty_maintenance: after-sales not supported",
+                entities=entities, specificity="unclear",
+            )
+
+        # BDS-13: Pricing/promotions
+        if _PRICING_RE.search(query):
+            return ClassifyResult(
+                decision="out_of_scope",
+                reason="pricing: pricing not supported in this slice",
+                entities=entities, specificity="unclear",
+            )
+
+        # BDS-12: Recommendation
+        if _RECOMMENDATION_RE.search(query):
+            return ClassifyResult(
+                decision="out_of_scope",
+                reason="recommendation: purchase advice not supported",
+                entities=entities, specificity="unclear",
+            )
+
+        # BDS-11: Comparison — cross-model only
+        if _COMPARISON_RE.search(query):
+            if settings.scope_enabled:
+                all_models = ALL_MODEL_RE.findall(query)
+                unique = {re.sub(r"\s+", " ", m.strip()).lower() for m in all_models}
+                if len(unique) > 1:
+                    return ClassifyResult(
+                        decision="out_of_scope",
+                        reason="comparison: cross-model comparison not supported",
+                        entities=entities, specificity="unclear",
+                    )
+
+        # BDS-10: Multi-model, unclear intent
+        if settings.scope_enabled and not has_model:
+            all_models = ALL_MODEL_RE.findall(query)
+            unique = {re.sub(r"\s+", " ", m.strip()).lower() for m in all_models}
+            if len(unique) > 1:
+                comparison_hint = _COMPARISON_RE.search(query)
+                if not comparison_hint:
+                    return ClassifyResult(
+                        decision="clarify",
+                        reason="BDS-10: multiple models, unclear intent",
+                        entities=entities, specificity="unclear",
+                    )
+
+        return None
+
     def classify(self, query: str, history: list[dict] = None) -> ClassifyResult:
         entities = {}
 
@@ -93,13 +227,13 @@ class QueryClassifier:
             if nv:
                 entities["version"] = nv
 
+        # Model scope OOS (BDS-02A)
         if settings.scope_enabled:
             if "model_code_raw" in entities and "model_code" not in entities:
                 return ClassifyResult(
                     decision="out_of_scope",
                     reason=f"BDS-02A: model '{entities['model_code_raw']}' not in scope ({self._model_list_str})",
-                    entities=entities,
-                    specificity="unclear",
+                    entities=entities, specificity="unclear",
                 )
             all_models = ALL_MODEL_RE.findall(query)
             for m in all_models:
@@ -108,43 +242,16 @@ class QueryClassifier:
                     return ClassifyResult(
                         decision="out_of_scope",
                         reason=f"BDS-02A: model '{m}' not in scope ({self._model_list_str})",
-                        entities=entities,
-                        specificity="unclear",
+                        entities=entities, specificity="unclear",
                     )
+
+        # OOS patterns (BDS-10..17) — after model detection
+        oos_result = self._detect_oos(query, entities)
+        if oos_result:
+            return oos_result
 
         has_model = "model_code" in entities
-        has_version = "version" in entities
         specificity = "clear" if has_model else "unclear"
-
-        # OOS: cross-model comparison (different models mentioned)
-        if settings.scope_enabled:
-            all_models_in_query = ALL_MODEL_RE.findall(query)
-            unique_models = {re.sub(r"\s+", " ", m.strip()).lower() for m in all_models_in_query}
-            if len(unique_models) > 1:
-                comparison_kw = re.compile(
-                    r"(so\s*sánh|hay|hay\s*là|vs|versus|khác\s*nhau|đối\s*chiếu)",
-                    re.IGNORECASE,
-                )
-                if comparison_kw.search(query):
-                    return ClassifyResult(
-                        decision="out_of_scope",
-                        reason="comparison: cross-model comparison not supported",
-                        entities=entities,
-                        specificity="unclear",
-                    )
-
-        # OOS: recommendation
-        recommend_kw = re.compile(
-            r"(nên\s*mua|xe\s*nào\s*tốt|gợi\s*y|recommend|phù\s*hợp\s*với|tư\s*vấn\s*mua|lựa\s*chọn)",
-            re.IGNORECASE,
-        )
-        if recommend_kw.search(query):
-            return ClassifyResult(
-                decision="out_of_scope",
-                reason="recommendation: purchase advice not supported",
-                entities=entities,
-                specificity="unclear",
-            )
 
         return ClassifyResult(
             decision="answer",
