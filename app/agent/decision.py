@@ -560,6 +560,49 @@ def build_retrieved_chunks(tool_results: list[dict], query: str = "") -> list[di
                     retrieval_score=price_score,
                 ).__dict__)
 
+        elif tool == "search_all":
+            sub_specs = result.get("specs", {})
+            if sub_specs.get("specs"):
+                for s in sub_specs["specs"]:
+                    rank += 1
+                    score = _spec_relevance_score(qtokens, s.get("key", ""), s.get("value", "")) if qtokens else 0.5
+                    page = s.get("page", "")
+                    page_str = f" (trang {page})" if page else ""
+                    chunks.append(RetrievedChunk(
+                        rank=rank,
+                        chunk_id=f"spec_{sub_specs.get('model_code', '')}_{s.get('key', '')}",
+                        source_id="car_specs",
+                        source_title=f"Specs {sub_specs.get('model_code', '')}",
+                        source_url=sub_specs.get("source_url", ""),
+                        content=f"{s.get('key', '')}: {s.get('value', '')} {s.get('unit', '')}{page_str}",
+                        vehicle_model=sub_specs.get("model_code", ""),
+                        vehicle_version=s.get("version_name", "all_versions"),
+                        topic="thông_số_kỹ_thuật",
+                        approval_status="approved",
+                        retrieval_score=score,
+                        page=page,
+                    ).__dict__)
+            sub_kb = result.get("knowledge_base", {})
+            if sub_kb.get("results"):
+                for r in sub_kb["results"]:
+                    rank += 1
+                    page = r.get("page", "")
+                    page_str = f" (trang {page})" if page else ""
+                    chunks.append(RetrievedChunk(
+                        rank=rank,
+                        chunk_id=r.get("id", f"kb_{rank}"),
+                        source_id=r.get("source_type", ""),
+                        source_title=r.get("source_type", ""),
+                        source_url=r.get("source_url", ""),
+                        content=f"{r.get('text', '')[:500]}{page_str}",
+                        vehicle_model=r.get("model_id", "") or "",
+                        vehicle_version="all_versions",
+                        topic="",
+                        approval_status="approved",
+                        retrieval_score=r.get("score", 0.0),
+                        page=page,
+                    ).__dict__)
+
     return chunks
 
 
