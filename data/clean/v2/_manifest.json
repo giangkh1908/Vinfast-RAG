@@ -45,9 +45,14 @@
         "rows": 14,
         "upserted": 14,
         "price_changed": 14
+      },
+      "car_specs": {
+        "file": "postgres/specs.csv",
+        "rows": 370,
+        "upserted": 370
       }
     },
-    "total_rows_upserted": 28
+    "total_rows_upserted": 398
   },
   "link_only": {
     "brochure_urls": [

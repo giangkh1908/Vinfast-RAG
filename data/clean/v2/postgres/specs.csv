@@ -15,6 +15,8 @@ VF 6|Eco||powertrain|Hệ thống truyền động|mobile_charger_type|Dây sạ
 VF 6|Plus||powertrain|Hệ thống truyền động|mobile_charger_type|Dây sạc di động|Phụ kiện (AFS 3,5kW)||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
 VF 6|Eco||powertrain|Hệ thống truyền động|home_charger_type|Bộ sạc tại nhà|Phụ kiện (AFS 7,4kW)||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
 VF 6|Plus||powertrain|Hệ thống truyền động|home_charger_type|Bộ sạc tại nhà|Phụ kiện (AFS 7,4kW)||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
+VF 6|Eco||battery|Pin & sạc|fast_charge_min|Thời gian nạp pin nhanh nhất|25 phút (từ 10% - 70%)|phút|https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
+VF 6|Plus||battery|Pin & sạc|fast_charge_min|Thời gian nạp pin nhanh nhất|25 phút (từ 10% - 70%)|phút|https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
 VF 6|Eco||powertrain|Hệ thống truyền động|drivetrain|Dẫn động|Cầu trước (FWD)||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
 VF 6|Plus||powertrain|Hệ thống truyền động|drivetrain|Dẫn động|Cầu trước (FWD)||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
 VF 6|Eco||powertrain|Hệ thống truyền động|drive_modes|Chế độ lái|Eco/ Normal/ Sport||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
@@ -41,10 +43,26 @@ VF 6|Eco||exterior|Ngoại thất|rear_brand_light|Đèn nhận diện thương 
 VF 6|Plus||exterior|Ngoại thất|rear_brand_light|Đèn nhận diện thương hiệu sau|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
 VF 6|Eco||exterior|Ngoại thất|power_folding_mirrors|Gương chiếu hậu chỉnh điện / gập điện|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
 VF 6|Plus||exterior|Ngoại thất|power_folding_mirrors|Gương chiếu hậu chỉnh điện / gập điện|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
+VF 6|Eco||exterior|Ngoại thất|auto_wiper|Gạt mưa trước tự động|Không||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
+VF 6|Plus||exterior|Ngoại thất|auto_wiper|Gạt mưa trước tự động|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
+VF 6|Eco||exterior|Ngoại thất|smart_key|Chìa khóa thông minh|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
+VF 6|Plus||exterior|Ngoại thất|smart_key|Chìa khóa thông minh|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
+VF 6|Eco||interior|Nội thất|ac_type|Hệ thống điều hòa|Tự động 1 vùng||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
+VF 6|Plus||interior|Nội thất|ac_type|Hệ thống điều hòa|Tự động, 2 vùng||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
+VF 6|Eco||interior|Nội thất|he thong loc bui min combi 1.0|he thong loc bui min combi 1.0|Không||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
+VF 6|Plus||interior|Nội thất|he thong loc bui min combi 1.0|he thong loc bui min combi 1.0|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
+VF 6|Eco||interior|Nội thất|chuc nang kiem soat chat luong khong khi|chuc nang kiem soat chat luong khong khi|Không||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
+VF 6|Plus||interior|Nội thất|chuc nang kiem soat chat luong khong khi|chuc nang kiem soat chat luong khong khi|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
+VF 6|Eco||interior|Nội thất|chuc nang ion hoa khong khi|chuc nang ion hoa khong khi|Không||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
+VF 6|Plus||interior|Nội thất|chuc nang ion hoa khong khi|chuc nang ion hoa khong khi|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
+VF 6|Eco||interior|Nội thất|display_inch|display_inch|12,9 inch|inch|https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
+VF 6|Plus||interior|Nội thất|display_inch|display_inch|12,9 inch|inch|https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
 VF 6|Eco||infotainment|Giải trí & kết nối|smartphone_integration|Kết nối Android Auto / Apple CarPlay|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
 VF 6|Plus||infotainment|Giải trí & kết nối|smartphone_integration|Kết nối Android Auto / Apple CarPlay|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
 VF 6|Eco||interior|Nội thất|speakers|Hệ thống loa|6|số lượng|https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
 VF 6|Plus||interior|Nội thất|speakers|Hệ thống loa|6|số lượng|https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
+VF 6|Eco||interior|Nội thất|driver_seat_type|driver_seat_type|Chỉnh cơ 6 hướng||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
+VF 6|Plus||interior|Nội thất|driver_seat_type|driver_seat_type|Chỉnh điện 8 hướng||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
 VF 6|Eco||interior|Nội thất|leatherette_seats|Ghế bọc da nhân tạo|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
 VF 6|Plus||interior|Nội thất|leatherette_seats|Ghế bọc da nhân tạo|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
 VF 6|Eco||exterior|Ngoại thất|one_touch_windows|Kính cửa sổ chỉnh điện 1 chạm|Có, lên/xuống một chạm tất cả các vị trí||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
@@ -65,10 +83,16 @@ VF 6|Eco||safety|An toàn|tcs|Kiểm soát lực kéo (TCS)|Có||https://storage
 VF 6|Plus||safety|An toàn|tcs|Kiểm soát lực kéo (TCS)|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
 VF 6|Eco||safety|An toàn|hsa|Hỗ trợ khởi hành ngang dốc (HSA)|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
 VF 6|Plus||safety|An toàn|hsa|Hỗ trợ khởi hành ngang dốc (HSA)|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
+VF 6|Eco||safety|An toàn|tpms|Giám sát áp suất lốp|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
+VF 6|Plus||safety|An toàn|tpms|Giám sát áp suất lốp|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
 VF 6|Eco||adas|Hỗ trợ lái nâng cao (ADAS)|highway_driving_assist|Trợ lái trên cao tốc / di chuyển khi tắc đường|Không||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
 VF 6|Plus||adas|Hỗ trợ lái nâng cao (ADAS)|highway_driving_assist|Trợ lái trên cao tốc / di chuyển khi tắc đường|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
 VF 6|Eco||adas|Hỗ trợ lái nâng cao (ADAS)|auto_lane_change|Hỗ trợ tự động chuyển làn|Không||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
 VF 6|Plus||adas|Hỗ trợ lái nâng cao (ADAS)|auto_lane_change|Hỗ trợ tự động chuyển làn|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
+VF 6|Eco||safety|An toàn|giam sat hanh trinh|giam sat hanh trinh|Tiêu chuẩn||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
+VF 6|Plus||safety|An toàn|giam sat hanh trinh|giam sat hanh trinh|Thích ứng||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
+VF 6|Eco||adas|Hỗ trợ lái nâng cao (ADAS)|traffic_sign_recognition|Nhận biết biển báo giao thông|Không||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
+VF 6|Plus||adas|Hỗ trợ lái nâng cao (ADAS)|traffic_sign_recognition|Nhận biết biển báo giao thông|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
 VF 6|Eco||adas|Hỗ trợ lái nâng cao (ADAS)|adaptive_cruise_control|Điều chỉnh tốc độ thông minh|Không||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
 VF 6|Plus||adas|Hỗ trợ lái nâng cao (ADAS)|adaptive_cruise_control|Điều chỉnh tốc độ thông minh|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
 VF 6|Eco||adas|Hỗ trợ lái nâng cao (ADAS)|lane_departure_warning|Cảnh báo chệch làn|Không||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
@@ -99,6 +123,8 @@ VF 6|Eco||security|An ninh|anti_theft_alarm|Cảnh báo chống trộm|Có||http
 VF 6|Plus||security|An ninh|anti_theft_alarm|Cảnh báo chống trộm|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
 VF 6|Eco||security|An ninh|immobilizer|Khoá động cơ khi có trộm|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
 VF 6|Plus||security|An ninh|immobilizer|Khoá động cơ khi có trộm|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
+VF 6|Eco||infotainment|Giải trí & kết nối|online_entertainment|online_entertainment|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
+VF 6|Plus||infotainment|Giải trí & kết nối|online_entertainment|online_entertainment|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
 VF 6|Eco||infotainment|Giải trí & kết nối|navigation|Điều hướng & dẫn đường|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
 VF 6|Plus||infotainment|Giải trí & kết nối|navigation|Điều hướng & dẫn đường|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
 VF 6|Eco||infotainment|Giải trí & kết nối|gaming|Trò chơi|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
@@ -109,6 +135,8 @@ VF 6|Eco||infotainment|Giải trí & kết nối|self_diagnosis|Tự chẩn đo�
 VF 6|Plus||infotainment|Giải trí & kết nối|self_diagnosis|Tự chẩn đoán lỗi|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
 VF 6|Eco||infotainment|Giải trí & kết nối|ota_update|Cập nhật phần mềm từ xa|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
 VF 6|Plus||infotainment|Giải trí & kết nối|ota_update|Cập nhật phần mềm từ xa|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
+VF 6|Eco||infotainment|Giải trí & kết nối|virtual_assistant|virtual_assistant|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
+VF 6|Plus||infotainment|Giải trí & kết nối|virtual_assistant|virtual_assistant|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
 VF 6|Eco||infotainment|Giải trí & kết nối|phone_app|Ứng dụng điện thoại|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
 VF 6|Plus||infotainment|Giải trí & kết nối|phone_app|Ứng dụng điện thoại|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
 VF 8|Eco||dimension|Kích thước & trọng lượng|wheelbase_mm|Chiều dài cơ sở|2.950|mm|https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|18
@@ -123,6 +151,8 @@ VF 8|Eco||dimension|Kích thước & trọng lượng|ground_clearance_mm|Khoả
 VF 8|Plus||dimension|Kích thước & trọng lượng|ground_clearance_mm|Khoảng sáng gầm xe|157|mm|https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|18
 VF 8|Eco||dimension|Kích thước & trọng lượng|trunk_capacity|Dung tích khoang hành lý|376/1.373|L|https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|18
 VF 8|Plus||dimension|Kích thước & trọng lượng|trunk_capacity|Dung tích khoang hành lý|376/1.373|L|https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|18
+VF 8|Eco||dimension|Kích thước & trọng lượng|frunk_capacity_l|Dung tích khoang hành lý phía trước|88|L|https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|18
+VF 8|Plus||dimension|Kích thước & trọng lượng|frunk_capacity_l|Dung tích khoang hành lý phía trước|88|L|https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|18
 VF 8|Eco||dimension|Kích thước & trọng lượng|curb_weight_kg|Trọng lượng không tải|2.328 Kg||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|18
 VF 8|Plus||dimension|Kích thước & trọng lượng|curb_weight_kg|Trọng lượng không tải|2.520 Kg||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|18
 VF 8|Eco||dimension|Kích thước & trọng lượng|roof_load_kg|Tải trọng hành lý nóc xe|70||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|18
@@ -139,6 +169,8 @@ VF 8|Eco||battery|Pin & sạc|battery_kwh|Dung lượng pin khả dụng|87,7|kW
 VF 8|Plus||battery|Pin & sạc|battery_kwh|Dung lượng pin khả dụng|87,7|kWh|https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|18
 VF 8|Eco||battery|Pin & sạc|range_km|Phạm vi di chuyển|562 (NEDC)|km|https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|18
 VF 8|Plus||battery|Pin & sạc|range_km|Phạm vi di chuyển|457 (WLTP)|km|https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|18
+VF 8|Eco||battery|Pin & sạc|fast_charge_min|Thời gian nạp pin nhanh nhất|31|phút|https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|18
+VF 8|Plus||battery|Pin & sạc|fast_charge_min|Thời gian nạp pin nhanh nhất|31|phút|https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|18
 VF 8|Eco||powertrain|Hệ thống truyền động|drive_modes|Chế độ lái|Eco/Normal/Sport||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|18
 VF 8|Plus||powertrain|Hệ thống truyền động|drive_modes|Chế độ lái|Eco/Normal/Sport||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|18
 VF 8|Eco||powertrain|Hệ thống truyền động|battery_heater|Sưởi pin cao thế|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|18
@@ -153,13 +185,114 @@ VF 8|Eco||exterior|Ngoại thất|wheel_size_inch|Kích thước la-zăng|Hợp 
 VF 8|Plus||exterior|Ngoại thất|wheel_size_inch|Kích thước la-zăng|Hợp kim 20inch|inch|https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|18
 VF 8|Eco||chassis|Khung gầm & hệ thống treo|steering_assist_type|Trợ lực lái|Trợ lực điện||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|18
 VF 8|Plus||chassis|Khung gầm & hệ thống treo|steering_assist_type|Trợ lực lái|Trợ lực điện||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|18
-VF 8|Eco||exterior|Ngoại thất|headlight_feature|Đèn pha|LED, Tự động bật/tắt,||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|18
+VF 8|Eco||exterior|Ngoại thất|headlight_feature|Đèn pha|LED, Tự động bật/tắt, điều chỉnh góc chiếu thông minh||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|18
+VF 8|Plus||exterior|Ngoại thất|headlight_feature|Đèn pha|LED, Tự động bật/tắt, điều chỉnh góc chiếu thông minh||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|18
+VF 8|Eco||exterior|Ngoại thất|daytime_running_light|Đèn chờ dẫn đường|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|18
+VF 8|Plus||exterior|Ngoại thất|daytime_running_light|Đèn chờ dẫn đường|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|18
+VF 8|Eco||exterior|Ngoại thất|drl_type|Đèn chiếu sáng ban ngày|LED||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|18
+VF 8|Plus||exterior|Ngoại thất|drl_type|Đèn chiếu sáng ban ngày|LED||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|18
+VF 8|Eco||exterior|Ngoại thất|fog_light_front|Đèn sương mù trước|Không||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|18
+VF 8|Plus||exterior|Ngoại thất|fog_light_front|Đèn sương mù trước|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|18
+VF 8|Eco||exterior|Ngoại thất|cornering_light|Đèn chiếu góc|Không||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|18
+VF 8|Plus||exterior|Ngoại thất|cornering_light|Đèn chiếu góc|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|18
+VF 8|Eco||exterior|Ngoại thất|tail_light_type|Đèn hậu|LED||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|18
+VF 8|Plus||exterior|Ngoại thất|tail_light_type|Đèn hậu|LED||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|18
+VF 8|Eco||exterior|Ngoại thất|high_mount_brake_light|Đèn phanh trên cao phía sau|LED||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|18
+VF 8|Plus||exterior|Ngoại thất|high_mount_brake_light|Đèn phanh trên cao phía sau|LED||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|18
+VF 8|Eco||exterior|Ngoại thất|rearview_mirror_type|Gương chiếu hậu|Chỉnh điện, gập điện Tích hợp báo rẽ, sấy mặt gương||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|18
+VF 8|Plus||exterior|Ngoại thất|rearview_mirror_type|Gương chiếu hậu|Chỉnh điện, gập điện, nhớ vị trí Tích hợp báo rẽ, sấy mặt gương, chống chói tự động, tự động chỉnh khi lùi||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|18
+VF 8|Eco||exterior|Ngoại thất|window_type|Kiểu cửa sổ|Chỉnh điện, lên/xuống Một chạm cả 4 cửa Hàng ghế trước: kính cách âm 2 lớp, hàng ghế sau: kính 1 lớp||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|18
+VF 8|Plus||exterior|Ngoại thất|window_type|Kiểu cửa sổ|Chỉnh điện, lên/xuống Một chạm cả 4 cửa Hàng ghế trước: kính cách âm 2 lớp, hàng ghế sau: kính 1 lớp||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|18
+VF 8|Eco||exterior|Ngoại thất|privacy_glass|Kính cửa sổ màu đen (riêng tư)|Hàng ghế sau||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|18
+VF 8|Plus||exterior|Ngoại thất|privacy_glass|Kính cửa sổ màu đen (riêng tư)|Hàng ghế sau||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|18
+VF 8|Eco||exterior|Ngoại thất|trunk_lid_type|Điều chỉnh cốp sau|Chỉnh cơ||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|18
+VF 8|Plus||exterior|Ngoại thất|trunk_lid_type|Điều chỉnh cốp sau|Chỉnh điện Đóng/mở cốp đá chân||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|18
+VF 8|Eco||exterior|Ngoại thất|windshield_type|Kính chắn gió|Chống tia UV||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|18
+VF 8|Plus||exterior|Ngoại thất|windshield_type|Kính chắn gió|Chống tia UV||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|18
+VF 8|Eco||exterior|Ngoại thất|auto_wiper|Gạt mưa trước tự động|Tự động||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|18
+VF 8|Plus||exterior|Ngoại thất|auto_wiper|Gạt mưa trước tự động|Tự động||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|18
+VF 8|Eco||exterior|Ngoại thất|underbody_protection|Tấm bảo vệ dưới thân xe|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|18
+VF 8|Plus||exterior|Ngoại thất|underbody_protection|Tấm bảo vệ dưới thân xe|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|18
 VF 8|Eco||interior|Nội thất|seats|Số ghế ngồi|5||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|19
 VF 8|Plus||interior|Nội thất|seats|Số ghế ngồi|5||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|19
 VF 8|Eco||interior|Nội thất|seat_material_type|Chất liệu bọc ghế|Giả da||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|19
 VF 8|Plus||interior|Nội thất|seat_material_type|Chất liệu bọc ghế|Da nhân tạo||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|19
-VF 8|Eco||safety|An toàn|airbags|Túi khí|2||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|20
-VF 8|Plus||safety|An toàn|airbags|Túi khí|2||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|20
+VF 8|Eco||interior|Nội thất|driver_seat_type|driver_seat_type|Chỉnh điện 6 hướng||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|19
+VF 8|Plus||interior|Nội thất|driver_seat_type|driver_seat_type|Chỉnh điện 12 hướng, nhớ vị trí Tích hợp thông gió, sưởi||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|19
+VF 8|Eco||interior|Nội thất|passenger_seat_type|passenger_seat_type|Chỉnh điện 6 hướng||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|19
+VF 8|Plus||interior|Nội thất|passenger_seat_type|passenger_seat_type|Chỉnh điện 10 hướng Tích hợp thông gió, sưởi||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|19
+VF 8|Eco||interior|Nội thất|second_row_seat_type|Hàng ghế thứ hai|Chỉnh cơ 2 hướng, tỷ lệ gập 60:40||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|19
+VF 8|Plus||interior|Nội thất|second_row_seat_type|Hàng ghế thứ hai|Chỉnh cơ 2 hướng, tỷ lệ gập 60:40 Tích hợp thông gió, sưởi||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|19
+VF 8|Eco||interior|Nội thất|steering_wheel_type|Loại vô lăng|Bọc da, dạng D-cut Chỉnh cơ 4 hướng Tích hợp nút bấm điều khiển tính năng giải trí và ADAS||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|19
+VF 8|Plus||interior|Nội thất|steering_wheel_type|Loại vô lăng|Bọc da, dạng D-cut Chỉnh điện 4 hướng Tích hợp sưởi, nút bấm điều khiển tính năng giải trí và ADAS||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|19
+VF 8|Eco||interior|Nội thất|ac_type|Hệ thống điều hòa|Tự động, 2 vùng Tích hợp chức năng kiểm soát chất lượng||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|19
+VF 8|Plus||interior|Nội thất|ac_type|Hệ thống điều hòa|Tự động, 2 vùng Tích hợp chức năng kiểm soát chất lượng, chức năng ion hóa không khí||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|19
+VF 8|Eco||interior|Nội thất|cabin_air_filter|Lọc không khí Cabin|Combi 1.0||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|19
+VF 8|Plus||interior|Nội thất|cabin_air_filter|Lọc không khí Cabin|Combi 1.0||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|19
+VF 8|Eco||interior|Nội thất|rear_ac_vents|Ống thông gió dưới chân hành khách sau|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|19
+VF 8|Plus||interior|Nội thất|rear_ac_vents|Ống thông gió dưới chân hành khách sau|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|19
+VF 8|Eco||interior|Nội thất|display_inch|display_inch|15,6 Inch|inch|https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|19
+VF 8|Plus||interior|Nội thất|display_inch|display_inch|15,6 Inch|inch|https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|19
+VF 8|Eco||interior|Nội thất|head_up_display|Màn hình hiển thị HUD|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|19
+VF 8|Plus||interior|Nội thất|head_up_display|Màn hình hiển thị HUD|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|19
+VF 8|Eco||interior|Nội thất|usb_port_type_a|Cổng kết nối USB loại A|Hàng ghế trước: 2 Hàng ghế thứ hai: 2||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|19
+VF 8|Plus||interior|Nội thất|usb_port_type_a|Cổng kết nối USB loại A|Hàng ghế trước: 2 Hàng ghế thứ hai: 2||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|19
+VF 8|Eco||interior|Nội thất|usb_port_type_c|Cổng kết nối USB loại C|Có, 90 W||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|19
+VF 8|Plus||interior|Nội thất|usb_port_type_c|Cổng kết nối USB loại C|Có, 90 W||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|19
+VF 8|Eco||interior|Nội thất|wireless_charging|Sạc không dây|Không||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|19
+VF 8|Plus||interior|Nội thất|wireless_charging|Sạc không dây|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|19
+VF 8|Eco||interior|Nội thất|wifi_connectivity|Kết nối Wifi|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|19
+VF 8|Plus||interior|Nội thất|wifi_connectivity|Kết nối Wifi|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|19
+VF 8|Eco||interior|Nội thất|bluetooth_connectivity|Kết nối Bluetooth|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|19
+VF 8|Plus||interior|Nội thất|bluetooth_connectivity|Kết nối Bluetooth|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|19
+VF 8|Eco||interior|Nội thất|speakers|Hệ thống loa|8|số lượng|https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|19
+VF 8|Plus||interior|Nội thất|speakers|Hệ thống loa|10|số lượng|https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|19
+VF 8|Eco||interior|Nội thất|subwoofer|Loa trầm|Không||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|19
+VF 8|Plus||interior|Nội thất|subwoofer|Loa trầm|1||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|19
+VF 8|Eco||interior|Nội thất|ambient_lighting|Đèn trang trí nội thất|Không||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|19
+VF 8|Plus||interior|Nội thất|ambient_lighting|Đèn trang trí nội thất|Đa màu||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|19
+VF 8|Eco||interior|Nội thất|sunroof_type|Cửa sổ trời|Không||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|19
+VF 8|Plus||interior|Nội thất|sunroof_type|Cửa sổ trời|Toàn cảnh, chỉnh điện||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|19
+VF 8|Eco||safety|An toàn|abs|Chống bó cứng phanh (ABS)|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|19
+VF 8|Plus||safety|An toàn|abs|Chống bó cứng phanh (ABS)|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|19
+VF 8|Eco||safety|An toàn|ebd|Phân phối lực phanh điện tử (EBD)|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|19
+VF 8|Plus||safety|An toàn|ebd|Phân phối lực phanh điện tử (EBD)|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|19
+VF 8|Eco||safety|An toàn|brake_assist|Hỗ trợ phanh khẩn cấp (BA)|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|19
+VF 8|Plus||safety|An toàn|brake_assist|Hỗ trợ phanh khẩn cấp (BA)|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|19
+VF 8|Eco||safety|An toàn|esc|Cân bằng điện tử (ESC)|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|19
+VF 8|Plus||safety|An toàn|esc|Cân bằng điện tử (ESC)|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|19
+VF 8|Eco||safety|An toàn|tcs|Kiểm soát lực kéo (TCS)|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|19
+VF 8|Plus||safety|An toàn|tcs|Kiểm soát lực kéo (TCS)|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|19
+VF 8|Eco||safety|An toàn|hsa|Hỗ trợ khởi hành ngang dốc (HSA)|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|19
+VF 8|Plus||safety|An toàn|hsa|Hỗ trợ khởi hành ngang dốc (HSA)|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|19
+VF 8|Eco||safety|An toàn|rollover_mitigation|Chức năng chống lật ROM|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|19
+VF 8|Plus||safety|An toàn|rollover_mitigation|Chức năng chống lật ROM|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|19
+VF 8|Eco||safety|An toàn|emergency_stop_signal|Đèn báo phanh khẩn cấp ESS|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|19
+VF 8|Plus||safety|An toàn|emergency_stop_signal|Đèn báo phanh khẩn cấp ESS|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|19
+VF 8|Eco||safety|An toàn|tpms|Giám sát áp suất lốp|dTPMS||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|19
+VF 8|Plus||safety|An toàn|tpms|Giám sát áp suất lốp|dTPMS||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|19
+VF 8|Eco||safety|An toàn|auto_door_lock|Khóa cửa xe tự động khi xe di chuyển|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|19
+VF 8|Plus||safety|An toàn|auto_door_lock|Khóa cửa xe tự động khi xe di chuyển|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|19
+VF 8|Eco||safety|An toàn|pretensioner_seatbelt|Căng đai khẩn cấp|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|19
+VF 8|Plus||safety|An toàn|pretensioner_seatbelt|Căng đai khẩn cấp|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|19
+VF 8|Eco||safety|An toàn|isofix|Móc cố định ghế trẻ em ISOFIX, hàng ghế thứ 2|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|19
+VF 8|Plus||safety|An toàn|isofix|Móc cố định ghế trẻ em ISOFIX, hàng ghế thứ 2|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|19
+VF 8|Eco||safety|An toàn|seatbelt_warning|Cảnh báo dây an toàn hàng trước và hàng 2|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|19
+VF 8|Plus||safety|An toàn|seatbelt_warning|Cảnh báo dây an toàn hàng trước và hàng 2|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|19
+VF 8|Eco||safety|An toàn|airbags|Túi khí|10||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|20
+VF 8|Plus||safety|An toàn|airbags|Túi khí|11||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|20
+VF 8|Eco||safety|An toàn|front_airbags|Túi khí trước|2||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|20
+VF 8|Plus||safety|An toàn|front_airbags|Túi khí trước|2||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|20
+VF 8|Eco||safety|An toàn|curtain_airbags|Túi khí rèm|2||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|20
+VF 8|Plus||safety|An toàn|curtain_airbags|Túi khí rèm|2||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|20
+VF 8|Eco||safety|An toàn|side_airbags_front|Túi khí bên hông ghế trước|2||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|20
+VF 8|Plus||safety|An toàn|side_airbags_front|Túi khí bên hông ghế trước|2||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|20
+VF 8|Eco||safety|An toàn|side_airbags_rear|Túi khí bên hông ghế sau|2||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|20
+VF 8|Plus||safety|An toàn|side_airbags_rear|Túi khí bên hông ghế sau|2||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|20
+VF 8|Eco||safety|An toàn|knee_airbags|Túi khí bảo vệ chân|2||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|20
+VF 8|Plus||safety|An toàn|knee_airbags|Túi khí bảo vệ chân|2||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|20
+VF 8|Eco||safety|An toàn|center_airbags|Túi khí trung tâm|0||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|20
+VF 8|Plus||safety|An toàn|center_airbags|Túi khí trung tâm|1||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|20
 VF 8|Eco||adas|Hỗ trợ lái nâng cao (ADAS)|traffic_jam_assist|Hỗ trợ di chuyển khi ùn tắc|Không||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|20
 VF 8|Plus||adas|Hỗ trợ lái nâng cao (ADAS)|traffic_jam_assist|Hỗ trợ di chuyển khi ùn tắc|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|20
 VF 8|Eco||adas|Hỗ trợ lái nâng cao (ADAS)|highway_assist|Hỗ trợ lái trên đường cao tốc|Không||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|20
@@ -174,6 +307,8 @@ VF 8|Eco||adas|Hỗ trợ lái nâng cao (ADAS)|cruise_control_type|Kiểm soát
 VF 8|Plus||adas|Hỗ trợ lái nâng cao (ADAS)|cruise_control_type|Kiểm soát hành trình|Ga tự động thích ứng||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|20
 VF 8|Eco||adas|Hỗ trợ lái nâng cao (ADAS)|adaptive_cruise_control|Điều chỉnh tốc độ thông minh|Không||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|20
 VF 8|Plus||adas|Hỗ trợ lái nâng cao (ADAS)|adaptive_cruise_control|Điều chỉnh tốc độ thông minh|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|20
+VF 8|Eco||adas|Hỗ trợ lái nâng cao (ADAS)|traffic_sign_recognition|Nhận biết biển báo giao thông|Không||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|20
+VF 8|Plus||adas|Hỗ trợ lái nâng cao (ADAS)|traffic_sign_recognition|Nhận biết biển báo giao thông|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|20
 VF 8|Eco||adas|Hỗ trợ lái nâng cao (ADAS)|forward_collision_warning|Cảnh báo va chạm phía trước|Không||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|20
 VF 8|Plus||adas|Hỗ trợ lái nâng cao (ADAS)|forward_collision_warning|Cảnh báo va chạm phía trước|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|20
 VF 8|Eco||adas|Hỗ trợ lái nâng cao (ADAS)|rear_cross_traffic_alert|Cảnh báo phương tiện cắt ngang phía sau|Không||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|20
@@ -188,10 +323,20 @@ VF 8|Eco||adas|Hỗ trợ lái nâng cao (ADAS)|emergency_lane_keep|Hỗ trợ g
 VF 8|Plus||adas|Hỗ trợ lái nâng cao (ADAS)|emergency_lane_keep|Hỗ trợ giữ làn khẩn cấp|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|20
 VF 8|Eco||exterior|Ngoại thất|adaptive_headlights|Đèn pha tự động / thích ứng|Không||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|20
 VF 8|Plus||exterior|Ngoại thất|adaptive_headlights|Đèn pha tự động / thích ứng|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|20
+VF 8|Eco||adas|Hỗ trợ lái nâng cao (ADAS)|driver_monitoring|Cảnh báo tài xế buồn ngủ & mất tập trung|Không||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|20
+VF 8|Plus||adas|Hỗ trợ lái nâng cao (ADAS)|driver_monitoring|Cảnh báo tài xế buồn ngủ & mất tập trung|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|20
+VF 8|Eco||adas|Hỗ trợ lái nâng cao (ADAS)|surround_view_camera|Camera 360° / giám sát xung quanh|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|20
+VF 8|Plus||adas|Hỗ trợ lái nâng cao (ADAS)|surround_view_camera|Camera 360° / giám sát xung quanh|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|20
 VF 8|Eco||infotainment|Giải trí & kết nối|vehicle_modes|Chế độ xe cơ bản (cắm trại, người lạ, thú cưng, rửa xe)|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|20
 VF 8|Plus||infotainment|Giải trí & kết nối|vehicle_modes|Chế độ xe cơ bản (cắm trại, người lạ, thú cưng, rửa xe)|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|20
+VF 8|Eco||infotainment|Giải trí & kết nối|basic_entertainment|Giải trí cơ bản (Đài FM, Bluetooth, USB)|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|20
+VF 8|Plus||infotainment|Giải trí & kết nối|basic_entertainment|Giải trí cơ bản (Đài FM, Bluetooth, USB)|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|20
+VF 8|Eco||infotainment|Giải trí & kết nối|online_entertainment|online_entertainment|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|20
+VF 8|Plus||infotainment|Giải trí & kết nối|online_entertainment|online_entertainment|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|20
 VF 8|Eco||infotainment|Giải trí & kết nối|smartphone_integration|Kết nối Android Auto / Apple CarPlay|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|20
 VF 8|Plus||infotainment|Giải trí & kết nối|smartphone_integration|Kết nối Android Auto / Apple CarPlay|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|20
+VF 8|Eco||infotainment|Giải trí & kết nối|basic_map_navigation|Bản đồ cơ bản (Tìm địa điểm, Dẫn đường, tình trạng giao thông, hình vệ tinh)|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|20
+VF 8|Plus||infotainment|Giải trí & kết nối|basic_map_navigation|Bản đồ cơ bản (Tìm địa điểm, Dẫn đường, tình trạng giao thông, hình vệ tinh)|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|20
 VF 8|Eco||infotainment|Giải trí & kết nối|ev_routing|Dẫn đường nâng cao cho xe điện (tìm trạm sạc)|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|20
 VF 8|Plus||infotainment|Giải trí & kết nối|ev_routing|Dẫn đường nâng cao cho xe điện (tìm trạm sạc)|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|20
 VF 8|Eco||infotainment|Giải trí & kết nối|basic_widgets|Khung tiện ích cơ bản (lịch, thời tiết, media, bản đồ)|Có||https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf|20

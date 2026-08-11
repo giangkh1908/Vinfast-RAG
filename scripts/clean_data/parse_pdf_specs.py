@@ -66,9 +66,20 @@ LABEL_MAP = {
     "loai la-zang": ("wheel_size_inch", "inch", "exterior"),
     "man hinh giai tri cam ung": ("display_inch", "inch", "interior"),
     "he thong loa": ("speakers", "số lượng", "interior"),
+    "ghe lai": ("driver_seat_type", "", "interior"),
+    "ghe phu": ("passenger_seat_type", "", "interior"),
     "khoi luong khong tai": ("curb_weight_kg", "kg", "dimension"),
     "dung tich cop sau": ("trunk_capacity", "L", "dimension"),
     "dung tich khoang chua hanh ly": ("trunk_capacity", "L", "dimension"),
+    "dung tich khoang chua hanh ly (l) - phia truoc": ("frunk_capacity_l", "L", "dimension"),
+    # -- Airbag sub-types (prefix match truoc "tui khi" generic) --
+    "he thong tui khi": ("airbags", "", "safety"),
+    "tui khi truoc lai va hanh khach phia truoc": ("front_airbags", "", "safety"),
+    "tui khi ben hong hang ghe truoc": ("side_airbags_front", "", "safety"),
+    "tui khi ben hong hang ghe sau": ("side_airbags_rear", "", "safety"),
+    "tui khi rem": ("curtain_airbags", "", "safety"),
+    "tui khi bao ve chan hang ghe truoc": ("knee_airbags", "", "safety"),
+    "tui khi trung tam hang ghe truoc": ("center_airbags", "", "safety"),
 }
 
 ALIASES_BY_LEN = sorted(LABEL_MAP.keys(), key=len, reverse=True)
@@ -106,6 +117,7 @@ SPEC_KEY_VN_MAP = {
     "curb_weight_kg": "Trọng lượng không tải",
     "roof_load_kg": "Tải trọng hành lý nóc xe",
     "trunk_capacity": "Dung tích khoang hành lý",
+    "frunk_capacity_l": "Dung tích khoang hành lý phía trước",
     # ── powertrain ──
     "power_kw": "Công suất tối đa",
     "torque_nm": "Mô-men xoắn cực đại",
@@ -118,6 +130,7 @@ SPEC_KEY_VN_MAP = {
     # ── battery ──
     "battery_kwh": "Dung lượng pin khả dụng",
     "range_km": "Phạm vi di chuyển",
+    "fast_charge_min": "Thời gian nạp pin nhanh nhất",
     # ── exterior ──
     "headlight_type": "Đèn chiếu sáng phía trước",
     "headlight_feature": "Đèn pha",
@@ -128,15 +141,42 @@ SPEC_KEY_VN_MAP = {
     "front_brand_light": "Đèn nhận diện thương hiệu trước",
     "rear_brand_light": "Đèn nhận diện thương hiệu sau",
     "auto_high_beam": "Tự động bật/tắt chế độ chiếu xa",
+    "auto_wiper": "Gạt mưa trước tự động",
     "power_folding_mirrors": "Gương chiếu hậu chỉnh điện / gập điện",
     "one_touch_windows": "Kính cửa sổ chỉnh điện 1 chạm",
     "wheel_size_inch": "Kích thước la-zăng",
+    "daytime_running_light": "Đèn chờ dẫn đường",
+    "fog_light_front": "Đèn sương mù trước",
+    "cornering_light": "Đèn chiếu góc",
+    "high_mount_brake_light": "Đèn phanh trên cao phía sau",
+    "rearview_mirror_type": "Gương chiếu hậu",
+    "window_type": "Kiểu cửa sổ",
+    "privacy_glass": "Kính cửa sổ màu đen (riêng tư)",
+    "trunk_lid_type": "Điều chỉnh cốp sau",
+    "windshield_type": "Kính chắn gió",
+    "underbody_protection": "Tấm bảo vệ dưới thân xe",
+    "smart_key": "Chìa khóa thông minh",
     # ── interior ──
     "leatherette_seats": "Ghế bọc da nhân tạo",
     "seat_material_type": "Chất liệu bọc ghế",
     "seats": "Số ghế ngồi",
     "speakers": "Hệ thống loa",
     "epb_auto_hold": "Phanh đỗ điện tử & giữ phanh tự động",
+    "gps_tracking": "Định vị xe từ xa",
+    "second_row_seat_type": "Hàng ghế thứ hai",
+    "steering_wheel_type": "Loại vô lăng",
+    "ac_type": "Hệ thống điều hòa",
+    "cabin_air_filter": "Lọc không khí Cabin",
+    "rear_ac_vents": "Ống thông gió dưới chân hành khách sau",
+    "head_up_display": "Màn hình hiển thị HUD",
+    "usb_port_type_a": "Cổng kết nối USB loại A",
+    "usb_port_type_c": "Cổng kết nối USB loại C",
+    "wireless_charging": "Sạc không dây",
+    "wifi_connectivity": "Kết nối Wifi",
+    "bluetooth_connectivity": "Kết nối Bluetooth",
+    "subwoofer": "Loa trầm",
+    "ambient_lighting": "Đèn trang trí nội thất",
+    "sunroof_type": "Cửa sổ trời",
     # ── infotainment ──
     "smartphone_integration": "Kết nối Android Auto / Apple CarPlay",
     "navigation": "Điều hướng & dẫn đường",
@@ -153,6 +193,8 @@ SPEC_KEY_VN_MAP = {
     "phone_app": "Ứng dụng điện thoại",
     "ev_routing": "Dẫn đường nâng cao cho xe điện (tìm trạm sạc)",
     "vehicle_modes": "Chế độ xe cơ bản (cắm trại, người lạ, thú cưng, rửa xe)",
+    "basic_entertainment": "Giải trí cơ bản (Đài FM, Bluetooth, USB)",
+    "basic_map_navigation": "Bản đồ cơ bản (Tìm địa điểm, Dẫn đường, tình trạng giao thông, hình vệ tinh)",
     "charging_etc": "Sạc, v.v.",
     # ── safety ──
     "abs": "Chống bó cứng phanh (ABS)",
@@ -163,6 +205,18 @@ SPEC_KEY_VN_MAP = {
     "hsa": "Hỗ trợ khởi hành ngang dốc (HSA)",
     "tpms": "Giám sát áp suất lốp",
     "airbags": "Túi khí",
+    "front_airbags": "Túi khí trước",
+    "side_airbags_front": "Túi khí bên hông ghế trước",
+    "side_airbags_rear": "Túi khí bên hông ghế sau",
+    "curtain_airbags": "Túi khí rèm",
+    "knee_airbags": "Túi khí bảo vệ chân",
+    "center_airbags": "Túi khí trung tâm",
+    "rollover_mitigation": "Chức năng chống lật ROM",
+    "emergency_stop_signal": "Đèn báo phanh khẩn cấp ESS",
+    "auto_door_lock": "Khóa cửa xe tự động khi xe di chuyển",
+    "pretensioner_seatbelt": "Căng đai khẩn cấp",
+    "isofix": "Móc cố định ghế trẻ em ISOFIX, hàng ghế thứ 2",
+    "seatbelt_warning": "Cảnh báo dây an toàn hàng trước và hàng 2",
     # ── adas ──
     "blind_spot_warning": "Cảnh báo điểm mù",
     "lane_departure_warning": "Cảnh báo chệch làn",
@@ -194,6 +248,7 @@ SPEC_KEY_VN_MAP = {
     "immobilizer": "Khoá động cơ khi có trộm",
     "anti_theft_alarm": "Cảnh báo chống trộm",
     "epb_auto_hold": "Phanh đỗ điện tử & giữ phanh tự động",
+    "gps_tracking": "Định vị xe từ xa",
     # ── connected ──
     "account_sync": "Đồng bộ tài khoản / ứng dụng / phân quyền",
     "vehicle_status_notification": "Thông báo trạng thái xe (pin, hiệu suất, bảo dưỡng)",
@@ -211,7 +266,7 @@ SECTION_HEADERS = {
     "phien ban", "thong so", "dau xe", "hong xe", "duoi xe",
     "he thong truyen dong", "dong co", "den ngoai that", "ngoai that khac",
     "dieu hoa khong khi", "tien nghi", "an toan & an ninh", "an toan",
-    "he thong tui khi", "he thong ho tro nguoi lai nang cao adas",
+    "he thong ho tro nguoi lai nang cao adas",
     "tro lai tren cao toc", "tro lan", "ho tro hanh trinh",
     "canh bao va cham", "tro lai khi co nguy co va cham",
     "cac tinh nang khac", "tinh nang thong minh",
@@ -220,6 +275,36 @@ SECTION_HEADERS = {
     "den ngoai that khac",
 }
 # Cũng check với norm lowercase + no diacritics
+
+# ── SECTION_CATEGORY_MAP: section header → spec_category ──────────────────────
+# Dùng để track context: khi section header xuất hiện, các row không mapped
+# phía dưới sẽ được gán category tương ứng thay vì "general".
+SECTION_CATEGORY_MAP = {
+    "kich thuoc & tai trong": "dimension",
+    "he thong truyen dong": "powertrain",
+    "dong co": "powertrain",
+    "pin": "battery",
+    "thong so truyen dong khac": "powertrain",
+    "khung gam": "chassis",
+    "khung gam khac": "chassis",
+    "ngoai that": "exterior",
+    "noi that & tien nghi": "interior",
+    "noi that": "interior",
+    "an toan & an ninh": "safety",
+    "an toan": "safety",
+    "he thong tui khi": "safety",
+    "he thong ho tro nguoi lai nang cao adas": "adas",
+    "tro lai tren cao toc": "adas",
+    "tro lan": "adas",
+    "ho tro hanh trinh": "adas",
+    "canh bao va cham": "adas",
+    "tro lai khi co nguy co va cham": "adas",
+    "cac tinh nang khac": "general",
+    "tinh nang thong minh": "infotainment",
+    "he thong tin giai tri tren xe": "infotainment",
+    "tro ly ao": "infotainment",
+    "ung dung dien thoai": "connected",
+}
 
 # ── FEATURE_NORM_MAP: normalize feature label → (eng_key, category) ─────────
 # Dùng cho spec tính năng (Có/Không, LED, v.v.) không có trong LABEL_MAP.
@@ -238,7 +323,19 @@ FEATURE_NORM_MAP = {
     "tu dong bat tat den": ("auto_headlights", "exterior"),
     "tu dong bat tat che do chieu xa": ("auto_high_beam", "exterior"),
     "gạt mưa truoc tu dong": ("auto_wiper", "exterior"),
+    "gat mua truoc": ("auto_wiper", "exterior"),
     "chia khoa thong minh": ("smart_key", "exterior"),
+    # Trang 18 — đèn & ngoại thất khác
+    "den cho dan duong": ("daytime_running_light", "exterior"),
+    "den suong mu truoc": ("fog_light_front", "exterior"),
+    "den chieu goc": ("cornering_light", "exterior"),
+    "den phanh tren cao phia sau": ("high_mount_brake_light", "exterior"),
+    "guong chieu hau": ("rearview_mirror_type", "exterior"),
+    "kieu cua so": ("window_type", "exterior"),
+    "kinh cua so mau den rieng tu": ("privacy_glass", "exterior"),
+    "dieu chinh cop sau": ("trunk_lid_type", "exterior"),
+    "kinh chan gio": ("windshield_type", "exterior"),
+    "tam bao ve duoi than xe": ("underbody_protection", "exterior"),
     # ── Interior ──
     "ghe boc da nhan tao": ("leatherette_seats", "interior"),
     "chat lieu boc ghe": ("seat_material_type", "interior"),
@@ -249,6 +346,21 @@ FEATURE_NORM_MAP = {
     "so cho ngoi": ("seats", "interior"),
     "so ghe ngoi": ("seats", "interior"),
     "cho ngoi": ("seats", "interior"),
+    # Trang 19 — nội thất khác
+    "hang ghe thu hai": ("second_row_seat_type", "interior"),
+    "loai vo lang": ("steering_wheel_type", "interior"),
+    "he thong dieu hoa": ("ac_type", "interior"),
+    "loc khong khi cabin": ("cabin_air_filter", "interior"),
+    "ong thong gio duoi chan hanh khach sau": ("rear_ac_vents", "interior"),
+    "man hinh hien thi hud": ("head_up_display", "interior"),
+    "cong ket noi usb loai a": ("usb_port_type_a", "interior"),
+    "cong ket noi usb loai c": ("usb_port_type_c", "interior"),
+    "sac khong day": ("wireless_charging", "interior"),
+    "ket noi wifi": ("wifi_connectivity", "interior"),
+    "ket noi bluetooth": ("bluetooth_connectivity", "interior"),
+    "loa tram": ("subwoofer", "interior"),
+    "den trang tri noi that": ("ambient_lighting", "interior"),
+    "cua so troi": ("sunroof_type", "interior"),
     # ── Infotainment ──
     "man hinh giai tri cam ung": ("display_inch", "interior"),
     "he thong loa": ("speakers", "interior"),
@@ -279,6 +391,15 @@ FEATURE_NORM_MAP = {
     "giam sat ap suat lop": ("tpms", "safety"),
     "tinh nang khoa dong co khi co trom": ("immobilizer", "security"),
     "canh bao chong trom": ("anti_theft_alarm", "security"),
+    # Trang 19 — an toàn khác
+    "chuc nang chong lat rom": ("rollover_mitigation", "safety"),
+    "den bao phanh khan cap ess": ("emergency_stop_signal", "safety"),
+    "khoa cua xe tu dong khi xe di chuyen": ("auto_door_lock", "safety"),
+    "cang dai khan cap": ("pretensioner_seatbelt", "safety"),
+    "mac co dinh ghe tre em isofix hang ghe thu 2": ("isofix", "safety"),
+    "moc co dinh ghe tre em isofix hang ghe thu 2": ("isofix", "safety"),
+    "moc co dinh ghe tre em isofix": ("isofix", "safety"),
+    "canh bao day an toan hang truoc va hang 2": ("seatbelt_warning", "safety"),
     # ── ADAS ──
     "canh bao diem mu": ("blind_spot_warning", "adas"),
     "canh bao chech lan": ("lane_departure_warning", "adas"),
@@ -318,6 +439,7 @@ FEATURE_NORM_MAP = {
     "bo sac tai nha": ("home_charger_type", "powertrain"),
     "day sac di dong": ("mobile_charger_type", "powertrain"),
     # ── Connected car ──
+    "dinh vi xe tu xa": ("gps_tracking", "connected"),
     "dong bo tai khoan ung dung phan quyen tai xe": ("account_sync", "connected"),
     "thong bao trang thai co ban tren xe trang thai hieu suat van hanh thong tin pin": ("vehicle_status_notification", "connected"),
     "quan ly sac thanh toan phi sac": ("charge_management", "connected"),
@@ -330,6 +452,8 @@ FEATURE_NORM_MAP = {
     "dung tich khoang chua hanh ly": ("trunk_capacity", "dimension"),
     # ── Catch-all cho các label dài còn lại (prefix match) ──
     "che do xe co ban cam trai nguoi la thu cung rua xe": ("vehicle_modes", "infotainment"),
+    "giai tri co ban dai fm bluetooth usb": ("basic_entertainment", "infotainment"),
+    "ban do co ban tim dia diem dan duong tinh trang giao thong hinh ve tinh": ("basic_map_navigation", "infotainment"),
     "sac vv": ("charging_etc", "general"),
 }
 
@@ -422,27 +546,53 @@ def parse_pdf_specs(path: Path) -> list[dict[str, Any]]:
             i += 1
             continue
 
+        current_section_category: str | None = None
         j = data_start
         while j < len(lines) and TABLE_ROW_RE.match(lines[j]) and not SEP_RE.match(lines[j]):
-            cells = [c.strip() for c in lines[j].strip().strip("|").split("|")]
+            # ── Merge continuation lines (multi-line cell values) ─────────────
+            # Một số spec có giá trị xuống dòng trong PDF, làm text bị split
+            # thành nhiều dòng. Tất cả dòng giữa 2 pipe-table rows là continuation.
+            row_text = lines[j]
+            k = j + 1
+            while k < len(lines):
+                next_line = lines[k].strip()
+                if not next_line or PAGE_MARKER_RE.match(next_line) or SEP_RE.match(lines[k]):
+                    break
+                if TABLE_ROW_RE.match(lines[k]):
+                    break
+                # Continuation line — ghép vào row_text
+                row_text += " " + next_line
+                k += 1
+
+            cells = [c.strip() for c in row_text.strip().strip("|").split("|")]
             if not cells:
-                j += 1
+                j = k
                 continue
 
             label = cells[0]
             if not label:
-                j += 1
+                j = k
                 continue
 
             label_norm = norm(label)
+            # Chỉ skip section header nếu tất cả cột dữ liệu đều trống.
+            # Nếu section header có dữ liệu (vd "Ghế lái | Chỉnh điện 6 hướng | ..."),
+            # để nó đi qua mapping bình thường.
             if is_section_header(label_norm):
-                j += 1
-                continue
+                has_data = any(cells[ci] for ci in edition_cols if ci < len(cells))
+                if not has_data:
+                    # Cập nhật section context cho các row phía dưới
+                    sec_cat = SECTION_CATEGORY_MAP.get(label_norm)
+                    if sec_cat is not None:
+                        current_section_category = sec_cat
+                    j = k
+                    continue
 
-            # Bỏ price row
-            price_labels = ("gia", "lan bangh", "lan bang", "niem yet", "gia ban", "phien ban")
-            if any(p in label_norm for p in price_labels):
-                j += 1
+            # Bỏ price row (dùng \b word boundary để tránh false positive:
+            # "gia" (không word-boundary) match substring "thời gian", "giải trí", "giao thông",...)
+            price_labels = ("lan bangh", "lan bang", "niem yet", "gia ban", "phien ban")
+            if any(p in label_norm for p in price_labels) or re.search(r'\bg(iá|a)\b', label_norm):
+                j = k
                 continue
 
             for ci, ed in edition_cols.items():
@@ -465,10 +615,10 @@ def parse_pdf_specs(path: Path) -> list[dict[str, Any]]:
                         for sub_key, sub_val in dim_parts:
                             if sub_val is None:
                                 continue
-                            k = (sub_key, ed)
-                            if k in seen:
+                            dedup_key = (sub_key, ed)
+                            if dedup_key in seen:
                                 continue
-                            seen.add(k)
+                            seen.add(dedup_key)
                             rows.append(make_row(model_code, ed, "dimension",
                                                  sub_key, sub_val, "mm", source_url,
                                                  page=current_page))
@@ -489,13 +639,14 @@ def parse_pdf_specs(path: Path) -> list[dict[str, Any]]:
                         # Vẫn unmapped → dùng raw norm label
                         spec_key = label_norm
                         spec_unit = ""
-                        spec_category = "general"
+                        # Dùng section context nếu có
+                        spec_category = current_section_category or "general"
 
                 # Dedup trong file
-                k = (spec_key, ed)
-                if k in seen:
+                dedup_key = (spec_key, ed)
+                if dedup_key in seen:
                     continue
-                seen.add(k)
+                seen.add(dedup_key)
 
                 value_clean = raw_value.strip()
                 if not value_clean:
@@ -504,7 +655,7 @@ def parse_pdf_specs(path: Path) -> list[dict[str, Any]]:
                 rows.append(make_row(model_code, ed, spec_category,
                                      spec_key, value_clean, spec_unit, source_url,
                                      page=current_page))
-            j += 1
+            j = k
         i = j if j > i + 1 else i + 1
 
     return rows
