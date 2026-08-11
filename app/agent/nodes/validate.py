@@ -207,6 +207,18 @@ async def validate_node(state: AgentState) -> dict:
 
     assessment, valid_sources = assess_evidence(tool_results, state["query"])
 
+    # Debug: log evidence assessment
+    logger.info("VALIDATE: query=%s assessment=%s sources=%d tools=%s",
+                state.get("query", ""), assessment, len(valid_sources),
+                [tr.get("tool") for tr in tool_results if tr.get("success")])
+    for tr in tool_results:
+        if tr.get("success") and tr.get("tool") == "search_all":
+            r = tr["result"]
+            specs = r.get("specs", {}).get("specs", [])
+            logger.info("VALIDATE: search_all specs count=%d", len(specs))
+            for s in specs[:5]:
+                logger.info("VALIDATE: spec %s=%s", s.get("key"), s.get("value"))
+
     if assessment == "insufficient":
         return {
             "decision": "refuse",
@@ -230,6 +242,8 @@ async def validate_node(state: AgentState) -> dict:
         }
 
     grounding_ok = _check_grounding(final_response, tool_results, state.get("query", ""))
+
+    logger.info("VALIDATE: grounding_ok=%s response_preview=%s", grounding_ok, final_response[:100])
 
     if not grounding_ok:
         return {
