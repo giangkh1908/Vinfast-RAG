@@ -28,6 +28,7 @@ if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from scripts.config import CLEAN_DIR  # noqa: E402
+from scripts.schemas import Chunk, validate_chunk  # noqa: E402
 
 CSV_DELIMITER = "|"
 
@@ -153,17 +154,30 @@ def write_csv(path: Path, headers: list[str], rows: list[dict[str, Any]]) -> Non
 def split_vector_by_collection(vector_rows: list[dict[str, Any]]) -> dict[str, list[dict[str, Any]]]:
     by_collection: dict[str, list[dict[str, Any]]] = defaultdict(list)
     seq_by_key: dict[str, int] = defaultdict(int)
+    validation_errors = []
     for row in vector_rows:
         col = row["collection"]
         key_base = f"{col}:{row.get('model_id') or 'general'}:{row.get('edition_id') or 'all'}"
         seq_by_key[key_base] += 1
         row["id"] = stable_id(row, seq_by_key[key_base])
+        # Validate chunk schema
+        try:
+            validate_chunk(row, context=f"split_vector_by_collection")
+        except ValueError as e:
+            validation_errors.append(str(e))
+            continue  # Skip invalid chunk
         # Ensure no money in text
         if has_money(row["text"]):
             # Drop the chunk rather than leak stale prices
             print(f"  WARN: money detected in vector text, dropping id={row['id']}", file=sys.stderr)
             continue
         by_collection[col].append(row)
+    if validation_errors:
+        print(f"  VALIDATION ERRORS ({len(validation_errors)} chunks skipped):", file=sys.stderr)
+        for err in validation_errors[:5]:  # Show first 5 errors
+            print(f"    {err}", file=sys.stderr)
+        if len(validation_errors) > 5:
+            print(f"    ... and {len(validation_errors) - 5} more", file=sys.stderr)
     return dict(by_collection)
 
 

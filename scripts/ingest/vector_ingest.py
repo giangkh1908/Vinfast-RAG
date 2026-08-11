@@ -36,6 +36,7 @@ if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from scripts.config import CLEAN_DIR, QDRANT_API_KEY, QDRANT_TIMEOUT, QDRANT_URL  # noqa: E402
+from scripts.schemas import Chunk, validate_chunk, DensePayload, make_dense_payload  # noqa: E402
 from lib.openrouter import (API_KEY, EMBED_MODEL, embed_texts,  # noqa: E402
                             summarize_metrics)
 from lib.vector_cache import VectorCache, content_hash  # noqa: E402
@@ -54,6 +55,26 @@ def qdrant_id(chunk_id: str) -> str:
 
 def make_payload(chunk: dict[str, Any]) -> dict[str, Any]:
     return {k: v for k, v in chunk.items() if k not in {"id", "is_hot"}}
+
+
+def validate_chunks_and_payload(chunks: list[dict[str, Any]], context: str = "") -> list[dict[str, Any]]:
+    """Validate chunk schema + dense payload. Raise ValueError if invalid."""
+    valid_chunks = []
+    errors = []
+    for i, c in enumerate(chunks):
+        try:
+            chunk_model = validate_chunk(c, context=f"{context}[{i}]")
+            # Validate dense payload can be created
+            make_dense_payload(chunk_model)
+            valid_chunks.append(c)
+        except ValueError as e:
+            errors.append(str(e))
+    if errors:
+        msg = f"Payload validation failed {context}:\n" + "\n".join(errors[:5])
+        if len(errors) > 5:
+            msg += f"\n... and {len(errors) - 5} more errors"
+        raise ValueError(msg)
+    return valid_chunks
 
 
 def probe_dimension() -> int:
@@ -97,6 +118,10 @@ def ingest_file(client: QdrantClient, path: Path, recreate: bool,
     if not chunks:
         print("  empty file, skipping")
         return (0, 0, 0, 0)
+
+    # Validate chunk schema + payload structure
+    chunks = validate_chunks_and_payload(chunks, context=collection_name)
+    print(f"  ✓ validated {len(chunks)} chunks")
 
     # Tạo/xóa collection
     if recreate and client.collection_exists(collection_name):

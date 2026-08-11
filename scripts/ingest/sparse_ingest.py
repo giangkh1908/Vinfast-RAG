@@ -37,6 +37,7 @@ if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from scripts.config import CLEAN_DIR, QDRANT_API_KEY, QDRANT_TIMEOUT, QDRANT_URL  # noqa: E402
+from scripts.schemas import Chunk, validate_chunk, make_sparse_payload  # noqa: E402
 
 VECTOR_DIR = CLEAN_DIR / "{version}" / "vector"
 SPARSE_INDEX_PATH = CLEAN_DIR / "{version}" / "sparse_index.json"
@@ -73,15 +74,27 @@ def qdrant_id(chunk_id: str) -> str:
 
 
 def load_chunks(version: str) -> list[tuple[str, dict]]:
-    """(collection, chunk dict) cho mọi chunk."""
+    """(collection, chunk dict) cho mọi chunk. Validate schema trước khi trả về."""
     vdir = Path(str(VECTOR_DIR).format(version=version))
     chunks: list[tuple[str, dict]] = []
+    errors = []
     for f in sorted(vdir.glob("*.jsonl")):
         for line in f.read_text(encoding="utf-8").splitlines():
             if not line.strip():
                 continue
             c = json.loads(line)
+            try:
+                validate_chunk(c, context=f"sparse_ingest:{f.stem}")
+            except ValueError as e:
+                errors.append(str(e))
+                continue  # Skip invalid chunk
             chunks.append((f.stem, c))
+    if errors:
+        print(f"  VALIDATION ERRORS ({len(errors)} chunks skipped):", file=sys.stderr)
+        for err in errors[:5]:
+            print(f"    {err}", file=sys.stderr)
+        if len(errors) > 5:
+            print(f"    ... and {len(errors) - 5} more", file=sys.stderr)
     return chunks
 
 

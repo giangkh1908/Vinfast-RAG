@@ -90,7 +90,8 @@ def _step(idx: str, label: str, fn, *args, **kwargs) -> int:
 
 
 def run(version: str, recreate: bool, no_sparse: bool, commit: str,
-       max_len: int = 800, prev: str | None = None, promote: bool = False) -> int:
+       max_len: int = 800, prev: str | None = None, promote: bool = False,
+       smoke_test: bool = False) -> int:
     want_qdrant = True
     want_pg = True
     if preflight(version, want_qdrant, want_pg) != 0:
@@ -134,6 +135,25 @@ def run(version: str, recreate: bool, no_sparse: bool, commit: str,
                   file=sys.stderr)
             print(f"  sửa rồi chạy: version_manager.py promote --version {version}",
                   file=sys.stderr)
+            return rc
+        
+        # Smoke test sau khi promote thành công
+        if smoke_test:
+            print(_bar("SMOKE TEST"))
+            try:
+                from scripts.eval.smoke_test import run_smoke_test
+                rc = run_smoke_test(version)
+                if rc != 0:
+                    print("[run_pipeline] SMOKE TEST FAIL — version đã active nhưng retrieval có vấn đề",
+                          file=sys.stderr)
+                    print("  Kiểm tra golden set và thử rollback nếu cần",
+                          file=sys.stderr)
+                    return rc
+                print("→ Smoke test: PASS")
+            except Exception as e:
+                print(f"[run_pipeline] SMOKE TEST ERROR: {e}", file=sys.stderr)
+                print("  Version vẫn active, nhưng cần kiểm tra thủ công", file=sys.stderr)
+        
         return rc
     print("Verify:")
     print(f"  python scripts/version_manager.py status")
@@ -156,9 +176,11 @@ def main() -> int:
                     help="Version trước để diff (mặc định: auto-detect)")
     ap.add_argument("--promote", action="store_true",
                     help="Sau khi ingest xong, tự activate version (alias swap + is_current)")
+    ap.add_argument("--smoke-test", action="store_true",
+                    help="Chạy smoke test sau khi promote (cần --promote)")
     args = ap.parse_args()
     return run(args.version, args.recreate, args.no_sparse, args.commit,
-               args.max_len, args.prev, args.promote)
+               args.max_len, args.prev, args.promote, args.smoke_test)
 
 
 if __name__ == "__main__":

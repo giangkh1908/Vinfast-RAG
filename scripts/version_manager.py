@@ -387,6 +387,56 @@ def cmd_migrate_v1(args=None) -> int:
     return 0
 
 
+def cmd_recover(args=None) -> int:
+    """Recover 2-store consistency: sync PG is_current với Qdrant alias."""
+    client = _client()
+    conn = _conn()
+    try:
+        # 1) Đọc Qdrant alias hiện tại
+        aliases = existing_aliases(client)
+        if not aliases:
+            print("[recover] không có alias nào trong Qdrant")
+            return 1
+        
+        # Lấy version từ alias đầu tiên (tất cả alias phải cùng version)
+        qdrant_version = None
+        for alias_name, target in aliases.items():
+            if alias_name in ALL_ALIASES:
+                # target = <col>__<version>
+                if "__" in target:
+                    v = target.rsplit("__", 1)[1]
+                    if qdrant_version is None:
+                        qdrant_version = v
+                    elif qdrant_version != v:
+                        print(f"[recover] WARNING: alias trỏ đến nhiều version khác nhau: {qdrant_version} vs {v}")
+                        return 1
+        
+        if qdrant_version is None:
+            print("[recover] không tìm thấy version từ alias")
+            return 1
+        
+        # 2) Đọc PG is_current
+        pg_version = current_version_pg()
+        
+        print(f"[recover] Qdrant alias → {qdrant_version}")
+        print(f"[recover] PG is_current → {pg_version or 'None'}")
+        
+        if pg_version == qdrant_version:
+            print("[recover] ✓ already consistent")
+            return 0
+        
+        # 3) Sync PG → Qdrant
+        print(f"[recover] syncing PG is_current → {qdrant_version}")
+        postgres_ingest.set_current(conn, qdrant_version, rollback=False)
+        print(f"[recover] ✓ recovered: PG is_current = {qdrant_version}")
+        return 0
+    except Exception as e:
+        print(f"[recover] FAIL: {e}", file=sys.stderr)
+        return 1
+    finally:
+        conn.close()
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description="Version manager cho data pipeline.")
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -407,6 +457,8 @@ def main() -> int:
     p_del.set_defaults(func=cmd_delete)
 
     sub.add_parser("migrate-v1", help="(1 lần) chuyển v1 unversioned → __v1 + alias, không re-embed").set_defaults(func=cmd_migrate_v1)
+    
+    sub.add_parser("recover", help="Recover 2-store consistency: sync PG is_current với Qdrant alias").set_defaults(func=cmd_recover)
 
     args = ap.parse_args()
     return args.func(args)

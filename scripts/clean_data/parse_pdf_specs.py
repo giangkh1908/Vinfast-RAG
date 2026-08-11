@@ -590,6 +590,32 @@ def run(version: str = "v1") -> int:
     for mc in sorted(by_model):
         print(f"  {mc}: {by_model[mc]} rows")
     print(f"  → {out_path}: {len(all_rows)} rows")
+    
+    # Cập nhật manifest với car_specs info
+    manifest_path = version_dir / "_manifest.json"
+    if manifest_path.exists():
+        try:
+            import json
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            manifest["postgres"]["tables"]["car_specs"] = {
+                "file": "postgres/specs.csv",
+                "rows": len(all_rows),
+                "upserted": len(all_rows),
+            }
+            # Tính lại total_rows_upserted
+            total = sum(
+                t.get("upserted", 0) 
+                for t in manifest["postgres"]["tables"].values()
+            )
+            manifest["postgres"]["total_rows_upserted"] = total
+            manifest_path.write_text(
+                json.dumps(manifest, ensure_ascii=False, indent=2),
+                encoding="utf-8"
+            )
+            print(f"  ✓ manifest updated with car_specs")
+        except Exception as e:
+            print(f"  ⚠ failed to update manifest: {e}", file=sys.stderr)
+    
     return 0
 
 
