@@ -5,6 +5,8 @@ from openai import AsyncOpenAI
 
 from app.config import settings
 from app.agent.graph_state import AgentState
+from app.agent.context_builder import build_structured_context
+from app.agent.prompts import SYNTHESIZE_PROMPT
 
 logger = logging.getLogger("bds.graph.generate")
 
@@ -13,18 +15,23 @@ async def generate_node(state: AgentState) -> dict:
     if state.get("final_response"):
         return {}
 
-    messages = list(state["messages"])
     tool_results = state.get("tool_results", [])
 
     if not tool_results:
         return {"final_response": "", "decision": "refuse", "reason_code": "insufficient_evidence"}
 
-    messages.append({
-        "role": "user",
-        "content": "Dựa vào kết quả tool trên, trả lời câu hỏi gốc. Dẫn nguồn URL khi có.",
-    })
+    context = build_structured_context(tool_results)
+    query = state.get("query", "")
+
+    system_prompt = state["messages"][0]["content"] if state.get("messages") else ""
+
+    messages = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": SYNTHESIZE_PROMPT.format(context=context, query=query)},
+    ]
 
     llm = AsyncOpenAI(api_key=settings.openai_api_key, base_url=settings.openai_base_url)
+    t_generate_start = time.time()
 
     try:
         resp = await llm.chat.completions.create(
@@ -40,6 +47,7 @@ async def generate_node(state: AgentState) -> dict:
             "decision": "refuse",
             "reason_code": "system_error",
             "response_text": "Mình chưa thể hoàn tất câu trả lời lúc này. Vui lòng thử lại.",
+            "t_generate_start": t_generate_start,
         }
 
-    return {"final_response": final_response, "messages": messages}
+    return {"final_response": final_response, "t_generate_start": t_generate_start}

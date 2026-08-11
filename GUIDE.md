@@ -248,6 +248,13 @@ Phoenix tu dong capture:
 
 ---
 
+
+
+
+View Langgraph: langgraph dev
+
+[smith.langchain.com/studio/?baseUrl=http://127.0.0.1:2024](https://smith.langchain.com/studio/?baseUrl=http://127.0.0.1:2024)
+
 ## Cau truc thu muc
 
 ```

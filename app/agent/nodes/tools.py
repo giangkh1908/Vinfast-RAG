@@ -111,6 +111,7 @@ async def execute_tools_node(state: AgentState) -> dict:
                     "tool_results": tool_results,
                     "iteration": iteration + 1,
                     "t_retrieve_start": t_retrieve_start,
+                    "t_retrieve_end": time.time(),
                 }
 
     return {
@@ -118,4 +119,5 @@ async def execute_tools_node(state: AgentState) -> dict:
         "tool_results": tool_results,
         "iteration": iteration + 1,
         "t_retrieve_start": t_retrieve_start,
+        "t_retrieve_end": time.time(),
     }

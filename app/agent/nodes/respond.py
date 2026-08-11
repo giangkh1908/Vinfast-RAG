@@ -48,6 +48,13 @@ async def respond_node(state: AgentState) -> dict:
     t0 = state.get("t0", time.time())
     latency_ms = (time.time() - t0) * 1000
 
+    t_retrieve_start = state.get("t_retrieve_start", 0)
+    t_retrieve_end = state.get("t_retrieve_end", 0)
+    latency_retrieval_ms = (t_retrieve_end - t_retrieve_start) * 1000 if t_retrieve_start and t_retrieve_end else 0
+
+    t_generate_start = state.get("t_generate_start", 0)
+    latency_generation_ms = (time.time() - t_generate_start) * 1000 if t_generate_start else 0
+
     try:
         from app.agent.classifier import ClassifyResult
         cr = ClassifyResult(
@@ -59,8 +66,8 @@ async def respond_node(state: AgentState) -> dict:
         dlog = make_decision_log(
             state["query"], cr, tool_results, answer, citations,
             latency_ms=latency_ms,
-            latency_retrieval_ms=0,
-            latency_generation_ms=0,
+            latency_retrieval_ms=latency_retrieval_ms,
+            latency_generation_ms=latency_generation_ms,
         )
         dlog.decision = decision
         dlog.reason_code = reason_code

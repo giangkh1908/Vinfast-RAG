@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from typing import Any, TypedDict
+from typing import Any
+
+from typing_extensions import TypedDict
 
 
 class AgentState(TypedDict, total=False):
@@ -25,5 +27,7 @@ class AgentState(TypedDict, total=False):
     iteration: int
     t0: float
     t_retrieve_start: float
+    t_retrieve_end: float
+    t_generate_start: float
 
     result: Any

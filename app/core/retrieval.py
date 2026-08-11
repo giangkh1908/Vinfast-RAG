@@ -1,6 +1,5 @@
-import asyncio
 import json
-import math
+import logging
 import re
 import unicodedata
 from collections import Counter
@@ -8,16 +7,19 @@ from pathlib import Path
 
 import requests
 from requests.adapters import HTTPAdapter
-from urllib3.util.retry import Retry
 
 from app.config import settings
+
+logger = logging.getLogger("retrieval")
 
 _reranker = None
 _sparse_index = None
 
 DENSE_COLLECTIONS = ["vivu_product_info", "vivu_policy", "vivu_maintenance"]
 SPARSE_COLLECTION = "sparse"
-SPARSE_INDEX_PATH = Path(__file__).resolve().parents[2] / "data" / "clean" / "v1" / "sparse_index.json"
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+DATA_CLEAN_DIR = REPO_ROOT / "data" / "clean"
 
 STOPWORDS = set("""
 và của là đã đang sẽ được với cho từ đến tại cũng như hay hoặc nhưng nếu thì
@@ -33,15 +35,38 @@ def tokenize(text: str) -> list[str]:
     return [t for t in TOKEN_RE.findall(text) if t not in STOPWORDS and len(t) > 1]
 
 
+# ── Sparse index auto-detection ──────────────────────────────────────────────
+def _find_latest_sparse_index() -> Path | None:
+    """Scan data/clean/*/sparse_index.json, return path with highest version number."""
+    global _sparse_index
+    if not DATA_CLEAN_DIR.exists():
+        return None
+    best_num = -1
+    best_path = None
+    for p in DATA_CLEAN_DIR.glob("*/sparse_index.json"):
+        try:
+            raw = p.read_text(encoding="utf-8")
+            idx = json.loads(raw)
+            ver = idx.get("version", p.parent.name)
+            num = int(ver.lstrip("v")) if ver.lstrip("v").isdigit() else 0
+            if num > best_num:
+                best_num = num
+                best_path = p
+                _sparse_index = idx
+        except Exception:
+            continue
+    return best_path
+
+
 def _load_sparse_index() -> dict:
     global _sparse_index
     if _sparse_index is None:
-        if SPARSE_INDEX_PATH.exists():
-            with open(SPARSE_INDEX_PATH, "r", encoding="utf-8") as f:
-                _sparse_index = json.load(f)
-        else:
+        path = _find_latest_sparse_index()
+        if path is None:
             _sparse_index = {}
-    return _sparse_index
+        else:
+            logger.info("Loaded sparse index from %s (version=%s)", path, _sparse_index.get("version"))
+    return _sparse_index or {}
 
 
 def _query_to_sparse(query: str) -> dict | None:
@@ -92,7 +117,7 @@ def _openrouter_embed(texts: list[str]) -> list[list[float]]:
 
 # ── Qdrant REST API helper ─────────────────────────────────────────────────
 class QdrantREST:
-    """Thin wrapper around Qdrant REST API (bypass broken qdrant_client library)."""
+    """Thin wrapper around Qdrant REST API."""
 
     def __init__(self, url: str, api_key: str = ""):
         self.base = url.rstrip("/")
@@ -129,7 +154,6 @@ class QdrantREST:
             r.raise_for_status()
             return r.json().get("result", [])
         except Exception as e:
-            # Fallback without filter on index error
             if model_id and "Index required" in str(e):
                 body.pop("filter", None)
                 r = self.session.post(
@@ -165,6 +189,22 @@ class QdrantREST:
             r.raise_for_status()
             return r.json().get("result", [])
         except Exception:
+            return []
+
+    def retrieve(self, collection: str, ids: list[str]) -> list[dict]:
+        """Fetch points by IDs from a collection (with payload, no vectors)."""
+        if not ids:
+            return []
+        try:
+            r = self.session.post(
+                f"{self.base}/collections/{collection}/points",
+                json={"ids": ids, "with_payload": True, "with_vector": False},
+                timeout=30,
+            )
+            r.raise_for_status()
+            return r.json().get("result", [])
+        except Exception as e:
+            logger.warning("retrieve %s failed: %s", collection, e)
             return []
 
 
@@ -207,8 +247,7 @@ class CohereReranker:
                 scores[item.get("index", 0)] = item.get("relevance_score", 0.0)
             return scores
         except Exception as e:
-            import logging
-            logging.getLogger("retrieval").warning("Cohere rerank failed: %s", e)
+            logger.warning("Cohere rerank failed: %s", e)
             return [0.0] * len(pairs)
 
 
@@ -241,30 +280,84 @@ def _rrf_fusion(result_lists: list[list], k: int = 60) -> list[tuple]:
     return [(hit_data[pid], scores[pid]) for pid in sorted_ids]
 
 
+# ── Sparse text resolution ──────────────────────────────────────────────────
+def _resolve_sparse_texts(qdrant: QdrantREST, sparse_results: list[dict]) -> list[dict]:
+    """Resolve sparse results that lack 'text' by fetching from dense collections.
+
+    Sparse v2+ stores reference-only payloads {collection, chunk_id, model_id}.
+    Dense collections (via alias) contain the actual text. Point IDs are the same
+    across sparse and dense (both derived from chunk_id via uuid5).
+    """
+    needs_text = []
+    has_text = []
+    for hit in sparse_results:
+        payload = hit.get("payload", {})
+        if payload.get("text", "").strip():
+            has_text.append(hit)
+        else:
+            needs_text.append(hit)
+
+    if not needs_text:
+        return sparse_results
+
+    # Group IDs by their source dense collection
+    by_collection: dict[str, list[str]] = {}
+    for hit in needs_text:
+        col = hit.get("payload", {}).get("collection", "")
+        if col:
+            by_collection.setdefault(col, []).append(hit["id"])
+
+    # Batch fetch from each dense collection
+    text_map: dict[str, dict] = {}
+    for col, ids in by_collection.items():
+        records = qdrant.retrieve(col, ids)
+        for rec in records:
+            payload = rec.get("payload", {})
+            text_map[rec["id"]] = {
+                "text": payload.get("text", ""),
+                "source_type": payload.get("source_type", ""),
+                "source_url": payload.get("source_url", ""),
+                "edition_id": payload.get("edition_id", ""),
+                "text_type": payload.get("text_type", ""),
+            }
+
+    # Inject text into sparse results
+    resolved = []
+    for hit in needs_text:
+        extra = text_map.get(hit["id"], {})
+        if extra.get("text"):
+            hit.setdefault("payload", {}).update(extra)
+            resolved.append(hit)
+        else:
+            logger.debug("Could not resolve text for sparse point %s", hit["id"])
+
+    return has_text + resolved
+
+
 # ── Main search ────────────────────────────────────────────────────────────
 async def hybrid_search(query: str, model_id: str = None, top_k: int = 5) -> list[dict]:
     qdrant = get_qdrant()
     dense_vector = _openrouter_embed([query])[0]
     limit = top_k * 2
 
-    # 1. Parallel dense search across 3 collections
+    # 1. Dense search across all collections (via aliases → active version)
     all_dense = []
     for col in DENSE_COLLECTIONS:
         try:
             results = qdrant.search(col, dense_vector, model_id=model_id, limit=limit)
             all_dense.extend(results)
         except Exception as e:
-            import logging
-            logging.getLogger("retrieval").warning("search %s failed: %s", col, e)
+            logger.warning("search %s failed: %s", col, e)
 
-    # 2. Sparse search (BM25)
+    # 2. Sparse search (BM25) + resolve text from dense collections
     sparse_results = []
     sparse_vec = _query_to_sparse(query)
     if sparse_vec:
         try:
             sparse_results = qdrant.search_sparse(SPARSE_COLLECTION, sparse_vec, model_id=model_id, limit=limit)
-        except Exception:
-            pass
+            sparse_results = _resolve_sparse_texts(qdrant, sparse_results)
+        except Exception as e:
+            logger.warning("sparse search failed: %s", e)
 
     # 3. RRF fusion
     if sparse_results:

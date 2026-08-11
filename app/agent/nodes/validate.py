@@ -17,6 +17,19 @@ REFUSAL_PATTERNS = [
     r"không nằm trong phạm vi",
 ]
 
+_FEATURE_RE = re.compile(
+    r"(hud|head.?up|adas|aeb|acc|adaptive.?cruise|lane.?keep|lane.?depart|"
+    r"blind.?spot|collision|parking|camera|túi.?khí|airbag|abs|ebd|esc|tcs|hsa|"
+    r"cruise.?control|auto.?brake|emergency|surround|monitoring|"
+    r"điều.?hòa|ghế|màn.?hình|loa|đèn|cửa.?sổ|gương|vô.?lăng|"
+    r"pin|sạc|phạm.?vi|tốc.?độ|công.?suất|mô.?men|xoắn|quãng.?đường|"
+    r"nội.?thất|ngoại.?thất|an.?toàn|tiện.?nghi|thông.?minh|"
+    r"navigation|gaming|ota|browser|phone.?app|diagnosis|"
+    r"leatherette|speaker|drivetrain|suspension|brake|"
+    r"immobilizer|alarm|theft)",
+    re.IGNORECASE,
+)
+
 
 def _strip_urls(text: str) -> str:
     return re.sub(r"https?://\S+", "", text)
@@ -41,8 +54,74 @@ def _extract_numbers(text: str) -> set[float]:
     return nums
 
 
+def _extract_context_features(tool_results: list[dict]) -> set[str]:
+    features = set()
+    for tr in tool_results:
+        if not tr.get("success"):
+            continue
+        result = tr["result"]
+        tool = tr["tool"]
+        if tool == "get_specs":
+            for s in result.get("specs", []):
+                features.add(s.get("key", "").lower())
+                features.update(m.group().lower() for m in _FEATURE_RE.finditer(s.get("key", "")))
+                features.update(m.group().lower() for m in _FEATURE_RE.finditer(s.get("value", "")))
+        elif tool == "search_knowledge_base":
+            for r in result.get("results", []):
+                features.update(m.group().lower() for m in _FEATURE_RE.finditer(r.get("text", "")))
+        elif tool == "search_all":
+            sub_specs = result.get("specs", {})
+            for s in sub_specs.get("specs", []):
+                features.add(s.get("key", "").lower())
+                features.update(m.group().lower() for m in _FEATURE_RE.finditer(s.get("key", "")))
+                features.update(m.group().lower() for m in _FEATURE_RE.finditer(s.get("value", "")))
+            sub_kb = result.get("knowledge_base", {})
+            for r in sub_kb.get("results", []):
+                features.update(m.group().lower() for m in _FEATURE_RE.finditer(r.get("text", "")))
+        elif tool == "get_price":
+            for p in result.get("prices", []):
+                features.add("giá")
+                features.add("price")
+    return features
+
+
+def _check_text_grounding(response: str, tool_results: list[dict]) -> bool:
+    response_features = set(m.group().lower() for m in _FEATURE_RE.finditer(response))
+    if not response_features:
+        return True
+
+    context_features = _extract_context_features(tool_results)
+    if not context_features:
+        return True
+
+    unmatched = set()
+    for feat in response_features:
+        normalized = re.sub(r"[\s\-_]", "", feat)
+        found = False
+        for ctx in context_features:
+            ctx_norm = re.sub(r"[\s\-_]", "", ctx)
+            if normalized in ctx_norm or ctx_norm in normalized:
+                found = True
+                break
+        if not found:
+            unmatched.add(feat)
+
+    if not unmatched:
+        return True
+
+    ratio = len(unmatched) / len(response_features)
+    if ratio > 0.5:
+        logger.warning("Text grounding fail: unmatched features %s / total %s (%.0f%%)", unmatched, response_features, ratio * 100)
+        return False
+
+    return True
+
+
 def _check_grounding(response: str, tool_results: list[dict]) -> bool:
     if not tool_results:
+        return False
+
+    if not _check_text_grounding(response, tool_results):
         return False
 
     response_numbers = _extract_numbers(_strip_non_factual_numbers(response))

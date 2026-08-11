@@ -30,7 +30,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 from qdrant_client import QdrantClient
-from qdrant_client.models import (Distance, PointStruct, SparseIndexParams,
+from qdrant_client.models import (PointStruct, SparseIndexParams,
                                   SparseVector, SparseVectorParams)
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -133,7 +133,8 @@ def run(version: str = "v1", url: str = DEFAULT_QDRANT_URL, recreate: bool = Fal
             id=qdrant_id(cid),
             vector={"sparse": SparseVector(indices=indices, values=values)},
             payload={"collection": col, "chunk_id": cid, "model_id": c.get("model_id"),
-                      "vector_version": c.get("vector_version", version)},
+                      "vector_version": c.get("vector_version", version),
+                      "text": c.get("text", "")},
         ))
         if len(points) >= 256:
             client.upsert(collection_name=sparse_collection, points=points, wait=True)
