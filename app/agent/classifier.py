@@ -11,9 +11,10 @@ MODEL_RE = re.compile(
 VERSION_ALIASES = {
     "eco": "Eco", "bản eco": "Eco", "ban eco": "Eco",
     "plus": "Plus", "bản plus": "Plus", "ban plus": "Plus",
-    "tiêu chuẩn": "Tiêu chuẩn", "tieuchuan": "Tiêu chuẩn",
-    "nâng cao": "Nâng cao", "nangcao": "Nâng cao",
-    "cao cấp": "Cao cấp", "caocap": "Cao cấp",
+    "tiêu chuẩn": "TieuChuan", "tieuchuan": "TieuChuan", "tiêu_chuẩn": "TieuChuan",
+    "nâng cao": "NangCao", "nangcao": "NangCao",
+    "cao cấp": "CaoCap", "caocap": "CaoCap",
+    "pluscaptain": "PlusCaptain",
 }
 
 
@@ -50,7 +51,7 @@ class QueryClassifier:
             entities["model_code"] = normalized
 
         version_match = re.search(
-            r"(Eco|Plus|Ti[êe]u\s*chu[ẩẩ]n|N[ââ]ng\s*cao|Cao\s*c[ấấ]p)",
+            r"(Eco|Plus|PlusCaptain|Ti[êe]u\s*[Cc]hu[ẩẩ]?n|TieuChuan|N[ââ]ng\s*[Cc]ao|NangCao|Cao\s*[Cc][ấấ]?p|CaoCap)",
             query, re.IGNORECASE,
         )
         if version_match:
