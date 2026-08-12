@@ -1,0 +1,134 @@
+PHIÊN BẢN,VF 3
+KÍCH THƯỚC,
+Chiều dài cơ sở (mm),2.075
+Dài x Rộng x Cao (mm),3.190 x 1.679 x 1.622
+Khoảng sáng gầm xe không tải (mm),191
+Dung tích khoang chứa hành lý (L) - Có hàng ghế cuối,36
+Dung tích khoang chứa hành lý (L) - Gập hàng ghế cuối,285
+Đường kính quay đầu tối thiểu (m),"8,1"
+TẢI TRỌNG,
+Trọng lượng không tải (kg),857
+Sức chứa (kg),300
+Tải trọng hành lý nóc xe (kg),50
+HỆ THỐNG TRUYỀN ĐỘNG,
+ĐỘNG CƠ,
+Công suất tối đa (kW),32
+Mô men xoắn cực đại (Nm),110
+Tốc độ tối đa (km/h) duy trì 1 phút,"100 km/h khi dung lượng pin >50%,
+với mọi điều kiện thời tiết"
+Tăng tốc 0 - 50 km/h (s),"5,3"
+Tăng tốc 0 - 100 km/h (s),"19,3"
+Mức tiêu thụ NL (hỗn hợp) (kWh/100 km),9 kWh/100 km (NEDC)
+PIN,
+Loại pin,LFP
+Dung lượng pin (kWh) - khả dụng,"18,64"
+Quãng đường chạy một lần sạc đầy (km) - Điều kiện tiêu chuẩn NEDC,210
+Tính năng sạc nhanh,Có
+Hệ thống phanh tái sinh,Có
+Thời gian nạp pin bình thường (giờ),5 giờ (10 - 70%)
+Thời gian nạp pin nhanh (phút),36 phút (10 - 70%)
+THÔNG SỐ TRUYỀN ĐỘNG KHÁC,
+Cách chuyển số,Tích hợp vào cần lái
+Dẫn động,RWD
+Chọn chế độ lái,Có (Eco/Normal)
+Chế độ thay đổi tốc độ đến dừng,Có (Lăn/Bò)
+KHUNG GẦM,
+GIẢM XÓC,
+Hệ thống treo - trước,"Độc lập, MacPherson"
+Hệ thống treo - sau,"Phụ thuộc, trục cứng với thanh xoắn Panhard"
+PHANH,
+Phanh trước,"Phanh đĩa, calip nổi"
+Phanh sau,Phanh tay trống
+VÀNH VÀ LỐP BÁNH XE,
+Kích thước lốp & La-zăng,175/75R16
+Bộ vá lốp,Có
+KHUNG GẦM KHÁC,
+Trợ lực lái,Có
+Thanh cân bằng trước,Có
+NGOẠI THẤT,
+Đèn pha,Halogen
+Đèn hậu,Halogen
+Đeǹ định vị,Halogen
+Thanh gia cường cửa xe,Có
+Điều chỉnh cốp sau,Chỉnh cơ
+Cánh hướng gió,Tích hợp vào cốp
+Cơ chê ́đóng mở cổng sac̣,Chỉnh cơ
+NỘI THẤT & TIỆN NGHI,
+GHẾ TOÀN XE,
+Số chỗ ngồi,4
+Chất liệu bọc ghế,Nỉ
+GHẾ LÁI,
+Ghế lái - điều chỉnh hướng,Chỉnh cơ 4 hướng
+Tựa đầu ghế lái,Có - tích hợp
+GHẾ PHỤ,
+Ghế phụ - điều chỉnh hướng,Chỉnh cơ 4 hướng
+Tựa đầu ghế phụ,Có - tích hợp
+Lên xuống dễ dàng (lên/xuống từ hàng thứ 2),Có
+GHẾ HÀNG 2,
+Hàng ghế thứ 2 điều chỉnh gập tỷ lệ,Gập hoàn toàn
+Tựa đầu ghế hàng 2,Có - cố định
+ĐIỀU HÒA KHÔNG KHÍ,
+Hệ thống điều hòa,"Chỉnh cơ, 1 vùng"
+Lọc không khí cabin,Lọc bụi
+Chức năng làm tan sương/tan băng,Có
+"MÀN HÌNH, KẾT NỐI GIẢI TRÍ",
+Màn hình giải trí cảm ứng,10 inch
+Cổng kết nối USB loại A hàng ghế thứ 2,"Có, 1 cổng 1,5 A"
+Kết nối Wi-Fi,Có (Chỉ dùng cập nhật phần mềm từ xa)
+Kết nối Bluetooth,Có
+Khởi động bằng bàn đạp phanh - BEV,Có
+Các ngôn ngữ hỗ trợ,Tiếng Việt/Tiếng Anh
+HỆ THỐNG LOA,
+Hệ thống loa,2
+HỆ THỐNG ĐÈN NỘI THẤT,
+Đèn trần phía trước,Dạng bóng
+"Tấm che nắng, có gương",Có (Loại không gương)
+Hộc đựng cốc giữa - hàng ghế trước,2
+NỘI THẤT & TIỆN NGHI KHÁC,
+Phanh tay,"Kích hoạt phanh tay
+bằng nút P ở cần gạt vô lăng"
+Khay đựng dụng cụ sửa xe,Có (Túi vải)
+Móc kéo tời,Có (Có thể tách rời)
+Gương chiếu hậu trong xe,Ngày và đêm (loại thường)
+AN TOÀN & AN NINH,
+Hệ thống chống bó cứng phanh ABS,Có
+Hỗ trợ phanh khẩn cấp BA,Có
+Chức năng kiểm soát lực kéo TCS,Có
+Hỗ trợ khởi hành ngang dốc HSA,Có
+Khóa cửa xe tự động khi xe di chuyển,Có (5 km/h)
+Căng đai khẩn cấp ghế trước,Có
+Cảnh báo dây an toàn hàng trước và hàng 2,Ghế phụ trước
+HỆ THỐNG TÚI KHÍ,1
+Túi khí trước lái và hành khách phía trước,Túi khí trước lái
+Tính năng khóa động cơ khi có trộm,Có
+CÁC TÍNH NĂNG ADAS,
+HỖ TRỢ ĐỖ XE,
+Hỗ trợ đỗ phía sau,Có
+Hệ thống camera sau,AFS
+CÁC TÍNH NĂNG THÔNG MINH,
+"ĐIỀU KHIỂN XE THÔNG MINH (Màn hình, giọng nói, C-App)",
+Điều khiển chức năng trên xe,Có (Trên màn hình)
+Chế độ Cắm trại,Có
+"THIẾT LẬP, THEO DÕI VÀ GHI NHỚ HỒ SƠ NGƯỜI LÁI",
+Đồng bộ và quản lý tài khoản,Có (Màn hình và ứng dụng VinFast)
+ĐIỀU HƯỚNG - DẪN ĐƯỜNG,
+Tìm kiếm địa điểm và dẫn đường,"Có (Android Auto/Apple Carplay)
+*Sẽ được cập nhật phần mềm sau"
+Định vị vị trí xe từ xa,Có (Ứng dụng VinFast)
+AN NINH - AN TOÀN,
+Đề xuất lịch bảo trì/bảo dưỡng tự động,Có (Ứng dụng VinFast)
+"Theo dõi và hiển thị thông tin tình trạng xe
+(Mức pin còn lại, mức nước làm mát,...)",Có (Ứng dụng VinFast)
+TIỆN ÍCH GIA ĐÌNH VÀ VĂN PHÒNG,
+Giải trí thông qua đồng bộ với điện thoại,"Có (Android Auto/Apple Carplay)
+*Sẽ được cập nhật phần mềm sau"
+Giải trí âm thanh,Có (Trên màn hình)
+Tra cứu và truy cập Internet,Có
+Đồng bộ lịch và danh bạ điện thoại,Có (Màn hình và ứng dụng VinFast)
+Đồng bộ danh bạ điện thoại,Có (Bluetooth và kết nối dây)
+CẬP NHẬT PHẦN MỀM TỪ XA,
+Cập nhật phần mềm miễn phí FOTA,Có (Chỉ màn hình)
+Cập nhật phần mềm thu phí SOTA,Có (Chỉ màn hình)
+DỊCH VỤ VỀ XE,
+Nhận thông báo và đặt dịch vụ hậu mãi,Có (Ứng dụng VinFast)
+Quản lý gói cước thuê pin trực tuyến,Có (Ứng dụng VinFast)

@@ -27,6 +27,11 @@ import argparse
 import sys
 from pathlib import Path
 
+# Windows console cp1252 → UTF-8 (emoji / tiếng Việt trong print)
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+
 import psycopg2
 from qdrant_client import QdrantClient, models
 

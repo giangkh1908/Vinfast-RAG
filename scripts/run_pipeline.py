@@ -6,12 +6,13 @@ Chạy đủ bước theo thứ tự cho 1 version:
   data/raw/*.txt + data/raw_pdf/*.txt
     → 1. clean (clean_to_jsonl)      → intermediate/{vector,hot}.jsonl + link_only.json
     → 2. split cold/hot (split_cold_hot) → vector/*.jsonl + postgres/*.csv + _manifest.json
-    → 3. parse_pdf_specs → postgres/specs.csv (feature specs từ raw_pdf brochure)
+    → 3. parse_pdf_specs → postgres/specs.csv (feature specs từ data/Model Data CSVs)
     → 4. embed + ingest Qdrant dense (vector_ingest)
     → 5. BM25 sparse → Qdrant sparse (sparse_ingest)   [bỏ qua nếu --no-sparse]
     → 6. UPSERT PostgreSQL (postgres_ingest)
 
-Specs chỉ lấy từ data/raw_pdf/*.txt (brochure PDF pipe-tables) qua parse_pdf_specs.
+Specs lấy từ data/Model Data/*.csv (2 cột label,value, 1 file = 1 model+edition)
+qua parse_pdf_specs.
 
 Usage:
     python scripts/run_pipeline.py --version v1 --recreate --promote
@@ -46,9 +47,9 @@ def preflight(version: str, want_qdrant: bool, want_pg: bool) -> int:
         print(f"[preflight] data/raw rỗng hoặc không tồn tại: {raw}", file=sys.stderr)
         return 1
 
-    raw_pdf = REPO_ROOT / "data" / "raw_pdf"
-    if not raw_pdf.exists() or not any(raw_pdf.iterdir()):
-        print(f"[preflight] data/raw_pdf trống — pipeline sẽ không có spec data")
+    model_data = REPO_ROOT / "data" / "Model Data"
+    if not model_data.exists() or not any(model_data.iterdir()):
+        print(f"[preflight] data/Model Data trống — pipeline sẽ không có spec data")
 
     if not openrouter.API_KEY:
         print("[preflight] OPENROUTER_API_KEY chưa set trong .env (xem .env.example)",

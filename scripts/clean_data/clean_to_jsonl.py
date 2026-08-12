@@ -320,13 +320,11 @@ def chunks_from_text(text: str, meta: dict[str, Any], cls: dict[str, Any],
     chunks: list[dict[str, Any]] = []
     section_stack: list[tuple[int, str]] = []
     buf: list[str] = []
-    current_page = 0  # track PDF page from --- Trang N --- markers
 
     def current_section_title() -> str:
         return section_stack[-1][1] if section_stack else ""
 
     def emit() -> None:
-        nonlocal current_page
         if not buf:
             return
         paragraphs = [clean_line(line) for line in buf]
@@ -394,18 +392,14 @@ def chunks_from_text(text: str, meta: dict[str, Any], cls: dict[str, Any],
             "ingested_at": "",
             "is_hot": False,
         }
-        # Ghi số trang PDF nếu có page marker
-        if current_page:
-            chunk["page"] = current_page
         chunks.append(chunk)
         buf.clear()
 
     for raw in lines:
-        # Page marker: --- Trang N ---  →  gán page cho chunk sắp emit
+        # Page marker: --- Trang N ---  →  flush chunk hiện tại (boundary giữa các trang)
         pm = PAGE_MARKER_RE.match(raw.strip())
         if pm:
             emit()
-            current_page = int(pm.group(1))
             continue
         m = re.match(r"^(#{1,6})\s+(.*)", raw.strip())
         if m:

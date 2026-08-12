@@ -113,7 +113,6 @@ CREATE TABLE IF NOT EXISTS car_specs (
     spec_value         TEXT NOT NULL,   -- "150"|"87.7"|"5" (string)
     spec_unit          TEXT,            -- "kW"|"km"|"kWh"|"mm"|""|NULL
     source_url         TEXT,
-    page               TEXT,            -- số trang PDF (nullable; từ --- Trang N ---)
     updated_at         TIMESTAMPTZ DEFAULT now()
 );
 DROP INDEX IF EXISTS uniq_car_specs;
@@ -137,9 +136,14 @@ CREATE UNIQUE INDEX IF NOT EXISTS uniq_ingest_current
 ON ingest_version(is_current) WHERE is_current;
 """
 
-# Migration cho car_specs: thêm page (schema cũ chưa có)
+# Migration cho car_specs: bỏ page (nguồn giờ là CSV, không còn số trang PDF)
+# View car_specs_active phụ thuộc cột page → drop view trước, drop column, recreate view sau.
 _MIGRATE_CAR_SPECS_DDL = """
-ALTER TABLE car_specs ADD COLUMN IF NOT EXISTS page TEXT;
+DROP VIEW IF EXISTS car_specs_active;
+ALTER TABLE car_specs DROP COLUMN IF EXISTS page;
+CREATE OR REPLACE VIEW car_specs_active AS
+SELECT * FROM car_specs
+WHERE ingest_version = (SELECT version FROM ingest_version WHERE is_current LIMIT 1);
 """
 
 
@@ -226,15 +230,14 @@ def upsert_specs(conn, version: str, rows: list[dict[str, Any]]) -> int:
     sql = """
     INSERT INTO car_specs (ingest_version, model_code, version_name, version_code,
                            spec_category, spec_category_vn, spec_key, spec_key_vn,
-                           spec_value, spec_unit, source_url, page)
+                           spec_value, spec_unit, source_url)
     VALUES %s
     """
     values = [
         (version, r["model_code"], r["version_name"] or None, r["version_code"] or None,
          r["spec_category"], r.get("spec_category_vn", ""),
          r["spec_key"], r.get("spec_key_vn", ""),
-         r["spec_value"], r["spec_unit"] or None, r["source_url"] or None,
-         r.get("page") or None)
+         r["spec_value"], r["spec_unit"] or None, r["source_url"] or None)
         for r in rows
     ]
     execute_values(cur, sql, values)
