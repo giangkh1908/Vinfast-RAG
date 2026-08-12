@@ -546,8 +546,26 @@ def parse_pdf_specs(path: Path) -> list[dict[str, Any]]:
             i += 1
             continue
 
+        # Kiểm tra xem "header" có thực chất là data row không
+        # (chứa spec label thay vì tên edition)
+        first_row_is_data = False
+        first_label = cells[0] if (cells := [c.strip() for c in header_line.strip("|").split("|")]) else ""
+        first_label_norm = norm(first_label)
+        # Nếu label khớp với LABEL_MAP hoặc FEATURE_NORM_MAP, đây là data row
+        for alias in ALIASES_BY_LEN:
+            if first_label_norm.startswith(alias) or first_label_norm == alias:
+                first_row_is_data = True
+                break
+        if not first_row_is_data:
+            label_strict = norm_strict(first_label)
+            for alias in FEATURE_ALIASES_BY_LEN:
+                if label_strict.startswith(alias) or label_strict == alias:
+                    first_row_is_data = True
+                    break
+
         current_section_category: str | None = None
-        j = data_start
+        # Nếu dòng đầu là data, bắt đầu từ dòng header (lines[i])
+        j = i if first_row_is_data else data_start
         while j < len(lines) and TABLE_ROW_RE.match(lines[j]) and not SEP_RE.match(lines[j]):
             # ── Merge continuation lines (multi-line cell values) ─────────────
             # Một số spec có giá trị xuống dòng trong PDF, làm text bị split

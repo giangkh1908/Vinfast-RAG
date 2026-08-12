@@ -1,4 +1,10 @@
 model_code|version_name|version_code|spec_category|spec_category_vn|spec_key|spec_key_vn|spec_value|spec_unit|source_url|page
+VF 6|Eco||dimension|Kích thước & trọng lượng|length_mm|Chiều dài tổng thể|4241|mm|https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
+VF 6|Eco||dimension|Kích thước & trọng lượng|width_mm|Chiều rộng tổng thể|1834|mm|https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
+VF 6|Eco||dimension|Kích thước & trọng lượng|height_mm|Chiều cao tổng thể|1580|mm|https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
+VF 6|Plus||dimension|Kích thước & trọng lượng|length_mm|Chiều dài tổng thể|4241|mm|https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
+VF 6|Plus||dimension|Kích thước & trọng lượng|width_mm|Chiều rộng tổng thể|1834|mm|https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
+VF 6|Plus||dimension|Kích thước & trọng lượng|height_mm|Chiều cao tổng thể|1580|mm|https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
 VF 6|Eco||dimension|Kích thước & trọng lượng|wheelbase_mm|Chiều dài cơ sở|2.730|mm|https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
 VF 6|Plus||dimension|Kích thước & trọng lượng|wheelbase_mm|Chiều dài cơ sở|2.730|mm|https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
 VF 6|Eco||dimension|Kích thước & trọng lượng|ground_clearance_mm|Khoảng sáng gầm xe|170|mm|https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
@@ -55,6 +61,8 @@ VF 6|Eco||interior|Nội thất|chuc nang kiem soat chat luong khong khi|chuc na
 VF 6|Plus||interior|Nội thất|chuc nang kiem soat chat luong khong khi|chuc nang kiem soat chat luong khong khi|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
 VF 6|Eco||interior|Nội thất|chuc nang ion hoa khong khi|chuc nang ion hoa khong khi|Không||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
 VF 6|Plus||interior|Nội thất|chuc nang ion hoa khong khi|chuc nang ion hoa khong khi|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
+VF 6|Eco||general|Thông tin chung|man hinh hien thi thong tin tren kinh lai (hud)|man hinh hien thi thong tin tren kinh lai (hud)|Không||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
+VF 6|Plus||general|Thông tin chung|man hinh hien thi thong tin tren kinh lai (hud)|man hinh hien thi thong tin tren kinh lai (hud)|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
 VF 6|Eco||interior|Nội thất|display_inch|display_inch|12,9 inch|inch|https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
 VF 6|Plus||interior|Nội thất|display_inch|display_inch|12,9 inch|inch|https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
 VF 6|Eco||infotainment|Giải trí & kết nối|smartphone_integration|Kết nối Android Auto / Apple CarPlay|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
@@ -123,6 +131,8 @@ VF 6|Eco||security|An ninh|anti_theft_alarm|Cảnh báo chống trộm|Có||http
 VF 6|Plus||security|An ninh|anti_theft_alarm|Cảnh báo chống trộm|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
 VF 6|Eco||security|An ninh|immobilizer|Khoá động cơ khi có trộm|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
 VF 6|Plus||security|An ninh|immobilizer|Khoá động cơ khi có trộm|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
+VF 6|Eco||general|Thông tin chung|lua chon che do van hanh dac biet|lua chon che do van hanh dac biet|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
+VF 6|Plus||general|Thông tin chung|lua chon che do van hanh dac biet|lua chon che do van hanh dac biet|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
 VF 6|Eco||infotainment|Giải trí & kết nối|online_entertainment|online_entertainment|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
 VF 6|Plus||infotainment|Giải trí & kết nối|online_entertainment|online_entertainment|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11
 VF 6|Eco||infotainment|Giải trí & kết nối|navigation|Điều hướng & dẫn đường|Có||https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf|11

@@ -1,5 +1,5 @@
 # Nguồn: https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf
-# Crawl lúc: 2026-08-10T16:06:47
+# Crawl lúc: 2026-08-12T11:25:27
 # Loại: pdf
 # Trang: 1–13
 
@@ -173,8 +173,9 @@ MỘT LỰA CHỌN HÀI HOÀ
 
 --- Trang 11 ---
 
-| Dài x Rộng x Cao (mm) | 4.241 x 1.834 x 1.580 | 4.241 x 1.834 x 1.580 |
+|  |  |  |
 | --- | --- | --- |
+| Dài x Rộng x Cao (mm) | 4.241 x 1.834 x 1.580 | 4.241 x 1.834 x 1.580 |
 | Chiều dài cơ sở (mm) | 2.730 | 2.730 |
 | Khoảng sáng gầm xe không tải (mm) | 170 | 170 |
 | HỆ THỐNG TRUYỀN ĐỘNG |  |  |
@@ -218,6 +219,7 @@ chỉnh phía hành khách khi lùi | Không | Có |
 
 | Màn hình hiển thị thông tin trên kính lái (HUD) | Không | Có |
 | --- | --- | --- |
+| Màn hình hiển thị thông tin trên kính lái (HUD) | Không | Có |
 | Màn hình giải trí cảm ứng | 12,9 inch | 12,9 inch |
 | Kết nối với Android Auto và Apple CarPlay | Có | Có |
 | Hệ thống loa | 6 | 6 |
@@ -258,6 +260,7 @@ chỉnh phía hành khách khi lùi | Không | Có |
 
 | Lựa chọn chế độ vận hành đặc biệt | Có | Có |
 | --- | --- | --- |
+| Lựa chọn chế độ vận hành đặc biệt | Có | Có |
 | Giải trí trực tuyến | Có | Có |
 | Điều hướng & dẫn đường trên màn hình trung tâm | Có | Có |
 | Trò chơi | Có | Có |

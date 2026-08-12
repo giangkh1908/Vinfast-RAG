@@ -421,15 +421,50 @@ def extract_page(page, page_num: int, verbose: bool = False) -> PageResult:
                 data = ft.extract()
                 if not data:
                     continue
-                headers = data[0] if data else []
-                rows = data[1:] if len(data) > 1 else []
+                
+                # Use PyMuPDF's header detection if available
+                header_names = None
+                if hasattr(ft, 'header') and ft.header and hasattr(ft.header, 'names'):
+                    header_names = ft.header.names
+                
+                if header_names:
+                    # Check if header.names actually contains data (not real column labels)
+                    # E.g. ['Dài x Rộng x Cao (mm)', '4.241 x 1.834 x 1.580', ...]
+                    header_text = " ".join(str(n) for n in header_names if n)
+                    looks_like_data = bool(re.search(r'\d+[.,]\d+|\d+\s*[x×]\s*\d+', header_text))
+                    
+                    if looks_like_data:
+                        # Header is actually data → use empty headers, all rows as data
+                        headers = [""] * len(header_names)
+                        rows = [[(c or "").strip() for c in row] for row in data]
+                    else:
+                        # Real header → use header.names, skip header rows
+                        headers = [h.strip() if h else "" for h in header_names]
+                        header_row_count = getattr(ft, 'header_rows', 1)
+                        # header_rows could be int (count) or range-like
+                        if isinstance(header_row_count, (list, tuple, range)):
+                            header_row_count = len(header_row_count)
+                        rows = [[(c or "").strip() for c in row] for row in data[header_row_count:]]
+                else:
+                    # No header detected — first row might be data or header
+                    first_row = data[0]
+                    first_row_text = " ".join(str(cell) for cell in first_row if cell)
+                    looks_like_data = bool(re.search(r'\d+[.,]\d+|\d+\s*[x×]\s*\d+', first_row_text))
+                    
+                    if looks_like_data:
+                        headers = [""] * len(first_row)
+                        rows = [[(c or "").strip() for c in row] for row in data]
+                    else:
+                        headers = [h.strip() if h else "" for h in first_row]
+                        rows = [[(c or "").strip() for c in row] for row in data[1:]]
+                
                 # Lọc bỏ bảng giả (quá ít hàng/cột)
                 if len(rows) < 2:
                     continue
                 et = ExtractedTable(
                     page=page_num,
-                    headers=[h.strip() if h else "" for h in headers],
-                    rows=[[(c or "").strip() for c in row] for row in rows],
+                    headers=headers,
+                    rows=rows,
                     bbox=ft.bbox,
                 )
                 result.tables.append(et)

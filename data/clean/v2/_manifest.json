@@ -48,11 +48,11 @@
       },
       "car_specs": {
         "file": "postgres/specs.csv",
-        "rows": 370,
-        "upserted": 370
+        "rows": 380,
+        "upserted": 380
       }
     },
-    "total_rows_upserted": 398
+    "total_rows_upserted": 408
   },
   "link_only": {
     "brochure_urls": [
