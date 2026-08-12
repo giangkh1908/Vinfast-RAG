@@ -15,7 +15,6 @@ Output mặc định: data/raw/<slug>_<timestamp>.txt  (text thô)
 """
 
 import argparse
-import asyncio
 import os
 import re
 import sys
@@ -118,43 +117,18 @@ def fetch_firecrawl(url: str) -> tuple[str, str]:
     return md, title
 
 
-async def _crawl4ai_async(url: str, selector: str | None = None,
-                          plain: bool = False) -> tuple[str, str, str, str]:
-    """Render an HTML page with the locally installed Crawl4AI browser."""
-    from crawl4ai import AsyncWebCrawler, BrowserConfig, CacheMode, CrawlerRunConfig
+def fetch_html(url: str, selector: str | None = None,
+               plain: bool = False) -> tuple[str, str, str, str]:
+    """Crawl HTML bằng requests + BeautifulSoup (không cần browser headless).
 
-    browser = BrowserConfig(headless=True, verbose=False, user_agent=HEADERS["User-Agent"])
-    run = CrawlerRunConfig(
-        css_selector=selector,
-        only_text=plain,
-        excluded_tags=DROP_TAGS,
-        remove_forms=True,
-        cache_mode=CacheMode.BYPASS,
-        wait_until="domcontentloaded",
-        page_timeout=90000,
-        verbose=False,
-    )
-    async with AsyncWebCrawler(config=browser) as crawler:
-        result = await crawler.arun(url=url, config=run)
-
-    if not result.success:
-        raise RuntimeError(f"Crawl4AI lỗi: {result.error_message or 'không rõ lỗi'}")
-
-    markdown = getattr(result, "markdown", "") or ""
-    if not isinstance(markdown, str):
-        markdown = (getattr(markdown, "raw_markdown", None)
-                    or getattr(markdown, "fit_markdown", None)
-                    or str(markdown))
-    metadata = getattr(result, "metadata", {}) or {}
-    title = metadata.get("title", "") if isinstance(metadata, dict) else ""
-    html = getattr(result, "cleaned_html", "") or getattr(result, "html", "") or ""
-    return markdown.strip(), title, markdown, html
-
-
-def fetch_crawl4ai(url: str, selector: str | None = None,
-                   plain: bool = False) -> tuple[str, str, str, str]:
-    """Synchronous wrapper for Crawl4AI, keeping the existing CLI synchronous."""
-    return asyncio.run(_crawl4ai_async(url, selector, plain))
+    Trả về (markdown sạch, title, marker_md, html gốc) — giữ đúng chữ ký
+    hàm cũ để main() không phải đổi. Không có JS-render; trang SPA cần
+    dùng --firecrawl.
+    """
+    resp = fetch(url)
+    html = resp.text
+    text, title, marker_md = process_html(html, selector, plain)
+    return text, title, marker_md, html
 
 
 def is_pdf(resp: "requests.Response", url: str) -> bool:
@@ -504,13 +478,13 @@ def main() -> int:
             raw_bytes = resp.content
             print(f"  Đã tải {len(raw_bytes):,} bytes ({resp.headers.get('Content-Type','?')})")
         else:
-            print("  → Crawl HTML bằng Crawl4AI (Chromium headless)...")
-            text, title, marker_md, html = fetch_crawl4ai(
+            print("  → Crawl HTML bằng requests + BeautifulSoup...")
+            text, title, marker_md, html = fetch_html(
                 args.url, args.selector, plain=args.plain
             )
             raw_bytes = html.encode("utf-8")
             kind = "html"
-            print(f"  Đã tải {len(raw_bytes):,} bytes (Crawl4AI)")
+            print(f"  Đã tải {len(raw_bytes):,} bytes (requests/BS4)")
 
     if not args.firecrawl and 'resp' in locals() and is_pdf(resp, args.url):
         print("  → Phát hiện PDF, đang rút text...")

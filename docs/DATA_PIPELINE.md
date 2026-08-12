@@ -19,7 +19,6 @@ retriever sử dụng.
 
 - Python 3.11+
 - OpenRouter API key trong `.env`
-- Crawl4AI + Chromium cho brochure PDF
 - Qdrant Cloud + Neon (Postgres) — cấu hình trong `.env`
 - Docker chỉ cần khi chạy fallback local (xem `docker-compose.local.yml`)
 
@@ -31,14 +30,12 @@ Windows PowerShell:
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install -r requirements.txt
-crawl4ai-doctor
 ```
 
 Nếu `.venv` đã có sẵn:
 
 ```powershell
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
-.\.venv\Scripts\crawl4ai-doctor.exe
 ```
 
 Tạo `.env` từ `.env.example` và điền:
@@ -92,12 +89,13 @@ Crawl HTML hoặc PDF vào `data/raw/`:
   https://vinfastauto.com/vn_vi/dat-coc-xe-vf2
 ```
 
-`crawl.py` dùng Crawl4AI cho HTML và PyMuPDF cho PDF. Brochure PDF dùng cho
-spec được crawl thủ công bằng `scripts/crawl_pdf.py` vào `data/raw_pdf/*.txt`
-(giữ layout bảng — pipeline đọc từ local, không crawl online):
+`crawl.py` dùng requests + BeautifulSoup cho HTML (trang SPA/JS-render cần
+`--firecrawl` với FIRECRAWL_API_KEY) và PyMuPDF cho PDF. Brochure PDF dùng cho
+spec được chuẩn bị thủ công thành `data/raw_pdf/*.txt`
+(pipeline đọc từ local, không crawl online):
 
 ```powershell
-.\venv\Scripts\python.exe scripts/crawl_pdf.py <brochure_url>
+.\venv\Scripts\python.exe scripts/crawl.py <brochure_url>
 ```
 
 `data/raw/link_brochure.md` chỉ được dùng để ghi lại danh sách brochure URLs
@@ -132,7 +130,7 @@ Pipeline chỉ dùng raw_pdf local — không crawl online:
 ```
 
 `parse_pdf_specs` chỉ xử lý file `data/raw_pdf/*.txt` local (VF6, VF8 brochures).
-Không cần Crawl4AI/LLM.
+Không cần crawl online / LLM.
 
 ### 4.3. Chạy từng version nhưng chưa activate
 
@@ -171,7 +169,7 @@ scripts/
 |- config.py               # Paths + env chung (QDRANT_URL, PG_DSN, load .env)
 |- run_pipeline.py         # Orchestrator end-to-end (bước 1-6)
 |- version_manager.py      # Promote/rollback/delete version (alias Qdrant + PG)
-|- crawl.py / crawl_pdf.py # Crawl raw (HTML / PDF giữ layout bảng)
+|- crawl.py                # Crawl raw (HTML bằng requests+BS4 / PDF bằng PyMuPDF)
 |- clean_data/
 |  |- spec_common.py       # Dùng chung: MODEL_LABEL, no_diacritics, parse_raw_file, infer_model
 |  |- noise_patterns.py    # Lọc noise text (dòng/đoạn/PDF prose)
