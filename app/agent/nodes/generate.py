@@ -66,7 +66,6 @@ async def generate_node(state: AgentState) -> dict:
         resp = await llm.chat.completions.create(
             model=settings.llm_model,
             messages=messages,
-            tool_choice="none",
         )
         new_response = resp.choices[0].message.content or ""
         if new_response:

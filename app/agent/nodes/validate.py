@@ -84,8 +84,20 @@ def _get_spec_key_vi_map() -> dict[str, set[str]]:
     return key_to_vi
 
 
+_SPEC_KEY_ALIASES = {
+    "head_up_display": ["hud", "head-up"],
+    "surround_view_camera": ["camera 360", "camera360"],
+    "adaptive_cruise_control": ["acc"],
+    "anti_lock_braking_system": ["abs"],
+    "electronic_stability_control": ["esc"],
+    "traction_control": ["tcs"],
+    "hill_start_assist": ["hsa"],
+    "autonomous_emergency_braking": ["aeb"],
+}
+
+
 def _enrich_features_with_vi(features: set[str], spec_key: str, spec_value: str):
-    """Add Vietnamese translations for English spec keys."""
+    """Add Vietnamese translations + common aliases for English spec keys."""
     vi_map = _get_spec_key_vi_map()
     key_lower = spec_key.lower()
     # Check if any English keyword from vi_map matches the spec key
@@ -107,12 +119,18 @@ def _extract_context_features(tool_results: list[dict]) -> tuple[set[str], str]:
         if tool == "get_specs":
             for s in result.get("specs", []):
                 key = s.get("key", "")
+                value = s.get("value", "")
                 features.add(key.lower())
                 features.update(m.group().lower() for m in _FEATURE_RE.finditer(key))
-                features.update(m.group().lower() for m in _FEATURE_RE.finditer(s.get("value", "")))
-                _enrich_features_with_vi(features, key, s.get("value", ""))
+                features.update(m.group().lower() for m in _FEATURE_RE.finditer(value))
+                _enrich_features_with_vi(features, key, value)
+                # Add common aliases for spec keys (e.g. head_up_display → hud)
+                key_aliases = _SPEC_KEY_ALIASES.get(key.lower(), [])
+                for alias in key_aliases:
+                    features.add(alias)
+                    raw_parts.append(alias)
                 raw_parts.append(key)
-                raw_parts.append(s.get("value", ""))
+                raw_parts.append(value)
         elif tool == "search_knowledge_base":
             for r in result.get("results", []):
                 txt = r.get("text", "")
@@ -122,12 +140,17 @@ def _extract_context_features(tool_results: list[dict]) -> tuple[set[str], str]:
             sub_specs = result.get("specs", {})
             for s in sub_specs.get("specs", []):
                 key = s.get("key", "")
+                value = s.get("value", "")
                 features.add(key.lower())
                 features.update(m.group().lower() for m in _FEATURE_RE.finditer(key))
-                features.update(m.group().lower() for m in _FEATURE_RE.finditer(s.get("value", "")))
-                _enrich_features_with_vi(features, key, s.get("value", ""))
+                features.update(m.group().lower() for m in _FEATURE_RE.finditer(value))
+                _enrich_features_with_vi(features, key, value)
+                key_aliases = _SPEC_KEY_ALIASES.get(key.lower(), [])
+                for alias in key_aliases:
+                    features.add(alias)
+                    raw_parts.append(alias)
                 raw_parts.append(key)
-                raw_parts.append(s.get("value", ""))
+                raw_parts.append(value)
             sub_kb = result.get("knowledge_base", {})
             for r in sub_kb.get("results", []):
                 txt = r.get("text", "")
@@ -161,6 +184,16 @@ def _check_text_grounding(response: str, tool_results: list[dict], query: str = 
     unmatched = set()
     for feat in response_features:
         normalized = re.sub(r"[\s\-_]", "", feat)
+
+        # For negative claims about query features: require raw_corpus match.
+        # Enriched features (aliases, Vietnamese translations) can make it seem
+        # like evidence addresses a feature when it actually doesn't.
+        if has_negative and feat in query_features:
+            feat_in_corpus = normalized in raw_corpus or feat in raw_corpus
+            if not feat_in_corpus:
+                unmatched.add(feat)
+            continue
+
         found = False
         for ctx in context_features:
             ctx_norm = re.sub(r"[\s\-_]", "", ctx)
@@ -171,24 +204,13 @@ def _check_text_grounding(response: str, tool_results: list[dict], query: str = 
             if normalized in raw_corpus or feat in raw_corpus:
                 found = True
         if not found:
-            if has_negative and feat in query_features:
-                # For negative claims about query features: only allow if evidence
-                # explicitly addresses the feature (i.e., feature appears in corpus).
-                # If evidence doesn't mention the feature at all, we can't confirm
-                # or deny → grounding fails → should refuse.
-                feat_in_corpus = normalized in raw_corpus or feat in raw_corpus
-                if feat_in_corpus:
-                    continue
-                # Feature not in evidence at all → can't confirm negative
-                unmatched.add(feat)
-                continue
             unmatched.add(feat)
 
     if not unmatched:
         return True
 
     ratio = len(unmatched) / len(response_features)
-    if ratio > 0.5:
+    if ratio >= 0.5:
         logger.warning("Text grounding fail: unmatched features %s / total %s (%.0f%%)", unmatched, response_features, ratio * 100)
         return False
 
