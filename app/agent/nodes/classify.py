@@ -1,9 +1,7 @@
 import logging
 import re
 
-from app.config import settings
 from app.agent.classifier import get_classifier
-from app.agent.decision import get_oos_messages
 from app.agent.graph_state import AgentState
 
 logger = logging.getLogger("bds.graph.classify")
@@ -153,31 +151,15 @@ async def classify_node(state: AgentState) -> dict:
     classifier = get_classifier()
     cr = classifier.classify(query, history)
 
-    # ── Decision Order (spec section 3) ──
+    # ── Decision Order ──
 
-    # 1. OOS check (BDS-02A, BDS-10..17)
-    if cr.decision == "out_of_scope":
-        oos_msgs = get_oos_messages()
-        oos_type = "model_oos"
-        for key in oos_msgs:
-            if key in cr.reason:
-                oos_type = key
-                break
-        return {
-            "decision": "out_of_scope",
-            "reason_code": oos_type,
-            "response_text": oos_msgs.get(oos_type, oos_msgs.get("model_oos", "")),
-            "entities": cr.entities,
-            "specificity": cr.specificity,
-        }
-
-    # BDS-10: Multi-model clarify (handled by classifier)
+    # Classifier always returns "answer" now (no OOS).
+    # If classifier returned clarify (multi-model), handle it.
     if cr.decision == "clarify":
-        ml = " hoặc ".join(settings.scope_models)
         return {
             "decision": "clarify",
-            "reason_code": cr.reason.split(":")[0] if ":" in cr.reason else "missing_context",
-            "response_text": f"Bạn muốn hỏi về {ml}?",
+            "reason_code": "missing_context",
+            "response_text": "Bạn muốn hỏi về xe nào?",
             "entities": cr.entities,
             "specificity": "unclear",
         }
@@ -200,54 +182,53 @@ async def classify_node(state: AgentState) -> dict:
     if topic == "general" and hist_ctx["topic"]:
         topic = hist_ctx["topic"]
 
-    # 2. BDS-02: Missing model — check ambiguous pronoun first
+    # Missing model — check ambiguous pronoun first
     if not has_model:
         if _AMBIGUOUS_PRONOUN_RE.search(query):
             return {
                 "decision": "clarify",
                 "reason_code": "ambiguous_context",
-                "response_text": f"Bạn muốn hỏi về {' hoặc '.join(settings.scope_models)}?",
+                "response_text": "Bạn muốn hỏi về xe nào?",
                 "entities": cr.entities,
                 "specificity": "unclear",
                 "category": topic,
             }
         if topic != "general":
-            ml = " hoặc ".join(settings.scope_models)
             return {
                 "decision": "clarify",
                 "reason_code": "missing_model",
-                "response_text": f"Bạn muốn hỏi về {ml}?",
+                "response_text": "Bạn muốn hỏi về xe VinFast nào?",
                 "entities": cr.entities,
                 "specificity": "unclear",
                 "category": topic,
             }
 
-    # 3. BDS-05: Broad topic (model known, topic vague, NOT a follow-up)
+    # Broad topic (model known, topic vague, NOT a follow-up)
     if has_model and _is_broad_topic(query) and not is_followup:
         model = cr.entities["model_code"]
         return {
             "decision": "clarify",
             "reason_code": "missing_topic",
-            "response_text": f"Bạn muốn tìm thông tin nào về {model}: phiên bản, thông số, pin/sạc, phạm vi di chuyển, an toàn, nội thất hay ngoại thất?",
+            "response_text": f"Bạn muốn tìm thông tin nào về {model}?",
             "entities": cr.entities,
             "specificity": "unclear",
             "category": "general",
         }
 
-    # 4. BDS-03: Missing version (only for version-dependent topics)
+    # Missing version (only for version-dependent topics)
     if has_model and not has_version and not VERSION_QUERY_RE.search(query):
         if topic in _VERSION_DEPENDENT_TOPICS:
             model = cr.entities["model_code"]
             return {
                 "decision": "clarify",
                 "reason_code": "missing_version",
-                "response_text": f"Bạn muốn hỏi phiên bản nào của {model}? ({', '.join(settings.scope_versions)})",
+                "response_text": f"Bạn muốn hỏi phiên bản nào của {model}?",
                 "entities": cr.entities,
                 "specificity": "unclear",
                 "category": topic,
             }
 
-    # 5. BDS-01: Answer
+    # Answer
     return {
         "decision": "answer",
         "reason_code": "sufficient_direct_evidence",

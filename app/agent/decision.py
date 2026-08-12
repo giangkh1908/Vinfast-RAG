@@ -283,9 +283,6 @@ log_store = LogStore()
 
 
 # ── Response Messages ──────────────────────────────────────────────────────
-def _scope_model_list() -> str:
-    return " hoặc ".join(settings.scope_models)
-
 
 REFUSAL_MESSAGES = {
     "insufficient_evidence": "Mình chưa thể xác nhận thông tin chính từ nguồn hiện có.",
@@ -295,27 +292,10 @@ REFUSAL_MESSAGES = {
 }
 
 
-def get_oos_messages() -> dict[str, str]:
-    ml = _scope_model_list()
-    return {
-        "comparison": f"Hiện tại mình chưa hỗ trợ so sánh xe trong lát cắt này. Bạn có thể hỏi thông tin sản phẩm cụ thể của {ml}.",
-        "recommendation": f"Gợi ý xe theo nhu cầu chưa được hỗ trợ trong lát cắt này. Bạn có thể hỏi thông tin sản phẩm cụ thể của {ml}.",
-        "pricing": "Nội dung giá/ưu đãi/chính sách chưa thuộc phạm vi hỗ trợ hiện tại.",
-        "warranty_maintenance": "Nhóm hỗ trợ sau mua (bảo hành, bảo dưỡng, hướng dẫn sử dụng) chưa thuộc lát cắt này.",
-        "diagnostics": "Nội dung chẩn đoán hoặc xử lý sự cố kỹ thuật không thuộc phạm vi hiện tại.",
-        "hotline_showroom": "Workflow liên hệ/showroom/lái thử chưa được hỗ trợ trong lát cắt này.",
-        "external_source": "Mình chỉ dùng approved data sources trong lát cắt này.",
-        "personal_data": "Truy cập VIN, lịch sử dịch vụ và dữ liệu cá nhân không được hỗ trợ trong lát cắt này.",
-        "model_oos": f"Lát cắt hiện tại chỉ phục vụ {ml}, chưa hỗ trợ các mẫu xe khác.",
-    }
-
-
 def get_clarify_messages() -> dict[str, str]:
-    ml = _scope_model_list()
     return {
-        "model_code": f"Bạn muốn hỏi về {ml}?",
-        "topic": "Bạn muốn tìm thông tin nào về {model}: phiên bản, thông số kỹ thuật, tính năng, kích thước, pin/sạc, phạm vi di chuyển, an toàn, nội thất hay ngoại thất?",
-        "version": f"Bạn muốn hỏi phiên bản nào? ({', '.join(settings.scope_versions)})",
+        "model_code": "Bạn muốn hỏi về xe VinFast nào?",
+        "topic": "Bạn muốn tìm thông tin nào về {model}?",
     }
 
 

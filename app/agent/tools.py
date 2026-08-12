@@ -146,20 +146,10 @@ async def search_knowledge_base(query: str, model_id: str = None) -> dict:
 
 async def list_available_models() -> dict:
     conn = await _conn()
-
-    if settings.scope_enabled and settings.scope_models:
-        placeholders = ", ".join(f"${i+1}" for i in range(len(settings.scope_models)))
-        rows = await conn.fetch(
-            f"SELECT model_id, model_label, edition_id, edition_label, year_range "
-            f"FROM edition_active WHERE model_label IN ({placeholders}) ORDER BY model_id, edition_id",
-            *settings.scope_models,
-        )
-    else:
-        rows = await conn.fetch(
-            "SELECT model_id, model_label, edition_id, edition_label, year_range "
-            "FROM edition_active ORDER BY model_id, edition_id"
-        )
-
+    rows = await conn.fetch(
+        "SELECT model_id, model_label, edition_id, edition_label, year_range "
+        "FROM edition_active ORDER BY model_id, edition_id"
+    )
     await conn.close()
 
     by_model = {}
@@ -239,8 +229,7 @@ async def ask_clarification(model_id: str = None, suggested_categories: list[str
             "action": "clarify",
             "model_id": model_id,
             "available_categories": categories,
-            "available_versions": settings.scope_versions,
-            "message": f"Bạn muốn hỏi phiên bản nào của {model_id}? ({', '.join(settings.scope_versions)})",
+            "message": f"Bạn muốn tìm thông tin nào về {model_id}?",
         }
     return {
         "action": "clarify",

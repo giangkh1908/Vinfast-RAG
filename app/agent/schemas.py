@@ -8,9 +8,6 @@ from app.config import settings
 
 logger = logging.getLogger("bds.schemas")
 
-# Tools exposed in BDS mode (Trust Foundation slice)
-BDS_TOOL_NAMES = {"get_specs", "search_knowledge_base", "list_available_models", "ask_clarification"}
-
 # TTL cache (5 minutes)
 _schemas_cache = None
 _schemas_cache_time = 0
@@ -20,7 +17,6 @@ PG_URL = settings.postgres_url.replace("postgresql+asyncpg://", "postgresql://")
 
 
 async def _pg_fetch(sql: str, *params, retries: int = 2) -> list:
-    """Execute PG query with retry on connection failure (Neon serverless)."""
     for attempt in range(retries + 1):
         try:
             conn = await asyncpg.connect(PG_URL)
@@ -39,41 +35,17 @@ async def _pg_fetch(sql: str, *params, retries: int = 2) -> list:
 
 
 async def _get_model_list() -> list[str]:
-    if settings.scope_enabled and settings.scope_models:
-        placeholders = ", ".join(f"${i+1}" for i in range(len(settings.scope_models)))
-        rows = await _pg_fetch(
-            f"SELECT DISTINCT model_label FROM edition_active "
-            f"WHERE model_label IN ({placeholders}) ORDER BY model_label",
-            *settings.scope_models,
-        )
-    else:
-        rows = await _pg_fetch("SELECT DISTINCT model_label FROM edition_active ORDER BY model_label")
+    rows = await _pg_fetch("SELECT DISTINCT model_label FROM edition_active ORDER BY model_label")
     return [r["model_label"] for r in rows]
 
 
 async def _get_version_list() -> list[str]:
-    if settings.scope_enabled and settings.scope_models:
-        placeholders = ", ".join(f"${i+1}" for i in range(len(settings.scope_models)))
-        rows = await _pg_fetch(
-            f"SELECT DISTINCT edition_id FROM edition_active "
-            f"WHERE model_label IN ({placeholders}) ORDER BY edition_id",
-            *settings.scope_models,
-        )
-    else:
-        rows = await _pg_fetch("SELECT DISTINCT edition_id FROM edition_active ORDER BY edition_id")
+    rows = await _pg_fetch("SELECT DISTINCT edition_id FROM edition_active ORDER BY edition_id")
     return [r["edition_id"] for r in rows]
 
 
 async def _get_spec_categories() -> list[str]:
-    if settings.scope_enabled and settings.scope_models:
-        placeholders = ", ".join(f"${i+1}" for i in range(len(settings.scope_models)))
-        rows = await _pg_fetch(
-            f"SELECT DISTINCT spec_category FROM car_specs "
-            f"WHERE model_code IN ({placeholders}) ORDER BY spec_category",
-            *settings.scope_models,
-        )
-    else:
-        rows = await _pg_fetch("SELECT DISTINCT spec_category FROM car_specs ORDER BY spec_category")
+    rows = await _pg_fetch("SELECT DISTINCT spec_category FROM car_specs ORDER BY spec_category")
     return [r["spec_category"] for r in rows]
 
 
@@ -91,20 +63,12 @@ async def build_tool_schemas() -> list[dict]:
             "type": "function",
             "function": {
                 "name": "get_price",
-                "description": f"Lấy giá bán xe VinFast. Models: {model_list_str}. Bao gồm giá niêm yết và giá ưu đãi cho từng phiên bản.",
+                "description": f"Lấy giá bán xe VinFast. Models: {model_list_str}. Giá niêm yết và ưu đãi cho từng phiên bản.",
                 "parameters": {
                     "type": "object",
                     "properties": {
-                        "model_code": {
-                            "type": "string",
-                            "enum": models,
-                            "description": "Mã xe VinFast",
-                        },
-                        "version": {
-                            "type": "string",
-                            "enum": versions,
-                            "description": "Phiên bản. Để trống = lấy tất cả.",
-                        },
+                        "model_code": {"type": "string", "enum": models, "description": "Mã xe VinFast"},
+                        "version": {"type": "string", "enum": versions, "description": "Phiên bản. Để trống = tất cả."},
                     },
                     "required": ["model_code"],
                 },
@@ -114,25 +78,13 @@ async def build_tool_schemas() -> list[dict]:
             "type": "function",
             "function": {
                 "name": "get_specs",
-                "description": f"Lấy thông số kỹ thuật xe VinFast. Models: {model_list_str}. Công suất, quãng đường, pin, kích thước, nội thất, an toàn, ADAS, ngoại thất.",
+                "description": f"Thông số kỹ thuật xe VinFast. Models: {model_list_str}. Công suất, pin, kích thước, an toàn, ADAS, nội thất, ngoại thất.",
                 "parameters": {
                     "type": "object",
                     "properties": {
-                        "model_code": {
-                            "type": "string",
-                            "enum": models,
-                            "description": "Mã xe VinFast",
-                        },
-                        "version": {
-                            "type": "string",
-                            "enum": versions,
-                            "description": "Phiên bản. Để trống = lấy tất cả.",
-                        },
-                        "category": {
-                            "type": "string",
-                            "enum": categories,
-                            "description": "Loại thông số. Để trống = lấy tất cả.",
-                        },
+                        "model_code": {"type": "string", "enum": models, "description": "Mã xe VinFast"},
+                        "version": {"type": "string", "enum": versions, "description": "Phiên bản. Để trống = tất cả."},
+                        "category": {"type": "string", "enum": categories, "description": "Loại thông số. Để trống = tất cả."},
                     },
                     "required": ["model_code"],
                 },
@@ -142,19 +94,12 @@ async def build_tool_schemas() -> list[dict]:
             "type": "function",
             "function": {
                 "name": "search_knowledge_base",
-                "description": f"Tìm kiếm mô tả sản phẩm, tính năng, chính sách, FAQ từ knowledge base. Models: {model_list_str}. LUÔN truyền model_id nếu user hỏi về model cụ thể.",
+                "description": f"Tìm mô tả sản phẩm, tính năng, FAQ từ knowledge base. Models: {model_list_str}.",
                 "parameters": {
                     "type": "object",
                     "properties": {
-                        "query": {
-                            "type": "string",
-                            "description": "Câu hỏi hoặc từ khóa tìm kiếm",
-                        },
-                        "model_id": {
-                            "type": "string",
-                            "enum": models,
-                            "description": "Model xe để filter kết quả. Bắt buộc khi user hỏi về model cụ thể.",
-                        },
+                        "query": {"type": "string", "description": "Câu hỏi hoặc từ khóa"},
+                        "model_id": {"type": "string", "enum": models, "description": "Filter theo model."},
                     },
                     "required": ["query"],
                 },
@@ -164,24 +109,13 @@ async def build_tool_schemas() -> list[dict]:
             "type": "function",
             "function": {
                 "name": "search_all",
-                "description": f"Tìm kiếm THÔNG SỐ KỸ THUẬT + KNOWLEDGE BASE song song. Dùng khi câu hỏi về tính năng, trang bị, hoặc bất kỳ thông tin nào có thể nằm trong cả 2 nguồn (specs + mô tả). Models: {model_list_str}.",
+                "description": f"Tìm specs + knowledge base song song. Models: {model_list_str}.",
                 "parameters": {
                     "type": "object",
                     "properties": {
-                        "model_code": {
-                            "type": "string",
-                            "enum": models,
-                            "description": "Mã xe VinFast",
-                        },
-                        "query": {
-                            "type": "string",
-                            "description": "Câu hỏi hoặc từ khóa tìm kiếm",
-                        },
-                        "version": {
-                            "type": "string",
-                            "enum": versions,
-                            "description": "Phiên bản. Để trống = lấy tất cả.",
-                        },
+                        "model_code": {"type": "string", "enum": models, "description": "Mã xe VinFast"},
+                        "query": {"type": "string", "description": "Câu hỏi hoặc từ khóa"},
+                        "version": {"type": "string", "enum": versions, "description": "Phiên bản. Để trống = tất cả."},
                     },
                     "required": ["model_code", "query"],
                 },
@@ -191,27 +125,19 @@ async def build_tool_schemas() -> list[dict]:
             "type": "function",
             "function": {
                 "name": "list_available_models",
-                "description": "Liệt kê các model VinFast đang bán. Không có tham số.",
-                "parameters": {
-                    "type": "object",
-                    "properties": {},
-                    "required": [],
-                },
+                "description": "Liệt kê tất cả model VinFast đang bán. Không tham số.",
+                "parameters": {"type": "object", "properties": {}, "required": []},
             },
         },
         {
             "type": "function",
             "function": {
                 "name": "get_active_promotions",
-                "description": f"Khuyến mãi đang áp dụng. Models: {model_list_str}. Voucher chuyển đổi, ưu đãi đặt cọc.",
+                "description": f"Khuyến mãi đang áp dụng. Models: {model_list_str}.",
                 "parameters": {
                     "type": "object",
                     "properties": {
-                        "model_code": {
-                            "type": "string",
-                            "enum": models,
-                            "description": "Lọc theo model (optional)",
-                        },
+                        "model_code": {"type": "string", "enum": models, "description": "Lọc theo model (optional)"},
                     },
                     "required": [],
                 },
@@ -221,7 +147,7 @@ async def build_tool_schemas() -> list[dict]:
             "type": "function",
             "function": {
                 "name": "get_onroad_cost_link",
-                "description": "Link dự toán chi phí lăn bánh chính chủ VinFast. KHÔNG tự tính.",
+                "description": "Link dự toán chi phí lăn bánh.",
                 "parameters": {"type": "object", "properties": {}, "required": []},
             },
         },
@@ -229,7 +155,7 @@ async def build_tool_schemas() -> list[dict]:
             "type": "function",
             "function": {
                 "name": "get_loan_estimate_link",
-                "description": "Link dự toán trả góp + thẩm định vay chính chủ VinFast.",
+                "description": "Link dự toán trả góp + thẩm định vay.",
                 "parameters": {"type": "object", "properties": {}, "required": []},
             },
         },
@@ -237,7 +163,7 @@ async def build_tool_schemas() -> list[dict]:
             "type": "function",
             "function": {
                 "name": "get_showroom_charging_link",
-                "description": "Link tìm showroom & trạm sạc chính chủ VinFast.",
+                "description": "Link tìm showroom & trạm sạc.",
                 "parameters": {"type": "object", "properties": {}, "required": []},
             },
         },
@@ -249,11 +175,7 @@ async def build_tool_schemas() -> list[dict]:
                 "parameters": {
                     "type": "object",
                     "properties": {
-                        "type": {
-                            "type": "string",
-                            "enum": ["maintenance", "test_drive"],
-                            "description": "Loại booking",
-                        },
+                        "type": {"type": "string", "enum": ["maintenance", "test_drive"], "description": "Loại booking"},
                     },
                     "required": ["type"],
                 },
@@ -263,19 +185,12 @@ async def build_tool_schemas() -> list[dict]:
             "type": "function",
             "function": {
                 "name": "get_maintenance_link",
-                "description": f"Link bảo dưỡng theo model + năm. Models: {model_list_str}. Trả link, KHÔNG trả nội dung.",
+                "description": f"Link bảo dưỡng theo model + năm. Models: {model_list_str}.",
                 "parameters": {
                     "type": "object",
                     "properties": {
-                        "car_model": {
-                            "type": "string",
-                            "enum": models,
-                            "description": "Model xe",
-                        },
-                        "year": {
-                            "type": "integer",
-                            "description": "Năm (optional, fallback năm mới nhất)",
-                        },
+                        "car_model": {"type": "string", "enum": models, "description": "Model xe"},
+                        "year": {"type": "integer", "description": "Năm (optional)"},
                     },
                     "required": ["car_model"],
                 },
@@ -285,23 +200,14 @@ async def build_tool_schemas() -> list[dict]:
             "type": "function",
             "function": {
                 "name": "ask_clarification",
-                "description": "Gọi khi: (1) câu hỏi thiếu model, hoặc (2) câu hỏi thiếu phiên bản (Eco/Plus) mà thông số khác nhau giữa các phiên bản (range, battery, power). VD: 'VF 8 đi được bao nhiêu km?' → hỏi lại 'Eco hay Plus?'.",
+                "description": "Gọi khi thiếu model (không biết người dùng hỏi xe nào).",
                 "parameters": {
                     "type": "object",
                     "properties": {
-                        "model_id": {
-                            "type": "string",
-                            "enum": models,
-                            "description": "Model xe người dùng đang hỏi (nếu biết)",
-                        },
+                        "model_id": {"type": "string", "enum": models, "description": "Model xe (nếu biết)"},
                         "suggested_categories": {
                             "type": "array",
-                            "items": {
-                                "type": "string",
-                                "enum": ["phiên_bản", "thông_số_kỹ_thuật", "kích_thước",
-                                         "pin_sạc", "phạm_vi_di_chuyển", "an_toàn",
-                                         "nội_thất", "ngoại_thất", "tính_năng"],
-                            },
+                            "items": {"type": "string"},
                             "description": "Các khía cạnh có thể hỏi",
                         },
                     },
