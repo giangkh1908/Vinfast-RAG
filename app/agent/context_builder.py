@@ -58,6 +58,35 @@ def _format_prices(result: dict) -> str:
     return "\n".join(lines)
 
 
+_SPEC_KEY_LABELS = {
+    "power_kw": "Công suất tối đa",
+    "torque_nm": "Mô-men xoắn cực đại",
+    "range_km": "Quãng đường di chuyển",
+    "battery_kwh": "Dung lượng pin",
+    "fast_charge_min": "Thời gian sạc nhanh (10%-70%)",
+    "acceleration_0_100_s": "Tăng tốc 0-100 km/h",
+    "top_speed_kmh": "Tốc độ tối đa",
+    "drivetrain": "Dẫn động",
+    "seats": "Số chỗ ngồi",
+    "airbags": "Túi khí",
+    "length_mm": "Dài",
+    "width_mm": "Rộng",
+    "height_mm": "Cao",
+    "wheelbase_mm": "Chiều dài cơ sở",
+    "ground_clearance_mm": "Khoảng sáng gầm",
+    "curb_weight_kg": "Trọng lượng không tải",
+    "wheel_size_inch": "Kích thước mâm",
+    "trunk_capacity": "Dung tích cốp",
+    "head_up_display": "Màn hình hiển thị trên kính lái (HUD)",
+    "surround_view_camera": "Camera 360",
+    "leatherette_seats": "Ghế bọc da",
+    "speakers": "Số loa",
+    "display_inch": "Kích thước màn hình",
+    "sunroof_type": "Cửa sổ trời",
+    "wireless_charging": "Sạc không dây",
+}
+
+
 def _format_specs(result: dict) -> str:
     source_url = result.get("source_url", "")
     lines = [f"Thông số kỹ thuật {result['model_code']}:"]
@@ -69,10 +98,13 @@ def _format_specs(result: dict) -> str:
         unit = f" {s['unit']}" if s["unit"] else ""
         page = f" [trang {s['page']}]" if s.get("page") else ""
         ver = s["version_name"]
+        key = s["key"]
+        label = _SPEC_KEY_LABELS.get(key, "")
+        label_str = f" ({label})" if label else ""
         if ver == "ALL":
-            lines.append(f"    {s['key']}: {s['value']}{unit}{page}")
+            lines.append(f"    {key}{label_str}: {s['value']}{unit}{page}")
         else:
-            lines.append(f"    {ver} — {s['key']}: {s['value']}{unit}{page}")
+            lines.append(f"    {ver} — {key}{label_str}: {s['value']}{unit}{page}")
     if source_url:
         lines.append(f"\n  Nguồn: {source_url}")
     related = result.get("related_models", [])

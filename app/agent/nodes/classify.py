@@ -21,23 +21,16 @@ _AMBIGUOUS_PRONOUN_RE = re.compile(
 # ── Topic classification (spec's 9 supported topics) ────────────────────────
 
 _TOPIC_KEYWORDS = {
-    "thông_số_kỹ_thuật": [
-        r"công\s*suất", r"mô[\s-]*men", r"xoắn", r"tốc\s*độ", r"tốc\s*tối\s*đa",
-        r"quãng\s*đường", r"phạm\s*vi\s*di\s*chuyển",
-        r"pin", r"dung\s*lượng", r"sạc", r"battery", r"range",
-        r"kích\s*thước", r"chiều\s*dài", r"chiều\s*rộng", r"chiều\s*cao",
-        r"trọng\s*lượng", r"wheelbase", r"ground\s*clearance",
-        r"power", r"torque", r"speed", r"km/h", r"kWh", r"Nm", r"kW",
-        r"thông\s*số", r"specs", r"spec", r"trọng\s*tải",
-    ],
     "pin_và_sạc": [
         r"sạc\s*nhanh", r"sạc\s*chậm", r"sạc\s*đầy", r"thời\s*gian\s*sạc",
         r"trạm\s*sạc", r"charger", r"charging", r"ổ\s*điện",
         r"pin\s*(lithium|lipo|LFP)", r"dung\s*lượng\s*pin",
+        r"sạc", r"nạp\s*pin", r"phút.*10.*70", r"10.*70.*phút",
     ],
     "phạm_vi_di_chuyển": [
-        r"đi\s*được\s*bao\s*xa", r"quãng\s*đường", r"di\s*chuyển",
+        r"đi\s*được\s*bao\s*xa", r"di\s*chuyển",
         r"range", r"phạm\s*vi", r"đi\s*được\s*bao\s*nhiêu\s*km",
+        r"quãng\s*đường",
     ],
     "an_toàn": [
         r"túi\s*khí", r"airbag", r"ADAS", r"phanh", r"ABS", r"EBD", r"ESC",
@@ -67,6 +60,14 @@ _TOPIC_KEYWORDS = {
         r"kích\s*thước", r"chiều\s*dài", r"chiều\s*rộng", r"chiều\s*cao",
         r"trọng\s*lượng", r"wheelbase", r"không\s*gian",
         r"chỗ\s*ngồi", r"ốp\s*lưng", r"boot", r"cốp",
+    ],
+    "thông_số_kỹ_thuật": [
+        r"công\s*suất", r"mô[\s-]*men", r"xoắn", r"tốc\s*độ", r"tốc\s*tối\s*đa",
+        r"battery", r"kWh", r"pin(?!.*sạc)",
+        r"trọng\s*lượng", r"wheelbase", r"ground\s*clearance",
+        r"power", r"torque", r"speed", r"km/h", r"Nm", r"kW",
+        r"thông\s*số", r"specs", r"spec", r"trọng\s*tải",
+        r"tăng\s*tốc", r"gia\s*tốc", r"tốc\s*độ\s*tối\s*đa",
     ],
 }
 

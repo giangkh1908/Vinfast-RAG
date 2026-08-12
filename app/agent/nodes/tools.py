@@ -61,12 +61,17 @@ async def execute_tools_node(state: AgentState) -> dict:
 
     t_retrieve_start = state.get("t_retrieve_start") or time.time()
 
+    # Force tool calls on first iteration when classify decided "answer"
+    # Prevents gpt-4o-mini from refusing without checking database
+    decision = state.get("decision", "answer")
+    force_tool = "required" if (decision == "answer" and not tool_results) else "auto"
+
     try:
         resp = await llm.chat.completions.create(
             model=settings.llm_model,
             messages=messages,
             tools=tool_schemas,
-            tool_choice="auto",
+            tool_choice=force_tool,
         )
     except Exception as e:
         return {

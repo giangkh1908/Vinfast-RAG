@@ -56,6 +56,45 @@ def _extract_numbers(text: str) -> set[float]:
     return nums
 
 
+_SPEC_KEY_TO_VI: dict[str, set[str]] | None = None
+
+
+def _get_spec_key_vi_map() -> dict[str, set[str]]:
+    """Build mapping from English spec keys to Vietnamese keywords."""
+    global _SPEC_KEY_TO_VI
+    if _SPEC_KEY_TO_VI is not None:
+        return _SPEC_KEY_TO_VI
+    from app.agent.decision import _SPEC_QUERY_KEYWORDS
+    _TOKEN_RE = re.compile(r"[a-zà-ỹ0-9]+", re.UNICODE)
+    key_to_vi: dict[str, set[str]] = {}
+    for _group, tokens in _SPEC_QUERY_KEYWORDS.items():
+        en_keys = set()
+        vi_words = set()
+        for phrase in tokens:
+            words = set(_TOKEN_RE.findall(phrase.lower()))
+            # English keys contain only ascii
+            ascii_words = {w for w in words if all(c in "abcdefghijklmnopqrstuvwxyz0123456789_" for c in w)}
+            vi_words |= words - ascii_words
+            en_keys |= ascii_words
+        for ek in en_keys:
+            if ek not in key_to_vi:
+                key_to_vi[ek] = set()
+            key_to_vi[ek] |= vi_words
+    _SPEC_KEY_TO_VI = key_to_vi
+    return key_to_vi
+
+
+def _enrich_features_with_vi(features: set[str], spec_key: str, spec_value: str):
+    """Add Vietnamese translations for English spec keys."""
+    vi_map = _get_spec_key_vi_map()
+    key_lower = spec_key.lower()
+    # Check if any English keyword from vi_map matches the spec key
+    for en_key, vi_words in vi_map.items():
+        if en_key in key_lower or key_lower.startswith(en_key):
+            features |= vi_words
+            break
+
+
 def _extract_context_features(tool_results: list[dict]) -> tuple[set[str], str]:
     """Extract feature terms + raw text corpus from tool results."""
     features = set()
@@ -67,10 +106,12 @@ def _extract_context_features(tool_results: list[dict]) -> tuple[set[str], str]:
         tool = tr["tool"]
         if tool == "get_specs":
             for s in result.get("specs", []):
-                features.add(s.get("key", "").lower())
-                features.update(m.group().lower() for m in _FEATURE_RE.finditer(s.get("key", "")))
+                key = s.get("key", "")
+                features.add(key.lower())
+                features.update(m.group().lower() for m in _FEATURE_RE.finditer(key))
                 features.update(m.group().lower() for m in _FEATURE_RE.finditer(s.get("value", "")))
-                raw_parts.append(s.get("key", ""))
+                _enrich_features_with_vi(features, key, s.get("value", ""))
+                raw_parts.append(key)
                 raw_parts.append(s.get("value", ""))
         elif tool == "search_knowledge_base":
             for r in result.get("results", []):
@@ -80,10 +121,12 @@ def _extract_context_features(tool_results: list[dict]) -> tuple[set[str], str]:
         elif tool == "search_all":
             sub_specs = result.get("specs", {})
             for s in sub_specs.get("specs", []):
-                features.add(s.get("key", "").lower())
-                features.update(m.group().lower() for m in _FEATURE_RE.finditer(s.get("key", "")))
+                key = s.get("key", "")
+                features.add(key.lower())
+                features.update(m.group().lower() for m in _FEATURE_RE.finditer(key))
                 features.update(m.group().lower() for m in _FEATURE_RE.finditer(s.get("value", "")))
-                raw_parts.append(s.get("key", ""))
+                _enrich_features_with_vi(features, key, s.get("value", ""))
+                raw_parts.append(key)
                 raw_parts.append(s.get("value", ""))
             sub_kb = result.get("knowledge_base", {})
             for r in sub_kb.get("results", []):
