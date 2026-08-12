@@ -15,7 +15,10 @@ logger = logging.getLogger("retrieval")
 _reranker = None
 _sparse_index = None
 
-DENSE_COLLECTIONS = ["vivu_product_info", "vivu_policy", "vivu_maintenance"]
+# Collections to search. Override via QDRANT_DENSE_COLLECTIONS env var.
+import os as _os
+_dense_env = _os.environ.get("QDRANT_DENSE_COLLECTIONS", "")
+DENSE_COLLECTIONS = [c.strip() for c in _dense_env.split(",") if c.strip()] if _dense_env else ["vivu_product_info", "vivu_policy", "vivu_maintenance"]
 SPARSE_COLLECTION = "sparse"
 
 REPO_ROOT = Path(__file__).resolve().parents[2]

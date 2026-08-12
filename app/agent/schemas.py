@@ -191,7 +191,7 @@ async def build_tool_schemas() -> list[dict]:
             "type": "function",
             "function": {
                 "name": "list_available_models",
-                "description": "Liệt kê các model VinFast đang bán. Dùng để xác nhận model tồn tại trước khi gọi tool khác.",
+                "description": "Liệt kê các model VinFast đang bán. Không có tham số.",
                 "parameters": {
                     "type": "object",
                     "properties": {},

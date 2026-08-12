@@ -321,15 +321,19 @@ async def validate_node(state: AgentState) -> dict:
             "grounding_ok": False,
         }
 
-    is_refusal = any(re.search(p, final_response, re.IGNORECASE) for p in REFUSAL_PATTERNS)
-    if is_refusal:
-        return {
-            "decision": "refuse",
-            "reason_code": "insufficient_evidence",
-            "assessment": assessment,
-            "citations": citations,
-            "grounding_ok": True,
-        }
+    # Only check refusal patterns if grounding failed or assessment is weak.
+    # If grounding passed, the response is grounded — don't override even if
+    # it contains refusal phrases for missing sub-topics (partial answer).
+    if not grounding_ok or assessment != "direct_support":
+        is_refusal = any(re.search(p, final_response, re.IGNORECASE) for p in REFUSAL_PATTERNS)
+        if is_refusal:
+            return {
+                "decision": "refuse",
+                "reason_code": "insufficient_evidence",
+                "assessment": assessment,
+                "citations": citations,
+                "grounding_ok": grounding_ok,
+            }
 
     return {
         "decision": "answer",

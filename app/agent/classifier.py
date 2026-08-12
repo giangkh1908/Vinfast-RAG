@@ -26,7 +26,8 @@ def _build_model_regex() -> re.Pattern:
         if compact != escaped:
             parts.append(compact)
     if not parts:
-        return re.compile(r"(?!)", re.IGNORECASE)
+        # Fallback: match any VF + number pattern
+        return re.compile(r"(VF\s*\d+)", re.IGNORECASE)
     return re.compile("(" + "|".join(parts) + ")", re.IGNORECASE)
 
 

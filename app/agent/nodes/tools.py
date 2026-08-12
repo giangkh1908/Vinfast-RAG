@@ -14,6 +14,15 @@ logger = logging.getLogger("bds.graph.tools")
 
 MAX_ITERATIONS = 3
 
+_llm_client: AsyncOpenAI | None = None
+
+
+def _get_llm() -> AsyncOpenAI:
+    global _llm_client
+    if _llm_client is None:
+        _llm_client = AsyncOpenAI(api_key=settings.openai_api_key, base_url=settings.openai_base_url)
+    return _llm_client
+
 
 async def _execute_tools_parallel(tool_calls: list) -> list[dict]:
     async def _safe(tc):
@@ -40,11 +49,7 @@ async def execute_tools_node(state: AgentState) -> dict:
     has_model = bool(entities.get("model_code"))
     has_version = bool(entities.get("version"))
 
-    # Lazy: only compute specificity when ask_clarification might be called
-    specificity_flag = has_model and has_version
-    specificity_category = None
-
-    llm = AsyncOpenAI(api_key=settings.openai_api_key, base_url=settings.openai_base_url)
+    llm = _get_llm()
     tool_schemas = await build_tool_schemas()
 
     # Constrain tools based on topic classification from classify node
@@ -57,7 +62,6 @@ async def execute_tools_node(state: AgentState) -> dict:
     t_retrieve_start = state.get("t_retrieve_start") or time.time()
 
     # Force tool calls on first iteration when classify decided "answer"
-    # Prevents gpt-4o-mini from refusing without checking database
     decision = state.get("decision", "answer")
     force_tool = "required" if (decision == "answer" and not tool_results) else "auto"
 
@@ -98,11 +102,16 @@ async def execute_tools_node(state: AgentState) -> dict:
             "content": json.dumps(res["result"], ensure_ascii=False),
         })
 
+    # Handle ask_clarification: override if classify already decided answer
+    # with a version-independent topic
+    _VERSION_INDEPENDENT = {
+        "kích_thước", "phiên_bản", "pin_và_sạc",
+        "tính_năng_nổi_bật", "an_toàn", "nội_thất", "ngoại_thất",
+    }
+    category = state.get("category", "general")
+
     for tc, res in zip(choice.message.tool_calls, results):
         if tc.function.name == "ask_clarification" and res.get("success"):
-            category = state.get("category", "general")
-            # Version-independent topics: model known → don't clarify for version
-            _VERSION_INDEPENDENT = {"kích_thước", "phiên_bản", "pin_và_sạc", "tính_năng_nổi_bật", "an_toàn", "nội_thất", "ngoại_thất"}
             if has_model and category in _VERSION_INDEPENDENT:
                 logger.info("ask_clarification overridden: version-independent topic=%s", category)
                 new_messages.append({
@@ -110,11 +119,11 @@ async def execute_tools_node(state: AgentState) -> dict:
                     "content": f"Thông tin '{category}' áp dụng cho cả hai phiên bản. Trả lời trực tiếp. KHÔNG gọi lại ask_clarification.",
                 })
                 break
-            elif specificity_flag and has_model and has_version:
-                logger.info("ask_clarification overridden: specific=%s category=%s", specificity_flag, specificity_category)
+            elif has_model and has_version:
+                logger.info("ask_clarification overridden: model+version known")
                 new_messages.append({
                     "role": "user",
-                    "content": f"Câu hỏi có topic rõ ràng ({specificity_category}). Trả lời trực tiếp bằng tool. KHÔNG gọi lại ask_clarification.",
+                    "content": "Câu hỏi đã có model và version rõ ràng. Trả lời trực tiếp bằng tool. KHÔNG gọi lại ask_clarification.",
                 })
                 break
             else:

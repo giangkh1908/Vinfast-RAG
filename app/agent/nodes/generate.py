@@ -17,6 +17,15 @@ _REFUSAL_RE = re.compile(
     re.IGNORECASE,
 )
 
+_llm_client: AsyncOpenAI | None = None
+
+
+def _get_llm() -> AsyncOpenAI:
+    global _llm_client
+    if _llm_client is None:
+        _llm_client = AsyncOpenAI(api_key=settings.openai_api_key, base_url=settings.openai_base_url)
+    return _llm_client
+
 
 async def generate_node(state: AgentState) -> dict:
     final_response = state.get("final_response", "")
@@ -50,7 +59,7 @@ async def generate_node(state: AgentState) -> dict:
         {"role": "user", "content": SYNTHESIZE_PROMPT.format(context=context, query=full_query)},
     ]
 
-    llm = AsyncOpenAI(api_key=settings.openai_api_key, base_url=settings.openai_base_url)
+    llm = _get_llm()
     t_generate_start = time.time()
 
     try:

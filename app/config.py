@@ -7,8 +7,8 @@ class Settings:
     def __init__(self):
         # Scope (BDS Trust Foundation)
         self.scope_enabled: bool = _env.get("SCOPE_ENABLED", "true").lower() == "true"
-        self.scope_models: list[str] = _env.get("SCOPE_MODELS", "VF 6,VF 8").split(",")
-        self.scope_versions: list[str] = _env.get("SCOPE_VERSIONS", "Eco,Plus").split(",")
+        self.scope_models: list[str] = [m.strip() for m in _env.get("SCOPE_MODELS", "VF 6,VF 8").split(",")]
+        self.scope_versions: list[str] = [v.strip() for v in _env.get("SCOPE_VERSIONS", "Eco,Plus").split(",")]
         # LLM (TokenRouter)
         self.openai_api_key: str = _env.get("OPENAI_API_KEY", "")
         self.openai_base_url: str = _env.get("OPENAI_BASE_URL", "https://api.openai.com/v1")

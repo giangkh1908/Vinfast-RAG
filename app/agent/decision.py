@@ -104,16 +104,23 @@ def resolve_reason_code(reason: str) -> str:
 
 
 # ── Version helpers ────────────────────────────────────────────────────────
+_cached_build_version = None
+
+
 def _get_build_version() -> str:
+    global _cached_build_version
+    if _cached_build_version is not None:
+        return _cached_build_version
     try:
         result = subprocess.run(
             ["git", "rev-parse", "--short", "HEAD"],
             capture_output=True, text=True, timeout=5,
             cwd=str(REPO_ROOT),
         )
-        return result.stdout.strip() or "unknown"
+        _cached_build_version = result.stdout.strip() or "unknown"
     except Exception:
-        return "unknown"
+        _cached_build_version = "unknown"
+    return _cached_build_version
 
 
 def _get_prompt_hash(prompt: str) -> str:
