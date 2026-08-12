@@ -267,7 +267,19 @@ async def validate_node(state: AgentState) -> dict:
     if decision != "answer":
         return {}
 
-    assessment, valid_sources = assess_evidence(tool_results, state["query"])
+    # Build context-aware query for multi-turn: include history for scoring
+    query = state.get("query", "")
+    history = state.get("history", [])
+    if history:
+        history_queries = [m["content"] for m in history if m.get("role") == "user"]
+        if history_queries:
+            scoring_query = " ".join(history_queries) + " " + query
+        else:
+            scoring_query = query
+    else:
+        scoring_query = query
+
+    assessment, valid_sources = assess_evidence(tool_results, scoring_query)
 
     logger.info("VALIDATE: query=%s assessment=%s sources=%d tools=%s",
                 state.get("query", ""), assessment, len(valid_sources),
@@ -283,7 +295,7 @@ async def validate_node(state: AgentState) -> dict:
             "grounding_ok": False,
         }
 
-    citations = validate_citations(valid_sources, state.get("query", ""))
+    citations = validate_citations(valid_sources, scoring_query)
 
     if not citations and final_response and bool(re.search(r"\d[\d.,]+", _strip_non_factual_numbers(final_response))):
         return {
@@ -295,7 +307,7 @@ async def validate_node(state: AgentState) -> dict:
             "grounding_ok": False,
         }
 
-    grounding_ok = _check_grounding(final_response, tool_results, state.get("query", ""))
+    grounding_ok = _check_grounding(final_response, tool_results, scoring_query)
 
     logger.info("VALIDATE: grounding_ok=%s response_preview=%s", grounding_ok, final_response[:100])
 

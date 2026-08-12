@@ -437,23 +437,37 @@ def _rerank_texts(query: str, texts: list[str]) -> list[float] | None:
 
 
 def _score_specs_rerank(query: str, specs: list[dict], qtokens: set[str]) -> list[float]:
-    """Score specs using embedding similarity + keyword matching (hybrid).
+    """Score specs using keyword matching first, embedding only for ambiguous specs.
 
-    Takes max of both scores per spec — embedding provides semantic ranking,
-    keyword matching provides reliable scores for known term mappings.
-    Falls back to keyword-only if embedding unavailable.
+    Keyword matching is instant (no API call). Embedding is only used for specs
+    where keyword score is ambiguous (0.3-0.5). This avoids 200+ embedding calls
+    when most specs are clearly relevant or irrelevant.
     """
-    spec_texts = [
-        f"{s.get('key', '')}: {s.get('value', '')} {s.get('unit', '')}"
-        for s in specs
-    ]
-    embed_scores = _rerank_texts(query, spec_texts)
     keyword_scores = [
         _spec_relevance_score(qtokens, s.get("key", ""), s.get("value", ""))
         for s in specs
     ]
-    if embed_scores is not None and len(embed_scores) == len(specs):
-        return [max(e, k) for e, k in zip(embed_scores, keyword_scores)]
+
+    # Find indices where keyword score is ambiguous (needs embedding)
+    ambiguous = [i for i, s in enumerate(keyword_scores) if 0.25 <= s < 0.5]
+
+    if not ambiguous:
+        return keyword_scores  # All clear, no embedding needed
+
+    # Only embed ambiguous specs
+    ambiguous_specs = [specs[i] for i in ambiguous]
+    spec_texts = [
+        f"{s.get('key', '')}: {s.get('value', '')} {s.get('unit', '')}"
+        for s in ambiguous_specs
+    ]
+    embed_scores = _rerank_texts(query, spec_texts)
+
+    if embed_scores and len(embed_scores) == len(ambiguous):
+        result = list(keyword_scores)
+        for j, idx in enumerate(ambiguous):
+            result[idx] = max(embed_scores[j], keyword_scores[idx])
+        return result
+
     return keyword_scores
 
 

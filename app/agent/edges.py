@@ -22,8 +22,17 @@ def route_after_tools(state: AgentState) -> str:
         return "respond"
     if state.get("decision") == "clarify":
         return "respond"
-    if state.get("final_response"):
-        return "validate"
+    final = state.get("final_response", "")
+    if final:
+        # Only re-generate if LLM refused without checking data
+        # Otherwise go straight to validate (saves 1 LLM call)
+        refusal_re = __import__("re").compile(
+            r"(chưa thể xác nhận|không có thông tin|hiện chưa có|không có dữ liệu)",
+            __import__("re").IGNORECASE,
+        )
+        if refusal_re.search(final):
+            return "generate"  # Re-synthesize with context_builder
+        return "validate"      # LLM answered, validate it
     if state.get("iteration", 0) >= MAX_ITERATIONS:
         return "generate"
     return "execute_tools"

@@ -8,7 +8,6 @@ from openai import AsyncOpenAI
 from app.config import settings
 from app.agent.schemas import build_tool_schemas
 from app.agent.tools import TOOL_REGISTRY
-from app.agent.semantic_prefilter import classify_specificity
 from app.agent.graph_state import AgentState
 
 logger = logging.getLogger("bds.graph.tools")
@@ -41,13 +40,9 @@ async def execute_tools_node(state: AgentState) -> dict:
     has_model = bool(entities.get("model_code"))
     has_version = bool(entities.get("version"))
 
-    try:
-        specificity_result = classify_specificity(state["query"])
-        specificity_flag = specificity_result.specific
-        specificity_category = specificity_result.category
-    except Exception:
-        specificity_flag = has_model and has_version
-        specificity_category = None
+    # Lazy: only compute specificity when ask_clarification might be called
+    specificity_flag = has_model and has_version
+    specificity_category = None
 
     llm = AsyncOpenAI(api_key=settings.openai_api_key, base_url=settings.openai_base_url)
     tool_schemas = await build_tool_schemas()
