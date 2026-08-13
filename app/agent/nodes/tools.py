@@ -81,9 +81,11 @@ async def execute_tools_node(state: AgentState) -> dict:
             if attempt == 0:
                 await asyncio.sleep(3)  # Brief wait before retry
             else:
-                # Final fail: return empty, let generate_node try
+                # Final fail: return with iteration increment so route_after_tools
+                # eventually hits MAX_ITERATIONS and goes to generate_node
                 return {
                     "final_response": "",
+                    "iteration": iteration + 1,
                     "t_retrieve_start": t_retrieve_start,
                 }
 
