@@ -1,5 +1,10 @@
-"""Quick runner: classify tests only (no LLM, no rate limit)."""
-import sys, io, asyncio, time
+"""Quick runner: classify tests only (no LLM, no rate limit).
+
+Run: python tests/test_classify.py
+"""
+import sys, os, io, asyncio, time
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
 PASS = 0

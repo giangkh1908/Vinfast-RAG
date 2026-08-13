@@ -1,8 +1,13 @@
 """
 Full system test — covers all tools, classify logic, validate logic.
 Each test traces which step fails: classify → tools → generate → validate.
+
+Run: python tests/test_system.py
 """
-import sys, io, asyncio, time, json, traceback
+import sys, os, io, asyncio, time, json, traceback
+
+# Add project root to path so 'app' module is importable
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
 PASS = 0
