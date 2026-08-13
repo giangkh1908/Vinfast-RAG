@@ -296,23 +296,11 @@ async def ask_clarification(model_id: str = None, suggested_categories: list[str
     }
 
 
-async def search_all(model_code: str, query: str, version: str = None) -> dict:
-    specs_task = get_specs(model_code, version=version)
-    kb_task = search_knowledge_base(query, model_id=model_code)
-    specs_result, kb_result = await asyncio.gather(specs_task, kb_task)
-    return {
-        "model_code": model_code,
-        "specs": specs_result,
-        "knowledge_base": kb_result,
-    }
-
-
 TOOL_REGISTRY = {
     "get_price": get_price,
     "get_colors": get_colors,
     "get_specs": get_specs,
     "search_knowledge_base": search_knowledge_base,
-    "search_all": search_all,
     "list_available_models": list_available_models,
     "get_active_promotions": get_active_promotions,
     "get_onroad_cost_link": get_onroad_cost_link,

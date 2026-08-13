@@ -134,22 +134,6 @@ async def build_tool_schemas() -> list[dict]:
         {
             "type": "function",
             "function": {
-                "name": "search_all",
-                "description": f"Tìm specs + knowledge base song song. Models: {model_list_str}.",
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "model_code": {"type": "string", "enum": models, "description": "Mã xe VinFast"},
-                        "query": {"type": "string", "description": "Câu hỏi hoặc từ khóa"},
-                        "version": {"type": "string", "enum": versions, "description": "Phiên bản. Để trống = tất cả."},
-                    },
-                    "required": ["model_code", "query"],
-                },
-            },
-        },
-        {
-            "type": "function",
-            "function": {
                 "name": "list_available_models",
                 "description": "Liệt kê tất cả model VinFast đang bán. Không tham số.",
                 "parameters": {"type": "object", "properties": {}, "required": []},

@@ -511,6 +511,7 @@ def assess_evidence(tool_results: list[dict], query: str) -> tuple[str, list[dic
                 has_partial = True
 
         elif tool == "search_knowledge_base" and result.get("results"):
+            is_supplementary = tr.get("auto_injected", False)
             for r in result["results"]:
                 score = r.get("score", 0)
                 if score >= 0.3:
@@ -526,56 +527,15 @@ def assess_evidence(tool_results: list[dict], query: str) -> tuple[str, list[dic
                         "chunk_id": r.get("id", ""),
                         "model_id": r.get("model_id", ""),
                         "page": page,
+                        "supplementary": is_supplementary,
                     })
-                    if score >= 0.5:
+                    if is_supplementary:
+                        # Auto-injected KB: supplementary only, never direct
+                        has_partial = True
+                    elif score >= 0.5:
                         has_direct = True
                     else:
                         has_partial = True
-
-        elif tool == "search_all":
-            sub_specs = result.get("specs", {})
-            if sub_specs.get("specs"):
-                specs = sub_specs["specs"]
-                scores = _score_specs_rerank(query, specs, qtokens)
-                for i, s in enumerate(specs):
-                    score = scores[i] if i < len(scores) else 0.0
-                    page = s.get("page", "")
-                    page_str = f" (trang {page})" if page else ""
-                    valid_sources.append({
-                        "tool": "get_specs",
-                        "model_code": sub_specs.get("model_code", ""),
-                        "text": f"{s.get('key', '')}: {s.get('value', '')} {s.get('unit', '')}{page_str}",
-                        "source_url": sub_specs.get("source_url", ""),
-                        "source_type": "specs",
-                        "score": round(score, 4),
-                        "page": page,
-                    })
-                    if score >= 0.5:
-                        has_direct = True
-                    elif score >= 0.2:
-                        has_partial = True
-            sub_kb = result.get("knowledge_base", {})
-            if sub_kb.get("results"):
-                for r in sub_kb["results"]:
-                    score = r.get("score", 0)
-                    if score >= 0.3:
-                        page = r.get("page", "")
-                        page_str = f" (trang {page})" if page else ""
-                        text = r.get("text", "")[:200]
-                        valid_sources.append({
-                            "tool": "search_knowledge_base",
-                            "text": f"{text}{page_str}",
-                            "source_url": r.get("source_url", ""),
-                            "source_type": r.get("source_type", ""),
-                            "score": score,
-                            "chunk_id": r.get("id", ""),
-                            "model_id": r.get("model_id", ""),
-                            "page": page,
-                        })
-                        if score >= 0.5:
-                            has_direct = True
-                        else:
-                            has_partial = True
 
         elif tool == "list_available_models" and result.get("models"):
             mentioned = _query_models(query)
@@ -618,7 +578,7 @@ def assess_evidence(tool_results: list[dict], query: str) -> tuple[str, list[dic
 
         # Catch-all: utility tools that return URLs (showroom, booking, loan, etc.)
         elif tool not in ("get_specs", "get_price", "search_knowledge_base",
-                          "search_all", "list_available_models", "get_colors"):
+                          "list_available_models", "get_colors"):
             url = result.get("url", "")
             label = result.get("label", tool)
             # Handle tools that return links array
@@ -736,49 +696,6 @@ def build_retrieved_chunks(tool_results: list[dict], query: str = "") -> list[di
                     approval_status="approved",
                     retrieval_score=price_score,
                 ).__dict__)
-
-        elif tool == "search_all":
-            sub_specs = result.get("specs", {})
-            if sub_specs.get("specs"):
-                for s in sub_specs["specs"]:
-                    rank += 1
-                    score = _spec_relevance_score(qtokens, s.get("key", ""), s.get("value", "")) if qtokens else 0.5
-                    page = s.get("page", "")
-                    page_str = f" (trang {page})" if page else ""
-                    chunks.append(RetrievedChunk(
-                        rank=rank,
-                        chunk_id=f"spec_{sub_specs.get('model_code', '')}_{s.get('key', '')}",
-                        source_id="car_specs",
-                        source_title=f"Specs {sub_specs.get('model_code', '')}",
-                        source_url=sub_specs.get("source_url", ""),
-                        content=f"{s.get('key', '')}: {s.get('value', '')} {s.get('unit', '')}{page_str}",
-                        vehicle_model=sub_specs.get("model_code", ""),
-                        vehicle_version=s.get("version_name", "all_versions"),
-                        topic="thông_số_kỹ_thuật",
-                        approval_status="approved",
-                        retrieval_score=score,
-                        page=page,
-                    ).__dict__)
-            sub_kb = result.get("knowledge_base", {})
-            if sub_kb.get("results"):
-                for r in sub_kb["results"]:
-                    rank += 1
-                    page = r.get("page", "")
-                    page_str = f" (trang {page})" if page else ""
-                    chunks.append(RetrievedChunk(
-                        rank=rank,
-                        chunk_id=r.get("id", f"kb_{rank}"),
-                        source_id=r.get("source_type", ""),
-                        source_title=r.get("source_type", ""),
-                        source_url=r.get("source_url", ""),
-                        content=f"{r.get('text', '')[:500]}{page_str}",
-                        vehicle_model=r.get("model_id", "") or "",
-                        vehicle_version="all_versions",
-                        topic="",
-                        approval_status="approved",
-                        retrieval_score=r.get("score", 0.0),
-                        page=page,
-                    ).__dict__)
 
     return chunks
 

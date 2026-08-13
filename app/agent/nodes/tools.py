@@ -92,15 +92,67 @@ async def execute_tools_node(state: AgentState) -> dict:
         }
 
     results = await _execute_tools_parallel(choice.message.tool_calls)
+
+    # Auto-inject search_knowledge_base based on detected_topic.
+    # KB results are labeled as supplementary (auto_injected=True) so
+    # assess_evidence treats them as partial support, not direct evidence.
+    category = state.get("category", "general")
+    _NEEDS_KB = {"an_toàn", "nội_thất", "ngoại_thất", "tính_năng_nổi_bật"}
+    auto_kb_calls = []
+    kb_results = []
+
+    if category in _NEEDS_KB:
+        for tc, res in zip(choice.message.tool_calls, results):
+            if tc.function.name in ("get_specs", "get_colors") and res.get("success"):
+                args = json.loads(tc.function.arguments)
+                model_code = args.get("model_code", "")
+                if model_code:
+                    auto_kb_calls.append({
+                        "model_id": model_code,
+                        "query": state.get("query", ""),
+                        "tool_call_id": f"auto_kb_{tc.id}",
+                    })
+                    break  # One KB call per model is enough
+
+    if auto_kb_calls:
+        from app.agent.tools import search_knowledge_base
+        kb_tasks = [
+            search_knowledge_base(kb["query"], model_id=kb["model_id"])
+            for kb in auto_kb_calls
+        ]
+        kb_results = await asyncio.gather(*kb_tasks, return_exceptions=True)
+        for kb, kb_result in zip(auto_kb_calls, kb_results):
+            if isinstance(kb_result, Exception):
+                logger.warning("Auto-inject KB failed: %s", kb_result)
+                continue
+            results.append({
+                "tool": "search_knowledge_base",
+                "result": kb_result,
+                "success": True,
+                "auto_injected": True,  # Label: supplementary, not primary
+            })
+            logger.info("Auto-inject KB: topic=%s model=%s results=%d",
+                        category, kb["model_id"], len(kb_result.get("results", [])))
+
     tool_results.extend(results)
 
+    # Build messages: assistant tool_calls + all tool results (original + auto KB)
     new_messages = messages + [choice.message]
-    for tc, res in zip(choice.message.tool_calls, results):
+    # Original tool results
+    for tc, res in zip(choice.message.tool_calls, results[:len(choice.message.tool_calls)]):
         new_messages.append({
             "role": "tool",
             "tool_call_id": tc.id,
             "content": json.dumps(res["result"], ensure_ascii=False),
         })
+    # Auto-injected KB results
+    for kb, kb_result in zip(auto_kb_calls, kb_results if auto_kb_calls else []):
+        if not isinstance(kb_result, Exception):
+            new_messages.append({
+                "role": "tool",
+                "tool_call_id": kb["tool_call_id"],
+                "content": json.dumps(kb_result, ensure_ascii=False),
+            })
 
     # Handle ask_clarification: override if classify already decided answer
     # with a version-independent topic

@@ -143,26 +143,6 @@ def _extract_context_features(tool_results: list[dict]) -> tuple[set[str], str]:
                 txt = r.get("text", "")
                 features.update(m.group().lower() for m in _FEATURE_RE.finditer(txt))
                 raw_parts.append(txt)
-        elif tool == "search_all":
-            sub_specs = result.get("specs", {})
-            for s in sub_specs.get("specs", []):
-                key = s.get("key", "")
-                value = s.get("value", "")
-                features.add(key.lower())
-                features.update(m.group().lower() for m in _FEATURE_RE.finditer(key))
-                features.update(m.group().lower() for m in _FEATURE_RE.finditer(value))
-                _enrich_features_with_vi(features, key, value)
-                key_aliases = _SPEC_KEY_ALIASES.get(key.lower(), [])
-                for alias in key_aliases:
-                    features.add(alias)
-                    raw_parts.append(alias)
-                raw_parts.append(key)
-                raw_parts.append(value)
-            sub_kb = result.get("knowledge_base", {})
-            for r in sub_kb.get("results", []):
-                txt = r.get("text", "")
-                features.update(m.group().lower() for m in _FEATURE_RE.finditer(txt))
-                raw_parts.append(txt)
         elif tool == "get_price":
             for p in result.get("prices", []):
                 features.add("giá")
@@ -270,13 +250,6 @@ def _check_grounding(response: str, tool_results: list[dict], query: str = "") -
                         price_numbers.update(_extract_numbers(str(pv)))
         elif tr["tool"] == "search_knowledge_base":
             for r in result.get("results", []):
-                kb_numbers.update(_extract_numbers(r.get("text", "")))
-        elif tr["tool"] == "search_all":
-            sub_specs = result.get("specs", {})
-            for s in sub_specs.get("specs", []):
-                spec_numbers.update(_extract_numbers(s.get("value", "")))
-            sub_kb = result.get("knowledge_base", {})
-            for r in sub_kb.get("results", []):
                 kb_numbers.update(_extract_numbers(r.get("text", "")))
 
     all_ctx = price_numbers | spec_numbers | kb_numbers

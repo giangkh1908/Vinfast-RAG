@@ -58,11 +58,6 @@ def build_structured_context(tool_results: list[dict], query: str = "") -> str:
             sections.append(_format_specs(result, relevant_cats))
         elif tool == "search_knowledge_base":
             sections.append(_format_search_results(result))
-        elif tool == "search_all":
-            if result.get("specs"):
-                sections.append(_format_specs(result["specs"], relevant_cats))
-            if result.get("knowledge_base"):
-                sections.append(_format_search_results(result["knowledge_base"]))
         elif tool == "get_colors":
             sections.append(_format_colors(result))
         elif tool == "list_available_models":

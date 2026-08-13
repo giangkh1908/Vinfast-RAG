@@ -83,18 +83,17 @@ _TOPIC_KEYWORDS = {
 _TOPIC_RE = {topic: re.compile("|".join(kw), re.IGNORECASE) for topic, kw in _TOPIC_KEYWORDS.items()}
 
 # Topic → allowed tools
+# Note: execute_tools_node auto-injects search_knowledge_base parallel to get_specs/get_colors
 _TOPIC_TOOLS = {
-    "thông_số_kỹ_thuật": {"get_specs", "search_all", "ask_clarification"},
-    "pin_và_sạc": {"get_specs", "search_all", "ask_clarification"},
-    "phạm_vi_di_chuyển": {"get_specs", "search_all", "ask_clarification"},
-    # Feature topics: force search_all (specs + KB) — LLM tends to use get_specs
-    # alone which returns raw specs without Vietnamese descriptions
-    "an_toàn": {"search_all", "ask_clarification"},
-    "nội_thất": {"search_all", "ask_clarification"},
-    "ngoại_thất": {"search_all", "ask_clarification"},
-    "tính_năng_nổi_bật": {"search_all", "ask_clarification"},
+    "thông_số_kỹ_thuật": {"get_specs", "ask_clarification"},
+    "pin_và_sạc": {"get_specs", "ask_clarification"},
+    "phạm_vi_di_chuyển": {"get_specs", "ask_clarification"},
+    "an_toàn": {"get_specs", "ask_clarification"},
+    "nội_thất": {"get_specs", "ask_clarification"},
+    "ngoại_thất": {"get_specs", "ask_clarification"},
+    "tính_năng_nổi_bật": {"get_specs", "ask_clarification"},
     "phiên_bản": {"list_available_models", "get_specs", "ask_clarification"},
-    "kích_thước": {"get_specs", "search_all", "ask_clarification"},
+    "kích_thước": {"get_specs", "ask_clarification"},
     "general": None,
 }
 
