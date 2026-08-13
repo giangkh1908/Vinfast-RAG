@@ -50,9 +50,19 @@
         "file": "postgres/specs.csv",
         "rows": 1333,
         "upserted": 1333
+      },
+      "car_variants": {
+        "file": "postgres/variants.csv",
+        "rows": 164,
+        "upserted": 164
+      },
+      "car_colors": {
+        "file": "postgres/colors.csv",
+        "rows": 118,
+        "upserted": 118
       }
     },
-    "total_rows_upserted": 1361
+    "total_rows_upserted": 1643
   },
   "link_only": {
     "brochure_urls": [

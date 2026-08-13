@@ -124,6 +124,38 @@ CREATE INDEX IF NOT EXISTS idx_car_specs_ingest_version ON car_specs(ingest_vers
 CREATE OR REPLACE VIEW car_specs_active AS
 SELECT * FROM car_specs
 WHERE ingest_version = (SELECT version FROM ingest_version WHERE is_current LIMIT 1);
+
+-- car_colors: màu ngoại thất + phí màu nâng cao (vinfast_color.csv).
+-- Giá xe = price_list (giá chuẩn) + color_fee_vnd (nếu màu Nâng cao).
+-- Versioned giống car_specs; query qua car_colors_active.
+CREATE TABLE IF NOT EXISTS car_colors (
+    id             SERIAL PRIMARY KEY,
+    ingest_version TEXT NOT NULL DEFAULT '',
+    model_code     TEXT NOT NULL,      -- "VF 8 All New" (MODEL_LABEL)
+    version_code   TEXT,               -- "HC11V" (mã phiên bản nội bộ)
+    version_name   TEXT,               -- "The All New"|"Eco"|...
+    color_code     TEXT,               -- "CE33"
+    color_name     TEXT,               -- "Starburst Blue"
+    color_type     TEXT,               -- "Cơ bản"|"Nâng cao"
+    color_fee_vnd  BIGINT,             -- phí màu nâng cao (0 = màu cơ bản)
+    interior_code  TEXT,               -- "CI11, CI13" (có thể nhiều)
+    interior_name  TEXT,
+    source_url     TEXT,
+    updated_at     TIMESTAMPTZ DEFAULT now()
+);
+DROP INDEX IF EXISTS uniq_car_colors;
+CREATE UNIQUE INDEX IF NOT EXISTS uniq_car_colors ON car_colors
+    (ingest_version, model_code, COALESCE(version_code,''),
+     COALESCE(color_code,''), COALESCE(interior_code,''));
+CREATE INDEX IF NOT EXISTS idx_car_colors_ingest_version ON car_colors(ingest_version);
+
+CREATE OR REPLACE VIEW car_colors_active AS
+SELECT * FROM car_colors
+WHERE ingest_version = (SELECT version FROM ingest_version WHERE is_current LIMIT 1);
+
+-- car_variants: đã thay bằng car_colors + price_list giá chuẩn → bỏ
+DROP VIEW IF EXISTS car_variants_active;
+DROP TABLE IF EXISTS car_variants;
 """
 
 # DDL nâng cấp ingest_version từ schema cũ (cho migrate-v1 — chỉ thêm cột mới,
@@ -213,6 +245,32 @@ def upsert_price_list(conn, version: str, rows: list[dict[str, Any]]) -> int:
             r["updated_at"] or None,
             r["source_url"] or None,
         ))
+    execute_values(cur, sql, values)
+    conn.commit()
+    return len(rows)
+
+
+def upsert_colors(conn, version: str, rows: list[dict[str, Any]]) -> int:
+    """Upsert car_colors cho 1 version: xoá rows cũ + insert mới."""
+    if not rows:
+        return 0
+    cur = conn.cursor()
+    cur.execute("DELETE FROM car_colors WHERE ingest_version = %s", (version,))
+    sql = """
+    INSERT INTO car_colors (ingest_version, model_code, version_code, version_name,
+                            color_code, color_name, color_type, color_fee_vnd,
+                            interior_code, interior_name, source_url)
+    VALUES %s
+    """
+    values = [
+        (version, r["model_code"], r.get("version_code") or None, r.get("version_name") or None,
+         r.get("color_code") or None, r.get("color_name") or None,
+         r.get("color_type") or None,
+         int(r["color_fee_vnd"]) if r.get("color_fee_vnd") else 0,
+         r.get("interior_code") or None, r.get("interior_name") or None,
+         r.get("source_url") or None)
+        for r in rows
+    ]
     execute_values(cur, sql, values)
     conn.commit()
     return len(rows)
@@ -324,14 +382,16 @@ def run(version: str = "v1", dsn: str = PG_DSN) -> int:
     edition_rows = load_csv(pg_dir / "edition.csv")
     price_rows = load_csv(pg_dir / "price_list.csv")
     specs_rows = load_csv(pg_dir / "specs.csv") if (pg_dir / "specs.csv").exists() else []
+    colors_rows = load_csv(pg_dir / "colors.csv") if (pg_dir / "colors.csv").exists() else []
 
     n_edition = upsert_edition(conn, version, edition_rows)
     n_price = upsert_price_list(conn, version, price_rows)
     n_specs = upsert_specs(conn, version, specs_rows)
+    n_colors = upsert_colors(conn, version, colors_rows)
     record_manifest(conn, version, version_dir)
 
     print(f"[postgres_ingest] version={version}  edition={n_edition}  price_list={n_price}  "
-          f"car_specs={n_specs}  (is_current=false)")
+          f"car_specs={n_specs}  car_colors={n_colors}  (is_current=false)")
     conn.close()
     return 0
 

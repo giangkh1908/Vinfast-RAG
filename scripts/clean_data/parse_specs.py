@@ -29,7 +29,7 @@ if __package__ in (None, ""):
 
 from scripts.config import CLEAN_DIR, MODEL_DATA_DIR  # noqa: E402
 from scripts.clean_data.spec_common import (  # noqa: E402
-    MODEL_EDITIONS, MODEL_LABEL, infer_model, no_diacritics,
+    EDITION_ALIASES, MODEL_EDITIONS, MODEL_LABEL, infer_model, no_diacritics,
 )
 
 # ── Mappings ─────────────────────────────────────────────────────────────────
@@ -1150,7 +1150,8 @@ def parse_model_csv(path: Path) -> list[dict[str, Any]]:
             if label_norm in VERSION_HEADER_ALIASES:
                 ed = _parse_edition_header(value)
                 if ed:
-                    edition = ed
+                    # Alias edition từ spec sheet → edition chuẩn (VD Plus AWD → PlusCaptain)
+                    edition = EDITION_ALIASES.get(model_id, {}).get(ed, ed)
                 else:
                     # Không có edition trong header → fallback MODEL_EDITIONS
                     eds = MODEL_EDITIONS.get(model_id, [])
@@ -1219,6 +1220,235 @@ def parse_model_csv(path: Path) -> list[dict[str, Any]]:
     return rows
 
 
+VARIANT_DIR = MODEL_DATA_DIR / "variants"
+
+# vinfast_color.csv → car_colors: màu ngoại thất + phí màu nâng cao.
+# Giá xe = price_list (giá chuẩn) + color_fee_vnd nếu màu Nâng cao.
+COLOR_FIELDS = ["model_code", "version_code", "version_name",
+                "color_code", "color_name", "color_type", "color_fee_vnd",
+                "interior_code", "interior_name", "source_url"]
+
+# Chuẩn hóa version_name trong vinfast_*.csv → edition chuẩn (MODEL_EDITIONS)
+# để join được với edition/price_list/car_specs.
+VARIANT_EDITION_ALIAS = {
+    "VF2": {"Tiêu chuẩn": "TieuChuan"},
+    "VFMPV7": {"Tiêu chuẩn": "Eco"},
+    "VF8NEW": {"Comfort": "The All New"},
+    "VF9": {"Plus tùy chọn 7 chỗ": "Plus",
+             "Plus tùy chọn ghế cơ trưởng": "Plus"},
+}
+
+# Mã phiên bản nội bộ → edition chuẩn (ưu tiên hơn alias theo tên).
+# VF 7 Plus có 4 mã: GC12V (Plus), GC12V_CR151 (trần kính), GC12V_T023 (AWD),
+# GC12V_CR151_T023 (trần kính + AWD) — trần kính/AWD đều là PlusCaptain
+# (spec sheet "Plus AWD" = "Plus Trần kính toàn cảnh" trên trang dat-coc).
+VERSION_CODE_EDITION_ALIAS = {
+    "GC12V": "Plus",
+    "GC12V_CR151": "PlusCaptain",
+    "GC12V_T023": "PlusCaptain",
+    "GC12V_CR151_T023": "PlusCaptain",
+}
+
+PRICE_CSV_FIELDS = ["model_id", "edition_id", "price_list_vnd", "price_promo_vnd",
+                     "promo_label", "vat_included", "battery_included",
+                     "valid_from", "valid_to", "updated_at", "source_url"]
+
+EDITION_CSV_FIELDS = ["model_id", "edition_id", "model_label", "edition_label",
+                       "year_range", "is_active", "created_at", "updated_at"]
+
+# Mẫu xe trong vinfast_*.csv → model_id chuẩn
+# "VF 8 The All New" → "VF8NEW"; "VF MPV 7" → "VFMPV7"
+MODEL_NAME_TO_ID = {
+    "vf 2": "VF2", "vf 3": "VF3", "vf 5": "VF5", "vf 6": "VF6",
+    "vf 7": "VF7", "vf 8": "VF8", "vf 8 the all new": "VF8NEW",
+    "vf 9": "VF9", "vf mpv 7": "VFMPV7",
+}
+
+
+def _norm_price(v: str | None) -> str:
+    """'188.000.000' → '188000000'; '0' → '0'; '' → ''"""
+    if not v:
+        return ""
+    return re.sub(r"[^\d-]", "", str(v).strip())
+
+
+def _model_id_from_name(model_name: str) -> str | None:
+    """'VF 8 The All New' → 'VF8NEW' (fallback: infer_model-style match)."""
+    key = no_diacritics(model_name.lower()).strip()
+    mid = MODEL_NAME_TO_ID.get(key)
+    if mid:
+        return mid
+    # fallback: chứa từ khóa
+    for k in ("vf8theallnew", "vf8thenew", "vf8"):
+        if k in re.sub(r"[^a-z0-9]", "", key):
+            return "VF8NEW" if "allnew" in re.sub(r"[^a-z0-9]", "", key) else "VF8"
+    return None
+
+
+def _edition_from(model_id: str, version_code: str, version_name: str) -> str:
+    """Chuẩn hóa edition: ưu tiên alias theo mã phiên bản, sau đó theo tên."""
+    if version_code and version_code in VERSION_CODE_EDITION_ALIAS:
+        return VERSION_CODE_EDITION_ALIAS[version_code]
+    return VARIANT_EDITION_ALIAS.get(model_id, {}).get(version_name, version_name)
+
+
+def parse_colors_csv(path: Path) -> list[dict[str, Any]]:
+    """Parse vinfast_color.csv → car_colors rows.
+
+    Mỗi dòng = 1 màu ngoại thất của 1 phiên bản (kèm nội thất đi kèm).
+    Phí màu nâng cao = số tiền cộng thêm vào giá chuẩn (price_list).
+    Drop PID/optionsName (chỉ dùng debug).
+    """
+    rows: list[dict[str, Any]] = []
+    seen: set[tuple[str, str, str]] = set()
+    with path.open("r", encoding="utf-8-sig", newline="") as f:
+        reader = csv.DictReader(f)
+        for raw in reader:
+            model_name = (raw.get("Mẫu xe") or "").strip()
+            if not model_name:
+                continue  # row trống cuối file
+            model_id = _model_id_from_name(model_name)
+            if not model_id:
+                print(f"    ⚠ skip unknown model: {model_name!r}", file=sys.stderr)
+                continue
+            model_code = MODEL_LABEL.get(model_id, model_id)
+            version_code = (raw.get("Mã phiên bản") or "").strip()
+            version_name = (raw.get("Tên phiên bản") or "").strip()
+            version_name = _edition_from(model_id, version_code, version_name)
+            color_code = (raw.get("Mã màu") or "").strip()
+            color_name = (raw.get("Tên màu ngoại thất") or "").strip()
+            color_type = (raw.get("Phân loại màu") or "").strip()
+            fee = _norm_price(raw.get("Phí màu nâng cao (đ)"))
+            interior_code = (raw.get("Mã nội thất") or "").strip()
+            interior_name = (raw.get("Tên nội thất") or "").strip()
+            if not (version_code and color_code):
+                continue
+            key = (version_code, color_code, interior_code)
+            if key in seen:
+                continue
+            seen.add(key)
+            rows.append({
+                "model_code": model_code,
+                "version_code": version_code,
+                "version_name": version_name,
+                "color_code": color_code,
+                "color_name": color_name,
+                "color_type": color_type,
+                "color_fee_vnd": fee or "0",
+                "interior_code": interior_code,
+                "interior_name": interior_name,
+                "source_url": f"model_data/variants/{path.name}",
+            })
+    return rows
+
+
+def parse_models_prices(path: Path) -> dict[tuple[str, str], str]:
+    """Parse vinfast_models.csv → {(model_id, edition_name): giá chuẩn}.
+
+    Giá chuẩn = min('Giá chính xác (đ)') — giá thực tế theo từng tổ hợp màu
+    (màu cơ bản = giá chuẩn; màu nâng cao cộng phí nằm ở car_colors).
+    VD VF 3 Plus Solar Ruby -8tr → giá chuẩn 296tr.
+    """
+    out: dict[tuple[str, str], str] = {}
+    with path.open("r", encoding="utf-8-sig", newline="") as f:
+        reader = csv.DictReader(f)
+        for raw in reader:
+            model_name = (raw.get("Mẫu xe") or "").strip()
+            if not model_name:
+                continue
+            model_id = _model_id_from_name(model_name)
+            if not model_id:
+                continue
+            version_code = (raw.get("Mã phiên bản") or "").strip()
+            version_name = (raw.get("Tên phiên bản") or "").strip()
+            version_name = _edition_from(model_id, version_code, version_name)
+            if not version_name:
+                continue
+            exact = _norm_price(raw.get("Giá chính xác (đ)"))
+            if not exact:
+                continue
+            key = (model_id, version_name)
+            if key not in out:
+                out[key] = exact
+            else:
+                # nhiều mã/tổ hợp màu cùng edition → lấy giá thấp nhất (màu cơ bản)
+                out[key] = min(out[key], exact)
+    return out
+
+
+def sync_price_list_from_models(pg_dir: Path) -> None:
+    """Đồng bộ price_list + edition theo giá chuẩn từ vinfast_models.csv.
+
+    - Cập nhật price_list_vnd = giá chuẩn (bỏ giá promo cũ của dat-coc).
+    - Thêm edition/price nếu thiếu (VD VF 8 All New — dat-coc không có giá).
+    """
+    from datetime import datetime, timezone
+
+    ed_path = pg_dir / "edition.csv"
+    price_path = pg_dir / "price_list.csv"
+    models_path = VARIANT_DIR / "vinfast_models.csv"
+    if not (ed_path.exists() and price_path.exists() and models_path.exists()):
+        return
+
+    std_prices = parse_models_prices(models_path)
+    if not std_prices:
+        return
+
+    def _read(p: Path, fields: list[str]) -> list[dict[str, str]]:
+        with p.open("r", encoding="utf-8", newline="") as f:
+            return [dict(r) for r in csv.DictReader(f, delimiter="|")]
+
+    ed_rows = _read(ed_path, EDITION_CSV_FIELDS)
+    price_rows = _read(price_path, PRICE_CSV_FIELDS)
+    now = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+    n_updated = 0
+
+    # Cập nhật giá chuẩn cho các row hiện có
+    for pr in price_rows:
+        key = (pr["model_id"], pr["edition_id"])
+        std = std_prices.get(key)
+        if not std:
+            continue
+        if pr["price_list_vnd"] != std:
+            pr["price_list_vnd"] = std
+            n_updated += 1
+        pr["price_promo_vnd"] = ""   # chỉ lấy giá chuẩn hiện tại, bỏ promo cũ
+        pr["promo_label"] = ""
+        pr["updated_at"] = now
+        pr["source_url"] = f"model_data/variants/{models_path.name}"
+
+    # Thêm edition/price thiếu (VD VF8NEW)
+    for (mid, edition), std in sorted(std_prices.items()):
+        if any(r["model_id"] == mid and r["edition_id"] == edition for r in ed_rows):
+            continue
+        model_code = MODEL_LABEL.get(mid, mid)
+        ed_rows.append({
+            "model_id": mid, "edition_id": edition,
+            "model_label": model_code, "edition_label": edition,
+            "year_range": "2026", "is_active": "t",
+            "created_at": now, "updated_at": now,
+        })
+        price_rows.append({
+            "model_id": mid, "edition_id": edition,
+            "price_list_vnd": std, "price_promo_vnd": "",
+            "promo_label": "", "vat_included": "t", "battery_included": "t",
+            "valid_from": "2026-07-01", "valid_to": "",
+            "updated_at": now, "source_url": f"model_data/variants/{models_path.name}",
+        })
+        print(f"  ✓ thêm {model_code} | {edition} vào edition + price_list (giá {int(std):,})")
+
+    def _write(p: Path, fields: list[str], rows: list[dict[str, str]]) -> None:
+        with p.open("w", encoding="utf-8", newline="") as f:
+            w = csv.DictWriter(f, fieldnames=fields, delimiter="|")
+            w.writeheader()
+            for r in rows:
+                w.writerow({k: r.get(k, "") for k in fields})
+
+    _write(ed_path, EDITION_CSV_FIELDS, ed_rows)
+    _write(price_path, PRICE_CSV_FIELDS, price_rows)
+    print(f"  ✓ sync giá chuẩn từ vinfast_models.csv (cập nhật {n_updated} giá, bỏ promo cũ)")
+
+
 def run(version: str = "v1") -> int:
     """Main: read model_data CSVs, extract all spec tables, write CSV."""
     version_dir = CLEAN_DIR / version
@@ -1261,6 +1491,30 @@ def run(version: str = "v1") -> int:
         for r in all_rows:
             w.writerow({k: ("" if r.get(k) is None else r.get(k)) for k in CSV_FIELDS})
 
+    # ── colors (variants/vinfast_color.csv: màu + phí màu nâng cao) ──
+    color_rows: list[dict[str, Any]] = []
+    color_path = VARIANT_DIR / "vinfast_color.csv"
+    if color_path.exists():
+        print(f"  📄 {color_path.name}")
+        color_rows = parse_colors_csv(color_path)
+        if color_rows:
+            out_colors = pg_dir / "colors.csv"
+            with out_colors.open("w", encoding="utf-8", newline="") as f:
+                w = csv.DictWriter(f, fieldnames=COLOR_FIELDS, delimiter="|")
+                w.writeheader()
+                for r in color_rows:
+                    w.writerow({k: ("" if r.get(k) is None else r.get(k)) for k in COLOR_FIELDS})
+            print(f"  → {out_colors}: {len(color_rows)} rows")
+        else:
+            print(f"  ⚠ {color_path.name} không có dữ liệu — skip colors", file=sys.stderr)
+    else:
+        print(f"  ⚠ {color_path} not found — skip colors", file=sys.stderr)
+
+    # ── Sync giá chuẩn từ vinfast_models.csv → price_list + edition ──
+    # (bỏ promo cũ, giá chuẩn = Giá cơ bản phiên bản; phí màu nâng cao
+    #  nằm ở car_colors, không cộng vào price_list)
+    sync_price_list_from_models(pg_dir)
+
     print(f"\n[parse_specs] version={version}  files={n_files}")
     for mc in sorted(by_model):
         print(f"  {mc}: {by_model[mc]} rows")
@@ -1277,6 +1531,12 @@ def run(version: str = "v1") -> int:
                 "rows": len(all_rows),
                 "upserted": len(all_rows),
             }
+            if color_rows:
+                manifest["postgres"]["tables"]["car_colors"] = {
+                    "file": "postgres/colors.csv",
+                    "rows": len(color_rows),
+                    "upserted": len(color_rows),
+                }
             # Tính lại total_rows_upserted
             total = sum(
                 t.get("upserted", 0)
