@@ -212,27 +212,81 @@ async def test_tools_direct():
 
 
 async def test_classify():
-    """Test classify_node logic."""
+    """Test classify_node logic — decision + clarify edge cases."""
     print("\n═══ 2. CLASSIFY TESTS ═══")
 
     from app.agent.nodes.classify import classify_node
     from app.agent.graph_state import AgentState
 
     cases = [
-        # (query, history, expected_decision, expected_reason_keyword, test_id)
+        # ── Basic answer cases ──
         ("VF 6 Eco công suất bao nhiêu?", [], "answer", None, "T-CLS-01"),
         ("giá vf8 all new", [], "answer", None, "T-CLS-02"),
         ("vf3 có mấy màu?", [], "answer", None, "T-CLS-03"),
         ("so sánh vf6 và vf8", [], "answer", None, "T-CLS-04"),
+
+        # ── Utility queries (no model needed) ──
         ("tôi muốn tìm showroom", [], "answer", "utility", "T-CLS-05"),
         ("đặt lịch bảo dưỡng", [], "answer", "utility", "T-CLS-06"),
         ("xe nào tốt nhất", [], "answer", None, "T-CLS-07"),
+        ("khuyến mãi vf3", [], "answer", None, "T-CLS-07B"),
+        ("hotline vinfast", [], "answer", "utility", "T-CLS-07C"),
+        ("đăng ký lái thử vf8", [], "answer", None, "T-CLS-07D"),
+        ("trả góp vf6", [], "answer", None, "T-CLS-07E"),
+
+        # ── Clarify: missing topic (broad query) ──
         ("cho tôi biết về vf6", [], "clarify", "missing_topic", "T-CLS-08"),
-        # Multi-turn follow-up
+        ("vf8 thế nào", [], "clarify", "missing_topic", "T-CLS-08B"),
+        ("thông tin về vf3", [], "clarify", "missing_topic", "T-CLS-08C"),
+
+        # ── Clarify: missing model ──
+        ("xe nào có camera 360", [], "clarify", "missing_model", "T-CLS-10"),
+        ("pin bao nhiêu kWh", [], "clarify", "missing_model", "T-CLS-10B"),
+        ("có mấy phiên bản", [], "clarify", "missing_model", "T-CLS-10C"),
+
+        # ── Clarify: ambiguous pronoun ──
+        ("xe này có an toàn không", [], "clarify", "ambiguous", "T-CLS-11"),
+        ("mẫu này đi được bao xa", [], "clarify", "ambiguous", "T-CLS-11B"),
+
+        # ── Clarify: missing version (version-dependent topic) ──
+        ("vf8 đi được bao xa", [], "clarify", "missing_version", "T-CLS-12"),
+        ("vf6 công suất bao nhiêu", [], "clarify", "missing_version", "T-CLS-12B"),
+
+        # ── Answer: version-independent (no version needed) ──
+        ("vf8 sạc nhanh bao lâu", [], "answer", None, "T-CLS-13"),
+        ("vf6 có mấy phiên bản", [], "answer", None, "T-CLS-13B"),
+        ("vf3 kích thước bao nhiêu", [], "answer", None, "T-CLS-13C"),
+        ("vf8 có túi khí không", [], "answer", None, "T-CLS-13D"),
+
+        # ── Answer: model + version explicit ──
+        ("VF 8 Plus đi được bao xa", [], "answer", None, "T-CLS-14"),
+        ("VF 6 Eco công suất bao nhiêu", [], "answer", None, "T-CLS-14B"),
+        ("vf3 eco giá bao nhiêu", [], "answer", None, "T-CLS-14C"),
+
+        # ── Multi-turn follow-up ──
         ("Bản Plus", [
             {"role": "user", "content": "VF8 đi được bao nhiêu km?"},
             {"role": "assistant", "content": "Bạn muốn hỏi phiên bản nào?"},
         ], "answer", None, "T-CLS-09"),
+        ("VF 8", [
+            {"role": "user", "content": "sạc nhanh từ 10% lên 70% mất bao lâu?"},
+            {"role": "assistant", "content": "Bạn muốn hỏi về VF 6 hoặc VF 8?"},
+        ], "answer", None, "T-CLS-09B"),
+        ("Kích thước xe.", [
+            {"role": "user", "content": "Cho tôi biết về VF 6."},
+            {"role": "assistant", "content": "Bạn muốn tìm thông tin nào về VF 6?"},
+        ], "answer", None, "T-CLS-09C"),
+        ("VF 6 Eco.", [
+            {"role": "user", "content": "Xe có HUD không?"},
+            {"role": "assistant", "content": "Bạn muốn hỏi về VF 6 hoặc VF 8?"},
+        ], "answer", None, "T-CLS-09D"),
+
+        # ── Model variations ──
+        ("vf6 eco", [], "answer", None, "T-CLS-15"),
+        ("VF-8 Plus", [], "answer", None, "T-CLS-15B"),
+        ("VF8", [], "answer", None, "T-CLS-15C"),
+        ("vf 8 all new", [], "answer", None, "T-CLS-15D"),
+        ("VinFast VF 3", [], "answer", None, "T-CLS-15E"),
     ]
 
     for query, history, exp_decision, exp_reason_kw, tid in cases:
@@ -257,25 +311,52 @@ async def test_full_pipeline():
 
     cases = [
         # (query, history, expected_decision, test_id, description)
-        # --- Answer cases ---
-        ("VF 6 Eco công suất bao nhiêu?", [], "answer", "T-E2E-01", "specs query"),
-        ("giá vf2", [], "answer", "T-E2E-02", "price query"),
-        ("vf3 có mấy màu?", [], "answer", "T-E2E-03", "colors query"),
-        ("VF 8 All New có ADAS gì?", [], "answer", "T-E2E-04", "ADAS query"),
-        ("VF 8 Eco đi được bao xa?", [], "answer", "T-E2E-05", "range query"),
-        ("VF 6 có những phiên bản nào?", [], "answer", "T-E2E-06", "versions query"),
+        # --- Answer: specs ---
+        ("VF 6 Eco công suất bao nhiêu?", [], "answer", "T-E2E-01", "specs: power"),
+        ("VF 8 Eco đi được bao xa?", [], "answer", "T-E2E-05", "specs: range"),
+        ("VF 6 có những phiên bản nào?", [], "answer", "T-E2E-06", "specs: versions"),
+        ("VF 8 Plus có hỗ trợ lái trên đường cao tốc không?", [], "answer", "T-E2E-09", "specs: ADAS"),
+        ("vf8 sạc nhanh bao lâu", [], "answer", "T-E2E-12", "specs: charging (version-independent)"),
+        ("vf3 kích thước bao nhiêu", [], "answer", "T-E2E-13", "specs: dimensions (version-independent)"),
+
+        # --- Answer: price ---
+        ("giá vf2", [], "answer", "T-E2E-02", "price: vf2"),
+        ("giá vf8 all new", [], "answer", "T-E2E-14", "price: vf8 all new (model_id fallback)"),
+
+        # --- Answer: colors ---
+        ("vf3 có mấy màu?", [], "answer", "T-E2E-03", "colors: vf3"),
+        ("vf8 all new có màu gì", [], "answer", "T-E2E-15", "colors: vf8 all new"),
+
+        # --- Answer: utility ---
         ("tôi muốn tìm showroom", [], "answer", "T-E2E-07", "utility: showroom"),
         ("đặt lịch lái thử", [], "answer", "T-E2E-08", "utility: booking"),
-        ("VF 8 Plus có hỗ trợ lái trên đường cao tốc không?", [], "answer", "T-E2E-09", "ADAS feature"),
-        # --- Multi-turn ---
+        ("khuyến mãi vf3", [], "answer", "T-E2E-16", "utility: promotions"),
+
+        # --- Answer: comparison ---
+        ("so sánh vf8 the all new và vf8 plus", [], "answer", "T-E2E-17", "comparison: all new vs plus"),
+        ("những điểm khác biệt giữa vf6 eco và vf6 plus", [], "answer", "T-E2E-18", "comparison: differences"),
+
+        # --- Multi-turn follow-ups ---
         ("VF 8", [
             {"role": "user", "content": "sạc nhanh từ 10% lên 70% mất bao lâu?"},
             {"role": "assistant", "content": "Bạn muốn hỏi về VF 6 hoặc VF 8?"},
-        ], "answer", "T-E2E-10", "multi-turn: charging follow-up"),
+        ], "answer", "T-E2E-10", "multi-turn: model follow-up"),
         ("Bản Plus", [
             {"role": "user", "content": "VF8 đi được bao nhiêu km?"},
             {"role": "assistant", "content": "Bạn muốn hỏi phiên bản nào?"},
         ], "answer", "T-E2E-11", "multi-turn: version follow-up"),
+        ("Kích thước xe.", [
+            {"role": "user", "content": "Cho tôi biết về VF 6."},
+            {"role": "assistant", "content": "Bạn muốn tìm thông tin nào về VF 6?"},
+        ], "answer", "T-E2E-19", "multi-turn: topic follow-up"),
+        ("VF 6 Eco.", [
+            {"role": "user", "content": "Xe có HUD không?"},
+            {"role": "assistant", "content": "Bạn muốn hỏi về VF 6 hoặc VF 8?"},
+        ], "answer", "T-E2E-20", "multi-turn: model+version follow-up"),
+
+        # --- New models ---
+        ("VF 8 All New có ADAS gì?", [], "answer", "T-E2E-04", "new model: vf8 all new ADAS"),
+        ("vf 8 all new pin bao nhiêu", [], "answer", "T-E2E-21", "new model: vf8 all new battery"),
     ]
 
     for query, history, exp_decision, tid, desc in cases:

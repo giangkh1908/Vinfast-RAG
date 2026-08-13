@@ -111,7 +111,8 @@ def _is_broad_topic(query: str) -> bool:
     """Check if query is too broad (BDS-05)."""
     broad_patterns = [
         r"(cho\s*tôi\s*biết|thông\s*tin\s*về|giới\s*thiệu|"
-        r"có\s*gì\s*hay|tổng\s*quan|overview)",
+        r"có\s*gì\s*hay|tổng\s*quan|overview|"
+        r"thế\s*nào|như\s*thế\s*nào|ra\s*sao)",
     ]
     broad_re = re.compile("|".join(broad_patterns), re.IGNORECASE)
     return bool(broad_re.search(query))
@@ -224,7 +225,7 @@ async def classify_node(state: AgentState) -> dict:
             }
 
     # Broad topic (model known, topic vague, NOT a follow-up)
-    if has_model and _is_broad_topic(query) and not is_followup:
+    if has_model and topic == "general" and _is_broad_topic(query) and not is_followup:
         model = cr.entities["model_code"]
         return {
             "decision": "clarify",
