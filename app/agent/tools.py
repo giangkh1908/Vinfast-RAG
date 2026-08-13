@@ -84,41 +84,28 @@ async def get_price(model_code: str, version: str = None) -> dict:
 
 
 async def get_colors(model_code: str, version: str = None) -> dict:
-    """Lấy danh sách màu sắc và nội thất từ car_variants."""
+    """Lấy danh sách màu sắc và nội thất từ car_colors."""
     conn = await _conn()
-    mid = _model_id(model_code)
 
-    # Try multiple model_id formats (same as get_price)
-    mids_to_try = [mid]
-    mid_upper = mid.upper()
-    if "ALLNEW" in mid_upper or "ALL" in mid_upper:
-        base = mid_upper.replace("ALLNEW", "").replace("ALL", "")
-        mids_to_try.extend([base + "NEW", base + "_NEW", base + "-NEW"])
-
-    rows = []
-    for try_mid in mids_to_try:
-        if version:
-            rows = await conn.fetch(
-                "SELECT version_name, color_name, interior_name, price_vnd, available "
-                "FROM car_variants WHERE model_code = $1 AND version_name = $2 "
-                "ORDER BY color_name, interior_name",
-                model_code, version,
-            )
-        else:
-            rows = await conn.fetch(
-                "SELECT version_name, color_name, interior_name, price_vnd, available "
-                "FROM car_variants WHERE model_code = $1 "
-                "ORDER BY version_name, color_name, interior_name",
-                model_code,
-            )
-        if rows:
-            break
+    if version:
+        rows = await conn.fetch(
+            "SELECT version_name, color_name, color_type, color_fee_vnd, interior_name "
+            "FROM car_colors WHERE model_code = $1 AND version_name = $2 "
+            "ORDER BY color_name, interior_name",
+            model_code, version,
+        )
+    else:
+        rows = await conn.fetch(
+            "SELECT version_name, color_name, color_type, color_fee_vnd, interior_name "
+            "FROM car_colors WHERE model_code = $1 "
+            "ORDER BY version_name, color_name, interior_name",
+            model_code,
+        )
     await conn.close()
 
     if not rows:
         return {"model_code": model_code, "variants": [], "colors": [], "interiors": []}
 
-    # Deduplicate colors and interiors
     colors = sorted(set(r["color_name"] for r in rows if r["color_name"]))
     interiors = sorted(set(r["interior_name"] for r in rows if r["interior_name"]))
 
@@ -130,9 +117,9 @@ async def get_colors(model_code: str, version: str = None) -> dict:
             {
                 "version": r["version_name"],
                 "color": r["color_name"],
+                "color_type": r.get("color_type") or "",
                 "interior": r["interior_name"],
-                "price_vnd": r["price_vnd"],
-                "available": r["available"],
+                "color_fee_vnd": r["color_fee_vnd"] or 0,
             }
             for r in rows
         ],

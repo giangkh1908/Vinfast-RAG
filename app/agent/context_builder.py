@@ -161,19 +161,20 @@ def _format_colors(result: dict) -> str:
     if interiors:
         lines.append(f"  Màu nội thất ({len(interiors)}): {', '.join(interiors)}")
 
-    # Group by color to show price difference
     if variants:
-        available = [v for v in variants if v.get("available")]
-        unavailable = [v for v in variants if not v.get("available")]
-        if available:
-            lines.append(f"\n  Màu đang bán ({len(available)}):")
-            for v in available:
-                price = f"{v['price_vnd']:,} VNĐ" if v.get("price_vnd") else ""
-                lines.append(f"    - {v['color']} / {v['interior']}: {price}")
-        if unavailable:
-            lines.append(f"\n  Màu tạm hết ({len(unavailable)}):")
-            for v in unavailable:
-                lines.append(f"    - {v['color']} / {v['interior']}")
+        # Group by color to show fee
+        seen = set()
+        lines.append(f"\n  Chi tiết màu:")
+        for v in variants:
+            key = f"{v['color']}|{v['interior']}"
+            if key in seen:
+                continue
+            seen.add(key)
+            fee = v.get("color_fee_vnd") or 0
+            color_type = v.get("color_type") or ""
+            fee_str = f" (+{fee:,} VNĐ)" if fee > 0 else ""
+            type_str = f" [{color_type}]" if color_type else ""
+            lines.append(f"    - {v['color']}{type_str} / Nội thất: {v['interior']}{fee_str}")
 
     return "\n".join(lines)
 

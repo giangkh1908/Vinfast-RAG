@@ -1,5 +1,6 @@
 import logging
 import re
+import unicodedata
 
 from app.agent.decision import assess_evidence, validate_citations, REFUSAL_MESSAGES
 from app.agent.graph_state import AgentState
@@ -178,6 +179,11 @@ _NEGATIVE_CLAUSE_RE = re.compile(
 )
 
 
+def _nfc(text: str) -> str:
+    """Normalize Unicode to NFC + lowercase + strip separators."""
+    return unicodedata.normalize("NFC", re.sub(r"[\s\-_]", "", text.lower()))
+
+
 def _check_text_grounding(response: str, tool_results: list[dict], query: str = "") -> bool:
     response_features = set(m.group().lower() for m in _FEATURE_RE.finditer(response))
     if not response_features:
@@ -189,28 +195,27 @@ def _check_text_grounding(response: str, tool_results: list[dict], query: str = 
 
     query_features = set(m.group().lower() for m in _FEATURE_RE.finditer(query)) if query else set()
     has_negative = bool(_NEGATIVE_CLAUSE_RE.search(response))
+    raw_nfc = _nfc(raw_corpus)
 
     unmatched = set()
     for feat in response_features:
-        normalized = re.sub(r"[\s\-_]", "", feat)
+        normalized = _nfc(feat)
 
         # For negative claims about query features: require raw_corpus match.
-        # Enriched features (aliases, Vietnamese translations) can make it seem
-        # like evidence addresses a feature when it actually doesn't.
         if has_negative and feat in query_features:
-            feat_in_corpus = normalized in raw_corpus or feat in raw_corpus
+            feat_in_corpus = normalized in raw_nfc or feat in raw_nfc
             if not feat_in_corpus:
                 unmatched.add(feat)
             continue
 
         found = False
         for ctx in context_features:
-            ctx_norm = re.sub(r"[\s\-_]", "", ctx)
+            ctx_norm = _nfc(ctx)
             if normalized in ctx_norm or ctx_norm in normalized:
                 found = True
                 break
         if not found and raw_corpus:
-            if normalized in raw_corpus or feat in raw_corpus:
+            if normalized in raw_nfc or feat in raw_nfc:
                 found = True
         if not found:
             unmatched.add(feat)
