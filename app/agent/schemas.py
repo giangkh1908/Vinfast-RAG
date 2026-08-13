@@ -104,6 +104,21 @@ async def build_tool_schemas() -> list[dict]:
         {
             "type": "function",
             "function": {
+                "name": "get_colors",
+                "description": f"Lấy danh sách màu sắc, nội thất và giá theo màu cho xe VinFast. Models: {model_list_str}. Dùng khi user hỏi về màu xe, màu nội thất, hoặc tùy chọn màu sắc.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "model_code": {"type": "string", "enum": models, "description": "Mã xe VinFast"},
+                        "version": {"type": "string", "enum": versions, "description": "Phiên bản. Để trống = tất cả."},
+                    },
+                    "required": ["model_code"],
+                },
+            },
+        },
+        {
+            "type": "function",
+            "function": {
                 "name": "search_knowledge_base",
                 "description": f"Tìm mô tả sản phẩm, tính năng, FAQ từ knowledge base. Models: {model_list_str}.",
                 "parameters": {

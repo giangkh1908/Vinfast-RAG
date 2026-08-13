@@ -83,6 +83,62 @@ async def get_price(model_code: str, version: str = None) -> dict:
     }
 
 
+async def get_colors(model_code: str, version: str = None) -> dict:
+    """Lấy danh sách màu sắc và nội thất từ car_variants."""
+    conn = await _conn()
+    mid = _model_id(model_code)
+
+    # Try multiple model_id formats (same as get_price)
+    mids_to_try = [mid]
+    mid_upper = mid.upper()
+    if "ALLNEW" in mid_upper or "ALL" in mid_upper:
+        base = mid_upper.replace("ALLNEW", "").replace("ALL", "")
+        mids_to_try.extend([base + "NEW", base + "_NEW", base + "-NEW"])
+
+    rows = []
+    for try_mid in mids_to_try:
+        if version:
+            rows = await conn.fetch(
+                "SELECT version_name, color_name, interior_name, price_vnd, available "
+                "FROM car_variants WHERE model_code = $1 AND version_name = $2 "
+                "ORDER BY color_name, interior_name",
+                model_code, version,
+            )
+        else:
+            rows = await conn.fetch(
+                "SELECT version_name, color_name, interior_name, price_vnd, available "
+                "FROM car_variants WHERE model_code = $1 "
+                "ORDER BY version_name, color_name, interior_name",
+                model_code,
+            )
+        if rows:
+            break
+    await conn.close()
+
+    if not rows:
+        return {"model_code": model_code, "variants": [], "colors": [], "interiors": []}
+
+    # Deduplicate colors and interiors
+    colors = sorted(set(r["color_name"] for r in rows if r["color_name"]))
+    interiors = sorted(set(r["interior_name"] for r in rows if r["interior_name"]))
+
+    return {
+        "model_code": model_code,
+        "colors": colors,
+        "interiors": interiors,
+        "variants": [
+            {
+                "version": r["version_name"],
+                "color": r["color_name"],
+                "interior": r["interior_name"],
+                "price_vnd": r["price_vnd"],
+                "available": r["available"],
+            }
+            for r in rows
+        ],
+    }
+
+
 async def get_specs(model_code: str, version: str = None, category: str = None) -> dict:
     conn = await _conn()
 
@@ -273,6 +329,7 @@ async def search_all(model_code: str, query: str, version: str = None) -> dict:
 
 TOOL_REGISTRY = {
     "get_price": get_price,
+    "get_colors": get_colors,
     "get_specs": get_specs,
     "search_knowledge_base": search_knowledge_base,
     "search_all": search_all,

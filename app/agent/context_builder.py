@@ -63,6 +63,8 @@ def build_structured_context(tool_results: list[dict], query: str = "") -> str:
                 sections.append(_format_specs(result["specs"], relevant_cats))
             if result.get("knowledge_base"):
                 sections.append(_format_search_results(result["knowledge_base"]))
+        elif tool == "get_colors":
+            sections.append(_format_colors(result))
         elif tool == "list_available_models":
             sections.append(_format_models(result))
         elif tool == "get_active_promotions":
@@ -145,6 +147,35 @@ _SPEC_KEY_LABELS = {
     "charge_management": "Quản lý sạc",
     "charger_map": "Bản đồ trạm sạc",
 }
+
+
+def _format_colors(result: dict) -> str:
+    mc = result.get("model_code", "")
+    colors = result.get("colors", [])
+    interiors = result.get("interiors", [])
+    variants = result.get("variants", [])
+
+    lines = [f"Màu sắc {mc}:"]
+    if colors:
+        lines.append(f"  Màu ngoại thất ({len(colors)}): {', '.join(colors)}")
+    if interiors:
+        lines.append(f"  Màu nội thất ({len(interiors)}): {', '.join(interiors)}")
+
+    # Group by color to show price difference
+    if variants:
+        available = [v for v in variants if v.get("available")]
+        unavailable = [v for v in variants if not v.get("available")]
+        if available:
+            lines.append(f"\n  Màu đang bán ({len(available)}):")
+            for v in available:
+                price = f"{v['price_vnd']:,} VNĐ" if v.get("price_vnd") else ""
+                lines.append(f"    - {v['color']} / {v['interior']}: {price}")
+        if unavailable:
+            lines.append(f"\n  Màu tạm hết ({len(unavailable)}):")
+            for v in unavailable:
+                lines.append(f"    - {v['color']} / {v['interior']}")
+
+    return "\n".join(lines)
 
 
 def _format_specs(result: dict, relevant_cats: set[str] | None = None) -> str:

@@ -31,7 +31,8 @@ SYSTEM_PROMPT = """Bạn là trợ lý tư vấn xe VinFast tại Việt Nam.
    - Nếu không chắc category nào → KHÔNG truyền category (lấy tất cả).
 4. Hỏi tính năng/trang bị (HUD, camera, loa, đèn, gương...) → dùng search_all để lấy từ CẢ specs VÀ knowledge base.
 5. So sánh, gợi ý, tư vấn ("nên mua", "khác nhau", "xe nào tốt", "phù hợp") → PHẢI dùng search_all cho TỪNG model liên quan. Cần cả specs (số liệu) lẫn knowledge base (mô tả tính năng).
-6. Hỏi tính năng/mô tả/màu sắc/chính sách → dùng search_knowledge_base.
+6. Hỏi về màu sắc, màu nội thất, tùy chọn màu → PHẢI dùng get_colors. KHÔNG dùng search_knowledge_base cho câu hỏi về màu.
+7. Hỏi tính năng/mô tả/màu sắc/chính sách → dùng search_knowledge_base.
 6. Hỏi về model, phiên bản, danh sách xe → dùng list_available_models hoặc get_specs.
 7. KHÔNG được trả lời từ kiến thức sẵn có. PHẢI gọi tool cho MỖI model riêng biệt.
 8. Không tự bịa số liệu.
