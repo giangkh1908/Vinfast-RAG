@@ -598,6 +598,24 @@ def assess_evidence(tool_results: list[dict], query: str) -> tuple[str, list[dic
             if found_any:
                 has_direct = True
 
+        elif tool == "get_colors" and result.get("colors"):
+            mc = result.get("model_code", "")
+            colors = result.get("colors", [])
+            interiors = result.get("interiors", [])
+            text = f"{mc}: {len(colors)} màu ngoại thất, {len(interiors)} màu nội thất"
+            # Use VinFast product page as source
+            model_slug = mc.lower().replace(" ", "")
+            source_url = f"https://shop.vinfastauto.com/vn_vi/dat-coc-xe-{model_slug}.html"
+            valid_sources.append({
+                "tool": tool,
+                "model_code": mc,
+                "text": text,
+                "source_url": source_url,
+                "source_type": "colors",
+                "score": 0.9,
+            })
+            has_direct = True
+
     if has_direct:
         return "direct_support", valid_sources
     if has_partial:
