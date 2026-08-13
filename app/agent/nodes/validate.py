@@ -46,8 +46,8 @@ def _strip_non_factual_numbers(text: str) -> str:
     # Strip product names with numbers (e.g., "Camera 360", "360 độ")
     text = re.sub(r"[Cc]amera\s*\d+", "camera", text)
     text = re.sub(r"\d+\s*độ", "", text)
-    # Strip model year references
-    text = re.sub(r"\(\d{4}\)", "", text)
+    # Strip percentages (e.g., "10%", "70%" from spec labels like "10%-70%")
+    text = re.sub(r"\d+\s*%", "", text)
     return text
 
 
