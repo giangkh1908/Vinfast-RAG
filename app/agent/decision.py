@@ -616,6 +616,26 @@ def assess_evidence(tool_results: list[dict], query: str) -> tuple[str, list[dic
             })
             has_direct = True
 
+        # Catch-all: utility tools that return URLs (showroom, booking, loan, etc.)
+        elif tool not in ("get_specs", "get_price", "search_knowledge_base",
+                          "search_all", "list_available_models", "get_colors"):
+            url = result.get("url", "")
+            label = result.get("label", tool)
+            # Handle tools that return links array
+            if not url and result.get("links"):
+                first = result["links"][0]
+                url = first.get("url") or first.get("source_url", "")
+            if url:
+                valid_sources.append({
+                    "tool": tool,
+                    "model_code": "",
+                    "text": label,
+                    "source_url": url,
+                    "source_type": "utility",
+                    "score": 0.9,
+                })
+                has_direct = True
+
     if has_direct:
         return "direct_support", valid_sources
     if has_partial:
