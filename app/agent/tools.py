@@ -13,38 +13,30 @@ async def _conn():
 
 
 def _model_id(model_code: str) -> str:
-    return model_code.replace(" ", "")
+    # Direct mapping for known mismatches between code and DB
+    MODEL_ID_MAP = {
+        "VF 8 All New": "VF8NEW",
+        "VF8 All New": "VF8NEW",
+    }
+    return MODEL_ID_MAP.get(model_code, model_code.replace(" ", ""))
 
 
 async def get_price(model_code: str, version: str = None) -> dict:
     conn = await _conn()
     mid = _model_id(model_code)
 
-    # Try primary model_id first, then fallback variations
-    mids_to_try = [mid]
-    # "VF8AllNew" → also try "VF8NEW", "VF8_ALLNEW", "VF8-ALLNEW"
-    mid_upper = mid.upper()
-    if "ALLNEW" in mid_upper or "ALL" in mid_upper:
-        base = mid_upper.replace("ALLNEW", "").replace("ALL", "")
-        mids_to_try.extend([base + "NEW", base + "_NEW", base + "-NEW"])
-
-    rows = []
-    for try_mid in mids_to_try:
-        if version:
-            rows = await conn.fetch(
-                "SELECT edition_id, price_list_vnd, price_promo_vnd, promo_label, source_url "
-                "FROM price_list_active WHERE model_id=$1 AND edition_id=$2 ORDER BY price_list_vnd",
-                try_mid, version,
-            )
-        else:
-            rows = await conn.fetch(
-                "SELECT edition_id, price_list_vnd, price_promo_vnd, promo_label, source_url "
-                "FROM price_list_active WHERE model_id=$1 ORDER BY price_list_vnd",
-                try_mid,
-            )
-        if rows:
-            mid = try_mid  # Use the matching model_id for related query
-            break
+    if version:
+        rows = await conn.fetch(
+            "SELECT edition_id, price_list_vnd, price_promo_vnd, promo_label, source_url "
+            "FROM price_list_active WHERE model_id=$1 AND edition_id=$2 ORDER BY price_list_vnd",
+            mid, version,
+        )
+    else:
+        rows = await conn.fetch(
+            "SELECT edition_id, price_list_vnd, price_promo_vnd, promo_label, source_url "
+            "FROM price_list_active WHERE model_id=$1 ORDER BY price_list_vnd",
+            mid,
+        )
 
     related = await conn.fetch(
         "SELECT model_id, edition_id, price_list_vnd, price_promo_vnd "
@@ -190,20 +182,8 @@ async def get_specs(model_code: str, version: str = None, category: str = None) 
 
 async def search_knowledge_base(query: str, model_id: str = None) -> dict:
     from app.core.retrieval import hybrid_search
-    mid = model_id.replace(" ", "") if model_id else None
-
+    mid = _model_id(model_id) if model_id else None
     results = await hybrid_search(query, model_id=mid, top_k=5)
-
-    # Fallback: if 0 results, try alternative model_id formats
-    if not results and mid:
-        mid_upper = mid.upper()
-        if "ALLNEW" in mid_upper:
-            base = mid_upper.replace("ALLNEW", "")
-            for suffix in ["NEW", "_NEW", "-NEW"]:
-                alt = base + suffix
-                results = await hybrid_search(query, model_id=alt, top_k=5)
-                if results:
-                    break
 
     return {
         "query": query,
