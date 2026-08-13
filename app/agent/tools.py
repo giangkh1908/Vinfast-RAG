@@ -191,7 +191,20 @@ async def get_specs(model_code: str, version: str = None, category: str = None) 
 async def search_knowledge_base(query: str, model_id: str = None) -> dict:
     from app.core.retrieval import hybrid_search
     mid = model_id.replace(" ", "") if model_id else None
+
     results = await hybrid_search(query, model_id=mid, top_k=5)
+
+    # Fallback: if 0 results, try alternative model_id formats
+    if not results and mid:
+        mid_upper = mid.upper()
+        if "ALLNEW" in mid_upper:
+            base = mid_upper.replace("ALLNEW", "")
+            for suffix in ["NEW", "_NEW", "-NEW"]:
+                alt = base + suffix
+                results = await hybrid_search(query, model_id=alt, top_k=5)
+                if results:
+                    break
+
     return {
         "query": query,
         "results": [
