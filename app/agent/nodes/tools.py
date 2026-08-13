@@ -144,23 +144,18 @@ async def execute_tools_node(state: AgentState) -> dict:
 
     tool_results.extend(results)
 
-    # Build messages: assistant tool_calls + all tool results (original + auto KB)
+    # Build messages: assistant tool_calls + original tool results ONLY.
+    # Auto-injected KB results go to tool_results (for assess_evidence +
+    # context_builder) but NOT to new_messages — they don't have matching
+    # tool_calls in the assistant message, so adding them as 'tool' role
+    # breaks OpenAI API contract.
     new_messages = messages + [choice.message]
-    # Original tool results
     for tc, res in zip(choice.message.tool_calls, results[:len(choice.message.tool_calls)]):
         new_messages.append({
             "role": "tool",
             "tool_call_id": tc.id,
             "content": json.dumps(res["result"], ensure_ascii=False),
         })
-    # Auto-injected KB results
-    for kb, kb_result in zip(auto_kb_calls, kb_results if auto_kb_calls else []):
-        if not isinstance(kb_result, Exception):
-            new_messages.append({
-                "role": "tool",
-                "tool_call_id": kb["tool_call_id"],
-                "content": json.dumps(kb_result, ensure_ascii=False),
-            })
 
     # Handle ask_clarification: override if classify already decided answer
     # with a version-independent topic
