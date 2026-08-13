@@ -35,6 +35,11 @@ async def respond_node(state: AgentState) -> dict:
     tool_results = state.get("tool_results", [])
     citations = state.get("citations", [])
     entities = state.get("entities", {})
+    assessment = state.get("assessment", "")
+
+    logger.info("RESPOND: decision=%s reason=%s assessment=%s tools=%s",
+                decision, reason_code, assessment,
+                [t.get("tool") for t in tool_results if t.get("success")])
 
     if decision == "clarify":
         answer = response_text or "Bạn muốn tìm thông tin nào?"

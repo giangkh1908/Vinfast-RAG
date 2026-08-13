@@ -72,11 +72,9 @@ async def generate_node(state: AgentState) -> dict:
             final_response = new_response
     except Exception as e:
         logger.error("generate_node LLM error: %s", e)
+        # Don't override with system_error — keep existing response from execute_tools
         return {
-            "final_response": "",
-            "decision": "refuse",
-            "reason_code": "system_error",
-            "response_text": "Mình chưa thể hoàn tất câu trả lời lúc này. Vui lòng thử lại.",
+            "final_response": final_response,
             "t_generate_start": t_generate_start,
         }
 

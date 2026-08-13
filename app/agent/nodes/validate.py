@@ -283,77 +283,35 @@ async def validate_node(state: AgentState) -> dict:
     if decision != "answer":
         return {}
 
-    # Build context-aware query for multi-turn: include history for scoring
+    # Build context-aware query for multi-turn
     query = state.get("query", "")
     history = state.get("history", [])
+    scoring_query = query
     if history:
         history_queries = [m["content"] for m in history if m.get("role") == "user"]
         if history_queries:
             scoring_query = " ".join(history_queries) + " " + query
-        else:
-            scoring_query = query
-    else:
-        scoring_query = query
 
     assessment, valid_sources = assess_evidence(tool_results, scoring_query)
+    citations = validate_citations(valid_sources, scoring_query)
 
-    logger.info("VALIDATE: query=%s assessment=%s sources=%d tools=%s",
-                state.get("query", ""), assessment, len(valid_sources),
+    logger.info("VALIDATE: query=%s assessment=%s sources=%d citations=%d tools=%s",
+                query, assessment, len(valid_sources), len(citations),
                 [tr.get("tool") for tr in tool_results if tr.get("success")])
 
+    # Only block on insufficient evidence — no grounding check (deferred to guardrails)
     if assessment == "insufficient":
+        logger.warning("VALIDATE: refuse — insufficient_evidence")
         return {
             "decision": "refuse",
             "reason_code": "insufficient_evidence",
             "response_text": REFUSAL_MESSAGES["insufficient_evidence"],
             "assessment": assessment,
             "citations": [],
-            "grounding_ok": False,
         }
-
-    citations = validate_citations(valid_sources, scoring_query)
-
-    if not citations and final_response and bool(re.search(r"\d[\d.,]+", _strip_non_factual_numbers(final_response))):
-        return {
-            "decision": "refuse",
-            "reason_code": "citation_failure",
-            "response_text": REFUSAL_MESSAGES["no_citation"],
-            "assessment": assessment,
-            "citations": [],
-            "grounding_ok": False,
-        }
-
-    grounding_ok = _check_grounding(final_response, tool_results, scoring_query)
-
-    logger.info("VALIDATE: grounding_ok=%s response_preview=%s", grounding_ok, final_response[:100])
-
-    if not grounding_ok:
-        return {
-            "decision": "refuse",
-            "reason_code": "grounding_failure",
-            "response_text": REFUSAL_MESSAGES["grounding_fail"],
-            "assessment": assessment,
-            "citations": citations,
-            "grounding_ok": False,
-        }
-
-    # Only check refusal patterns if grounding failed or assessment is weak.
-    # If grounding passed, the response is grounded — don't override even if
-    # it contains refusal phrases for missing sub-topics (partial answer).
-    if not grounding_ok or assessment != "direct_support":
-        is_refusal = any(re.search(p, final_response, re.IGNORECASE) for p in REFUSAL_PATTERNS)
-        if is_refusal:
-            return {
-                "decision": "refuse",
-                "reason_code": "insufficient_evidence",
-                "assessment": assessment,
-                "citations": citations,
-                "grounding_ok": grounding_ok,
-            }
 
     return {
         "decision": "answer",
         "assessment": assessment,
         "citations": citations,
-        "grounding_ok": True,
     }
