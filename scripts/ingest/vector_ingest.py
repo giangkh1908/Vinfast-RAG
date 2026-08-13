@@ -5,7 +5,7 @@ vector_ingest.py — Ingest vector JSONL vào Qdrant (versioned + incremental).
 Collection = `<stem>__<version>` (VD `vivu_product_info__v2`). Versioned → ingest v2
 KHÔNG đè v1. Promote/rollback swap alias (xem scripts/version_manager.py).
 
-Incremental embed: cache vector theo content-hash (backend/lib/vector_cache.py).
+Incremental embed: cache vector theo content-hash (lib/vector_cache.py).
 Chunk nào content không đổi → cache hit → lấy vector, không gọi API. Miss →
 embed + cache. Cuối cùng xóa orphan points (chunk bị bỏ ở version mới).
 

@@ -6,7 +6,8 @@ Pipeline xử lý dữ liệu VinFast:
 data/raw/*.txt ──────────> clean_to_jsonl ──> intermediate ──> split_cold_hot ──> postgres/{edition,price_list}.csv
 
 data/raw_pdf/*.txt ──────> clean_to_jsonl ──> intermediate ──> split_cold_hot ──> vector/*.jsonl  (prose)
-                    └────> parse_pdf_specs ──────────────────────────────────────> postgres/specs.csv  (specs)
+
+data/model_data/*.csv ──> parse_specs ───────────────────────────────────────> postgres/specs.csv  (specs)
 
 Tất cả CSV ──────────────> postgres_ingest ──────────────────────────────────────> PostgreSQL
 vector/*.jsonl ──────────> vector_ingest + sparse_ingest ────────────────────────> Qdrant
@@ -129,7 +130,7 @@ Pipeline chỉ dùng raw_pdf local — không crawl online:
   --version v1
 ```
 
-`parse_pdf_specs` chỉ xử lý file `data/raw_pdf/*.txt` local (VF6, VF8 brochures).
+`parse_specs.py` chỉ xử lý file `data/model_data/*.csv` local (spec sheets).
 Không cần crawl online / LLM.
 
 ### 4.3. Chạy từng version nhưng chưa activate
@@ -154,7 +155,7 @@ Nếu không dùng `--promote`, version chỉ được build, chưa active:
 |---|---|---|
 | 1 | `clean_to_jsonl.py` | Làm sạch **raw + raw_pdf**, loại giá khỏi vector, chunk tối đa 800 ký tự |
 | 2 | `split_cold_hot.py` | Chia vector collections và PostgreSQL CSV |
-| 3 | `parse_pdf_specs.py` | Extract spec từ **raw_pdf** brochure (basic + feature), không dùng raw dat-coc |
+| 3 | `parse_specs.py` → `parse_specs.py` | Extract spec từ **model_data** CSVs (basic + feature), không dùng raw dat-coc |
 | 4 | `vector_ingest.py` | Embed và ingest Qdrant dense |
 | 5 | `sparse_ingest.py` | Build BM25 sparse, có thể bỏ bằng `--no-sparse` |
 | 6 | `postgres_ingest.py` | UPSERT edition, prices, specs và ingest version |
@@ -170,6 +171,7 @@ scripts/
 |- run_pipeline.py         # Orchestrator end-to-end (bước 1-6)
 |- version_manager.py      # Promote/rollback/delete version (alias Qdrant + PG)
 |- crawl.py                # Crawl raw (HTML bằng requests+BS4 / PDF bằng PyMuPDF)
+|- schemas.py              # Pydantic models: Chunk, DensePayload, SparsePayload
 |- clean_data/
 |  |- spec_common.py       # Dùng chung: MODEL_LABEL, no_diacritics, parse_raw_file, infer_model
 |  |- noise_patterns.py    # Lọc noise text (dòng/đoạn/PDF prose)
@@ -177,11 +179,17 @@ scripts/
 |  |- chunking.py          # Sentence-aware split (>max_len)
 |  |- clean_to_jsonl.py    # raw → intermediate JSONL (orchestrate 3 module trên)
 |  |- split_cold_hot.py    # intermediate → vector/*.jsonl + postgres/*.csv + manifest
-|  `- parse_pdf_specs.py   # raw_pdf → postgres/specs.csv (car_specs)
-`- ingest/
-   |- vector_ingest.py     # Embed + upsert Qdrant dense (incremental, cache)
-   |- sparse_ingest.py     # BM25 sparse → Qdrant
-   `- postgres_ingest.py   # CSV → PostgreSQL (versioned)
+|  `- parse_specs.py       # model_data CSVs → postgres/specs.csv (car_specs)
+|- ingest/
+|  |- vector_ingest.py     # Embed + upsert Qdrant dense (incremental, cache)
+|  |- sparse_ingest.py     # BM25 sparse → Qdrant
+|  `- postgres_ingest.py   # CSV → PostgreSQL (versioned)
+`- eval/
+   |- smoke_test.py        # Retrieval quality test (golden set)
+   `- golden_set.json      # Test queries
+lib/
+|- openrouter.py           # OpenRouter API client (embed + chat)
+`- vector_cache.py         # Content-hash vector cache (SQLite)
 ```
 
 ## 6. Output
@@ -209,15 +217,15 @@ data/clean/v1/
 [`SPEC_SCHEMA.md`](./SPEC_SCHEMA.md).
 
 Prose từ `data/raw_pdf/` (brochure marketing) đi vào `vector/` cùng với
-`data/raw/` prose. Spec tables từ PDF brochure đi vào `specs.csv` (bao gồm
-cả BASIC_SPECS lẫn feature specs).
+`data/raw/` prose. Spec sheets từ `data/model_data/*.csv` đi vào `specs.csv`
+(bao gồm cả BASIC_SPECS lẫn feature specs).
 
 ## 7. Chạy từng bước
 
 ```powershell
 .\.venv\Scripts\python.exe scripts/clean_data/clean_to_jsonl.py --version v1 --max-len 800
 .\.venv\Scripts\python.exe scripts/clean_data/split_cold_hot.py --version v1 --commit $(git rev-parse --short HEAD)
-.\.venv\Scripts\python.exe scripts/clean_data/parse_pdf_specs.py --version v1
+.\.venv\Scripts\python.exe scripts/clean_data/parse_specs.py --version v1
 .\.venv\Scripts\python.exe scripts/ingest/vector_ingest.py --version v1 --recreate
 .\.venv\Scripts\python.exe scripts/ingest/sparse_ingest.py --version v1 --recreate
 .\.venv\Scripts\python.exe scripts/ingest/postgres_ingest.py --version v1
@@ -250,7 +258,7 @@ curl -u ":$env:QDRANT_API_KEY" "$env:QDRANT_URL/collections"
 - Không có `--recreate`: vector cache giúp tránh embed lại nội dung không đổi.
 - `--prev`: chỉ định version trước để tính diff; mặc định tự tìm từ manifest.
 - `--promote`: đổi alias active sau khi ingest thành công.
-- Pipeline chỉ dùng `parse_pdf_specs` với local `data/raw_pdf/` — không crawl online.
-  Spec extract từ brochure PDF (VF6, VF8), không dùng dat-coc pages.
+- Pipeline chỉ dùng `parse_specs` với local `data/model_data/*.csv` — không crawl online.
+  Spec extract từ spec sheets (model_data), không dùng dat-coc pages.
 
 Chi tiết promote/rollback xem [`VERSIONING.md`](./VERSIONING.md).

@@ -13,9 +13,10 @@ data/
 ├── raw/              # HTML pages crawled từ website VinFast
 │   ├── *.txt        # Text từ các trang dat-coc-xe, policy, maintenance
 │   └── link_brochure.md
-│
-└── raw_pdf/         # Brochure PDFs (text extracted)
-    └── *.txt        # Text từ brochure VF2, VF6, VF8, VF9
+├── raw_pdf/         # Brochure PDFs (text extracted) → prose cho vector
+│   └── *.txt        # Text từ brochure VF2, VF6, VF8, VF9
+└── model_data/      # Spec sheets (CSV 2 cột label,value) → specs cho Postgres
+    └── *.csv        # 1 file = 1 model + 1 edition
 ```
 
 **Ví dụ input files:**
@@ -44,7 +45,7 @@ Mỗi file raw là text đã extract từ HTML/PDF, chứa:
 **Input:**
 ```
 data/raw/*.txt
-data/raw_pdf/*.txt
+data/model_data/*.csv
 ```
 
 **Xử lý:**
@@ -121,22 +122,23 @@ data/clean/<version>/postgres/
 
 ---
 
-### Bước 3: Parse PDF Specs (`parse_pdf_specs.py`)
+### Bước 3: Parse Specs (`parse_specs.py`)
 
-**Mục tiêu:** Extract thông số kỹ thuật từ brochure PDF
+**Mục tiêu:** Extract thông số kỹ thuật từ model_data CSVs
 
 **Input:**
 ```
-data/raw_pdf/*.txt
+data/model_data/*.csv
 ```
 
 **Xử lý:**
-1. Detect table patterns (pipe-delimited)
-2. Extract specs:
+1. Đọc CSV 2 cột (label, value) — 1 file = 1 model + 1 edition
+2. Detect section headers (label có value rỗng)
+3. Extract specs:
    - Basic specs: công suất, pin, kích thước, trọng lượng
    - Feature specs: ADAS, nội thất, ngoại thất
-3. Normalize labels ( Vietnamese → English keys)
-4. Map to spec categories (powertrain, battery, dimension, interior, safety, adas)
+4. Normalize labels (Vietnamese → English keys)
+5. Map to spec categories (powertrain, battery, dimension, interior, safety, adas)
 
 **Validation:**
 - ✅ Spec value phải có unit (nếu cần)
@@ -400,15 +402,14 @@ data/clean/<version>/
     "tables": {
       "edition": { "rows": 14, "upserted": 14 },
       "price_list": { "rows": 14, "upserted": 14, "price_changed": 3 },
-      "car_specs": { "rows": 245, "by_model": { "VF8": 120, "VF6": 85, "VF2": 40 } }
+      "car_specs": { "rows": 245, "upserted": 245 }
     }
-  },
-  "sparse": {
-    "vocab_size": 1791,
-    "avg_doc_length": 85.2
   }
 }
 ```
+
+> `sparse_index.json` là file riêng (`data/clean/<ver>/sparse_index.json`), không
+> nằm trong manifest. `car_specs` được thêm vào manifest bởi `parse_specs.py`.
 
 ### 5.2. Quality Metrics
 
@@ -515,7 +516,7 @@ python scripts/clean_data/clean_to_jsonl.py --version v2
 python scripts/clean_data/split_cold_hot.py --version v2
 
 # Step 3: Parse specs
-python scripts/clean_data/parse_pdf_specs.py --version v2
+python scripts/clean_data/parse_specs.py --version v2
 
 # Step 4: Vector ingest
 python scripts/ingest/vector_ingest.py --version v2 --recreate

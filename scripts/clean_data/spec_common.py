@@ -2,7 +2,7 @@
 """
 spec_common.py — Dữ liệu + helper dùng chung cho các bước clean data.
 
-Tránh duplicate giữa clean_to_jsonl.py và parse_pdf_specs.py:
+Tránh duplicate giữa clean_to_jsonl.py và parse_specs.py:
   - MODEL_LABEL / MODEL_EDITIONS   mapping model → label / editions
   - no_diacritics                  bỏ dấu tiếng Việt (giữ nguyên hoa/thường)
   - parse_raw_file                 parse header crawl + body từ data/raw{,/_pdf}
@@ -10,7 +10,7 @@ Tránh duplicate giữa clean_to_jsonl.py và parse_pdf_specs.py:
 
 Lưu ý hành vi (đừng đổi nếu không có lý do — sẽ thay đổi output pipeline):
   - no_diacritics KHÔNG lowercase và chỉ xử lý 'đ' thường; caller muốn đổi cả
-    'Đ' hoa phải tự .lower() trước (xem norm() trong parse_pdf_specs).
+    'Đ' hoa phải tự .lower() trước (xem norm() trong parse_specs).
 """
 
 import re

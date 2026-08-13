@@ -22,12 +22,11 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 DATA_DIR = REPO_ROOT / "data"
 RAW_DIR = DATA_DIR / "raw"
 RAW_PDF_DIR = DATA_DIR / "raw_pdf"
-MODEL_DATA_DIR = DATA_DIR / "Model Data"
+MODEL_DATA_DIR = DATA_DIR / "model_data"
 CLEAN_DIR = DATA_DIR / "clean"
 
 # Cho phép `from scripts... import` và `from lib... import` từ mọi nơi
 sys.path.insert(0, str(REPO_ROOT))
-sys.path.insert(0, str(REPO_ROOT / "backend"))
 
 load_dotenv(REPO_ROOT / ".env")
 

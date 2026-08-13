@@ -322,7 +322,7 @@ def run(version: str = "v1", commit: str = "", prev: str | None = None) -> int:
     # Dọn output cũ — CHỈ file split sở hữu:
     #   vector/*.jsonl              (split viết hết → bỏ collection cũ như vivu_faq)
     #   postgres/edition.csv, price_list.csv
-    # KHÔNG xóa postgres/specs.csv (do parse_pdf_specs.py viết — bước kế tiếp trong pipeline).
+    # KHÔNG xóa postgres/specs.csv (do parse_specs.py viết — bước kế tiếp trong pipeline).
     if vector_dir.exists():
         for f in vector_dir.iterdir():
             if f.is_file():

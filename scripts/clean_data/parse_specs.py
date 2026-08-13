@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-parse_pdf_specs.py — Trích thông số kỹ thuật từ data/Model Data/*.csv (spec sheets)
+parse_specs.py — Trích thông số kỹ thuật từ data/model_data/*.csv (spec sheets)
 → data/clean/<version>/postgres/specs.csv
 
-Nguồn: data/Model Data/*.csv — file CSV 2 cột (label, value) export từ bảng spec
+Nguồn: data/model_data/*.csv — file CSV 2 cột (label, value) export từ bảng spec
 brochure (1 file = 1 model + 1 edition, edition đọc từ row "PHIÊN BẢN"/"Phiên bản").
 Section header = row có label nhưng value rỗng (vd "KÍCH THƯỚC,").
 
@@ -23,7 +23,7 @@ if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
-# Chạy trực tiếp (`python scripts/clean_data/parse_pdf_specs.py`) → repo root vào sys.path
+# Chạy trực tiếp (`python scripts/clean_data/parse_specs.py`) → repo root vào sys.path
 if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
@@ -893,7 +893,7 @@ FEATURE_NORM_MAP = {
     "tao va ghi nho cai dat theo ho so nguoi lai": ("driver_profile", "connected"),
     "ho so nang cao": ("advanced_profile", "connected"),
 
-    # ── Exterior extras (Model Data CSVs) ──
+    # ── Exterior extras (model_data CSVs) ──
     "den pha tu dong bat/tat": ("auto_headlights", "exterior"),
     "dieu khien do cao goc chieu den": ("headlight_leveling", "exterior"),
     "den dinh vi": ("position_light", "exterior"),
@@ -917,7 +917,7 @@ FEATURE_NORM_MAP = {
     "dong/mo cop sau": ("trunk_lid_type", "exterior"),
     "dong/mo cop da chan": ("kick_sensor_trunk", "exterior"),
     "cop sau": ("trunk_lid_type", "exterior"),
-    # ── Interior extras (Model Data CSVs) ──
+    # ── Interior extras (model_data CSVs) ──
     "cua gio dieu hoa hang ghe thu 2 va thu 3": ("rear_ac_vents", "interior"),
     "cua gio dieu hoa hang ghe thu 2: tren hop de do trung tam": ("row2_ac_vents", "interior"),
     "cua gio dieu hoa hang ghe thu 2: tren cot b": ("row2_ac_vents", "interior"),
@@ -1127,7 +1127,7 @@ def parse_model_csv(path: Path) -> list[dict[str, Any]]:
         print(f"  [skip] can't infer model from {path.name}", file=sys.stderr)
         return []
     model_code = MODEL_LABEL.get(model_id, model_id)
-    source_url = f"Model Data/{path.name}"
+    source_url = f"model_data/{path.name}"
 
     rows: list[dict[str, Any]] = []
     seen: set[tuple[str, str]] = set()  # (spec_key, edition) — trùng trong file
@@ -1220,13 +1220,13 @@ def parse_model_csv(path: Path) -> list[dict[str, Any]]:
 
 
 def run(version: str = "v1") -> int:
-    """Main: read Model Data CSVs, extract all spec tables, write CSV."""
+    """Main: read model_data CSVs, extract all spec tables, write CSV."""
     version_dir = CLEAN_DIR / version
     pg_dir = version_dir / "postgres"
     pg_dir.mkdir(parents=True, exist_ok=True)
 
     if not MODEL_DATA_DIR.exists():
-        print(f"[parse_pdf_specs] Model Data dir not found: {MODEL_DATA_DIR}", file=sys.stderr)
+        print(f"[parse_specs] model_data dir not found: {MODEL_DATA_DIR}", file=sys.stderr)
         return 1
 
     all_rows: list[dict[str, Any]] = []
@@ -1250,7 +1250,7 @@ def run(version: str = "v1") -> int:
         print(f"    → {len(rows)} spec rows  (editions: {', '.join(editions)})")
 
     if not all_rows:
-        print("[parse_pdf_specs] no data found")
+        print("[parse_specs] no data found")
         return 1
 
     # Ghi CSV
@@ -1261,7 +1261,7 @@ def run(version: str = "v1") -> int:
         for r in all_rows:
             w.writerow({k: ("" if r.get(k) is None else r.get(k)) for k in CSV_FIELDS})
 
-    print(f"\n[parse_pdf_specs] version={version}  files={n_files}")
+    print(f"\n[parse_specs] version={version}  files={n_files}")
     for mc in sorted(by_model):
         print(f"  {mc}: {by_model[mc]} rows")
     print(f"  → {out_path}: {len(all_rows)} rows")
@@ -1295,7 +1295,7 @@ def run(version: str = "v1") -> int:
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser(description="Extract all spec rows from Model Data CSVs.")
+    ap = argparse.ArgumentParser(description="Extract all spec rows from model_data CSVs.")
     ap.add_argument("--version", default="v1", help="Output version folder (default v1)")
     args = ap.parse_args()
     return run(args.version)

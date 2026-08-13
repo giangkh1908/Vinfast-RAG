@@ -6,13 +6,13 @@ Chạy đủ bước theo thứ tự cho 1 version:
   data/raw/*.txt + data/raw_pdf/*.txt
     → 1. clean (clean_to_jsonl)      → intermediate/{vector,hot}.jsonl + link_only.json
     → 2. split cold/hot (split_cold_hot) → vector/*.jsonl + postgres/*.csv + _manifest.json
-    → 3. parse_pdf_specs → postgres/specs.csv (feature specs từ data/Model Data CSVs)
+    → 3. parse_specs → postgres/specs.csv (feature specs từ data/model_data CSVs)
     → 4. embed + ingest Qdrant dense (vector_ingest)
     → 5. BM25 sparse → Qdrant sparse (sparse_ingest)   [bỏ qua nếu --no-sparse]
     → 6. UPSERT PostgreSQL (postgres_ingest)
 
-Specs lấy từ data/Model Data/*.csv (2 cột label,value, 1 file = 1 model+edition)
-qua parse_pdf_specs.
+Specs lấy từ data/model_data/*.csv (2 cột label,value, 1 file = 1 model+edition)
+qua parse_specs.
 
 Usage:
     python scripts/run_pipeline.py --version v1 --recreate --promote
@@ -30,7 +30,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from scripts.config import PG_DSN, QDRANT_API_KEY, QDRANT_URL, REPO_ROOT  # noqa: E402
 
 from scripts.clean_data import clean_to_jsonl, split_cold_hot  # noqa: E402
-from scripts.clean_data import parse_pdf_specs  # noqa: E402
+from scripts.clean_data import parse_specs  # noqa: E402
 from scripts.ingest import vector_ingest, sparse_ingest, postgres_ingest  # noqa: E402
 from lib import openrouter  # noqa: E402
 from scripts import version_manager  # noqa: E402
@@ -47,9 +47,9 @@ def preflight(version: str, want_qdrant: bool, want_pg: bool) -> int:
         print(f"[preflight] data/raw rỗng hoặc không tồn tại: {raw}", file=sys.stderr)
         return 1
 
-    model_data = REPO_ROOT / "data" / "Model Data"
+    model_data = REPO_ROOT / "data" / "model_data"
     if not model_data.exists() or not any(model_data.iterdir()):
-        print(f"[preflight] data/Model Data trống — pipeline sẽ không có spec data")
+        print(f"[preflight] data/model_data trống — pipeline sẽ không có spec data")
 
     if not openrouter.API_KEY:
         print("[preflight] OPENROUTER_API_KEY chưa set trong .env (xem .env.example)",
@@ -106,7 +106,7 @@ def run(version: str, recreate: bool, no_sparse: bool, commit: str,
          (version,), {"max_len": max_len}),
         ("2/6", "split cold/hot → vector + postgres CSV", split_cold_hot.run,
         (version,), {"commit": commit, "prev": prev}),
-        ("3/6", "parse_pdf_specs → postgres/specs.csv (feature specs từ brochure)", parse_pdf_specs.run,
+        ("3/6", "parse_specs → postgres/specs.csv (feature specs từ model_data CSVs)", parse_specs.run,
          (version,), {}),
         ("4/6", "embed + ingest Qdrant dense (incremental)", vector_ingest.run,
          (version,), {"url": QDRANT_URL, "recreate": recreate}),

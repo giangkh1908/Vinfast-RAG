@@ -176,7 +176,7 @@ def classify_raw(path: Path, meta: dict[str, Any]) -> dict[str, Any] | None:
         return route("vivu_policy", "chinh_sach_dich_vu", 0.9, "pdf-manual")
 
     # Web articles / dealer pages — prose mô tả/so sánh model → vivu_product_info
-    # (spec số liệu → car_specs qua parse_pdf_specs, không vào vector)
+    # (spec số liệu → car_specs qua parse_specs, không vào vector)
     if any(k in name for k in ("so-sanh", "bang-doi-chieu")):
         return route("vivu_product_info", "thong_so_ky_thuat", 0.8, "comparison")
     if any(k in name for k in ("thong-so-ky-thuat", "thong-so-")):

@@ -42,7 +42,7 @@ from scripts.config import CLEAN_DIR, PG_DSN, QDRANT_API_KEY, QDRANT_URL  # noqa
 from scripts.ingest import postgres_ingest  # noqa: E402
 
 SPARSE_ALIAS = "sparse"
-DENSE_ALIASES = ["vivu_product_info", "vivu_policy", "vivu_maintenance"]
+DENSE_ALIASES = ["vivu_product_info", "vivu_policy", "vivu_maintenance", "vivu_faq"]
 
 ALL_ALIASES = DENSE_ALIASES + [SPARSE_ALIAS]
 

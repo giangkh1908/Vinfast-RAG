@@ -8,7 +8,8 @@ promote/rollback atomic, biết version mới đổi gì so cũ, incremental emb
 ## Mô hình
 
 - Mỗi **version** = 1 folder `data/clean/<version>/` (đã có) + 5 collection Qdrant
-  vật lý `<col>__<version>` + rows PG tag `version=<version>`.
+  vật lý `<col>__<version>` (4 dense: product_info, policy, maintenance, faq +
+  1 sparse) + rows PG tag `version=<version>`.
 - **Active** = `ingest_version.is_current=true` (đúng 1 row) + alias Qdrant
   `<col>` → `<col>__<active>`.
 - **Ingest** (`run_pipeline`) = BUILD version mới, KHÔNG tự activate (trừ `--promote`).
@@ -63,7 +64,7 @@ PYTHONUTF8=1 python scripts/version_manager.py delete --version v2
 
 ## Incremental embed (content-hash cache)
 
-- Vector cache theo **content-hash** (`backend/lib/vector_cache.py`, SQLite ở
+- Vector cache theo **content-hash** (`lib/vector_cache.py`, SQLite ở
   `data/.vector_cache/cache.sqlite`, gitignored). Key = `sha1(embed_model + text +
   structured)`.
 - Chunk content KHÔNG đổi → **cache hit → 0 API call, 0 token**. Đổi 1 chunk →

@@ -64,14 +64,18 @@ python scripts/ingest/sparse_ingest.py --version v2
   "edition_id": "string | null",
   "category": "string",
   "section_path": ["string"],
-  "source_type": "string",
+  "text_type": "string",
+  "structured": "object",
   "language": "string",
   "tags": ["string"],
   "confidence": "float (0-1)",
   "source_file": "string",
   "source_url": "string",
-  "created_at": "ISO8601",
-  "updated_at": "ISO8601"
+  "source_type": "string",
+  "fetched_at": "ISO8601",
+  "ingested_at": "ISO8601",
+  "page": "int | null (optional)",
+  "is_hot": "bool"
 }
 ```
 
@@ -152,9 +156,9 @@ Track số lượng car_specs rows trong manifest để dễ audit và debug.
 
 ### Triển khai
 
-**File:** `scripts/clean_data/parse_pdf_specs.py`
+**File:** `scripts/clean_data/parse_specs.py`
 
-Sau khi parse specs từ PDF:
+Sau khi parse specs từ model_data CSVs:
 
 1. Count tổng số rows
 2. Count theo từng model
