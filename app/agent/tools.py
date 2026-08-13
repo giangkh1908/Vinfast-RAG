@@ -20,18 +20,31 @@ async def get_price(model_code: str, version: str = None) -> dict:
     conn = await _conn()
     mid = _model_id(model_code)
 
-    if version:
-        rows = await conn.fetch(
-            "SELECT edition_id, price_list_vnd, price_promo_vnd, promo_label, source_url "
-            "FROM price_list_active WHERE model_id=$1 AND edition_id=$2 ORDER BY price_list_vnd",
-            mid, version,
-        )
-    else:
-        rows = await conn.fetch(
-            "SELECT edition_id, price_list_vnd, price_promo_vnd, promo_label, source_url "
-            "FROM price_list_active WHERE model_id=$1 ORDER BY price_list_vnd",
-            mid,
-        )
+    # Try primary model_id first, then fallback variations
+    mids_to_try = [mid]
+    # "VF8AllNew" → also try "VF8NEW", "VF8_ALLNEW", "VF8-ALLNEW"
+    mid_upper = mid.upper()
+    if "ALLNEW" in mid_upper or "ALL" in mid_upper:
+        base = mid_upper.replace("ALLNEW", "").replace("ALL", "")
+        mids_to_try.extend([base + "NEW", base + "_NEW", base + "-NEW"])
+
+    rows = []
+    for try_mid in mids_to_try:
+        if version:
+            rows = await conn.fetch(
+                "SELECT edition_id, price_list_vnd, price_promo_vnd, promo_label, source_url "
+                "FROM price_list_active WHERE model_id=$1 AND edition_id=$2 ORDER BY price_list_vnd",
+                try_mid, version,
+            )
+        else:
+            rows = await conn.fetch(
+                "SELECT edition_id, price_list_vnd, price_promo_vnd, promo_label, source_url "
+                "FROM price_list_active WHERE model_id=$1 ORDER BY price_list_vnd",
+                try_mid,
+            )
+        if rows:
+            mid = try_mid  # Use the matching model_id for related query
+            break
 
     related = await conn.fetch(
         "SELECT model_id, edition_id, price_list_vnd, price_promo_vnd "
