@@ -65,21 +65,27 @@ async def execute_tools_node(state: AgentState) -> dict:
     decision = state.get("decision", "answer")
     force_tool = "required" if (decision == "answer" and not tool_results) else "auto"
 
-    try:
-        resp = await llm.chat.completions.create(
-            model=settings.llm_model,
-            messages=messages,
-            tools=tool_schemas,
-            tool_choice=force_tool,
-        )
-    except Exception as e:
-        return {
-            "decision": "refuse",
-            "reason_code": "system_error",
-            "response_text": "Mình chưa thể hoàn tất câu trả lời lúc này. Vui lòng thử lại.",
-            "final_response": "",
-            "t_retrieve_start": t_retrieve_start,
-        }
+    # Retry once on rate limit / timeout
+    resp = None
+    for attempt in range(2):
+        try:
+            resp = await llm.chat.completions.create(
+                model=settings.llm_model,
+                messages=messages,
+                tools=tool_schemas,
+                tool_choice=force_tool,
+            )
+            break
+        except Exception as e:
+            logger.warning("LLM call attempt %d failed: %s", attempt + 1, e)
+            if attempt == 0:
+                await asyncio.sleep(3)  # Brief wait before retry
+            else:
+                # Final fail: return empty, let generate_node try
+                return {
+                    "final_response": "",
+                    "t_retrieve_start": t_retrieve_start,
+                }
 
     choice = resp.choices[0]
 
