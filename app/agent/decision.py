@@ -606,12 +606,13 @@ def assess_evidence(tool_results: list[dict], query: str) -> tuple[str, list[dic
 
 
 def validate_citations(sources: list[dict], query: str = "") -> list[dict]:
-    """Filter citations: must have valid URL AND be relevant to the query."""
+    """Filter citations: must have valid source reference AND be relevant to the query."""
     valid = []
     qtokens = _query_tokens(query) if query else set()
     for s in sources:
         url = s.get("source_url", "")
-        if not url or not url.startswith("http"):
+        # Accept any non-empty source reference (HTTP URL, file path, document name)
+        if not url:
             continue
         # Content relevance gate: if we have query tokens, check that the
         # source text has at least some overlap with the query.

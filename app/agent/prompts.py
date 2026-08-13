@@ -78,6 +78,13 @@ async def get_system_prompt() -> str:
         "STRING_AGG(edition_id, ', ' ORDER BY edition_id) as editions "
         "FROM edition_active "
         "GROUP BY model_id, model_label, year_range "
+        "UNION "
+        "SELECT '' as model_id, model_code AS model_label, '' as year_range, "
+        "STRING_AGG(DISTINCT version_name, ', ' ORDER BY version_name) as editions "
+        "FROM car_specs "
+        "WHERE model_code NOT IN (SELECT DISTINCT model_label FROM edition_active) "
+        "AND model_code IS NOT NULL AND version_name IS NOT NULL "
+        "GROUP BY model_code "
         "ORDER BY model_label"
     )
 

@@ -2,9 +2,10 @@ import re
 from dataclasses import dataclass, field
 
 
-# Matches any VinFast model pattern
+# Matches any VinFast model pattern (including multi-word like "VF 8 All New")
 MODEL_RE = re.compile(
-    r"(VF\s*\d+|VF\s*e34|VF\s*MPV\s*7|Herio\s*Green|Minio\s*Green|Limo\s*Green|EC\s*VAN|Nerio\s*Green)",
+    r"(VF\s*\d+(?:\s*All\s*New)?|VF\s*MPV\s*\d+|VF\s*e34|"
+    r"Herio\s*Green|Minio\s*Green|Limo\s*Green|EC\s*VAN|Nerio\s*Green)",
     re.IGNORECASE,
 )
 
@@ -14,7 +15,9 @@ VERSION_ALIASES = {
     "tiêu chuẩn": "TieuChuan", "tieuchuan": "TieuChuan", "tiêu_chuẩn": "TieuChuan",
     "nâng cao": "NangCao", "nangcao": "NangCao",
     "cao cấp": "CaoCap", "caocap": "CaoCap",
-    "pluscaptain": "PlusCaptain",
+    "pluscaptain": "PlusCaptain", "plus captain": "PlusCaptain",
+    "the all new": "The All New", "all new": "The All New", "thenew": "The All New",
+    "plus awd": "Plus AWD", "plusawd": "Plus AWD",
 }
 
 
@@ -38,8 +41,11 @@ class QueryClassifier:
         m = MODEL_RE.search(query)
         if m:
             raw = m.group(1).strip()
-            # Normalize: "VF6" → "VF 6", "VF 8" stays "VF 8"
+            # Normalize: "VF8 All New" → "VF 8 All New", "vf 8" → "VF 8"
             clean = re.sub(r"(VF)\s*(\d+)", r"\1 \2", raw, flags=re.IGNORECASE).strip()
+            # Title-case to match DB format: "vf 8 all new" → "VF 8 All New"
+            parts = clean.split()
+            clean = " ".join(p.upper() if p.upper().startswith("VF") or p.isdigit() else p.capitalize() for p in parts)
             return clean, raw
         return None, None
 
@@ -50,8 +56,13 @@ class QueryClassifier:
         if normalized:
             entities["model_code"] = normalized
 
+        # Version detection: match known versions + multi-word patterns
         version_match = re.search(
-            r"(Eco|Plus|PlusCaptain|Ti[êe]u\s*[Cc]hu[ẩẩ]?n|TieuChuan|N[ââ]ng\s*[Cc]ao|NangCao|Cao\s*[Cc][ấấ]?p|CaoCap)",
+            r"(Eco|Plus|PlusCaptain|Plus\s*AWD|"
+            r"Ti[êe]u\s*[Cc]hu[ẩẩ]?n|TieuChuan|"
+            r"N[ââ]ng\s*[Cc]ao|NangCao|"
+            r"Cao\s*[Cc][ấấ]?p|CaoCap|"
+            r"The\s*All\s*New|All\s*New)",
             query, re.IGNORECASE,
         )
         if version_match:

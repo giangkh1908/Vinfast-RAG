@@ -35,12 +35,23 @@ async def _pg_fetch(sql: str, *params, retries: int = 2) -> list:
 
 
 async def _get_model_list() -> list[str]:
-    rows = await _pg_fetch("SELECT DISTINCT model_label FROM edition_active ORDER BY model_label")
+    # Union: edition_active + car_specs (to cover models not yet in edition_active)
+    rows = await _pg_fetch(
+        "SELECT DISTINCT model_label FROM edition_active "
+        "UNION "
+        "SELECT DISTINCT model_code AS model_label FROM car_specs WHERE model_code IS NOT NULL "
+        "ORDER BY model_label"
+    )
     return [r["model_label"] for r in rows]
 
 
 async def _get_version_list() -> list[str]:
-    rows = await _pg_fetch("SELECT DISTINCT edition_id FROM edition_active ORDER BY edition_id")
+    rows = await _pg_fetch(
+        "SELECT DISTINCT edition_id FROM edition_active "
+        "UNION "
+        "SELECT DISTINCT version_name AS edition_id FROM car_specs WHERE version_name IS NOT NULL "
+        "ORDER BY edition_id"
+    )
     return [r["edition_id"] for r in rows]
 
 
