@@ -39,8 +39,8 @@ async def generate_node(state: AgentState) -> dict:
         return {}
 
     # Re-generate using context_builder (has Vietnamese labels for spec keys)
-    context = build_structured_context(tool_results)
     query = state.get("query", "")
+    context = build_structured_context(tool_results, query=query)
 
     # Build history-aware query for multi-turn
     history = state.get("history", [])

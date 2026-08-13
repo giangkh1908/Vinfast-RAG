@@ -1,5 +1,49 @@
-def build_structured_context(tool_results: list[dict]) -> str:
+import re
+
+_TOKEN_RE = re.compile(r"[a-zà-ỹ0-9]+", re.UNICODE)
+
+# Query keywords → relevant spec categories
+_QUERY_TOPIC_MAP = {
+    "sạc": ["battery"], "pin": ["battery"], "charge": ["battery"], "kwh": ["battery"],
+    "range": ["battery"], "phạm vi": ["battery"], "đi được": ["battery"], "quãng đường": ["battery"],
+    "công suất": ["powertrain"], "power": ["powertrain"], "torque": ["powertrain"],
+    "mô-men": ["powertrain"], "xoắn": ["powertrain"], "tốc độ": ["powertrain"],
+    "tăng tốc": ["powertrain"], "acceleration": ["powertrain"], "drivetrain": ["powertrain"],
+    "kích thước": ["dimension"], "chiều dài": ["dimension"], "chiều rộng": ["dimension"],
+    "chiều cao": ["dimension"], "trọng lượng": ["dimension"], "wheelbase": ["dimension"],
+    "túi khí": ["safety"], "airbag": ["safety"], "phanh": ["safety"], "abs": ["safety"],
+    "esc": ["safety"], "an toàn": ["safety"], "an toàn": ["safety"],
+    "adas": ["adas"], "cruise": ["adas"], "lane": ["adas"], "collision": ["adas"],
+    "aeb": ["adas"], "blind spot": ["adas"], "parking": ["adas"],
+    "nội thất": ["interior"], "ghế": ["interior"], "màn hình": ["interior"],
+    "loa": ["interior"], "điều hòa": ["interior"], "hud": ["interior"], "display": ["interior"],
+    "ngoại thất": ["exterior"], "đèn": ["exterior"], "mâm": ["exterior"],
+    "wheel": ["exterior"], "la-zăng": ["exterior"], "headlight": ["exterior"],
+    "giá": ["price"], "price": ["price"],
+    "phiên bản": [], "version": [],  # All categories
+    "so sánh": [], "compare": [],  # All categories
+    "tính năng": ["adas", "interior", "exterior", "safety", "infotainment"],
+    "trang bị": ["adas", "interior", "exterior", "safety", "infotainment"],
+}
+
+
+def _query_relevant_categories(query: str) -> set[str] | None:
+    """Extract relevant spec categories from query. None = all categories."""
+    if not query:
+        return None
+    q_lower = query.lower()
+    cats = set()
+    for keyword, categories in _QUERY_TOPIC_MAP.items():
+        if keyword in q_lower:
+            if not categories:  # Empty = all categories
+                return None
+            cats.update(categories)
+    return cats if cats else None
+
+
+def build_structured_context(tool_results: list[dict], query: str = "") -> str:
     sections = []
+    relevant_cats = _query_relevant_categories(query)
 
     for tr in tool_results:
         if not tr.get("success", True):
@@ -11,12 +55,12 @@ def build_structured_context(tool_results: list[dict]) -> str:
         if tool == "get_price":
             sections.append(_format_prices(result))
         elif tool == "get_specs":
-            sections.append(_format_specs(result))
+            sections.append(_format_specs(result, relevant_cats))
         elif tool == "search_knowledge_base":
             sections.append(_format_search_results(result))
         elif tool == "search_all":
             if result.get("specs"):
-                sections.append(_format_specs(result["specs"]))
+                sections.append(_format_specs(result["specs"], relevant_cats))
             if result.get("knowledge_base"):
                 sections.append(_format_search_results(result["knowledge_base"]))
         elif tool == "list_available_models":
@@ -103,11 +147,14 @@ _SPEC_KEY_LABELS = {
 }
 
 
-def _format_specs(result: dict) -> str:
+def _format_specs(result: dict, relevant_cats: set[str] | None = None) -> str:
     source_url = result.get("source_url", "")
     lines = [f"Thông số kỹ thuật {result['model_code']}:"]
     current_cat = None
     for s in result.get("specs", []):
+        # Filter: only show relevant categories when query is specific
+        if relevant_cats is not None and s["category"] not in relevant_cats:
+            continue
         if s["category"] != current_cat:
             current_cat = s["category"]
             lines.append(f"\n  [{current_cat.upper()}]")
