@@ -39,8 +39,14 @@ def _strip_urls(text: str) -> str:
 
 def _strip_non_factual_numbers(text: str) -> str:
     text = re.sub(r"https?://\S+", "", text)
+    text = re.sub(r"\d+[-–]\d+", "", text)
     text = re.sub(r"\(\d{4}\)", "", text)
     text = re.sub(r"\bVF\s*\d+\b", "", text, flags=re.IGNORECASE)
+    # Strip product names with numbers (e.g., "Camera 360", "360 độ")
+    text = re.sub(r"[Cc]amera\s*\d+", "camera", text)
+    text = re.sub(r"\d+\s*độ", "", text)
+    # Strip model year references
+    text = re.sub(r"\(\d{4}\)", "", text)
     return text
 
 

@@ -88,11 +88,19 @@ async def get_specs(model_code: str, version: str = None, category: str = None) 
         idx += 1
 
     where = " AND ".join(conditions)
-    rows = await conn.fetch(
-        f"SELECT version_name, version_code, spec_category, spec_key, spec_value, spec_unit, source_url, page "
-        f"FROM car_specs WHERE {where} ORDER BY spec_category, spec_key, version_name",
-        *params,
-    )
+    try:
+        rows = await conn.fetch(
+            f"SELECT version_name, version_code, spec_category, spec_key, spec_value, spec_unit, source_url, page "
+            f"FROM car_specs WHERE {where} ORDER BY spec_category, spec_key, version_name",
+            *params,
+        )
+    except Exception:
+        # page column may not exist in all DB schemas
+        rows = await conn.fetch(
+            f"SELECT version_name, version_code, spec_category, spec_key, spec_value, spec_unit, source_url "
+            f"FROM car_specs WHERE {where} ORDER BY spec_category, spec_key, version_name",
+            *params,
+        )
 
     related = await conn.fetch(
         "SELECT DISTINCT model_code FROM car_specs WHERE model_code != $1 ORDER BY model_code LIMIT 10",
@@ -115,7 +123,7 @@ async def get_specs(model_code: str, version: str = None, category: str = None) 
                 "key": r["spec_key"],
                 "value": r["spec_value"],
                 "unit": r["spec_unit"] or "",
-                "page": r["page"] or "",
+                "page": r.get("page") or "",
             }
             for r in rows
         ],
