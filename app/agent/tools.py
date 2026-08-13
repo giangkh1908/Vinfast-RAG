@@ -13,12 +13,12 @@ async def _conn():
 
 
 def _model_id(model_code: str) -> str:
-    # Direct mapping for known mismatches between code and DB
+    # Direct mapping for known mismatches between code and DB (case-insensitive)
     MODEL_ID_MAP = {
-        "VF 8 All New": "VF8NEW",
-        "VF8 All New": "VF8NEW",
+        "vf 8 all new": "VF8NEW",
+        "vf8 all new": "VF8NEW",
     }
-    return MODEL_ID_MAP.get(model_code, model_code.replace(" ", ""))
+    return MODEL_ID_MAP.get(model_code.lower().strip(), model_code.replace(" ", ""))
 
 
 async def get_price(model_code: str, version: str = None) -> dict:
