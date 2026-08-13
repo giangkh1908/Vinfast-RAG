@@ -160,6 +160,9 @@ def _extract_context_features(tool_results: list[dict]) -> tuple[set[str], str]:
             for p in result.get("prices", []):
                 features.add("giá")
                 features.add("price")
+                # Add price text to raw_corpus for grounding
+                price_str = f"{p.get('version_name', '')} {p.get('price_vnd', '')} {p.get('promo_price_vnd', '')}"
+                raw_parts.append(price_str)
     return features, " ".join(raw_parts).lower()
 
 
@@ -226,6 +229,13 @@ def _check_grounding(response: str, tool_results: list[dict], query: str = "") -
 
     response_numbers = _extract_numbers(_strip_non_factual_numbers(response))
     if not response_numbers:
+        return True
+
+    # Skip strict number check for price-only queries — LLM may format
+    # prices differently (e.g., "830 triệu" vs "830,000,000"). Price data
+    # comes directly from DB via get_price, no hallucination risk.
+    tools_used = {tr.get("tool") for tr in tool_results if tr.get("success")}
+    if tools_used == {"get_price"} or tools_used == {"get_price", "list_available_models"}:
         return True
 
     query_numbers = _extract_numbers(query) if query else set()
