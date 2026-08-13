@@ -16,6 +16,17 @@ _AMBIGUOUS_PRONOUN_RE = re.compile(
     re.IGNORECASE,
 )
 
+# Utility queries — don't require model, LLM calls utility tools directly
+_UTILITY_QUERY_RE = re.compile(
+    r"(showroom|trạm\s*sạc|đại\s*lý|cửa\s*hàng|chi\s*nhánh|"
+    r"lái\s*thử|test\s*drive|đăng\s*ký\s*lái|"
+    r"bảo\s*dưỡng|đặt\s*lịch|booking|"
+    r"trả\s*góp|vay|thẩm\s*định|lăn\s*bánh|"
+    r"khuyến\s*mãi|ưu\s*đãi|voucher|"
+    r"hotline|liên\s*hệ|gặp\s*sales)",
+    re.IGNORECASE,
+)
+
 # ── Topic classification (spec's 9 supported topics) ────────────────────────
 
 _TOPIC_KEYWORDS = {
@@ -182,8 +193,17 @@ async def classify_node(state: AgentState) -> dict:
     if topic == "general" and hist_ctx["topic"]:
         topic = hist_ctx["topic"]
 
-    # Missing model — check ambiguous pronoun first
+    # Missing model — but utility queries don't need model
     if not has_model:
+        # Utility queries (showroom, charging, booking, loan, promotions) → answer directly
+        if _UTILITY_QUERY_RE.search(query):
+            return {
+                "decision": "answer",
+                "reason_code": "utility_query",
+                "entities": cr.entities,
+                "specificity": "unclear",
+                "category": "utility",
+            }
         if _AMBIGUOUS_PRONOUN_RE.search(query):
             return {
                 "decision": "clarify",
