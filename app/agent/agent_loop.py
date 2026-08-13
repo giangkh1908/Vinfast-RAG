@@ -82,7 +82,12 @@ class AgentLoop:
                         formatted = []
                         for c in sorted(result.sources, key=lambda x: x.get("score", 0), reverse=True):
                             url = c.get("source_url", "")
-                            if not url or not url.startswith("http") or url in seen:
+                            # Fallback: if source_url is file path, use VinFast product page
+                            if url and not url.startswith("http"):
+                                model = c.get("model_code", "")
+                                model_slug = model.lower().replace(" ", "")
+                                url = f"https://shop.vinfastauto.com/vn_vi/dat-coc-xe-{model_slug}.html"
+                            if not url or url in seen:
                                 continue
                             seen.add(url)
                             model = c.get("model_code", "")
