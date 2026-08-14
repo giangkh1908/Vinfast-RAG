@@ -67,6 +67,11 @@ async def execute_tools_node(state: AgentState) -> dict:
 
     # Retry once on rate limit / timeout
     resp = None
+    # Reasoning models (gpt-5.x-luna etc.) need reasoning_effort=none for function tools
+    extra_kwargs = {}
+    if "luna" in settings.llm_model.lower() or "o1" in settings.llm_model.lower() or "o3" in settings.llm_model.lower():
+        extra_kwargs["reasoning_effort"] = "none"
+
     for attempt in range(2):
         try:
             resp = await llm.chat.completions.create(
@@ -74,6 +79,7 @@ async def execute_tools_node(state: AgentState) -> dict:
                 messages=messages,
                 tools=tool_schemas,
                 tool_choice=force_tool,
+                **extra_kwargs,
             )
             break
         except Exception as e:
