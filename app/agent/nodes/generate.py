@@ -72,10 +72,14 @@ async def generate_node(state: AgentState) -> dict:
             final_response = new_response
     except Exception as e:
         logger.error("generate_node LLM error: %s", e)
-        # Don't override with system_error — keep existing response from execute_tools
         return {
             "final_response": final_response,
             "t_generate_start": t_generate_start,
+            "t_generate_end": time.time(),
         }
 
-    return {"final_response": final_response, "t_generate_start": t_generate_start}
+    return {
+        "final_response": final_response,
+        "t_generate_start": t_generate_start,
+        "t_generate_end": time.time(),
+    }

@@ -58,7 +58,13 @@ async def respond_node(state: AgentState) -> dict:
     latency_retrieval_ms = (t_retrieve_end - t_retrieve_start) * 1000 if t_retrieve_start and t_retrieve_end else 0
 
     t_generate_start = state.get("t_generate_start", 0)
-    latency_generation_ms = (time.time() - t_generate_start) * 1000 if t_generate_start else 0
+    t_generate_end = state.get("t_generate_end", 0)
+    if t_generate_start and t_generate_end:
+        latency_generation_ms = (t_generate_end - t_generate_start) * 1000
+    elif t_generate_start:
+        latency_generation_ms = (time.time() - t_generate_start) * 1000
+    else:
+        latency_generation_ms = 0
 
     try:
         from app.agent.classifier import ClassifyResult

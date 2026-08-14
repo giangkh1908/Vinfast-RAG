@@ -643,7 +643,11 @@ def validate_citations(sources: list[dict], query: str = "") -> list[dict]:
 
 
 def build_retrieved_chunks(tool_results: list[dict], query: str = "") -> list[dict]:
-    """Convert tool_results → P0 retrieved_chunks schema."""
+    """Convert tool_results → P0 retrieved_chunks schema.
+
+    Uses hybrid scoring (keyword + embedding) to match assess_evidence.
+    Filters chunks to only include relevant ones (score ≥ 0.2).
+    """
     chunks = []
     rank = 0
     qtokens = _query_tokens(query) if query else set()
@@ -656,6 +660,9 @@ def build_retrieved_chunks(tool_results: list[dict], query: str = "") -> list[di
 
         if tool == "search_knowledge_base" and result.get("results"):
             for r in result["results"]:
+                score = r.get("score", 0.0)
+                if score < 0.2:
+                    continue
                 rank += 1
                 page = r.get("page", "")
                 page_str = f" (trang {page})" if page else ""
@@ -675,13 +682,17 @@ def build_retrieved_chunks(tool_results: list[dict], query: str = "") -> list[di
                     market="Vietnam",
                     language="vi",
                     approval_status="approved",
-                    retrieval_score=r.get("score", 0.0),
+                    retrieval_score=round(score, 4),
                 ).__dict__)
 
         elif tool == "get_specs" and result.get("specs"):
-            for s in result["specs"]:
+            specs = result["specs"]
+            scores = _score_specs_rerank(query, specs, qtokens) if qtokens else [0.5] * len(specs)
+            for i, s in enumerate(specs):
+                score = scores[i] if i < len(scores) else 0.0
+                if score < 0.2:
+                    continue
                 rank += 1
-                score = _spec_relevance_score(qtokens, s.get("key", ""), s.get("value", "")) if qtokens else 0.5
                 page = s.get("page", "")
                 page_str = f" (trang {page})" if page else ""
                 chunks.append(RetrievedChunk(
@@ -700,7 +711,7 @@ def build_retrieved_chunks(tool_results: list[dict], query: str = "") -> list[di
                     market="Vietnam",
                     language="vi",
                     approval_status="approved",
-                    retrieval_score=score,
+                    retrieval_score=round(score, 4),
                 ).__dict__)
 
         elif tool == "get_price" and result.get("prices"):
@@ -723,7 +734,7 @@ def build_retrieved_chunks(tool_results: list[dict], query: str = "") -> list[di
                     market="Vietnam",
                     language="vi",
                     approval_status="approved",
-                    retrieval_score=price_score,
+                    retrieval_score=round(price_score, 4),
                 ).__dict__)
 
     return chunks
