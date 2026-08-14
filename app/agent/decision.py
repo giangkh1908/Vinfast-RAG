@@ -738,7 +738,9 @@ def build_retrieved_chunks(tool_results: list[dict], query: str = "", topic: str
 
         elif tool == "get_specs" and result.get("specs"):
             specs = result["specs"]
-            scores = _score_specs_rerank(query, specs, qtokens) if qtokens else [0.5] * len(specs)
+            # Use keyword scoring for log (more granular than hybrid embedding).
+            # Hybrid scoring is used in assess_evidence for validation decisions.
+            scores = [_spec_relevance_score(qtokens, s.get("key", ""), s.get("value", "")) for s in specs] if qtokens else [0.5] * len(specs)
             for i, s in enumerate(specs):
                 score = scores[i] if i < len(scores) else 0.0
                 if score < MIN_SCORE:
