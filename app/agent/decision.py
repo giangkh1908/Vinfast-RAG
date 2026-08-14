@@ -650,6 +650,8 @@ def build_retrieved_chunks(tool_results: list[dict], query: str = "") -> list[di
     """
     chunks = []
     rank = 0
+    MAX_CHUNKS = 30  # Limit total chunks in log
+    MIN_SCORE = 0.5  # Only keep chunks with meaningful relevance
     qtokens = _query_tokens(query) if query else set()
 
     for tr in tool_results:
@@ -661,7 +663,7 @@ def build_retrieved_chunks(tool_results: list[dict], query: str = "") -> list[di
         if tool == "search_knowledge_base" and result.get("results"):
             for r in result["results"]:
                 score = r.get("score", 0.0)
-                if score < 0.2:
+                if score < MIN_SCORE:
                     continue
                 rank += 1
                 page = r.get("page", "")
@@ -690,7 +692,7 @@ def build_retrieved_chunks(tool_results: list[dict], query: str = "") -> list[di
             scores = _score_specs_rerank(query, specs, qtokens) if qtokens else [0.5] * len(specs)
             for i, s in enumerate(specs):
                 score = scores[i] if i < len(scores) else 0.0
-                if score < 0.2:
+                if score < MIN_SCORE:
                     continue
                 rank += 1
                 page = s.get("page", "")
@@ -737,7 +739,11 @@ def build_retrieved_chunks(tool_results: list[dict], query: str = "") -> list[di
                     retrieval_score=round(price_score, 4),
                 ).__dict__)
 
-    return chunks
+    # Sort by score descending and limit
+    chunks.sort(key=lambda x: x.get("retrieval_score", 0), reverse=True)
+    for i, c in enumerate(chunks):
+        c["rank"] = i + 1
+    return chunks[:MAX_CHUNKS]
 
 
 def build_displayed_citations(citations: list[dict], retrieved_chunks: list[dict] | None = None) -> list[dict]:
