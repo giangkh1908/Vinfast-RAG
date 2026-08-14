@@ -905,17 +905,26 @@ def make_decision_log(
     error_type: str = "",
     error_message: str = "",
     topic: str = "",
+    history: list[dict] | None = None,
 ) -> DecisionLog:
     model = classify_result.entities.get("model_code", "unknown")
     version = classify_result.entities.get("version", "all_versions")
     detected_topic = topic or getattr(classify_result, "specificity", "unknown")
 
-    assessment, _ = assess_evidence(tool_results, query) if tool_results else ("not_run", [])
+    # Build context-aware scoring query for multi-turn follow-ups
+    # "plus" → "VF8 đi được bao nhiêu km? Bản Plus" → better keyword matching
+    scoring_query = query
+    if history:
+        history_queries = [m["content"] for m in history if m.get("role") == "user"]
+        if history_queries:
+            scoring_query = " ".join(history_queries) + " " + query
+
+    assessment, _ = assess_evidence(tool_results, scoring_query) if tool_results else ("not_run", [])
 
     reason_code = resolve_reason_code(classify_result.reason)
     retrieval_status = "success" if tool_results else ("not_run" if classify_result.decision in ("clarify", "out_of_scope") else "no_result")
 
-    retrieved_chunks = build_retrieved_chunks(tool_results, query, topic=detected_topic)
+    retrieved_chunks = build_retrieved_chunks(tool_results, scoring_query, topic=detected_topic)
 
     return DecisionLog(
         request_id=f"req_{uuid.uuid4().hex[:12]}",
