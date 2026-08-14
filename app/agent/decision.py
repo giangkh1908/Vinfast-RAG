@@ -1,4 +1,4 @@
-import hashlib
+﻿import hashlib
 import json
 import logging
 import re
@@ -510,6 +510,30 @@ def assess_evidence(tool_results: list[dict], query: str) -> tuple[str, list[dic
                 elif score >= 0.2:
                     has_partial = True
 
+        elif tool == "get_colors" and result.get("colors"):
+            mc = result.get("model_code", "")
+            colors = result.get("colors", [])
+            interiors = result.get("interiors", [])
+            rank += 1
+            chunks.append(RetrievedChunk(
+                rank=rank,
+                chunk_id=f"colors_{mc}",
+                source_id="car_colors",
+                source_title=f"Màu sắc {mc}",
+                source_url="",
+                document_name="",
+                page="",
+                section="colors",
+                content=f"{len(colors)} màu ngoại thất, {len(interiors)} màu nội thất",
+                vehicle_model=mc,
+                vehicle_version="all_versions",
+                topic="ngoại_thất",
+                market="Vietnam",
+                language="vi",
+                approval_status="approved",
+                retrieval_score=0.9,
+            ).__dict__)
+
         elif tool == "get_price" and result.get("prices"):
             score = _price_relevance_score(qtokens)
             for p in result["prices"]:
@@ -715,6 +739,30 @@ def build_retrieved_chunks(tool_results: list[dict], query: str = "") -> list[di
                     approval_status="approved",
                     retrieval_score=round(score, 4),
                 ).__dict__)
+
+        elif tool == "get_colors" and result.get("colors"):
+            mc = result.get("model_code", "")
+            colors = result.get("colors", [])
+            interiors = result.get("interiors", [])
+            rank += 1
+            chunks.append(RetrievedChunk(
+                rank=rank,
+                chunk_id=f"colors_{mc}",
+                source_id="car_colors",
+                source_title=f"Màu sắc {mc}",
+                source_url="",
+                document_name="",
+                page="",
+                section="colors",
+                content=f"{len(colors)} màu ngoại thất, {len(interiors)} màu nội thất",
+                vehicle_model=mc,
+                vehicle_version="all_versions",
+                topic="ngoại_thất",
+                market="Vietnam",
+                language="vi",
+                approval_status="approved",
+                retrieval_score=0.9,
+            ).__dict__)
 
         elif tool == "get_price" and result.get("prices"):
             price_score = _price_relevance_score(qtokens) if qtokens else 0.5
