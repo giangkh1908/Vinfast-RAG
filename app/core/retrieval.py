@@ -1,4 +1,4 @@
-import json
+﻿import json
 import logging
 import re
 import unicodedata
@@ -14,6 +14,21 @@ logger = logging.getLogger("retrieval")
 
 _reranker = None
 _sparse_index = None
+_embed_client = None
+
+
+def _get_embed_client():
+    """OpenAI-compatible client for embeddings with built-in retry + connection pooling."""
+    global _embed_client
+    if _embed_client is None:
+        from openai import OpenAI
+        _embed_client = OpenAI(
+            api_key=settings.openrouter_api_key,
+            base_url="https://openrouter.ai/api/v1",
+            max_retries=3,
+            timeout=60.0,
+        )
+    return _embed_client
 
 # Collections to search. Override via QDRANT_DENSE_COLLECTIONS env var.
 import os as _os
@@ -107,15 +122,19 @@ def _query_to_sparse(query: str) -> dict | None:
 
 
 def _openrouter_embed(texts: list[str]) -> list[list[float]]:
-    r = requests.post(
-        "https://openrouter.ai/api/v1/embeddings",
-        headers={"Authorization": f"Bearer {settings.openrouter_api_key}", "Content-Type": "application/json"},
-        json={"model": settings.openrouter_embed_model, "input": texts},
-        timeout=120,
-    )
-    r.raise_for_status()
-    data = sorted(r.json()["data"], key=lambda x: x["index"])
-    return [x["embedding"] for x in data]
+    """Embed texts using OpenAI SDK with built-in retry + connection pooling."""
+    client = _get_embed_client()
+    batch_size = 100
+    all_embeddings = []
+    for i in range(0, len(texts), batch_size):
+        batch = texts[i:i + batch_size]
+        response = client.embeddings.create(
+            model=settings.openrouter_embed_model,
+            input=batch,
+        )
+        sorted_data = sorted(response.data, key=lambda x: x.index)
+        all_embeddings.extend([d.embedding for d in sorted_data])
+    return all_embeddings
 
 
 # ── Qdrant REST API helper ─────────────────────────────────────────────────
