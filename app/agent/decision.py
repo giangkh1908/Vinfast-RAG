@@ -666,17 +666,27 @@ def validate_citations(sources: list[dict], query: str = "") -> list[dict]:
     return valid
 
 
-def build_retrieved_chunks(tool_results: list[dict], query: str = "") -> list[dict]:
+def build_retrieved_chunks(tool_results: list[dict], query: str = "", topic: str = "") -> list[dict]:
     """Convert tool_results → P0 retrieved_chunks schema.
 
-    Uses hybrid scoring (keyword + embedding) to match assess_evidence.
-    Filters chunks to only include relevant ones (score ≥ 0.2).
+    Filters KB chunks by topic relevance to avoid logging irrelevant high-score chunks.
+    Uses hybrid scoring (keyword + embedding) for spec chunks.
     """
+    from app.agent.nodes.classify import _TOPIC_KEYWORDS
+
     chunks = []
     rank = 0
-    MAX_CHUNKS = 30  # Limit total chunks in log
-    MIN_SCORE = 0.5  # Only keep chunks with meaningful relevance
+    MAX_CHUNKS = 30
+    MIN_SCORE = 0.5
     qtokens = _query_tokens(query) if query else set()
+
+    # Build topic keyword set for filtering KB chunks
+    topic_keywords: set[str] = set()
+    if topic and topic in _TOPIC_KEYWORDS:
+        for pattern in _TOPIC_KEYWORDS[topic]:
+            topic_keywords.update(_TOKEN_RE.findall(pattern.lower()))
+    # Also add query tokens as relevant keywords
+    topic_keywords |= qtokens - {"xe", "vinfast", "vf", "của", "và", "là", "cho", "tôi", "bạn", "có", "không", "nào", "gì"}
 
     for tr in tool_results:
         if not tr.get("success"):
@@ -689,6 +699,11 @@ def build_retrieved_chunks(tool_results: list[dict], query: str = "") -> list[di
                 score = r.get("score", 0.0)
                 if score < MIN_SCORE:
                     continue
+                # Topic filter: KB chunk must contain at least one topic keyword
+                text = r.get("text", "").lower()
+                text_tokens = set(_TOKEN_RE.findall(text))
+                if topic_keywords and not (topic_keywords & text_tokens):
+                    continue  # Skip irrelevant KB chunks
                 rank += 1
                 page = r.get("page", "")
                 page_str = f" (trang {page})" if page else ""
@@ -701,10 +716,10 @@ def build_retrieved_chunks(tool_results: list[dict], query: str = "") -> list[di
                     document_name=r.get("document_name", ""),
                     page=page,
                     section=r.get("section", ""),
-                    content=f"{r.get('text', '')[:500]}{page_str}",
+                    content=f"{text[:500]}{page_str}",
                     vehicle_model=r.get("model_id", "") or "",
                     vehicle_version="all_versions",
-                    topic="",
+                    topic=topic or "",
                     market="Vietnam",
                     language="vi",
                     approval_status="approved",
@@ -870,7 +885,7 @@ def make_decision_log(
     reason_code = resolve_reason_code(classify_result.reason)
     retrieval_status = "success" if tool_results else ("not_run" if classify_result.decision in ("clarify", "out_of_scope") else "no_result")
 
-    retrieved_chunks = build_retrieved_chunks(tool_results, query)
+    retrieved_chunks = build_retrieved_chunks(tool_results, query, topic=detected_topic)
 
     return DecisionLog(
         request_id=f"req_{uuid.uuid4().hex[:12]}",
