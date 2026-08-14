@@ -170,21 +170,28 @@ class RetrievedChunk:
     source_id: str = ""
     source_title: str = ""
     source_url: str = ""
+    document_name: str = ""
+    page: str = ""
+    section: str = ""
     content: str = ""
     vehicle_model: str = ""
     vehicle_version: str = ""
     topic: str = ""
     approval_status: str = "approved"
+    market: str = "Vietnam"
+    language: str = "vi"
     retrieval_score: float = 0.0
-    page: str = ""
 
 
 @dataclass
 class DisplayedCitation:
+    citation_id: str = ""
     display_text: str = ""
     source_id: str = ""
     chunk_ids: list[str] = field(default_factory=list)
     source_url: str = ""
+    document_name: str = ""
+    page: str = ""
     section: str = ""
 
 
@@ -199,6 +206,8 @@ class DecisionLog:
     build_version: str = ""
     prompt_version: str = ""
     data_snapshot_id: str = ""
+    environment: str = "production"
+    retrieval_config_version: str = ""
     conversation_id: str = ""
     turn_index: int = 0
     previous_request_id: str = ""
@@ -232,8 +241,15 @@ class DecisionLog:
 
     def to_dict(self) -> dict:
         d = asdict(self)
-        d.pop("retrieval_query", None)
-        d.pop("requested_top_k", None)
+        # Convert empty strings to null for nullable fields
+        nullable_fields = [
+            "conversation_id", "turn_index", "previous_request_id",
+            "error_stage", "error_type", "error_message",
+            "test_id", "retrieval_config_version",
+        ]
+        for f in nullable_fields:
+            if d.get(f) == "" or d.get(f) == 0:
+                d[f] = None
         return d
 
 
@@ -649,13 +665,17 @@ def build_retrieved_chunks(tool_results: list[dict], query: str = "") -> list[di
                     source_id=r.get("source_type", ""),
                     source_title=r.get("source_type", ""),
                     source_url=r.get("source_url", ""),
+                    document_name=r.get("document_name", ""),
+                    page=page,
+                    section=r.get("section", ""),
                     content=f"{r.get('text', '')[:500]}{page_str}",
                     vehicle_model=r.get("model_id", "") or "",
                     vehicle_version="all_versions",
                     topic="",
+                    market="Vietnam",
+                    language="vi",
                     approval_status="approved",
                     retrieval_score=r.get("score", 0.0),
-                    page=page,
                 ).__dict__)
 
         elif tool == "get_specs" and result.get("specs"):
@@ -670,13 +690,17 @@ def build_retrieved_chunks(tool_results: list[dict], query: str = "") -> list[di
                     source_id="car_specs",
                     source_title=f"Specs {result.get('model_code', '')}",
                     source_url=result.get("source_url", ""),
+                    document_name=result.get("document_name", ""),
+                    page=page,
+                    section=s.get("category", ""),
                     content=f"{s.get('key', '')}: {s.get('value', '')} {s.get('unit', '')}{page_str}",
                     vehicle_model=result.get("model_code", ""),
                     vehicle_version=s.get("version_name", "all_versions"),
                     topic="thông_số_kỹ_thuật",
+                    market="Vietnam",
+                    language="vi",
                     approval_status="approved",
                     retrieval_score=score,
-                    page=page,
                 ).__dict__)
 
         elif tool == "get_price" and result.get("prices"):
@@ -689,10 +713,15 @@ def build_retrieved_chunks(tool_results: list[dict], query: str = "") -> list[di
                     source_id="price_list",
                     source_title=f"Giá {result.get('model_code', '')}",
                     source_url=result.get("source_url", ""),
+                    document_name="",
+                    page="",
+                    section="pricing",
                     content=f"{p.get('version_name', '')}: {p.get('price_vnd', '')}",
                     vehicle_model=result.get("model_code", ""),
                     vehicle_version=p.get("version_name", "all_versions"),
                     topic="pricing",
+                    market="Vietnam",
+                    language="vi",
                     approval_status="approved",
                     retrieval_score=price_score,
                 ).__dict__)
@@ -717,28 +746,33 @@ def build_displayed_citations(citations: list[dict], retrieved_chunks: list[dict
                 pages_by_url.setdefault(url, set()).add(str(page))
 
     seen = set()
+    cit_counter = 0
     result = []
     for c in citations:
         url = c.get("source_url", "")
         if not url or url in seen:
             continue
         seen.add(url)
+        cit_counter += 1
         model = c.get("model_code", "")
         label = c.get("source_type", "")
         text = f"{model} — {label}" if model and label else (label or url)
         pages = sorted(pages_by_url.get(url, set()), key=lambda x: int(x) if x.isdigit() else 0)
-        if pages:
-            page_str = ", ".join(pages)
+        page_str = ", ".join(pages) if pages else ""
+        if page_str:
             text += f" (trang {page_str})"
         cids = chunk_ids_by_url.get(url, [])
         if not cids and c.get("chunk_id"):
             cids = [c["chunk_id"]]
         result.append(DisplayedCitation(
+            citation_id=f"cit_{cit_counter:03d}",
             display_text=text,
             source_id=label,
             chunk_ids=cids,
             source_url=url,
-            section="",
+            document_name=c.get("document_name", ""),
+            page=page_str,
+            section=c.get("section", ""),
         ).__dict__)
     return result
 
@@ -779,9 +813,10 @@ def make_decision_log(
         build_version=_get_build_version(),
         prompt_version=prompt_hash or _get_prompt_hash(""),
         data_snapshot_id=_get_data_snapshot_id(),
+        environment="production",
         conversation_id=conversation_id or uuid.uuid4().hex[:12],
         turn_index=turn_index,
-        previous_request_id=previous_request_id,
+        previous_request_id=previous_request_id or None,
         user_query=query,
         detected_vehicle_model=model,
         detected_vehicle_version=version,
@@ -790,12 +825,14 @@ def make_decision_log(
         reason_code=reason_code,
         retrieval_status=retrieval_status,
         retrieved_chunks=retrieved_chunks,
+        retrieval_query=query,
+        requested_top_k=5,
         evidence_assessment=assessment,
         displayed_answer=response[:2000],
         displayed_citations=build_displayed_citations(citations, retrieved_chunks),
-        error_stage=error_stage,
-        error_type=error_type,
-        error_message=error_message,
+        error_stage=error_stage or None,
+        error_type=error_type or None,
+        error_message=error_message or None,
         latency_total_ms=round(latency_ms, 1),
         latency_retrieval_ms=round(latency_retrieval_ms, 1),
         latency_generation_ms=round(latency_generation_ms, 1),
