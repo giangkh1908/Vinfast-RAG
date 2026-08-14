@@ -37,19 +37,19 @@ MODEL_EDITIONS = {
     "VF3": ["Eco", "Plus"],
     "VF5": ["Plus"],
     "VF6": ["Eco", "Plus"],
-    "VF7": ["Eco", "Plus", "PlusCaptain"],
+    "VF7": ["Eco", "Plus", "PlusCaptain", "Plus_AWD", "Plus_AWD_PanoramicRoof"],
     "VF8": ["Eco", "Plus"],
     "VF8NEW": ["The All New"],
-    "VF9": ["Eco", "Plus"],
+    "VF9": ["Eco", "Plus", "PlusCaptain"],
     "VFMPV7": ["Eco", "Plus"],
 }
 
 # Alias edition từ nguồn spec sheet (model_data/*.csv) → edition chuẩn trong
 # MODEL_EDITIONS — đồng bộ giữa car_specs (spec sheet) và edition/price_list
-# (dat-coc page). VD: "VF 7 Plus AWD" trên spec sheet = "VF 7 Plus Trần kính
-# toàn cảnh" trên trang dat-coc → edition chuẩn "PlusCaptain".
+# (dat-coc page). VD: spec sheet "VF 7 Plus AWD" = variant GC12V_T023 trên
+# trang dat-coc → edition chuẩn "Plus_AWD".
 EDITION_ALIASES = {
-    "VF7": {"Plus AWD": "PlusCaptain"},
+    "VF7": {"Plus AWD": "Plus_AWD"},
 }
 
 

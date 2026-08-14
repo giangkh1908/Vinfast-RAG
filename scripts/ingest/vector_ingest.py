@@ -36,7 +36,7 @@ if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from scripts.config import CLEAN_DIR, QDRANT_API_KEY, QDRANT_TIMEOUT, QDRANT_URL  # noqa: E402
-from scripts.schemas import Chunk, validate_chunk, DensePayload, make_dense_payload  # noqa: E402
+from scripts.schemas import validate_chunk, make_dense_payload  # noqa: E402
 from lib.openrouter import (API_KEY, EMBED_MODEL, embed_texts,  # noqa: E402
                             summarize_metrics)
 from lib.vector_cache import VectorCache, content_hash  # noqa: E402

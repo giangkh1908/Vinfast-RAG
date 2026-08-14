@@ -13,7 +13,6 @@ import logging
 import os
 import sys
 import time
-from collections import Counter
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
@@ -96,7 +95,7 @@ def summarize_metrics() -> dict:
     return {"by_op": by_op, "total": total}
 
 # Load .env từ repo root (backend/lib/../../.env)
-load_dotenv(Path(__file__).resolve().parents[2] / ".env")
+load_dotenv(Path(__file__).resolve().parents[1] / ".env")
 
 BASE_URL = "https://openrouter.ai/api/v1"
 API_KEY = os.environ.get("OPENROUTER_API_KEY", "")

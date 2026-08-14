@@ -7,9 +7,10 @@ Chạy đủ bước theo thứ tự cho 1 version:
     → 1. clean (clean_to_jsonl)      → intermediate/{vector,hot}.jsonl + link_only.json
     → 2. split cold/hot (split_cold_hot) → vector/*.jsonl + postgres/*.csv + _manifest.json
     → 3. parse_specs → postgres/specs.csv (feature specs từ data/model_data CSVs)
-    → 4. embed + ingest Qdrant dense (vector_ingest)
-    → 5. BM25 sparse → Qdrant sparse (sparse_ingest)   [bỏ qua nếu --no-sparse]
-    → 6. UPSERT PostgreSQL (postgres_ingest)
+    → 4. parse_car_deposit → postgres colors/options + sync price/edition (configurator scrape)
+    → 5. embed + ingest Qdrant dense (vector_ingest)
+    → 6. BM25 sparse → Qdrant sparse (sparse_ingest)   [bỏ qua nếu --no-sparse]
+    → 7. UPSERT PostgreSQL (postgres_ingest)
 
 Specs lấy từ data/model_data/*.csv (2 cột label,value, 1 file = 1 model+edition)
 qua parse_specs.
@@ -30,7 +31,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from scripts.config import PG_DSN, QDRANT_API_KEY, QDRANT_URL, REPO_ROOT  # noqa: E402
 
 from scripts.clean_data import clean_to_jsonl, split_cold_hot  # noqa: E402
-from scripts.clean_data import parse_specs  # noqa: E402
+from scripts.clean_data import parse_car_deposit, parse_specs  # noqa: E402
 from scripts.ingest import vector_ingest, sparse_ingest, postgres_ingest  # noqa: E402
 from lib import openrouter  # noqa: E402
 from scripts import version_manager  # noqa: E402
@@ -49,7 +50,7 @@ def preflight(version: str, want_qdrant: bool, want_pg: bool) -> int:
 
     model_data = REPO_ROOT / "data" / "model_data"
     if not model_data.exists() or not any(model_data.iterdir()):
-        print(f"[preflight] data/model_data trống — pipeline sẽ không có spec data")
+        print("[preflight] data/model_data trống — pipeline sẽ không có spec data")
 
     if not openrouter.API_KEY:
         print("[preflight] OPENROUTER_API_KEY chưa set trong .env (xem .env.example)",
@@ -102,26 +103,28 @@ def run(version: str, recreate: bool, no_sparse: bool, commit: str,
     print(_bar(f"END-TO-END DATA PIPELINE  version={version}"))
 
     steps = [
-        ("1/6", "clean (raw → intermediate)", clean_to_jsonl.run,
+        ("clean (raw → intermediate)", clean_to_jsonl.run,
          (version,), {"max_len": max_len}),
-        ("2/6", "split cold/hot → vector + postgres CSV", split_cold_hot.run,
+        ("split cold/hot → vector + postgres CSV", split_cold_hot.run,
         (version,), {"commit": commit, "prev": prev}),
-        ("3/6", "parse_specs → postgres/specs.csv (feature specs từ model_data CSVs)", parse_specs.run,
+        ("parse_specs → postgres/specs.csv (feature specs từ model_data CSVs)", parse_specs.run,
          (version,), {}),
-        ("4/6", "embed + ingest Qdrant dense (incremental)", vector_ingest.run,
+        ("parse_car_deposit → postgres colors/options + sync price/edition (configurator scrape)",
+         parse_car_deposit.run, (version,), {}),
+        ("embed + ingest Qdrant dense (incremental)", vector_ingest.run,
          (version,), {"url": QDRANT_URL, "recreate": recreate}),
     ]
     if not no_sparse:
-        steps.append(("5/6", "BM25 sparse → Qdrant sparse", sparse_ingest.run,
+        steps.append(("BM25 sparse → Qdrant sparse", sparse_ingest.run,
                       (version,), {"url": QDRANT_URL, "recreate": recreate}))
-    steps.append(("6/6" if not no_sparse else "5/5",
-                  "UPSERT PostgreSQL (versioned)", postgres_ingest.run,
+    steps.append(("UPSERT PostgreSQL (versioned)", postgres_ingest.run,
                   (version,), {"dsn": PG_DSN}))
 
-    for idx, label, fn, args, kwargs in steps:
-        rc = _step(idx, label, fn, *args, **kwargs)
+    total = len(steps)
+    for i, (label, fn, args, kwargs) in enumerate(steps, 1):
+        rc = _step(f"{i}/{total}", label, fn, *args, **kwargs)
         if rc != 0:
-            print(f"\n[run_pipeline] DỪNG ở bước {idx} ({label}). Các bước sau KHÔNG chạy.",
+            print(f"\n[run_pipeline] DỪNG ở bước {i} ({label}). Các bước sau KHÔNG chạy.",
                   file=sys.stderr)
             return rc
 
@@ -157,7 +160,7 @@ def run(version: str, recreate: bool, no_sparse: bool, commit: str,
         
         return rc
     print("Verify:")
-    print(f"  python scripts/version_manager.py status")
+    print("  python scripts/version_manager.py status")
     print(f"  cat data/clean/{version}/_manifest.json")
     return 0
 

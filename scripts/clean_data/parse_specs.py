@@ -27,7 +27,7 @@ if hasattr(sys.stdout, "reconfigure"):
 if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from scripts.config import CLEAN_DIR, MODEL_DATA_DIR  # noqa: E402
+from scripts.config import CLEAN_DIR, MODEL_DATA_DIR, RAW_DIR  # noqa: E402
 from scripts.clean_data.spec_common import (  # noqa: E402
     EDITION_ALIASES, MODEL_EDITIONS, MODEL_LABEL, infer_model, no_diacritics,
 )
@@ -651,8 +651,6 @@ FEATURE_NORM_MAP = {
     "gat mua truoc": ("auto_wiper", "exterior"),
     "gat mua": ("auto_wiper", "exterior"),
     "chia khoa thong minh": ("smart_key", "exterior"),
-    "he thong chia khoa xe": ("key_system", "exterior"),
-    "chia khoa": ("key_type", "exterior"),
     "den cho dan duong": ("daytime_running_light", "exterior"),
     "den suong mu truoc": ("fog_light_front", "exterior"),
     "den chieu goc": ("cornering_light", "exterior"),
@@ -1052,7 +1050,7 @@ FEATURE_ALIASES_BY_LEN = sorted(FEATURE_ALIASES_STRICT.keys(), key=len, reverse=
 # Section header = label không có value. Một số file dùng prefix "A. ", "B. " (vf2)
 SECTION_PREFIX_RE = re.compile(r"^[a-c]\.\s*")
 
-VERSION_HEADER_ALIASES = {"phien ban", "phien bản"}
+VERSION_HEADER_ALIASES = {"phien ban"}
 
 
 def parse_dimension_triple(value: str) -> list[tuple[str, str]]:
@@ -1120,6 +1118,34 @@ def _parse_edition_header(value: str) -> str:
     return m.group(1).strip()
 
 
+# ── Brochure URL (source_url) ───────────────────────────────────────────────
+# data/raw/link_brochure.md: mỗi dòng `<Model Label>: <URL>` (VD
+# "VF 8 All New: https://..."). Label brochure trùng model_code (MODEL_LABEL)
+# nên dùng thẳng làm key.
+
+
+def _load_brochure_urls() -> dict[str, str]:
+    """Đọc link_brochure.md → {model_code: brochure_pdf_url}."""
+    urls: dict[str, str] = {}
+    link_file = RAW_DIR / "link_brochure.md"
+    if not link_file.exists():
+        return urls
+    for line in link_file.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or ":" not in line:
+            continue
+        label, _, url = line.partition(":")
+        label = label.strip()
+        url = url.strip()
+        if not url.startswith("http"):
+            continue
+        urls[label] = url
+    return urls
+
+
+BROCHURE_URLS = _load_brochure_urls()
+
+
 def parse_model_csv(path: Path) -> list[dict[str, Any]]:
     """Extract ALL spec rows từ 1 file CSV 2 cột (label, value)."""
     model_id = infer_model(path)
@@ -1127,7 +1153,7 @@ def parse_model_csv(path: Path) -> list[dict[str, Any]]:
         print(f"  [skip] can't infer model from {path.name}", file=sys.stderr)
         return []
     model_code = MODEL_LABEL.get(model_id, model_id)
-    source_url = f"model_data/{path.name}"
+    source_url = BROCHURE_URLS.get(model_code, f"model_data/{path.name}")
 
     rows: list[dict[str, Any]] = []
     seen: set[tuple[str, str]] = set()  # (spec_key, edition) — trùng trong file
@@ -1224,7 +1250,8 @@ VARIANT_DIR = MODEL_DATA_DIR / "variants"
 
 # vinfast_color.csv → car_colors: màu ngoại thất + phí màu nâng cao.
 # Giá xe = price_list (giá chuẩn) + color_fee_vnd nếu màu Nâng cao.
-COLOR_FIELDS = ["model_code", "version_code", "version_name",
+# model_id dùng mã chuẩn (VF2, VF3, VF8NEW...) giống price_list/edition.
+COLOR_FIELDS = ["model_id", "version_code", "version_name",
                 "color_code", "color_name", "color_type", "color_fee_vnd",
                 "interior_code", "interior_name", "source_url"]
 
@@ -1235,18 +1262,28 @@ VARIANT_EDITION_ALIAS = {
     "VFMPV7": {"Tiêu chuẩn": "Eco"},
     "VF8NEW": {"Comfort": "The All New"},
     "VF9": {"Plus tùy chọn 7 chỗ": "Plus",
-             "Plus tùy chọn ghế cơ trưởng": "Plus"},
+             "Plus tùy chọn ghế cơ trưởng": "PlusCaptain"},
 }
 
 # Mã phiên bản nội bộ → edition chuẩn (ưu tiên hơn alias theo tên).
-# VF 7 Plus có 4 mã: GC12V (Plus), GC12V_CR151 (trần kính), GC12V_T023 (AWD),
-# GC12V_CR151_T023 (trần kính + AWD) — trần kính/AWD đều là PlusCaptain
-# (spec sheet "Plus AWD" = "Plus Trần kính toàn cảnh" trên trang dat-coc).
+# VF 7 Plus có 5 mã: GC12V (Plus), GC12V_CR151 (trần kính = PlusCaptain),
+# GC12V_T023 (AWD), GC12V_CR151_T023 (trần kính + AWD).
+# Edition option-combination đặt tên ổn định bằng slug tiếng Anh từ mã option
+# (T023→AWD, CR151→PanoramicRoof) thay vì nhãn tiếng Việt hay đổi trên site.
 VERSION_CODE_EDITION_ALIAS = {
     "GC12V": "Plus",
     "GC12V_CR151": "PlusCaptain",
-    "GC12V_T023": "PlusCaptain",
-    "GC12V_CR151_T023": "PlusCaptain",
+    "GC12V_T023": "Plus_AWD",
+    "GC12V_CR151_T023": "Plus_AWD_PanoramicRoof",
+}
+
+# Edition kế thừa spec của edition base (cùng cơ khí/tính năng, chỉ khác option
+# đã tách ở car_options). VD: VF 7 PlusCaptain (trần kính) = Plus + trần kính →
+# spec giống Plus; Plus_AWD_PanoramicRoof = Plus_AWD + trần kính → spec giống
+# Plus_AWD. Key = model_code (MODEL_LABEL) như trong specs.csv.
+SPEC_EDITION_INHERIT = {
+    "VF 7": {"PlusCaptain": "Plus", "Plus_AWD_PanoramicRoof": "Plus_AWD"},
+    "VF 9": {"PlusCaptain": "Plus"},
 }
 
 PRICE_CSV_FIELDS = ["model_id", "edition_id", "price_list_vnd", "price_promo_vnd",
@@ -1311,7 +1348,6 @@ def parse_colors_csv(path: Path) -> list[dict[str, Any]]:
             if not model_id:
                 print(f"    ⚠ skip unknown model: {model_name!r}", file=sys.stderr)
                 continue
-            model_code = MODEL_LABEL.get(model_id, model_id)
             version_code = (raw.get("Mã phiên bản") or "").strip()
             version_name = (raw.get("Tên phiên bản") or "").strip()
             version_name = _edition_from(model_id, version_code, version_name)
@@ -1328,7 +1364,7 @@ def parse_colors_csv(path: Path) -> list[dict[str, Any]]:
                 continue
             seen.add(key)
             rows.append({
-                "model_code": model_code,
+                "model_id": model_id,
                 "version_code": version_code,
                 "version_name": version_name,
                 "color_code": color_code,
@@ -1374,6 +1410,17 @@ def parse_models_prices(path: Path) -> dict[tuple[str, str], str]:
                 # nhiều mã/tổ hợp màu cùng edition → lấy giá thấp nhất (màu cơ bản)
                 out[key] = min(out[key], exact)
     return out
+
+
+def count_csv_rows(path: Path, delimiter: str = "|") -> int:
+    """Đếm số dòng dữ liệu (không tính header) của 1 postgres CSV.
+
+    Dùng csv.reader thay vì đếm dòng thô vì value có thể chứa `|` được quote.
+    """
+    if not path.exists():
+        return 0
+    with path.open("r", encoding="utf-8", newline="") as f:
+        return sum(1 for _ in csv.reader(f, delimiter=delimiter)) - 1
 
 
 def sync_price_list_from_models(pg_dir: Path) -> None:
@@ -1469,7 +1516,7 @@ def run(version: str = "v1") -> int:
         print(f"  📄 {path.name}")
         rows = parse_model_csv(path)
         if not rows:
-            print(f"    → no spec rows found")
+            print("    → no spec rows found")
             continue
         n_files += 1
         all_rows.extend(rows)
@@ -1482,6 +1529,21 @@ def run(version: str = "v1") -> int:
     if not all_rows:
         print("[parse_specs] no data found")
         return 1
+
+    # Expand edition kế thừa spec (VD PlusCaptain = Plus + trần kính → spec giống Plus)
+    inherited: list[dict[str, Any]] = []
+    for model_code, mapping in SPEC_EDITION_INHERIT.items():
+        for child, parent in mapping.items():
+            n = 0
+            for r in all_rows:
+                if r["model_code"] == model_code and (r["version_name"] or "") == parent:
+                    nr = dict(r)
+                    nr["version_name"] = child
+                    inherited.append(nr)
+                    n += 1
+            if n:
+                print(f"    ↳ {model_code} {parent} → {child}: +{n} spec rows (kế thừa)")
+    all_rows.extend(inherited)
 
     # Ghi CSV
     out_path = pg_dir / "specs.csv"
@@ -1537,6 +1599,14 @@ def run(version: str = "v1") -> int:
                     "rows": len(color_rows),
                     "upserted": len(color_rows),
                 }
+            # edition/price_list đã được sync lại từ vinfast_models.csv → đếm row thật
+            for tbl, fname in (("edition", "edition.csv"), ("price_list", "price_list.csv")):
+                n = count_csv_rows(pg_dir / fname)
+                manifest["postgres"]["tables"][tbl] = {
+                    "file": f"postgres/{fname}",
+                    "rows": n,
+                    "upserted": n,
+                }
             # Tính lại total_rows_upserted
             total = sum(
                 t.get("upserted", 0)
@@ -1547,7 +1617,7 @@ def run(version: str = "v1") -> int:
                 json.dumps(manifest, ensure_ascii=False, indent=2),
                 encoding="utf-8"
             )
-            print(f"  ✓ manifest updated with car_specs")
+            print("  ✓ manifest updated with car_specs")
         except Exception as e:
             print(f"  ⚠ failed to update manifest: {e}", file=sys.stderr)
 

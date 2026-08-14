@@ -34,8 +34,6 @@ if __package__ in (None, ""):
 
 from scripts.config import CLEAN_DIR, PG_DSN  # noqa: E402
 
-POSTGRES_DIR = CLEAN_DIR / "{version}" / "postgres"
-
 # DDL versioned: cột `version` trong PK + FK; VIEW active cho consumer.
 DDL = """
 CREATE TABLE IF NOT EXISTS edition (
@@ -127,11 +125,12 @@ WHERE ingest_version = (SELECT version FROM ingest_version WHERE is_current LIMI
 
 -- car_colors: màu ngoại thất + phí màu nâng cao (vinfast_color.csv).
 -- Giá xe = price_list (giá chuẩn) + color_fee_vnd (nếu màu Nâng cao).
+-- model_id dùng mã chuẩn (VF2, VF3, VF8NEW...) giống price_list/edition.
 -- Versioned giống car_specs; query qua car_colors_active.
 CREATE TABLE IF NOT EXISTS car_colors (
     id             SERIAL PRIMARY KEY,
     ingest_version TEXT NOT NULL DEFAULT '',
-    model_code     TEXT NOT NULL,      -- "VF 8 All New" (MODEL_LABEL)
+    model_id       TEXT NOT NULL,      -- "VF8NEW" (mã chuẩn, giống price_list)
     version_code   TEXT,               -- "HC11V" (mã phiên bản nội bộ)
     version_name   TEXT,               -- "The All New"|"Eco"|...
     color_code     TEXT,               -- "CE33"
@@ -145,12 +144,38 @@ CREATE TABLE IF NOT EXISTS car_colors (
 );
 DROP INDEX IF EXISTS uniq_car_colors;
 CREATE UNIQUE INDEX IF NOT EXISTS uniq_car_colors ON car_colors
-    (ingest_version, model_code, COALESCE(version_code,''),
+    (ingest_version, model_id, COALESCE(version_code,''),
      COALESCE(color_code,''), COALESCE(interior_code,''));
 CREATE INDEX IF NOT EXISTS idx_car_colors_ingest_version ON car_colors(ingest_version);
 
 CREATE OR REPLACE VIEW car_colors_active AS
 SELECT * FROM car_colors
+WHERE ingest_version = (SELECT version FROM ingest_version WHERE is_current LIMIT 1);
+
+-- car_options: tuỳ chọn nâng cấp (HUD, AWD, trần kính, lazang...) từ trang
+-- configurator. Giá option CỘNG THÊM vào price_list (giá chuẩn) — đã quy về VND.
+-- version_code/name NULL = áp dụng mọi bản của model; có giá trị = chỉ bản đó.
+CREATE TABLE IF NOT EXISTS car_options (
+    id              SERIAL PRIMARY KEY,
+    ingest_version  TEXT NOT NULL DEFAULT '',
+    model_id        TEXT NOT NULL,      -- "VF7"
+    version_code    TEXT,               -- "GC12V" (NULL = mọi bản)
+    version_name    TEXT,               -- "Plus"
+    option_group    TEXT NOT NULL,      -- wheel|hud|driveTypes|options
+    option_name     TEXT,               -- Lazang|HUD|Drive Types|Tùy Chọn
+    value_id        TEXT,               -- T023|CR151|D321...
+    value_name      TEXT,               -- "Hai cầu (AWD, 2 động cơ)"
+    price_extra_vnd BIGINT,             -- phí cộng thêm (VND)
+    source_url      TEXT,
+    updated_at      TIMESTAMPTZ DEFAULT now()
+);
+DROP INDEX IF EXISTS uniq_car_options;
+CREATE UNIQUE INDEX IF NOT EXISTS uniq_car_options ON car_options
+    (ingest_version, model_id, COALESCE(version_code,''), COALESCE(option_group,''), COALESCE(value_id,''));
+CREATE INDEX IF NOT EXISTS idx_car_options_ingest_version ON car_options(ingest_version);
+
+CREATE OR REPLACE VIEW car_options_active AS
+SELECT * FROM car_options
 WHERE ingest_version = (SELECT version FROM ingest_version WHERE is_current LIMIT 1);
 
 -- car_variants: đã thay bằng car_colors + price_list giá chuẩn → bỏ
@@ -176,6 +201,18 @@ ALTER TABLE car_specs DROP COLUMN IF EXISTS page;
 CREATE OR REPLACE VIEW car_specs_active AS
 SELECT * FROM car_specs
 WHERE ingest_version = (SELECT version FROM ingest_version WHERE is_current LIMIT 1);
+"""
+
+# Migration cho car_colors: model_code → model_id (đồng bộ định dạng price_list/edition)
+_MIGRATE_CAR_COLORS_DDL = """
+DROP VIEW IF EXISTS car_colors_active;
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.columns
+               WHERE table_name='car_colors' AND column_name='model_code') THEN
+        ALTER TABLE car_colors RENAME COLUMN model_code TO model_id;
+    END IF;
+END $$;
 """
 
 
@@ -257,18 +294,43 @@ def upsert_colors(conn, version: str, rows: list[dict[str, Any]]) -> int:
     cur = conn.cursor()
     cur.execute("DELETE FROM car_colors WHERE ingest_version = %s", (version,))
     sql = """
-    INSERT INTO car_colors (ingest_version, model_code, version_code, version_name,
+    INSERT INTO car_colors (ingest_version, model_id, version_code, version_name,
                             color_code, color_name, color_type, color_fee_vnd,
                             interior_code, interior_name, source_url)
     VALUES %s
     """
     values = [
-        (version, r["model_code"], r.get("version_code") or None, r.get("version_name") or None,
+        (version, r["model_id"], r.get("version_code") or None, r.get("version_name") or None,
          r.get("color_code") or None, r.get("color_name") or None,
          r.get("color_type") or None,
          int(r["color_fee_vnd"]) if r.get("color_fee_vnd") else 0,
          r.get("interior_code") or None, r.get("interior_name") or None,
          r.get("source_url") or None)
+        for r in rows
+    ]
+    execute_values(cur, sql, values)
+    conn.commit()
+    return len(rows)
+
+
+def upsert_options(conn, version: str, rows: list[dict[str, Any]]) -> int:
+    """Upsert car_options cho 1 version: xoá rows cũ + insert mới (giống car_colors)."""
+    if not rows:
+        return 0
+    cur = conn.cursor()
+    cur.execute("DELETE FROM car_options WHERE ingest_version = %s", (version,))
+    sql = """
+    INSERT INTO car_options (ingest_version, model_id, version_code, version_name,
+                             option_group, option_name, value_id, value_name,
+                             price_extra_vnd, source_url, updated_at)
+    VALUES %s
+    """
+    values = [
+        (version, r["model_id"], r.get("version_code") or None, r.get("version_name") or None,
+         r.get("option_group") or None, r.get("option_name") or None,
+         r.get("value_id") or None, r.get("value_name") or None,
+         int(r["price_extra_vnd"]) if r.get("price_extra_vnd") else 0,
+         r.get("source_url") or None, r.get("updated_at") or None)
         for r in rows
     ]
     execute_values(cur, sql, values)
@@ -375,6 +437,7 @@ def run(version: str = "v1", dsn: str = PG_DSN) -> int:
         return 1
 
     cur = conn.cursor()
+    cur.execute(_MIGRATE_CAR_COLORS_DDL)
     cur.execute(DDL)
     cur.execute(_MIGRATE_CAR_SPECS_DDL)
     conn.commit()
@@ -383,15 +446,17 @@ def run(version: str = "v1", dsn: str = PG_DSN) -> int:
     price_rows = load_csv(pg_dir / "price_list.csv")
     specs_rows = load_csv(pg_dir / "specs.csv") if (pg_dir / "specs.csv").exists() else []
     colors_rows = load_csv(pg_dir / "colors.csv") if (pg_dir / "colors.csv").exists() else []
+    options_rows = load_csv(pg_dir / "options.csv") if (pg_dir / "options.csv").exists() else []
 
     n_edition = upsert_edition(conn, version, edition_rows)
     n_price = upsert_price_list(conn, version, price_rows)
     n_specs = upsert_specs(conn, version, specs_rows)
     n_colors = upsert_colors(conn, version, colors_rows)
+    n_options = upsert_options(conn, version, options_rows)
     record_manifest(conn, version, version_dir)
 
     print(f"[postgres_ingest] version={version}  edition={n_edition}  price_list={n_price}  "
-          f"car_specs={n_specs}  car_colors={n_colors}  (is_current=false)")
+          f"car_specs={n_specs}  car_colors={n_colors}  car_options={n_options}  (is_current=false)")
     conn.close()
     return 0
 

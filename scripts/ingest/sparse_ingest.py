@@ -28,7 +28,7 @@ from collections import Counter
 from pathlib import Path
 
 from qdrant_client import QdrantClient
-from qdrant_client.models import (Distance, PayloadSchemaType, PointStruct,
+from qdrant_client.models import (PayloadSchemaType, PointStruct,
                                   SparseIndexParams, SparseVector,
                                   SparseVectorParams)
 
@@ -37,7 +37,7 @@ if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from scripts.config import CLEAN_DIR, QDRANT_API_KEY, QDRANT_TIMEOUT, QDRANT_URL  # noqa: E402
-from scripts.schemas import Chunk, validate_chunk, make_sparse_payload  # noqa: E402
+from scripts.schemas import validate_chunk  # noqa: E402
 
 VECTOR_DIR = CLEAN_DIR / "{version}" / "vector"
 SPARSE_INDEX_PATH = CLEAN_DIR / "{version}" / "sparse_index.json"

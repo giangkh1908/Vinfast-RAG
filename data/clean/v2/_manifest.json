@@ -1,7 +1,7 @@
 {
   "version": "v2",
-  "created_at": "2026-08-12T15:48:59Z",
-  "created_by": "scripts/clean_to_jsonl.py + scripts/split_cold_hot.py",
+  "created_at": "2026-08-14T05:13:36Z",
+  "created_by": "scripts/clean_to_jsonl.py + scripts/split_cold_hot.py + scripts/parse_specs.py + scripts/parse_car_deposit.py",
   "prev_version": "v1",
   "repo_commit": "",
   "vector": {
@@ -37,52 +37,82 @@
     "tables": {
       "edition": {
         "file": "postgres/edition.csv",
-        "rows": 14,
-        "upserted": 14
+        "rows": 18,
+        "upserted": 18
       },
       "price_list": {
         "file": "postgres/price_list.csv",
-        "rows": 14,
-        "upserted": 14,
-        "price_changed": 14
+        "rows": 18,
+        "upserted": 18
       },
       "car_specs": {
         "file": "postgres/specs.csv",
-        "rows": 1333,
-        "upserted": 1333
-      },
-      "car_variants": {
-        "file": "postgres/variants.csv",
-        "rows": 164,
-        "upserted": 164
+        "rows": 1631,
+        "upserted": 1631
       },
       "car_colors": {
         "file": "postgres/colors.csv",
-        "rows": 118,
-        "upserted": 118
+        "rows": 103,
+        "upserted": 103
+      },
+      "car_options": {
+        "file": "postgres/options.csv",
+        "rows": 8,
+        "upserted": 8
       }
     },
-    "total_rows_upserted": 1643
+    "total_rows_upserted": 1778
   },
   "link_only": {
     "brochure_urls": [
       "https://static-cms-prod.vinfastauto.com/brochure_vf_2.pdf",
-      "https://static-cms-prod.vinfastauto.com/vfvn-brochure-vf-3-ban-ngang.pdf",
-      "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwf5eb40b2/Document/VF5_Brochure_T82025.pdf",
+      "https://storage.googleapis.com/vinfast-data-01/brochure/29012026/VFVN_VF%203_Brochure%20280126.pdf",
+      "https://storage.googleapis.com/vinfast-data-01/brochure/09042026/VFVN_VF%205_Brochure%20B%E1%BA%A3n%20s%E1%BB%ADa%20290126_1333PM.pdf",
       "https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf",
-      "https://vinfasttayninh.com/files/category/vf7gpv1e04g.pdf",
+      "https://vinfastnamtuliem.vn/wp-content/uploads/2025/02/VF7_Brochure_T062025.pdf",
       "https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf",
       "https://static-cms-prod.vinfastauto.com/brochure/26052026/VF%208%20The%20he%20moi_Brochure_final%2020.05.pdf",
-      "https://storage.googleapis.com/vinfast-data-01/brochure/VF%209_%20Brochure.pdf"
+      "https://storage.googleapis.com/vinfast-data-01/brochure/VF%209_%20Brochure.pdf",
+      "https://storage.googleapis.com/vinfast-data-01/brochure/VF_MPV%207_Brochure_2026.02.03.pdf"
     ],
-    "brochure_by_model": {},
+    "brochure_by_model": {
+      "VF2": [
+        "https://static-cms-prod.vinfastauto.com/brochure_vf_2.pdf"
+      ],
+      "VF3": [
+        "https://storage.googleapis.com/vinfast-data-01/brochure/29012026/VFVN_VF%203_Brochure%20280126.pdf"
+      ],
+      "VF5": [
+        "https://storage.googleapis.com/vinfast-data-01/brochure/09042026/VFVN_VF%205_Brochure%20B%E1%BA%A3n%20s%E1%BB%ADa%20290126_1333PM.pdf"
+      ],
+      "VF6": [
+        "https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf"
+      ],
+      "VF7": [
+        "https://vinfastnamtuliem.vn/wp-content/uploads/2025/02/VF7_Brochure_T062025.pdf"
+      ],
+      "VF8": [
+        "https://storage.googleapis.com/vinfast-data-01/brochure/VF8_Brochure_03022026.pdf"
+      ],
+      "VF8NEW": [
+        "https://static-cms-prod.vinfastauto.com/brochure/26052026/VF%208%20The%20he%20moi_Brochure_final%2020.05.pdf"
+      ],
+      "VF9": [
+        "https://storage.googleapis.com/vinfast-data-01/brochure/VF%209_%20Brochure.pdf"
+      ],
+      "VFMPV7": [
+        "https://storage.googleapis.com/vinfast-data-01/brochure/VF_MPV%207_Brochure_2026.02.03.pdf"
+      ]
+    },
     "showroom_urls": [],
     "promotion_urls": [],
     "roadside_cost_urls": []
   },
   "pipeline_steps": [
     "clean_to_jsonl",
-    "split_cold_hot"
+    "split_cold_hot",
+    "parse_specs",
+    "parse_car_deposit"
   ],
   "schema_version": "1.0.0"
 }

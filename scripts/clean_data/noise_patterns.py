@@ -90,7 +90,6 @@ DISCLAIMER_PHRASES = [
 ]
 FOOTNOTE_RE = re.compile(r"^\s*\*{1,2}\s*(?:Phiên bản).*$", flags=re.IGNORECASE)
 FOOTNOTE_PAREN_RE = re.compile(r"^\s*\(\*\)\s*.*$")
-SPEC_FOOTNOTE_RE = re.compile(r"^\s*\(\*\)\s*Thông số kỹ thuật.*$", flags=re.IGNORECASE)
 PAGE_NUM_RE = re.compile(r"^\s*(\d{1,2})\s*$")
 SPEC_SHEET_RE = re.compile(
     r"^(thông số kỹ thuật|kích thước|màn hình và kết nối|tính năng điều khiển thông minh)",
@@ -128,8 +127,8 @@ def remove_money_sentences(paragraphs: list[str]) -> list[str]:
     """Drop paragraphs dominated by price info (price keyword + money number)."""
     cleaned = []
     money_re = re.compile(
-        r"(?:\d{1,3}(?:[.,]\d{3})+|\d{6,})\s*(?:triệu|tr|tỷ|nghìn|đồng|VNĐ|VND|\bđ\b)|"
-        r"(?:triệu|tr|tỷ|nghìn|đồng|VNĐ|VND|\bđ\b)\s*(?:\d{1,3}(?:[.,]\d{3})+|\d+)",
+        r"(?:\d{1,3}(?:[.,]\d{3})+|\d{6,})\s*(?:triệu|tr\b|tỷ|nghìn|đồng|VNĐ|VND|\bđ\b)|"
+        r"(?:triệu|tr\b|tỷ|nghìn|đồng|VNĐ|VND|\bđ\b)\s*(?:\d{1,3}(?:[.,]\d{3})+|\d+)",
         flags=re.IGNORECASE,
     )
     for p in paragraphs:
@@ -236,8 +235,7 @@ def _is_page_number(line: str) -> bool:
 def _is_footnote(line: str) -> bool:
     """True nếu dòng là footnote PDF (*Phiên bản, (**) ...)."""
     return bool(FOOTNOTE_RE.match(line.strip())
-                or FOOTNOTE_PAREN_RE.match(line.strip())
-                or SPEC_FOOTNOTE_RE.match(line.strip()))
+                or FOOTNOTE_PAREN_RE.match(line.strip()))
 
 
 def clean_pdf_prose(text: str) -> str:

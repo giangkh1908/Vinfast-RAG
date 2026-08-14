@@ -28,7 +28,7 @@ if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from scripts.config import CLEAN_DIR  # noqa: E402
-from scripts.schemas import Chunk, validate_chunk  # noqa: E402
+from scripts.schemas import validate_chunk  # noqa: E402
 
 CSV_DELIMITER = "|"
 
@@ -131,7 +131,7 @@ def stable_id(chunk: dict[str, Any], seq: int) -> str:
 def has_money(text: str) -> bool:
     # Strict: require money unit keyword
     amount = r"\d{1,3}(?:[.,]\d{3})+(?:\d{2})?|\d{6,}"
-    unit = r"(?:triệu|tr|tỷ|nghìn|đồng|VNĐ|VND|\bđ\b)"
+    unit = r"(?:triệu|tr\b|tỷ|nghìn|đồng|VNĐ|VND|\bđ\b)"
     return bool(re.search(rf"(?:{amount})\s*{unit}|{unit}\s*(?:{amount})", text, flags=re.IGNORECASE))
 
 
@@ -162,7 +162,7 @@ def split_vector_by_collection(vector_rows: list[dict[str, Any]]) -> dict[str, l
         row["id"] = stable_id(row, seq_by_key[key_base])
         # Validate chunk schema
         try:
-            validate_chunk(row, context=f"split_vector_by_collection")
+            validate_chunk(row, context="split_vector_by_collection")
         except ValueError as e:
             validation_errors.append(str(e))
             continue  # Skip invalid chunk
@@ -270,7 +270,7 @@ def build_manifest(
     return {
         "version": version,
         "created_at": now_iso(),
-        "created_by": "scripts/clean_to_jsonl.py + scripts/split_cold_hot.py",
+        "created_by": "scripts/clean_to_jsonl.py + scripts/split_cold_hot.py + scripts/parse_specs.py + scripts/parse_car_deposit.py",
         "prev_version": prev_version,
         "repo_commit": repo_commit,
         "vector": {
@@ -297,7 +297,7 @@ def build_manifest(
             "total_rows_upserted": len(edition_rows) + len(price_rows),
         },
         "link_only": link_only,
-        "pipeline_steps": ["clean_to_jsonl", "split_cold_hot"],
+        "pipeline_steps": ["clean_to_jsonl", "split_cold_hot", "parse_specs", "parse_car_deposit"],
         "schema_version": "1.0.0",
     }
 
@@ -317,7 +317,12 @@ def run(version: str = "v1", commit: str = "", prev: str | None = None) -> int:
 
     # Load intermediate
     vector_rows = [json.loads(line) for line in (inter_dir / "vector.jsonl").read_text(encoding="utf-8").splitlines() if line.strip()]
-    hot_rows = [json.loads(line) for line in (inter_dir / "hot.jsonl").read_text(encoding="utf-8").splitlines() if line.strip()]
+    hot_path = inter_dir / "hot.jsonl"
+    hot_rows: list[dict[str, Any]] = []
+    if hot_path.exists():
+        raw = hot_path.read_text(encoding="utf-8").strip()
+        if raw:
+            hot_rows = [json.loads(line) for line in raw.splitlines()]
 
     # Dọn output cũ — CHỈ file split sở hữu:
     #   vector/*.jsonl              (split viết hết → bỏ collection cũ như vivu_faq)

@@ -219,6 +219,8 @@ def cmd_delete(args) -> int:
         cur.execute("DELETE FROM price_list WHERE version = %s", (version,))
         cur.execute("DELETE FROM edition WHERE version = %s", (version,))
         cur.execute("DELETE FROM car_specs WHERE ingest_version = %s", (version,))
+        cur.execute("DELETE FROM car_colors WHERE ingest_version = %s", (version,))
+        cur.execute("DELETE FROM car_options WHERE ingest_version = %s", (version,))
         cur.execute("DELETE FROM ingest_version WHERE version = %s", (version,))
         conn.commit()
     finally:
@@ -226,7 +228,7 @@ def cmd_delete(args) -> int:
     print(f"[delete] version={version}")
     print(f"  dropped collections: {dropped}")
     print(f"  removed dangling aliases: {dangling}")
-    print(f"  deleted PG rows (edition/price_list/car_specs/ingest_version) for version={version}")
+    print(f"  deleted PG rows (edition/price_list/car_specs/car_colors/car_options/ingest_version) for version={version}")
     print(f"  (folder data/clean/{version}/ giữ nguyên — audit)")
     return 0
 
@@ -312,10 +314,7 @@ def cmd_migrate_v1(args=None) -> int:
     version = "v1"
 
     # 1) Copy từng collection unversioned → `__v1` (giữ vector, không re-embed)
-    stems = DENSE_ALIASES  # mặc định
-    # phát hiện stems thật từ collection đang có (unversioned)
     existing = {c.name for c in client.get_collections().collections}
-    aliases = existing_aliases(client)
     print(f"[migrate-v1] existing collections: {sorted(existing)}")
     migrated = []
     for col in DENSE_ALIASES + [SPARSE_ALIAS]:
@@ -386,9 +385,9 @@ def cmd_migrate_v1(args=None) -> int:
     finally:
         conn.close()
 
-    print(f"[migrate-v1] XONG. active=v1, alias `<col>` → `<col>__v1`.")
-    print(f"  Consumer query VIEW edition_active / price_list_active (= v1).")
-    print(f"  Giờ ingest v2: run_pipeline --version v2 --recreate --commit ${{...}}")
+    print("[migrate-v1] XONG. active=v1, alias `<col>` → `<col>__v1`.")
+    print("  Consumer query VIEW edition_active / price_list_active (= v1).")
+    print("  Giờ ingest v2: run_pipeline --version v2 --recreate --commit ${...}")
     return 0
 
 
