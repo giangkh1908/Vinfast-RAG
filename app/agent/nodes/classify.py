@@ -78,6 +78,11 @@ _TOPIC_KEYWORDS = {
         r"thông\s*số", r"specs", r"spec", r"trọng\s*tải",
         r"tăng\s*tốc", r"gia\s*tốc", r"tốc\s*độ\s*tối\s*đa",
     ],
+    "giá": [
+        r"giá\s*bao\s*nhiêu", r"giá\s*bán", r"giá\s*niêm\s*yết",
+        r"bao\s*nhiêu\s*tiền", r"chi\s*phí", r"ưu\s*đãi",
+        r"giá\s*(xe|VF)", r"price",
+    ],
 }
 
 _TOPIC_RE = {topic: re.compile("|".join(kw), re.IGNORECASE) for topic, kw in _TOPIC_KEYWORDS.items()}
@@ -94,6 +99,7 @@ _TOPIC_TOOLS = {
     "tính_năng_nổi_bật": {"get_specs", "ask_clarification"},
     "phiên_bản": {"list_available_models", "get_specs", "ask_clarification"},
     "kích_thước": {"get_specs", "ask_clarification"},
+    "giá": {"get_price", "ask_clarification"},
     "general": None,
 }
 
