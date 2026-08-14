@@ -669,24 +669,35 @@ def validate_citations(sources: list[dict], query: str = "") -> list[dict]:
 def build_retrieved_chunks(tool_results: list[dict], query: str = "", topic: str = "") -> list[dict]:
     """Convert tool_results → P0 retrieved_chunks schema.
 
-    Filters KB chunks by topic relevance to avoid logging irrelevant high-score chunks.
-    Uses hybrid scoring (keyword + embedding) for spec chunks.
+    All chunks scored by embedding cosine similarity (same model as retrieval).
+    Falls back to keyword scoring if embedding unavailable.
     """
     from app.agent.nodes.classify import _TOPIC_KEYWORDS
 
     chunks = []
     rank = 0
     MAX_CHUNKS = 30
-    MIN_SCORE = 0.5
+    MIN_SCORE = 0.3
     qtokens = _query_tokens(query) if query else set()
 
-    # Build topic keyword set for filtering KB chunks
     topic_keywords: set[str] = set()
     if topic and topic in _TOPIC_KEYWORDS:
         for pattern in _TOPIC_KEYWORDS[topic]:
             topic_keywords.update(_TOKEN_RE.findall(pattern.lower()))
-    # Also add query tokens as relevant keywords
     topic_keywords |= qtokens - {"xe", "vinfast", "vf", "của", "và", "là", "cho", "tôi", "bạn", "có", "không", "nào", "gì"}
+
+    def _embed_score(texts: list[str]) -> list[float]:
+        """Score texts against query using embedding cosine similarity."""
+        scores = _rerank_texts(query, texts)
+        if scores is not None:
+            return scores
+        # Fallback: keyword overlap ratio
+        results = []
+        for t in texts:
+            t_tokens = set(_TOKEN_RE.findall(t.lower()))
+            overlap = t_tokens & qtokens - {"xe", "vinfast", "vf", "có", "không"}
+            results.append(min(0.9, 0.3 + 0.1 * len(overlap)))
+        return results
 
     for tr in tool_results:
         if not tr.get("success"):
@@ -699,11 +710,10 @@ def build_retrieved_chunks(tool_results: list[dict], query: str = "", topic: str
                 score = r.get("score", 0.0)
                 if score < MIN_SCORE:
                     continue
-                # Topic filter: KB chunk must contain at least one topic keyword
                 text = r.get("text", "").lower()
                 text_tokens = set(_TOKEN_RE.findall(text))
                 if topic_keywords and not (topic_keywords & text_tokens):
-                    continue  # Skip irrelevant KB chunks
+                    continue
                 rank += 1
                 page = r.get("page", "")
                 page_str = f" (trang {page})" if page else ""
@@ -759,29 +769,47 @@ def build_retrieved_chunks(tool_results: list[dict], query: str = "", topic: str
             mc = result.get("model_code", "")
             colors = result.get("colors", [])
             interiors = result.get("interiors", [])
-            rank += 1
-            chunks.append(RetrievedChunk(
-                rank=rank,
-                chunk_id=f"colors_{mc}",
-                source_id="car_colors",
-                source_title=f"Màu sắc {mc}",
-                source_url="",
-                document_name="",
-                page="",
-                section="colors",
-                content=f"{len(colors)} màu ngoại thất, {len(interiors)} màu nội thất",
-                vehicle_model=mc,
-                vehicle_version="all_versions",
-                topic="ngoại_thất",
-                market="Vietnam",
-                language="vi",
-                approval_status="approved",
-                retrieval_score=0.9,
-            ).__dict__)
+            variants = result.get("variants", [])
+            # Build text representations and score by embedding
+            variant_texts = []
+            for v in variants[:10]:
+                variant_texts.append(f"{v.get('color', '')} {v.get('color_type', '')} {v.get('interior', '')}")
+            if variant_texts:
+                scores = _embed_score(variant_texts)
+                for i, (v, sc) in enumerate(zip(variants[:10], scores)):
+                    if sc < MIN_SCORE:
+                        continue
+                    rank += 1
+                    chunks.append(RetrievedChunk(
+                        rank=rank,
+                        chunk_id=f"color_{mc}_{v.get('color', '')}_{v.get('interior', '')}",
+                        source_id="car_colors",
+                        source_title=f"Màu sắc {mc}",
+                        source_url="",
+                        document_name="",
+                        page="",
+                        section="colors",
+                        content=f"{v.get('color', '')} / {v.get('interior', '')}",
+                        vehicle_model=mc,
+                        vehicle_version=v.get("version", "all_versions"),
+                        topic="ngoại_thất",
+                        market="Vietnam",
+                        language="vi",
+                        approval_status="approved",
+                        retrieval_score=round(sc, 4),
+                    ).__dict__)
 
         elif tool == "get_price" and result.get("prices"):
-            price_score = _price_relevance_score(qtokens) if qtokens else 0.5
-            for p in result["prices"]:
+            # Build text representations and score by embedding
+            price_texts = [
+                f"{p.get('version_name', '')} {p.get('price_vnd', '')} {p.get('promo_label', '') or ''}"
+                for p in result["prices"]
+            ]
+            scores = _embed_score(price_texts) if price_texts else []
+            for i, p in enumerate(result["prices"]):
+                score = scores[i] if i < len(scores) else 0.5
+                if score < MIN_SCORE:
+                    continue
                 rank += 1
                 chunks.append(RetrievedChunk(
                     rank=rank,
@@ -799,7 +827,7 @@ def build_retrieved_chunks(tool_results: list[dict], query: str = "", topic: str
                     market="Vietnam",
                     language="vi",
                     approval_status="approved",
-                    retrieval_score=round(price_score, 4),
+                    retrieval_score=round(score, 4),
                 ).__dict__)
 
     # Sort by score descending and limit
