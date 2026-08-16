@@ -1,5 +1,3 @@
-cch
-
 # Version Management — Data Pipeline
 
 Quản lý version thật cho pipeline: ingest version mới KHÔNG đè version cũ,
@@ -10,26 +8,26 @@ promote/rollback atomic, biết version mới đổi gì so cũ, incremental emb
 ## Mô hình
 
 - Mỗi **version** = 1 folder `data/clean/<version>/` (đã có) + 5 collection Qdrant
-  vật lý `<col>__<version>` + rows PG tag `version=<version>`.
+  vật lý `<col>__<version>` (4 dense: product_info, policy, maintenance, faq +
+  1 sparse) + rows PG tag `version=<version>`.
 - **Active** = `ingest_version.is_current=true` (đúng 1 row) + alias Qdrant
   `<col>` → `<col>__<active>`.
 - **Ingest** (`run_pipeline`) = BUILD version mới, KHÔNG tự activate (trừ `--promote`).
   **Promote** = swap alias + `is_current`. **Rollback** = swap alias về version cũ
   + `is_current` (instant — version cũ vẫn còn data).
 - **Consumer** (retriever / team khác): query **alias** `<col>` (Qdrant, tên ổn
-  định) + VIEW `edition_active` / `price_list_active` (PG, không filter version).
+  định) + VIEW `edition_active` / `price_list_active` / `car_specs_active` (PG, không filter version).
   KHÔNG query collection vật lý `__<version>` hay base table trực tiếp.
-- **`car_specs` KHÔNG version** (lookup table): spec kỹ thuật không tag version,
-  full-refresh mỗi ingest (`TRUNCATE` + insert từ `specs.csv`). Retriever query
-  `car_specs` trực tiếp (không qua VIEW, không filter version). Hệ quả: rollback
-  vector/price **KHÔNG rollback specs** — specs luôn là snapshot mới nhất từ raw
-  (spec ít đổi, trade-off chấp nhận được).
+- **`car_specs` versioned** (từ migration thêm `ingest_version` column): mỗi ingest
+  xoá + insert data của version đó, giữ nguyên data version khác. Retriever nên query
+  VIEW `car_specs_active` để chỉ lấy version active. Promote/rollback specs được
+  support cùng với edition/price_list.
 
 ## Lifecycle
 
 ```
 ingest v2 (build, không active)         run_pipeline --version v2 --recreate
-   ↓                                    → vivu_specs__v2 (+ sparse__v2), v1 nguyên
+   ↓                                    → vivu_product_info__v2 (+ sparse__v2), v1 nguyên
    ↓                                       PG rows version='v2' (is_current=false)
 promote v2 (activate)                    version_manager.py promote --version v2
    ↓                                        (hoặc run_pipeline --version v2 --promote)
@@ -66,8 +64,9 @@ PYTHONUTF8=1 python scripts/version_manager.py delete --version v2
 
 ## Incremental embed (content-hash cache)
 
-- Vector cache theo **content-hash** (`backend/lib/vector_cache.py`, SQLite ở
-  `data/.vector_cache/cache.sqlite`, gitignored). Key = `sha1(embed_model + text + structured)`.
+- Vector cache theo **content-hash** (`lib/vector_cache.py`, SQLite ở
+  `data/.vector_cache/cache.sqlite`, gitignored). Key = `sha1(embed_model + text +
+  structured)`.
 - Chunk content KHÔNG đổi → **cache hit → 0 API call, 0 token**. Đổi 1 chunk →
   **cache miss → embed 1 chunk**. Đổi 1 raw file → chỉ embed chunk đổi (+ seq-shift
   trong cùng section, bounded).
@@ -82,7 +81,6 @@ PYTHONUTF8=1 python scripts/version_manager.py delete --version v2
 
 `split_cold_hot` so sánh chunk_id + content-hash với `prev_version` (auto-detect
 từ `_manifest.json` của version trước, hoặc `--prev`):
-
 - `added` = chunk_id có ở version mới, không có ở prev
 - `removed` = chunk_id có ở prev, không có ở version mới
 - `modified` = có ở cả 2, content-hash khác
@@ -96,11 +94,10 @@ Version đầu (không prev) = tất cả `added`.
 
 ## migrate-v1 (1 lần)
 
-Khi deploy code versioned lên hệ thống đang chạy v1 (collection unversioned
-`vivu_specs`...):
-
-- Copy Qdrant `vivu_specs` → `vivu_specs__v1` (×4 dense + sparse, **giữ vector,
-  không re-embed**) → drop gốc → tạo alias `<col>` → `__v1`.
+Khi deploy code versioned lên hệ thống đang chạy v1 (collection unversioned,
+Vd `vivu_product_info`...):
+- Copy Qdrant `vivu_product_info` → `vivu_product_info__v1` (×4 dense + sparse,
+  **giữ vector, không re-embed**) → drop gốc → tạo alias `<col>` → `__v1`.
 - Backfill vector cache từ v1 (re-ingest v1 sau đó = 0 token).
 - PG: drop bảng unversioned cũ, tạo schema versioned, ingest v1 CSV tag
   `version='v1'`, `is_current=v1` + VIEW active.

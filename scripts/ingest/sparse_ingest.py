@@ -20,7 +20,6 @@ Usage:
 import argparse
 import json
 import math
-import os
 import re
 import sys
 import unicodedata
@@ -28,18 +27,26 @@ import uuid
 from collections import Counter
 from pathlib import Path
 
-from dotenv import load_dotenv
 from qdrant_client import QdrantClient
-from qdrant_client.models import (PointStruct, SparseIndexParams,
-                                  SparseVector, SparseVectorParams)
+from qdrant_client.models import (PayloadSchemaType, PointStruct,
+                                  SparseIndexParams, SparseVector,
+                                  SparseVectorParams)
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
-load_dotenv(REPO_ROOT / ".env")
-VECTOR_DIR = REPO_ROOT / "data" / "clean" / "{version}" / "vector"
-SPARSE_INDEX_PATH = REPO_ROOT / "data" / "clean" / "{version}" / "sparse_index.json"
+# Chạy trực tiếp (`python scripts/ingest/sparse_ingest.py`) → repo root vào sys.path
+if __package__ in (None, ""):
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+
+from scripts.config import CLEAN_DIR, QDRANT_API_KEY, QDRANT_TIMEOUT, QDRANT_URL  # noqa: E402
+from scripts.schemas import validate_chunk  # noqa: E402
+
+VECTOR_DIR = CLEAN_DIR / "{version}" / "vector"
+SPARSE_INDEX_PATH = CLEAN_DIR / "{version}" / "sparse_index.json"
 
 SPARSE_COLLECTION_BASE = "sparse"
-DEFAULT_QDRANT_URL = os.environ.get("QDRANT_URL", "http://localhost:6333")
+DEFAULT_QDRANT_URL = QDRANT_URL
+
+# Payload fields cần filter khi search (retriever lọc theo model_id)
+PAYLOAD_INDEX_FIELDS = {"model_id": PayloadSchemaType.KEYWORD}
 
 # BM25 params
 K1 = 1.5
@@ -67,15 +74,27 @@ def qdrant_id(chunk_id: str) -> str:
 
 
 def load_chunks(version: str) -> list[tuple[str, dict]]:
-    """(collection, chunk dict) cho mọi chunk."""
+    """(collection, chunk dict) cho mọi chunk. Validate schema trước khi trả về."""
     vdir = Path(str(VECTOR_DIR).format(version=version))
     chunks: list[tuple[str, dict]] = []
+    errors = []
     for f in sorted(vdir.glob("*.jsonl")):
         for line in f.read_text(encoding="utf-8").splitlines():
             if not line.strip():
                 continue
             c = json.loads(line)
+            try:
+                validate_chunk(c, context=f"sparse_ingest:{f.stem}")
+            except ValueError as e:
+                errors.append(str(e))
+                continue  # Skip invalid chunk
             chunks.append((f.stem, c))
+    if errors:
+        print(f"  VALIDATION ERRORS ({len(errors)} chunks skipped):", file=sys.stderr)
+        for err in errors[:5]:
+            print(f"    {err}", file=sys.stderr)
+        if len(errors) > 5:
+            print(f"    ... and {len(errors) - 5} more", file=sys.stderr)
     return chunks
 
 
@@ -101,7 +120,8 @@ def run(version: str = "v1", url: str = DEFAULT_QDRANT_URL, recreate: bool = Fal
     print(f"  vocab={len(vocab)}  avgdl={avgdl:.1f}")
 
     # 2. Client
-    client = QdrantClient(url=url, api_key=os.environ.get("QDRANT_API_KEY", "") or None)
+    client = QdrantClient(url=url, api_key=QDRANT_API_KEY or None,
+                          timeout=QDRANT_TIMEOUT)
     if recreate and client.collection_exists(sparse_collection):
         client.delete_collection(sparse_collection)
     if not client.collection_exists(sparse_collection):
@@ -110,6 +130,17 @@ def run(version: str = "v1", url: str = DEFAULT_QDRANT_URL, recreate: bool = Fal
             sparse_vectors_config={"sparse": SparseVectorParams(index=SparseIndexParams(on_disk=False))},
         )
         print(f"  created collection {sparse_collection}")
+
+    # Payload index cho filter (tạo nếu chưa có — kể cả khi upsert thường)
+    existing = set(client.get_collection(sparse_collection).payload_schema.keys())
+    for field, schema in PAYLOAD_INDEX_FIELDS.items():
+        if field not in existing:
+            client.create_payload_index(
+                collection_name=sparse_collection,
+                field_name=field,
+                field_schema=schema,
+            )
+            print(f"  [index] {sparse_collection}.{field} created")
 
     # 3. BM25 sparse vector từng chunk + upsert
     points: list[PointStruct] = []
@@ -160,20 +191,6 @@ def run(version: str = "v1", url: str = DEFAULT_QDRANT_URL, recreate: bool = Fal
     total = client.count(collection_name=sparse_collection).count
     print(f"[sparse_ingest] done. sparse points: {total}  collection={sparse_collection}")
     print(f"  index saved: {index_path}")
-
-    # Create model_id index for sparse collection
-    if recreate:
-        from qdrant_client.models import PayloadSchemaType
-        try:
-            client.create_payload_index(
-                collection_name=sparse_collection,
-                field_name="model_id",
-                field_schema=PayloadSchemaType.KEYWORD,
-            )
-            print(f"  [index] {sparse_collection}.model_id created")
-        except Exception as e:
-            print(f"  [index] {sparse_collection}.model_id: {e}")
-
     return 0
 
 

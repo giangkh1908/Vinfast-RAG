@@ -1,0 +1,9 @@
+model_id|edition_code|option_id|option_name|value_id|value_name|price_extra_vnd|updated_at
+VF5|GA12V|wheel|Lazang|GA12V|Hợp kim 17 inch|0|2026-08-14T11:36:33.756856Z
+VF5|GA12V|wheel|Lazang|GA1KV|Lõi thép 16 inch|0|2026-08-14T11:36:33.756856Z
+VF7|GC15V|hud|HUD|D0|NON-HUD|0|2026-08-14T11:36:33.756856Z
+VF7|GC15V|hud|HUD|D321|HUD|10000|2026-08-14T11:36:33.756856Z
+VF7|GC12V|driveTypes|Drive Types|T021|Cầu trước (FWD)|0|2026-08-14T11:36:33.756856Z
+VF7|GC12V|driveTypes|Drive Types|T023|Hai cầu (AWD, 2 động cơ)|49000|2026-08-14T11:36:33.756856Z
+VF7|GC12V|options|Tùy Chọn|CR150|Trần thép|0|2026-08-14T11:36:33.756856Z
+VF7|GC12V|options|Tùy Chọn|CR151|Trần kính toàn cảnh|20000|2026-08-14T11:36:33.756856Z

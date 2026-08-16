@@ -1,40 +1,19 @@
-# CodeGraph
-.codegraph/
+# Secrets — không commit
+.env
 
 # Python
 __pycache__/
 *.py[cod]
-*.egg-info/
-dist/
-build/
-.eggs/
-
-# Env
-.env
 .venv/
 venv/
 
-# IDE
-.idea/
-.vscode/
-*.swp
-*.swo
-
-# Data (large files)
-data/raw/
-data/processed/
-data/clean/
+# Pipeline artifacts (JSON trung gian debug/audit)
+tmp/
+# intermediate = output trước khi split, trùng với vector/ (debug only)
+data/clean/*/intermediate/
+# vector cache (artifact lớn — embed cache theo content-hash)
+data/.vector_cache/
 
 # OS
-.DS_Store
 Thumbs.db
-
-# Pytest
-.pytest_cache/
-
-# Logs
-*.log
-
-# Eval results (generated)
-eval/*.jsonl
-eval/*.summary.json
+.DS_Store

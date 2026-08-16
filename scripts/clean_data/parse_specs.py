@@ -1,1023 +1,1634 @@
 #!/usr/bin/env python3
 """
-parse_specs.py — Trích thông số kỹ thuật (số liệu cấu trúc) từ data/raw/*.txt
-→ data/clean/<version>/postgres/specs.csv → bảng PostgreSQL `car_specs`.
+parse_specs.py — Trích thông số kỹ thuật từ data/model_data/*.csv (spec sheets)
+→ data/clean/<version>/postgres/specs.csv
 
-Vì sao tách riêng: spec số liệu (công suất, momen, quãng đường, kích thước, pin...)
-nếu embed trong Qdrant vector sẽ na ná nhau giữa Eco/Plus và giữa các model → vector
-search dễ nhầm. Đưa vào `car_specs` (SQL) để retriever query chính xác.
+Nguồn: data/model_data/*.csv — file CSV 2 cột (label, value) export từ bảng spec
+brochure (1 file = 1 model + 1 edition, edition đọc từ row "PHIÊN BẢN"/"Phiên bản").
+Section header = row có label nhưng value rỗng (vd "KÍCH THƯỚC,").
 
-Nguồn: **toàn bộ data/raw/*.txt** (KHÔNG dùng model_specs.json tổng hợp). Mỗi model có
-spec rải rác ở nhiều file (dat-coc chính thức, bài so-sanh, thong-so, brochure, product
-page) — file nào có thì extract, **union = full coverage**. Conflict giá trị → prefer
-nguồn `shop.vinfastauto.com` (chính thống).
-
-3 dạng spec trong raw → 3 parser:
-  A. Markdown table (so-sanh / thong-so / VF3 dat-coc): `| label | val1 | val2 |`
-     - header có từ khoá edition (Eco/Plus/...) → cột = edition (comparison table)
-     - header KHÔNG có edition → cột 1 = value, 1 spec chung mọi bản (vertical list)
-  B. Inline same-line (VF5 / MPV7 dat-coc): "label value" trên cùng dòng, label ở đầu.
-  C. Line-paired (VF2 / VF8-all-new dat-coc): label 1 dòng, value dòng kế.
-
-Spec "card" (VF6/VF7 dat-coc: value-trước-label) khó parse tin cậy → bỏ qua (model đó
-đã có so-sanh/thong-so table bù đắp theo union).
-
-Reuse từ clean_to_jsonl: parse_raw_file, infer_model_raw, MODEL_LABEL, MODEL_EDITIONS,
-EDITION_KEYWORDS. Chỉ extract label trong LABEL_MAP (curated spec số liệu/hạng mục
-chính); feature mô tả (ADAS, an toàn bullet) KHÔNG extract — giữ ở vector prose.
-
-Usage:
-    PYTHONUTF8=1 python scripts/clean_data/parse_specs.py --version v1
+Script extract TOÀN BỘ row: spec số (công suất, pin…) lẫn spec tính năng
+(Có/Không, LED, v.v.). Label không khớp mapping → giữ nguyên label (đã normalize)
+làm spec_key, category lấy từ section context.
 """
-
 import argparse
-import asyncio
-import base64
 import csv
-import io
-import json
-import os
 import re
 import sys
-import unicodedata
 from pathlib import Path
 from typing import Any
 
-from dotenv import load_dotenv
-import requests
+# Windows console cp1252 → UTF-8 (emoji / tiếng Việt trong print)
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
+# Chạy trực tiếp (`python scripts/clean_data/parse_specs.py`) → repo root vào sys.path
+if __package__ in (None, ""):
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-for _stream in (sys.stdout, sys.stderr):
-    if hasattr(_stream, "reconfigure"):
-        _stream.reconfigure(encoding="utf-8", errors="replace")
-
-REPO_ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(REPO_ROOT))
-
-from scripts.clean_data.clean_to_jsonl import (  # noqa: E402
-    parse_raw_file, infer_model_raw, MODEL_LABEL, MODEL_EDITIONS, EDITION_KEYWORDS,
+from scripts.config import CLEAN_DIR, MODEL_DATA_DIR, RAW_DIR  # noqa: E402
+from scripts.clean_data.spec_common import (  # noqa: E402
+    EDITION_ALIASES, MODEL_EDITIONS, MODEL_LABEL, infer_model, no_diacritics,
 )
 
-RAW_DIR = REPO_ROOT / "data" / "raw"
-CLEAN_DIR = REPO_ROOT / "data" / "clean"
-
-# Ưu tiên nguồn khi conflict giá trị (chính thống nhất → trước).
-SOURCE_PRIORITY = ("shop.vinfastauto.com", "vinfastauto.com")
-BROCHURE_LINKS = REPO_ROOT / "data" / "raw" / "link_brochure.md"
-
-
-# ── Normalize ───────────────────────────────────────────────────────────────
-def no_diacritics(s: str) -> str:
-    return "".join(c for c in unicodedata.normalize("NFD", s)
-                  if unicodedata.category(c) != "Mn")
-
-
-def norm(s: str) -> str:
-    """Normalize label: bỏ dấu, lower, gom space, strip punctuation 2 đầu."""
-    s = no_diacritics(s).lower()
-    s = s.replace("đ", "d")
-    s = re.sub(r"\s+", " ", s).strip()
-    return s.strip(":|-–— \t")
-
-
-# ── LABEL_MAP: alias (đã normalize) → (spec_key, spec_unit, spec_category) ──
-# category: dimension | powertrain | interior | safety | adas | exterior | general
-# alias = norm(label tiếng Việt). Nhiều alias → cùng (key, unit, category).
-_A = {
+# ── Mappings ─────────────────────────────────────────────────────────────────
+# Label map (đã normalize) — spec số + spec tính năng có unit
+LABEL_MAP = {
     # ── powertrain ──
     "cong suat toi da (kw)": ("power_kw", "kW", "powertrain"),
-    "cong suat toi da": ("power_kw", "kW", "powertrain"),
     "cong suat toi da (kw/hp)": ("power_kw", "kW", "powertrain"),
-    "cong suat": ("power_kw", "kW", "powertrain"),
+    "cong suat toi da (hp/kw)": ("power_kw", "kW", "powertrain"),
+    "cong suat toi da": ("power_kw", "kW", "powertrain"),
     "mo men xoan cuc dai (nm)": ("torque_nm", "Nm", "powertrain"),
     "mo-men xoan cuc dai": ("torque_nm", "Nm", "powertrain"),
-    "mo men xoan cuc dai": ("torque_nm", "Nm", "powertrain"),
-    "quang duong chay mot lan sac day (km) (nedc)": ("range_km", "km", "powertrain"),
-    "quang duong chay mot lan sac day (km)": ("range_km", "km", "powertrain"),
-    "quang duong chay mot lan sac day": ("range_km", "km", "powertrain"),
-    "quang duong chay (nedc)": ("range_km", "km", "powertrain"),
-    "quang duong di chuyen (wltp)": ("range_km", "km", "powertrain"),
-    "quang duong di chuyen (nedc)": ("range_km", "km", "powertrain"),
-    "quang duong di chuyen": ("range_km", "km", "powertrain"),
-    "quang duong chay mot lan sac day (km) - dieu kien tieu chuan chau au (wltp)":
-        ("range_km", "km", "powertrain"),
-    "quang duong": ("range_km", "km", "powertrain"),
-    "thoi gian nap pin nhanh nhat": ("fast_charge_min", "phút", "powertrain"),
-    "thoi gian nap pin nhanh nhat (10%-70%)": ("fast_charge_min", "phút", "powertrain"),
-    "thoi gian nap pin nhanh nhat (phut)": ("fast_charge_min", "phút", "powertrain"),
-    "thoi gian sac nhanh (10-70%)": ("fast_charge_min", "phút", "powertrain"),
-    "thoi gian nap pin nhanh nhat (tu 10 den 70%) (phut)":
-        ("fast_charge_min", "phút", "powertrain"),
-    "dung luong pin kha dung": ("battery_kwh", "kWh", "powertrain"),
-    "dung luong pin kha dung (kwh)": ("battery_kwh", "kWh", "powertrain"),
-    "dung luong pin (kwh) - kha dung": ("battery_kwh", "kWh", "powertrain"),
-    "dung luong pin (kwh)": ("battery_kwh", "kWh", "powertrain"),
-    "dung luong pin": ("battery_kwh", "kWh", "powertrain"),
-    "pack pin": ("battery_kwh", "kWh", "powertrain"),
-    "loai pin": ("battery_type", "", "powertrain"),
-    "dan dong": ("drivetrain", "", "powertrain"),
-    "dong co": ("engine", "", "powertrain"),
-    "toc do toi da (km/h) duy tri 1 phut": ("top_speed_kmh", "km/h", "powertrain"),
     "toc do toi da (km/h)": ("top_speed_kmh", "km/h", "powertrain"),
-    "toc do toi da": ("top_speed_kmh", "km/h", "powertrain"),
+    "toc do toi da (km/h) duy tri 1 phut": ("top_speed_kmh", "km/h", "powertrain"),
     "tang toc 0-100 km/h": ("acceleration_0_100_s", "s", "powertrain"),
     "tang toc 0-100km/h (s)": ("acceleration_0_100_s", "s", "powertrain"),
-    "kha nang tang toc tu 0-100km/h (s) - muc tieu du kien":
-        ("acceleration_0_100_s", "s", "powertrain"),
-    "cong suat sac nhanh dc toi da": ("dc_charge_kw", "kW", "powertrain"),
-    "cong suat sac ac toi da (kw)": ("ac_charge_kw", "kW", "powertrain"),
-    "muc tieu thu nhien lieu cong khai": ("consumption", "", "powertrain"),
-    "muc cong bo tieu thu dien nang": ("consumption", "", "powertrain"),
-    "che do lai": ("drive_modes", "", "powertrain"),
-    "chon che do lai": ("drive_modes", "", "powertrain"),
+    "tang toc 0 - 100 km/h (s)": ("acceleration_0_100_s", "s", "powertrain"),
+    "tang toc 0 - 50 km/h (s)": ("acceleration_0_50_s", "s", "powertrain"),
+    "kha nang tang toc tu 0-100km/h (s)": ("acceleration_0_100_s", "s", "powertrain"),
+    "muc tieu thu nl (hon hop) (kwh/100 km)": ("energy_consumption_kwh_100km", "kWh/100km", "powertrain"),
+    "cau hinh dong co": ("motor_configuration", "", "powertrain"),
+    "dong co": ("motor_configuration", "", "powertrain"),
+    "cach chuyen so": ("gear_shift_type", "", "powertrain"),
+    "can chuyen so sau vo lang": ("gear_shift_type", "", "powertrain"),
+    "che do thay doi toc do den dung": ("creep_mode", "", "powertrain"),
+    "dan dong": ("drivetrain", "", "powertrain"),
+    "he dan dong": ("drivetrain", "", "powertrain"),
+    "khoi dong bang ban dap phanh - bev": ("brake_pedal_start", "", "powertrain"),
+    # ── battery ──
+    "loai pin": ("battery_type", "", "battery"),
+    "quang duong chay mot lan sac day (km) (nedc)": ("range_km", "km", "battery"),
+    "quang duong chay mot lan sac day (km)": ("range_km", "km", "battery"),
+    "quang duong chay mot lan sac day": ("range_km", "km", "battery"),
+    "quang duong chay (nedc)": ("range_km", "km", "battery"),
+    "quang duong di chuyen": ("range_km", "km", "battery"),
+    "quang duong": ("range_km", "km", "battery"),
+    "dung luong pin kha dung": ("battery_kwh", "kWh", "battery"),
+    "dung luong pin (kwh)": ("battery_kwh", "kWh", "battery"),
+    "dung luong pin (kwh) - kha dung": ("battery_kwh", "kWh", "battery"),
+    "dung luong pin": ("battery_kwh", "kWh", "battery"),
+    "cong suat sac toi da (kw)": ("max_charge_power_kw", "kW", "battery"),
+    "cong suat sac ac toi da (kw)": ("ac_charge_power_kw", "kW", "battery"),
+    "cong suat sac cham ac toi da (kw)": ("ac_charge_power_kw", "kW", "battery"),
+    "cong suat sac nhanh dc toi da (kw)": ("dc_charge_power_kw", "kW", "battery"),
+    "tinh nang sac nhanh": ("fast_charge_capable", "", "battery"),
+    "thoi gian nap pin nhanh nhat (phut)": ("fast_charge_min", "phút", "battery"),
+    "thoi gian nap pin nhanh nhat": ("fast_charge_min", "phút", "battery"),
+    "thoi gian nap pin nhanh nhat (tu 10 den 70%) (phut)": ("fast_charge_min", "phút", "battery"),
+    "thoi gian nap pin nhanh nhat (tu 10% len 70%) (phut)": ("fast_charge_min", "phút", "battery"),
+    "thoi gian nap pin nhanh nhat tu 10% den 70% (phut)": ("fast_charge_min", "phút", "battery"),
+    "thoi gian nap pin nhanh nhat (phut) tu 10% den 70%": ("fast_charge_min", "phút", "battery"),
+    "thoi gian nap pin nhanh (phut)": ("fast_charge_min", "phút", "battery"),
+    "thoi gian nap pin binh thuong (gio)": ("normal_charge_hours", "giờ", "battery"),
     # ── dimension ──
     "dai x rong x cao (mm)": ("dimension_triple", "mm", "dimension"),
     "dai x rong x cao": ("dimension_triple", "mm", "dimension"),
     "chieu dai co so": ("wheelbase_mm", "mm", "dimension"),
     "khoang sang gam xe": ("ground_clearance_mm", "mm", "dimension"),
-    "khoang sang gam": ("ground_clearance_mm", "mm", "dimension"),
-    "ban kinh quay xe": ("turning_radius", "", "dimension"),
-    # ── exterior / wheels ──
-    "kich thuoc mam xe": ("wheel_size_inch", "inch", "exterior"),
-    "kich thuoc la-zang": ("wheel_size_inch", "inch", "exterior"),
-    "loai la-zang": ("wheel_size_inch", "inch", "exterior"),
-    "loai lop": ("tire_type", "", "exterior"),
-    "lop du phong": ("spare_tire", "", "exterior"),
-    "den chieu sang phia truoc": ("headlights", "", "exterior"),
-    "den pha": ("headlights", "", "exterior"),
-    "den chieu sang ban ngay": ("drl", "", "exterior"),
-    "den suong mu truoc": ("fog_light", "", "exterior"),
-    "guong chieu hau": ("mirrors", "", "exterior"),
-    "dieu chinh cop sau": ("tailgate", "", "exterior"),
-    "dong/mo cop sau": ("tailgate", "", "exterior"),
+    "khoi luong khong tai": ("curb_weight_kg", "kg", "dimension"),
+    "trong luong khong tai": ("curb_weight_kg", "kg", "dimension"),
+    "tai trong": ("payload_kg", "kg", "dimension"),
+    "suc chua (kg)": ("payload_kg", "kg", "dimension"),
+    "duong kinh quay dau toi thieu (m)": ("turning_diameter_m", "m", "dimension"),
+    "dung tich cop sau": ("trunk_capacity", "L", "dimension"),
+    "dung tich khoang chua hanh ly": ("trunk_capacity", "L", "dimension"),
+    "dung tich khoang chua hanh ly (l) - phia truoc": ("frunk_capacity_l", "L", "dimension"),
+    "tai trong hanh ly noc xe": ("roof_load_kg", "kg", "dimension"),
     # ── interior ──
     "so ghe ngoi": ("seats", "", "interior"),
     "so cho ngoi": ("seats", "", "interior"),
     "cho ngoi": ("seats", "", "interior"),
-    "dung thich cop xe": ("trunk_capacity", "L", "interior"),
-    "dung tich cop sau": ("trunk_capacity", "L", "interior"),
-    "cop sau": ("tailgate", "", "exterior"),
-    "man hinh giai tri trung tam": ("display_inch", "inch", "interior"),
+    "he thong loa": ("speakers", "số lượng", "interior"),
+    "he thong am thanh": ("speakers", "số lượng", "interior"),
+    "he thong am thanh cao cap": ("speaker_system", "", "interior"),
+    "chuc nang giai tri": ("entertainment_function", "", "interior"),
+    "cua gio dieu hoa hang ghe thu 2 va thu 3": ("rear_ac_vents", "", "interior"),
+    "cua gio dieu hoa hang ghe thu 2: tren hop de do trung tam": ("row2_ac_vents", "", "interior"),
+    "cua gio dieu hoa hang ghe thu 2: tren cot b": ("row2_ac_vents", "", "interior"),
     "man hinh giai tri cam ung": ("display_inch", "inch", "interior"),
-    "he thong loa": ("speakers", "", "interior"),
-    "he thong dieu hoa": ("ac", "", "interior"),
-    "chat lieu boc ghe": ("seat_material", "", "interior"),
-    "chat lieu ghe": ("seat_material", "", "interior"),
-    "ghe lai": ("driver_seat", "", "interior"),
-    "ghe phu": ("passenger_seat", "", "interior"),
-    "hang ghe thu hai": ("second_row", "", "interior"),
-    "hang ghe thu 2": ("second_row", "", "interior"),
-    "loai vo lang": ("steering_wheel", "", "interior"),
-    # ── safety / chassis ──
+    "man hinh giai tri trung tam": ("display_inch", "inch", "interior"),
+    "man hinh giai tri cam ung hang ghe sau": ("rear_display_inch", "inch", "interior"),
+    "man hinh thong tin lai": ("driver_display_inch", "inch", "interior"),
+    "bang dong ho thong tin lai": ("driver_display_inch", "inch", "interior"),
+    "man hinh thong tin sau vo lang": ("driver_display_inch", "inch", "interior"),
+    "cong ket noi usb": ("usb_ports", "", "interior"),
+    "cong ket noi usb loai a": ("usb_port_type_a", "", "interior"),
+    "cong ket noi usb loai c": ("usb_port_type_c", "", "interior"),
+    "cong ket noi usb loai a hang ghe lai": ("usb_a_front", "", "interior"),
+    "cong ket noi usb loai a hang ghe thu 2": ("usb_a_row2", "", "interior"),
+    "cong ket noi usb loai a hang ghe thu 3": ("usb_a_row3", "", "interior"),
+    "cong sac 12v": ("12v_outlet", "", "interior"),
+    "cong sac 12v khoang hanh ly": ("12v_trunk_outlet", "", "interior"),
+    "o dien xoay chieu": ("ac_power_outlet", "", "interior"),
+    "am ly": ("amplifier", "", "interior"),
+    "ghe lai": ("driver_seat_type", "", "interior"),
+    "ghe phu": ("passenger_seat_type", "", "interior"),
+    "hang ghe thu hai": ("second_row_seat_type", "", "interior"),
+    "hang ghe thu 2 dieu chinh huong": ("second_row_adjust", "", "interior"),
+    "hang ghe thu 2 dieu chinh gap ty le": ("second_row_fold", "", "interior"),
+    "hang ghe thu 2 co massage": ("second_row_massage", "", "interior"),
+    "hang ghe thu 2 co suoi": ("second_row_heating", "", "interior"),
+    "hang ghe thu 2 co thong gio": ("second_row_ventilation", "", "interior"),
+    "gap lung ghe hang ghe thu 2": ("second_row_fold", "", "interior"),
+    "gap hang ghe thu 3": ("row3_fold", "", "interior"),
+    "len xuong de dang (len/xuong tu hang thu 2)": ("easy_access", "", "interior"),
+    "tua dau ghe lai": ("driver_headrest", "", "interior"),
+    "tua dau ghe phu": ("passenger_headrest", "", "interior"),
+    "tua dau ghe hang 2": ("row2_headrest", "", "interior"),
+    "tua dau ghe hang 3": ("row3_headrest", "", "interior"),
+    "ghe vip": ("vip_seat", "", "interior"),
+    "ghe vip chinh dien": ("vip_seat_power", "", "interior"),
+    "ghe vip massage": ("vip_seat_massage", "", "interior"),
+    "ghe vip co suoi": ("vip_seat_heating", "", "interior"),
+    "ghe vip co thong gio": ("vip_seat_ventilation", "", "interior"),
+    "hop do hang ghe sau": ("rear_console_box", "", "interior"),
+    "dieu chinh vo lang": ("steering_wheel_adjust", "", "interior"),
+    "suoi tay lai": ("heated_steering_wheel", "", "interior"),
+    "nho vi tri vo lang": ("steering_wheel_memory", "", "interior"),
+    "boc vo lang": ("steering_wheel_wrap", "", "interior"),
+    "vo lang": ("steering_wheel_type", "", "interior"),
+    "cac ngon ngu ho tro": ("supported_languages", "", "interior"),
+    "phanh tay": ("parking_brake", "", "interior"),
+    "phanh do": ("parking_brake", "", "interior"),
+    "phanh do dien tu va che do tu dong giu phanh": ("epb_auto_hold", "", "convenience"),
+    "phanh tay dien tu va tu dong giu phanh": ("epb_auto_hold", "", "convenience"),
+    "khay dung dung cu sua xe": ("tool_kit", "", "interior"),
+    "moc keo toi": ("tow_hook", "", "interior"),
+    # ── exterior ──
+    "kich thuoc la-zang": ("wheel_size_inch", "inch", "exterior"),
+    "kich thuoc la-zang (inch)": ("wheel_size_inch", "inch", "exterior"),
+    "kich thuoc mam xe": ("wheel_size_inch", "inch", "exterior"),
+    "loai la-zang": ("wheel_type", "", "exterior"),
+    "kich thuoc lop & la-zang": ("tire_wheel_size", "", "exterior"),
+    "kich thuoc lop": ("tire_size", "", "exterior"),
+    "tay nam cua": ("door_handle_type", "", "exterior"),
+    "co che lay mo cua": ("door_opening_mechanism", "", "exterior"),
+    "cua hit": ("power_suction_doors", "", "exterior"),
+    "dieu khien do cao goc chieu den": ("headlight_leveling", "", "exterior"),
+    "den dinh vi": ("position_light", "", "exterior"),
+    "den chao mung": ("welcome_light", "", "exterior"),
+    "den nhan dien thuong hieu phia truoc/sau": ("brand_light", "", "exterior"),
+    "den nhan dien thuong hieu truoc va sau": ("brand_light", "", "exterior"),
+    "guong chieu hau ngoai": ("exterior_mirror_type", "", "exterior"),
+    "guong chieu hau trong xe": ("interior_mirror_type", "", "interior"),
+    "kinh cua so dien": ("power_windows", "", "exterior"),
+    "den chieu sang khi mo cua": ("puddle_light", "", "exterior"),
+    "den chieu logo mat duong (cam bien da cop)": ("logo_light", "", "exterior"),
+    "bac len xuong": ("side_step", "", "exterior"),
+    "thanh trang tri noc xe": ("roof_rack", "", "exterior"),
+    "canh huong gio": ("spoiler", "", "exterior"),
+    "co che dong mo cong sac": ("charge_port_door", "", "exterior"),
+    "thanh gia cuong cua xe": ("door_impact_beam", "", "exterior"),
+    "dong/mo cop sau": ("trunk_lid_type", "", "exterior"),
+    "dong/mo cop da chan": ("kick_sensor_trunk", "", "exterior"),
+    "phanh truoc": ("front_brake_type", "", "chassis"),
+    "phanh sau": ("rear_brake_type", "", "chassis"),
+    "bo va lop": ("tire_repair_kit", "", "chassis"),
+    "bo dung cu kich xe": ("jack_kit", "", "chassis"),
+    # ── airbag sub-types (prefix match truoc "tui khi" generic) ──
+    "he thong tui khi": ("airbags", "", "safety"),
+    "tui khi truoc lai va hanh khach phia truoc": ("front_airbags", "", "safety"),
+    "tui khi phia truoc cho nguoi lai va hanh khach phia truoc": ("front_airbags", "", "safety"),
+    "tui khi danh cho nguoi lai": ("driver_airbag", "", "safety"),
+    "tui khi ben hong hang ghe truoc": ("side_airbags_front", "", "safety"),
+    "tui khi ben hong hang ghe sau": ("side_airbags_rear", "", "safety"),
+    "tui khi ben hong": ("side_airbags", "", "safety"),
+    "tui khi rem": ("curtain_airbags", "", "safety"),
+    "tui khi bao ve chan hang ghe truoc": ("knee_airbags", "", "safety"),
+    "tui khi trung tam hang ghe truoc": ("center_airbags", "", "safety"),
+    "so luong tui khi": ("airbags", "", "safety"),
     "tui khi": ("airbags", "", "safety"),
-    "he thong phanh (truoc/sau)": ("brakes", "", "safety"),
-    "he thong phanh truoc/sau": ("brakes", "", "safety"),
-    "phanh truoc": ("brakes", "", "safety"),
-    "phanh sau": ("brakes", "", "safety"),
-    "he thong treo (truoc/sau)": ("suspension", "", "safety"),
-    "he thong treo - truoc": ("suspension", "", "safety"),
-    "he thong treo - sau": ("suspension", "", "safety"),
-    "treo truoc": ("suspension", "", "safety"),
-    "treo sau": ("suspension", "", "safety"),
-}
-# alias dài nhất trước (match ưu tiên chuỗi dài hơn — "cong suat toi da (kw/hp)" trước
-# "cong suat toi da").
-LABEL_MAP = {alias: v for alias, v in _A.items()}
-_ALIASES_BY_LEN = sorted(LABEL_MAP.keys(), key=len, reverse=True)
-
-# ── WHITELIST: chỉ giữ spec cơ bản phục vụ tư vấn mua xe ────────────────────
-# (power/torque/range/pin/kích thước/chỗ ngồi). Key ngoài whitelist → drop.
-# category: dimension | powertrain | battery | interior
-BASIC_SPECS: dict[str, tuple[str, str]] = {
-    # key:                      (category, unit)
-    "length_mm":            ("dimension", "mm"),
-    "width_mm":             ("dimension", "mm"),
-    "height_mm":            ("dimension", "mm"),
-    "wheelbase_mm":         ("dimension", "mm"),
-    "ground_clearance_mm":  ("dimension", "mm"),
-    "power_kw":             ("powertrain", "kW"),
-    "torque_nm":            ("powertrain", "Nm"),
-    "drivetrain":           ("powertrain", ""),
-    "battery_kwh":          ("battery",   "kWh"),
-    "range_km":             ("battery",   "km"),
-    "dc_charge_kw":         ("battery",   "kW"),
-    "seats":                ("interior",  ""),
 }
 
+ALIASES_BY_LEN = sorted(LABEL_MAP.keys(), key=len, reverse=True)
 
-# spec_key có giá trị số → chỉ giữ phần số. Còn lại giữ nguyên text (định tính).
-NUMERIC_KEYS = {
-    "power_kw", "torque_nm", "range_km", "battery_kwh", "fast_charge_min",
-    "top_speed_kmh", "acceleration_0_100_s", "dc_charge_kw", "ac_charge_kw",
-    "wheelbase_mm", "ground_clearance_mm", "wheel_size_inch", "seats",
-    "trunk_capacity", "display_inch", "speakers", "airbags",
-}
-# Dimension triple → tách 3 row length/width/height (dot = phân cách hàng nghìn → bỏ).
-DIMENSION_KEYS = ("length_mm", "width_mm", "height_mm")
+CSV_FIELDS = ["model_code", "version_name", "version_code",
+              "spec_category", "spec_category_vn",
+              "spec_key", "spec_key_vn",
+              "spec_value", "spec_unit", "source_url"]
 
-# Section divider trong table (PIN, KHUNG GẦM, NGOẠI THẤT...) — value rỗng, skip.
-SECTION_HEADERS = {
-    "pin", "khung gam", "ngoai that", "ngoai that den pha", "noi that & tien nghi",
-    "noi that", "thong so truyen dong khac", "giam xoc", "phanh",
-    "vanh va lop banh xe", "ghe toan xe", "ghe lai", "ghe phu", "khung gam khac",
-    "phiên ban", "phien ban", "thong so", "dau xe", "hong xe", "duoi xe",
-}
-PRICE_LABELS = ("gia", "lan bangh", "lan bang", "niem yet", "gia ban", "phien ban")
-
-
-def lookup_label(label_norm: str) -> tuple[str, str, str] | None:
-    """Tra LABEL_MAP: exact match trước, rồi startswith (alias dài nhất)."""
-    if label_norm in LABEL_MAP:
-        return LABEL_MAP[label_norm]
-    for alias in _ALIASES_BY_LEN:
-        if label_norm.startswith(alias):
-            return LABEL_MAP[alias]
-    return None
-
-
-def is_section_header(label_norm: str) -> bool:
-    return label_norm in SECTION_HEADERS
-
-
-def is_price_row(label_norm: str) -> bool:
-    return any(p in label_norm for p in PRICE_LABELS)
-
-
-def detect_edition(text: str) -> str | None:
-    """Từ khoá edition trong 1 đoạn text (header cell / dòng context).
-    Đồng nghĩa: 'Base' → 'Eco' (base trim = Eco theo MODEL_EDITIONS)."""
-    t = norm(text)
-    for kw in EDITION_KEYWORDS:
-        if kw.lower() in t:
-            return EDITION_SYNONYMS.get(kw.lower(), kw)
-    return None
-
-
-EDITION_SYNONYMS = {"base": "Eco"}
-
-
-# ── Value cleaning ──────────────────────────────────────────────────────────
-def parse_number(s: str) -> tuple[str, float] | None:
-    """Trích token số đầu tiên → (canonical_str, float). Trả None nếu không có số.
-    Phân biệt dot=phân cách hàng nghìn (vd 2.950) vs comma=thập phân (vd 87,7) vs
-    dot=thập phân (vd 7.5). Canonical: bỏ dot hàng nghìn, comma→dot thập phân
-    ('2.950'→'2950', '87,7'→'87.7', '4701'→'4701', '5,58'→'5.58')."""
-    m = re.search(r"[\d][\d.,]*", s or "")
-    if not m:
-        return None
-    tok = m.group(0)
-    if re.fullmatch(r"\d{1,3}(\.\d{3})+(,\d+)?", tok):       # 2.950 / 1.234,5
-        tok = tok.replace(".", "").replace(",", ".")
-    elif re.fullmatch(r"\d+,\d+", tok):                       # 87,7
-        tok = tok.replace(",", ".")
-    # else: \d+\.\d+ (7.5) hoặc \d+ → giữ nguyên
-    try:
-        val = float(tok)
-    except ValueError:
-        return None
-    # canonical: số nguyên → bỏ ".0" (2840.0 → 2840); thập phân → gọn (87.7, 5.58).
-    canon = str(int(val)) if val == int(val) else f"{val:g}"
-    return canon, val
-
-
-# Khoảng hợp lý cho spec số liệu — value ngoài khoảng = junk → drop.
-SANITY_RANGES = {
-    "power_kw": (5, 600), "torque_nm": (30, 1500), "range_km": (50, 1000),
-    "battery_kwh": (3, 300), "fast_charge_min": (5, 600), "top_speed_kmh": (50, 400),
-    "acceleration_0_100_s": (1, 30), "dc_charge_kw": (1, 500), "ac_charge_kw": (1, 500),
-    "wheelbase_mm": (1500, 4000), "ground_clearance_mm": (50, 500),
-    "wheel_size_inch": (12, 30), "seats": (2, 9), "trunk_capacity": (50, 3000),
-    "display_inch": (5, 30), "speakers": (1, 30), "airbags": (1, 20),
-    "length_mm": (2000, 6000), "width_mm": (1000, 3000), "height_mm": (1000, 3000),
+# ── Vietnamese labels ────────────────────────────────────────────────────────
+CATEGORY_VN_MAP = {
+    "dimension": "Kích thước & trọng lượng",
+    "powertrain": "Hệ thống truyền động",
+    "battery": "Pin & sạc",
+    "exterior": "Ngoại thất",
+    "interior": "Nội thất",
+    "infotainment": "Giải trí & kết nối",
+    "safety": "An toàn",
+    "adas": "Hỗ trợ lái nâng cao (ADAS)",
+    "chassis": "Khung gầm & hệ thống treo",
+    "convenience": "Tiện nghi",
+    "security": "An ninh",
+    "connected": "Kết nối thông minh",
+    "general": "Thông tin chung",
 }
 
+SPEC_KEY_VN_MAP = {
+    # ── dimension ──
+    "length_mm": "Chiều dài tổng thể",
+    "width_mm": "Chiều rộng tổng thể",
+    "height_mm": "Chiều cao tổng thể",
+    "wheelbase_mm": "Chiều dài cơ sở",
+    "ground_clearance_mm": "Khoảng sáng gầm xe",
+    "curb_weight_kg": "Trọng lượng không tải",
+    "payload_kg": "Tải trọng / Sức chứa",
+    "roof_load_kg": "Tải trọng hành lý nóc xe",
+    "turning_diameter_m": "Đường kính quay đầu tối thiểu",
+    "trunk_capacity": "Dung tích khoang hành lý",
+    "frunk_capacity_l": "Dung tích khoang hành lý phía trước",
+    # ── powertrain ──
+    "power_kw": "Công suất tối đa",
+    "torque_nm": "Mô-men xoắn cực đại",
+    "top_speed_kmh": "Tốc độ tối đa",
+    "acceleration_0_100_s": "Tăng tốc 0-100 km/h",
+    "acceleration_0_50_s": "Tăng tốc 0-50 km/h",
+    "energy_consumption_kwh_100km": "Mức tiêu thụ năng lượng",
+    "motor_configuration": "Cấu hình động cơ",
+    "gear_shift_type": "Cách chuyển số",
+    "creep_mode": "Chế độ thay đổi tốc độ đến dừng",
+    "drivetrain": "Dẫn động",
+    "drive_modes": "Chế độ lái",
+    "battery_heater": "Sưởi pin cao thế",
+    "home_charger_type": "Bộ sạc tại nhà",
+    "mobile_charger_type": "Dây sạc di động",
+    "regenerative_braking": "Hệ thống phanh tái sinh",
+    "brake_pedal_start": "Khởi động bằng bàn đạp phanh",
+    # ── battery ──
+    "battery_type": "Loại pin",
+    "battery_kwh": "Dung lượng pin khả dụng",
+    "range_km": "Phạm vi di chuyển",
+    "fast_charge_min": "Thời gian nạp pin nhanh nhất",
+    "normal_charge_hours": "Thời gian nạp pin bình thường",
+    "max_charge_power_kw": "Công suất sạc tối đa",
+    "ac_charge_power_kw": "Công suất sạc AC tối đa",
+    "dc_charge_power_kw": "Công suất sạc nhanh DC tối đa",
+    "fast_charge_capable": "Tính năng sạc nhanh",
+    # ── exterior ──
+    "headlight_type": "Đèn chiếu sáng phía trước",
+    "headlight_feature": "Đèn pha",
+    "headlight_leveling": "Điều khiển góc chiếu đèn",
+    "auto_headlights": "Đèn pha tự động",
+    "adaptive_headlights": "Đèn pha tự động / thích ứng",
+    "drl_type": "Đèn chiếu sáng ban ngày",
+    "tail_light_type": "Đèn hậu",
+    "position_light": "Đèn định vị",
+    "welcome_light": "Đèn chào mừng",
+    "front_brand_light": "Đèn nhận diện thương hiệu trước",
+    "rear_brand_light": "Đèn nhận diện thương hiệu sau",
+    "brand_light": "Đèn nhận diện thương hiệu",
+    "auto_high_beam": "Tự động bật/tắt chế độ chiếu xa",
+    "auto_wiper": "Gạt mưa trước tự động",
+    "power_folding_mirrors": "Gương chiếu hậu chỉnh điện / gập điện",
+    "one_touch_windows": "Kính cửa sổ chỉnh điện 1 chạm",
+    "power_windows": "Kính cửa sổ điện",
+    "wheel_size_inch": "Kích thước la-zăng",
+    "wheel_type": "Loại la-zăng",
+    "tire_wheel_size": "Kích thước lốp & la-zăng",
+    "tire_size": "Kích thước lốp",
+    "daytime_running_light": "Đèn chờ dẫn đường",
+    "fog_light_front": "Đèn sương mù trước",
+    "cornering_light": "Đèn chiếu góc",
+    "high_mount_brake_light": "Đèn phanh trên cao phía sau",
+    "rearview_mirror_type": "Gương chiếu hậu",
+    "exterior_mirror_type": "Gương chiếu hậu ngoài",
+    "interior_mirror_type": "Gương chiếu hậu trong xe",
+    "window_type": "Kiểu cửa sổ",
+    "privacy_glass": "Kính cửa sổ màu đen (riêng tư)",
+    "trunk_lid_type": "Điều chỉnh cốp sau",
+    "kick_sensor_trunk": "Đóng/mở cốp đá chân",
+    "windshield_type": "Kính chắn gió",
+    "underbody_protection": "Tấm bảo vệ dưới thân xe",
+    "smart_key": "Chìa khóa thông minh",
+    "door_handle_type": "Tay nắm cửa",
+    "door_opening_mechanism": "Cơ chế mở cửa",
+    "power_suction_doors": "Cửa hít",
+    "puddle_light": "Đèn chiếu sáng khi mở cửa",
+    "logo_light": "Đèn chiếu logo mặt đường",
+    "side_step": "Bậc lên xuống",
+    "roof_rack": "Thanh trang trí nóc xe",
+    "spoiler": "Cánh hướng gió",
+    "charge_port_door": "Cơ chế đóng mở cổng sạc",
+    "door_impact_beam": "Thanh gia cường cửa xe",
+    # ── interior ──
+    "leatherette_seats": "Ghế bọc da nhân tạo",
+    "seat_material_type": "Chất liệu bọc ghế",
+    "seats": "Số ghế ngồi",
+    "speakers": "Hệ thống loa",
+    "speaker_system": "Hệ thống âm thanh",
+    "epb_auto_hold": "Phanh đỗ điện tử & giữ phanh tự động",
+    "gps_tracking": "Định vị xe từ xa",
+    "second_row_seat_type": "Hàng ghế thứ hai",
+    "steering_wheel_type": "Loại vô lăng",
+    "ac_type": "Hệ thống điều hòa",
+    "cabin_air_filter": "Lọc không khí Cabin",
+    "rear_ac_vents": "Ống thông gió dưới chân hành khách sau",
+    "head_up_display": "Màn hình hiển thị HUD",
+    "usb_port_type_a": "Cổng kết nối USB loại A",
+    "usb_port_type_c": "Cổng kết nối USB loại C",
+    "usb_ports": "Cổng kết nối USB",
+    "usb_a_front": "Cổng USB loại A hàng ghế lái",
+    "usb_a_row2": "Cổng USB loại A hàng ghế thứ 2",
+    "usb_a_row3": "Cổng USB loại A hàng ghế thứ 3",
+    "12v_outlet": "Cổng sạc 12V",
+    "12v_trunk_outlet": "Cổng sạc 12V khoang hành lý",
+    "ac_power_outlet": "Ổ điện xoay chiều",
+    "amplifier": "Âm ly",
+    "wireless_charging": "Sạc không dây",
+    "wifi_connectivity": "Kết nối Wifi",
+    "bluetooth_connectivity": "Kết nối Bluetooth",
+    "subwoofer": "Loa trầm",
+    "ambient_lighting": "Đèn trang trí nội thất",
+    "sunroof_type": "Cửa sổ trời",
+    "driver_display_inch": "Màn hình thông tin lái",
+    "rear_display_inch": "Màn hình giải trí hàng ghế sau",
+    "display_inch": "Màn hình giải trí cảm ứng",
+    "parking_brake": "Phanh tay",
+    "supported_languages": "Các ngôn ngữ hỗ trợ",
+    "driver_seat_type": "Ghế lái",
+    "passenger_seat_type": "Ghế phụ",
+    "second_row_seat_type": "Hàng ghế thứ hai",
+    "tool_kit": "Khay đựng dụng cụ sửa xe",
+    "tow_hook": "Móc kéo tời",
+    "defroster": "Chức năng làm tan sương/tan băng",
+    "air_quality_control": "Kiểm soát chất lượng không khí",
+    "air_ionizer": "Ion hóa không khí",
+    "rear_defroster": "Sưởi kính sau",
+    "glovebox_light": "Đèn hộc để đồ trước",
+    "trunk_light": "Đèn khoang hành lý",
+    "frunk_light": "Đèn khoang hành lý trước",
+    "dome_light": "Đèn trần phía trước",
+    "cabin_lights": "Đèn trần cabin",
+    "sun_visor_mirror": "Tấm che nắng, có gương",
+    "cupholders": "Hộc đựng cốc",
+    # ── infotainment ──
+    "smartphone_integration": "Kết nối Android Auto / Apple CarPlay",
+    "navigation": "Điều hướng & dẫn đường",
+    "web_browser": "Trình duyệt web",
+    "gaming": "Trò chơi",
+    "self_diagnosis": "Tự chẩn đoán lỗi",
+    "ota_update": "Cập nhật phần mềm từ xa",
+    "basic_widgets": "Khung tiện ích cơ bản (lịch, thời tiết, media, bản đồ)",
+    "voice_search": "Hỏi đáp & tìm kiếm thông tin cơ bản",
+    "voice_control": "Điều khiển chức năng xe bằng giọng nói",
+    "voice_navigation": "Dẫn đường bằng giọng nói",
+    "voice_greeting": "Chào hỏi / thực hiện lệnh theo kịch bản",
+    "vehicle_status_assist": "Tư vấn tình trạng xe & hỗ trợ xử lý sự cố",
+    "phone_app": "Ứng dụng điện thoại",
+    "ev_routing": "Dẫn đường nâng cao cho xe điện (tìm trạm sạc)",
+    "vehicle_modes": "Chế độ xe cơ bản (cắm trại, người lạ, thú cưng, rửa xe)",
+    "basic_entertainment": "Giải trí cơ bản (Đài FM, Bluetooth, USB)",
+    "basic_map": "Bản đồ cơ bản",
+    "basic_map_navigation": "Bản đồ cơ bản (Tìm địa điểm, Dẫn đường, tình trạng giao thông, hình vệ tinh)",
+    "charging_etc": "Sạc, v.v.",
+    "online_entertainment": "Giải trí trực tuyến",
+    "entertainment_function": "Chức năng giải trí",
+    "user_manual": "Hướng dẫn sử dụng",
+    "free_software": "Phần mềm miễn phí",
+    "paid_software": "Phần mềm thu phí",
+    "app_store": "Chợ ứng dụng",
+    "special_operation_modes": "Chế độ vận hành đặc biệt",
+    "activity_limits": "Giới hạn thời gian hoạt động & khu vực hoạt động",
+    "camping_mode": "Chế độ cắm trại",
+    "maintenance_reminder": "Đề xuất lịch bảo trì/bảo dưỡng tự động",
+    "phone_media": "Giải trí thông qua đồng bộ điện thoại",
+    "audio_entertainment": "Giải trí âm thanh",
+    "internet_access": "Tra cứu & truy cập Internet",
+    "calendar_contact_sync": "Đồng bộ lịch và danh bạ điện thoại",
+    "contact_sync": "Đồng bộ danh bạ điện thoại",
+    "fota_update": "Cập nhật phần mềm miễn phí FOTA",
+    "sota_update": "Cập nhật phần mềm thu phí SOTA",
+    # ── safety ──
+    "abs": "Chống bó cứng phanh (ABS)",
+    "ebd": "Phân phối lực phanh điện tử (EBD)",
+    "brake_assist": "Hỗ trợ phanh khẩn cấp (BA)",
+    "esc": "Cân bằng điện tử (ESC)",
+    "tcs": "Kiểm soát lực kéo (TCS)",
+    "hsa": "Hỗ trợ khởi hành ngang dốc (HSA)",
+    "tpms": "Giám sát áp suất lốp",
+    "airbags": "Túi khí",
+    "front_airbags": "Túi khí trước",
+    "driver_airbag": "Túi khí người lái",
+    "side_airbags": "Túi khí bên hông",
+    "side_airbags_front": "Túi khí bên hông ghế trước",
+    "side_airbags_rear": "Túi khí bên hông ghế sau",
+    "curtain_airbags": "Túi khí rèm",
+    "knee_airbags": "Túi khí bảo vệ chân",
+    "center_airbags": "Túi khí trung tâm",
+    "rollover_mitigation": "Chức năng chống lật ROM",
+    "emergency_stop_signal": "Đèn báo phanh khẩn cấp ESS",
+    "auto_door_lock": "Khóa cửa xe tự động khi xe di chuyển",
+    "pretensioner_seatbelt": "Căng đai khẩn cấp",
+    "isofix": "Móc cố định ghế trẻ em ISOFIX",
+    "seatbelt_warning": "Cảnh báo dây an toàn",
+    "child_lock": "Khóa cửa trẻ em",
+    "emergency_call": "Gọi cứu hộ tự động & hỗ trợ trên đường",
+    "key_type": "Loại chìa khóa",
+    "key_system": "Hệ thống chìa khóa",
+    # ── adas ──
+    "blind_spot_warning": "Cảnh báo điểm mù",
+    "lane_departure_warning": "Cảnh báo chệch làn",
+    "lane_keep_assist": "Hỗ trợ giữ làn",
+    "emergency_lane_keep": "Hỗ trợ giữ làn khẩn cấp",
+    "forward_collision_warning": "Cảnh báo va chạm phía trước",
+    "aeb_front": "Phanh tự động khẩn cấp trước",
+    "aeb_front_rear": "Phanh tự động khẩn cấp trước/sau",
+    "auto_lane_change": "Hỗ trợ tự động chuyển làn",
+    "highway_driving_assist": "Trợ lái trên cao tốc / di chuyển khi tắc đường",
+    "traffic_jam_assist": "Hỗ trợ di chuyển khi ùn tắc",
+    "highway_assist": "Hỗ trợ lái trên đường cao tốc",
+    "rear_cross_traffic_alert": "Cảnh báo phương tiện cắt ngang phía sau",
+    "door_open_warning": "Cảnh báo mở cửa",
+    "driver_monitoring": "Cảnh báo tài xế buồn ngủ & mất tập trung",
+    "rear_parking_assist": "Hỗ trợ đỗ xe phía sau",
+    "front_parking_assist": "Hỗ trợ đỗ xe phía trước",
+    "front_parking_sensor": "Cảm biến đỗ xe phía trước",
+    "rear_parking_sensor": "Cảm biến đỗ xe phía sau",
+    "rearview_camera": "Camera lùi",
+    "surround_view_camera": "Camera 360° / giám sát xung quanh",
+    "cruise_control_type": "Kiểm soát hành trình",
+    "adaptive_cruise_control": "Điều chỉnh tốc độ thông minh",
+    "traffic_sign_recognition": "Nhận biết biển báo giao thông",
+    "lane_centering": "Kiểm soát đi giữa làn",
+    "hill_descent_control": "Hỗ trợ xuống dốc HDC",
+    "emergency_stop": "Tự động dừng khẩn cấp",
+    # ── chassis ──
+    "front_suspension_type": "Hệ thống treo trước",
+    "rear_suspension_type": "Hệ thống treo sau",
+    "suspension_type": "Hệ thống treo (trước/sau)",
+    "front_brake_type": "Phanh trước",
+    "rear_brake_type": "Phanh sau",
+    "brake_type": "Hệ thống phanh trước/sau",
+    "steering_assist_type": "Trợ lực lái",
+    "stabilizer_bar": "Thanh cân bằng trước",
+    "tire_repair_kit": "Bộ vá lốp",
+    "jack_kit": "Bộ dụng cụ kích xe",
+    "driver_headrest": "Tựa đầu ghế lái",
+    "passenger_headrest": "Tựa đầu ghế phụ",
+    "row2_headrest": "Tựa đầu ghế hàng 2",
+    "row3_headrest": "Tựa đầu ghế hàng 3",
+    "second_row_adjust": "Hàng ghế thứ 2 điều chỉnh hướng",
+    "second_row_fold": "Hàng ghế thứ 2 gập tỷ lệ",
+    "second_row_ventilation": "Hàng ghế thứ 2 thông gió",
+    "second_row_heating": "Hàng ghế thứ 2 sưởi",
+    "second_row_massage": "Hàng ghế thứ 2 massage",
+    "row3_fold": "Gập hàng ghế thứ 3",
+    "easy_access": "Lên xuống dễ dàng",
+    "vip_seat": "Ghế VIP",
+    "vip_seat_power": "Ghế VIP chỉnh điện",
+    "vip_seat_massage": "Ghế VIP massage",
+    "vip_seat_ventilation": "Ghế VIP thông gió",
+    "vip_seat_heating": "Ghế VIP sưởi",
+    "rear_console_box": "Hộp đồ hàng ghế sau",
+    "steering_wheel_adjust": "Điều chỉnh vô lăng",
+    "steering_wheel_memory": "Nhớ vị trí vô lăng",
+    "steering_wheel_wrap": "Bọc vô lăng",
+    "heated_steering_wheel": "Sưởi tay lái",
+    "row2_ac_vents": "Cửa gió điều hòa hàng ghế thứ 2",
+    "virtual_assistant": "Trợ lý ảo",
+    "vehicle_control": "Điều khiển chức năng trên xe",
+    "quick_control": "Hỗ trợ điều khiển, thiết lập nhanh",
+    "media_control": "Hỗ trợ giải trí đa phương tiện",
+    "handsfree_call": "Hỗ trợ gọi điện thoại rảnh tay",
+    "small_talk": "Chuyện phiếm & tiếu lâm",
+    "general_qa": "Hỏi đáp thông tin chung",
+    "basic_settings": "Cài đặt cơ bản",
+    "advanced_settings": "Cài đặt nâng cao (AI tạo sinh)",
+    "assistant_feedback": "Cập nhật / góp ý cho trợ lý ảo",
+    "usage_guidance": "Tư vấn cách thức sử dụng và vận hành",
+    # ── security ──
+    "immobilizer": "Khoá động cơ khi có trộm",
+    "anti_theft_alarm": "Cảnh báo chống trộm",
+    # ── connected ──
+    "account_sync": "Đồng bộ tài khoản / ứng dụng / phân quyền",
+    "vehicle_status_notification": "Thông báo trạng thái xe (pin, hiệu suất, bảo dưỡng)",
+    "charge_management": "Quản lý sạc & thanh toán phí sạc",
+    "charge_payment": "Thanh toán phí sạc",
+    "charger_map": "Bản đồ trạm sạc",
+    "service_booking": "Dịch vụ hậu mãi: đặt lịch sửa chữa, lái thử",
+    "online_accessory_shop": "Mua bán phụ kiện",
+    "vehicle_monitoring": "Giám sát xe từ xa",
+    "remote_control": "Điều khiển xe từ xa",
+    "remote_settings": "Thiết lập cài đặt từ xa",
+    "advanced_battery_management": "Quản lý pin nâng cao",
+    "battery_lease_management": "Quản lý gói cước thuê pin trực tuyến",
+    "promo_info": "Thông tin khuyến mại & phụ kiện",
+    "notifications": "Nhận thông báo",
+    "wifi_management": "Quản lý WiFi",
+    "bluetooth_management": "Quản lý thiết bị Bluetooth",
+    "esim_management": "Quản lý eSIM",
+    "battery_monitoring": "Giám sát tình trạng pin",
+    "driver_profile": "Hồ sơ người lái",
+    "advanced_profile": "Hồ sơ nâng cao",
+}
 
-def clean_value(spec_key: str, raw: str) -> str | None:
-    """Chuẩn hóa value. NUMERIC_KEYS → parse_number + sanity range (None = drop).
-    Key định tính → giữ text đã strip."""
-    v = raw.strip().strip(":|-–—").strip()
-    v = re.sub(r"\s+", " ", v)
-    if not v:
-        return None
-    if spec_key in NUMERIC_KEYS or spec_key in DIMENSION_KEYS:
-        pn = parse_number(v)
-        if not pn:
-            return None
-        canon, val = pn
-        lo, hi = SANITY_RANGES.get(spec_key, (None, None))
-        if lo is not None and not (lo <= val <= hi):
-            return None
-        return canon
-    if spec_key == "drivetrain":
-        # Chuẩn hóa FWD/RWD/AWD — bỏ "Cầu trước"/"Cầu sau"/tiếng Anh lẫn VN.
-        n = v.upper()
-        for token in ("AWD", "RWD", "FWD"):
-            if token in n:
-                return token
-        return None  # không nhận diện được (vd VF2 parse nhầm) → drop
-    return v
+# ── SECTION_CATEGORY_MAP: section header → spec_category ──────────────────────
+# Dùng để track context: khi section header xuất hiện, các row không mapped
+# phía dưới sẽ được gán category tương ứng thay vì "general".
+SECTION_CATEGORY_MAP = {
+    "kich thuoc": "dimension",
+    "kich thuoc & tai trong": "dimension",
+    "tai trong": "dimension",
+    "he thong truyen dong": "powertrain",
+    "he truyen dong": "powertrain",
+    "dong co": "powertrain",
+    "thong so dong co": "powertrain",
+    "thong so truyen dong khac": "powertrain",
+    "truyen dong khac": "powertrain",
+    "pin": "battery",
+    "pin & sac": "battery",
+    "thong so pin": "battery",
+    "khung gam": "chassis",
+    "khung gam khac": "chassis",
+    "giam xoc": "chassis",
+    "phanh": "chassis",
+    "he thong treo": "chassis",
+    "vanh va lop xe": "chassis",
+    "vanh va lop banh xe": "chassis",
+    "ngoai that": "exterior",
+    "den ngoai that": "exterior",
+    "den ngoai that khac": "exterior",
+    "den pha": "exterior",
+    "guong": "exterior",
+    "guong chieu hau": "exterior",
+    "cua": "exterior",
+    "cop": "exterior",
+    "thiet ke kieu dang ngoai that": "exterior",
+    "noi that & tien nghi": "interior",
+    "noi that": "interior",
+    "noi that & tien nghi khac": "interior",
+    "ghe toan xe": "interior",
+    "ghe lai": "interior",
+    "ghe phu": "interior",
+    "ghe hang 2": "interior",
+    "ghe vip": "interior",
+    "vo lang": "interior",
+    "dieu hoa khong khi": "interior",
+    "man hinh va ket noi": "interior",
+    "man hinh, ket noi, giai tri, tien nghi": "interior",
+    "man hinh, ket noi giai tri": "interior",
+    "he thong loa": "interior",
+    "he thong den noi that": "interior",
+    "thiet ke kieu dang noi that": "interior",
+    "an toan & an ninh": "safety",
+    "an toan": "safety",
+    "he thong tui khi": "safety",
+    "he thong ho tro nguoi lai nang cao adas": "adas",
+    "cac tinh nang adas": "adas",
+    "tro lai tren cao toc": "adas",
+    "tro lan": "adas",
+    "ho tro hanh trinh": "adas",
+    "ho tro lai tieu chuan": "adas",
+    "ho tro lan duong": "adas",
+    "giam sat hanh trinh thich ung": "adas",
+    "canh bao va cham": "adas",
+    "tro lai khi co nguy co va cham": "adas",
+    "ho tro do xe": "adas",
+    "ho tro do xe tieu chuan": "adas",
+    "ho tro khac": "adas",
+    "cac tinh nang khac": "adas",
+    "tinh nang thong minh": "infotainment",
+    "cac tinh nang thong minh": "infotainment",
+    "cac tinh nang dieu khien thong minh": "infotainment",
+    "tinh nang dieu khien thong minh": "infotainment",
+    "he thong tin giai tri tren xe": "infotainment",
+    "he thong tin giai tri": "infotainment",
+    "thong tin & giai tri": "infotainment",
+    "tro ly ao": "infotainment",
+    "tro ly ao vivi": "infotainment",
+    "dieu khien xe thong minh (man hinh, giong noi, c-app)": "infotainment",
+    "dieu huong - dan duong": "infotainment",
+    "dieu huong, dan duong": "infotainment",
+    "tien ich gia dinh va van phong": "infotainment",
+    "tien ich": "infotainment",
+    "giai tri": "infotainment",
+    "che do xe dac biet": "infotainment",
+    "quan ly": "connected",
+    "quan ly ket noi": "connected",
+    "chuan doan loi": "infotainment",
+    "cap nhat phan mem tu xa": "infotainment",
+    "huong dan su dung va xu ly khi co su co": "infotainment",
+    "dieu khien chuc nang tren xe": "infotainment",
+    "ca nhan hoa tro ly ao": "infotainment",
+    "hoi dap va truy van thong tin": "infotainment",
+    "ung dung dien thoai": "connected",
+    "ung dung tren dien thoai thong minh": "connected",
+    "ung dung vinfast (c-app)": "connected",
+    "ung dung tren dong ho thong minh": "connected",
+    "quan ly tai khoan & xe": "connected",
+    "dieu khien & cai dat xe tu xa": "connected",
+    "thiet lap, theo doi va ghi nho ho so nguoi lai": "connected",
+    "an ninh - an toan": "connected",
+    "an ninh an toan": "connected",
+    "dich vu ve xe": "connected",
+}
+
+# ── FEATURE_NORM_MAP: normalize feature label → (eng_key, category) ─────────
+# Dùng cho spec tính năng (Có/Không, LED, v.v.) không có trong LABEL_MAP.
+FEATURE_NORM_MAP = {
+    # ── Exterior ──
+    "guong chieu hau chinh dien tich hop den bao re": ("power_folding_mirrors", "exterior"),
+    "kinh cua so chinh dien len xuong mot cham": ("one_touch_windows", "exterior"),
+    "den chieu sang phia truoc": ("headlight_type", "exterior"),
+    "den chieu sang ban ngay": ("drl_type", "exterior"),
+    "den pha": ("headlight_type", "exterior"),
+    "den pha tu dong": ("auto_headlights", "exterior"),
+    "den pha tu dong bat tat": ("auto_headlights", "exterior"),
+    "den tu dong bat tat": ("auto_headlights", "exterior"),
+    "tu dong bat tat den": ("auto_headlights", "exterior"),
+    "den pha tu dong den pha thich ung": ("adaptive_headlights", "exterior"),
+    "den pha tu dong den pha thich ung": ("adaptive_headlights", "exterior"),
+    "den pha thich ung": ("adaptive_headlights", "exterior"),
+    "den hau": ("tail_light_type", "exterior"),
+    "den nhan dien thuong hieu phia truoc": ("front_brand_light", "exterior"),
+    "den nhan dien thuong hieu phia sau": ("rear_brand_light", "exterior"),
+    "tu dong bat tat che do chieu xa": ("auto_high_beam", "exterior"),
+    "den chieu xa tu dong": ("auto_high_beam", "exterior"),
+    "gat mua truoc tu dong": ("auto_wiper", "exterior"),
+    "gat mua truoc": ("auto_wiper", "exterior"),
+    "gat mua": ("auto_wiper", "exterior"),
+    "chia khoa thong minh": ("smart_key", "exterior"),
+    "den cho dan duong": ("daytime_running_light", "exterior"),
+    "den suong mu truoc": ("fog_light_front", "exterior"),
+    "den chieu goc": ("cornering_light", "exterior"),
+    "den phanh tren cao phia sau": ("high_mount_brake_light", "exterior"),
+    "guong chieu hau": ("rearview_mirror_type", "exterior"),
+    "kieu cua so": ("window_type", "exterior"),
+    "kinh cua so mau den rieng tu": ("privacy_glass", "exterior"),
+    "dieu chinh cop sau": ("trunk_lid_type", "exterior"),
+    "kinh chan gio": ("windshield_type", "exterior"),
+    "tam bao ve duoi than xe": ("underbody_protection", "exterior"),
+    "kinh cua so len xuong mot cham": ("one_touch_windows", "exterior"),
+    # ── Interior ──
+    "ghe boc da nhan tao": ("leatherette_seats", "interior"),
+    "chat lieu boc ghe": ("seat_material_type", "interior"),
+    "boc ghe": ("seat_material_type", "interior"),
+    "ghe lai": ("driver_seat_type", "interior"),
+    "ghe phu": ("passenger_seat_type", "interior"),
+    "hang ghe thu hai": ("second_row_seat_type", "interior"),
+    "kinh cua so chinh dien len xuong mot cham tat ca cac vi tri": ("one_touch_windows_all", "interior"),
+    "phanh do dien tu va che do tu dong giu phanh": ("epb_auto_hold", "convenience"),
+    "phanh tay dien tu va tu dong giu phanh": ("epb_auto_hold", "convenience"),
+    "so cho ngoi": ("seats", "interior"),
+    "so ghe ngoi": ("seats", "interior"),
+    "cho ngoi": ("seats", "interior"),
+    "hang ghe thu hai": ("second_row_seat_type", "interior"),
+    "loai vo lang": ("steering_wheel_type", "interior"),
+    "he thong dieu hoa": ("ac_type", "interior"),
+    "loc khong khi cabin": ("cabin_air_filter", "interior"),
+    "ong thong gio duoi chan hanh khach sau": ("rear_ac_vents", "interior"),
+    "cua gio dieu hoa hang ghe sau": ("rear_ac_vents", "interior"),
+    "man hinh hien thi hud": ("head_up_display", "interior"),
+    "man hinh hien thi thong tin tren kinh lai hud": ("head_up_display", "interior"),
+    "cong ket noi usb loai a": ("usb_port_type_a", "interior"),
+    "cong ket noi usb loai c": ("usb_port_type_c", "interior"),
+    "sac khong day": ("wireless_charging", "interior"),
+    "ket noi wifi": ("wifi_connectivity", "interior"),
+    "ket noi wi fi": ("wifi_connectivity", "interior"),
+    "ket noi bluetooth": ("bluetooth_connectivity", "interior"),
+    "loa tram": ("subwoofer", "interior"),
+    "den trang tri noi that": ("ambient_lighting", "interior"),
+    "cua so troi": ("sunroof_type", "interior"),
+    "chuc nang lam tan suong tan bang": ("defroster", "interior"),
+    "chuc nang kiem soat chat luong khong khi": ("air_quality_control", "interior"),
+    "chuc nang ion hoa khong khi": ("air_ionizer", "interior"),
+    "suoi kinh sau": ("rear_defroster", "interior"),
+    "den hoc de do truoc": ("glovebox_light", "interior"),
+    "den khoang hanh ly": ("trunk_light", "interior"),
+    "den khoang hanh ly truoc": ("frunk_light", "interior"),
+    "den tran phia truoc": ("dome_light", "interior"),
+    "den tran hang ghe 1 va hang ghe 2": ("cabin_lights", "interior"),
+    "tam che nang co guong": ("sun_visor_mirror", "interior"),
+    "hoc dung coc giua hang ghe truoc": ("cupholders", "interior"),
+    "khay dung dung cu sua xe": ("tool_kit", "interior"),
+    "moc keo toi": ("tow_hook", "interior"),
+    "khoi dong bang ban dap phanh bev": ("brake_pedal_start", "powertrain"),
+    # ── Infotainment ──
+    "man hinh giai tri cam ung": ("display_inch", "interior"),
+    "he thong loa": ("speakers", "interior"),
+    "ket noi voi android auto va apple carplay": ("smartphone_integration", "infotainment"),
+    "ket noi android auto va apple carplay khong day": ("smartphone_integration", "infotainment"),
+    "ket noi voi android auto va apple carplay khong day": ("smartphone_integration", "infotainment"),
+    "dieu huong dan duong tren man hinh trung tam": ("navigation", "infotainment"),
+    "dieu huong va dan duong tren man hinh trung tam": ("navigation", "infotainment"),
+    "dieu huong va dan duong tren man hinh trung tam": ("navigation", "infotainment"),
+    "tim kiem dia diem va dan duong": ("navigation", "infotainment"),
+    "trinh duyet web": ("web_browser", "infotainment"),
+    "tro choi": ("gaming", "infotainment"),
+    "tu chan doan loi": ("self_diagnosis", "infotainment"),
+    "chan doan loi tren xe tu dong": ("self_diagnosis", "infotainment"),
+    "cap nhat phan mem tu xa": ("ota_update", "infotainment"),
+    "tro ly ao": ("virtual_assistant", "infotainment"),
+    "giai tri truc tuyen": ("online_entertainment", "infotainment"),
+    "khung tien ich co ban lich duong thoi tiet media ban do": ("basic_widgets", "infotainment"),
+    "khung tien ich": ("basic_widgets", "infotainment"),
+    "hoi dap va tim kiem thong tin co ban": ("voice_search", "infotainment"),
+    "ho tro dieu khien cac chuc nang xe co ban": ("voice_control", "infotainment"),
+    "ho tro dieu khien thiet lap nhanh": ("quick_control", "infotainment"),
+    "ho tro giai tri da phuong tien": ("media_control", "infotainment"),
+    "ho tro dieu huong dan duong": ("voice_navigation", "infotainment"),
+    "ho tro goi dien thoai ranh tay": ("handsfree_call", "infotainment"),
+    "hoi dap thong tin chung": ("general_qa", "infotainment"),
+    "chuyen phiem & tieu lam": ("small_talk", "infotainment"),
+    "cai dat co ban": ("basic_settings", "infotainment"),
+    "cai dat nang cao (ai tao sinh)": ("advanced_settings", "infotainment"),
+    "cap nhat / gop y cho tro ly ao": ("assistant_feedback", "infotainment"),
+    "tu van cach thuc su dung va van hanh xe hieu qua": ("usage_guidance", "infotainment"),
+    "tu chuan doan loi/chuan doan loi tu xa": ("self_diagnosis", "infotainment"),
+    "ho tro dieu huong dan duong co ban": ("voice_navigation", "infotainment"),
+    "tu van tinh trang xe va ho tro xu ly su co": ("vehicle_status_assist", "infotainment"),
+    "chao hoi thuc hien lenh theo kich ban tao san co ban": ("voice_greeting", "infotainment"),
+    "chao hoi, thuc hien lenh theo kich ban tao san": ("voice_greeting", "infotainment"),
+    "ung dung dien thoai": ("phone_app", "infotainment"),
+    "ung dung dien thoait": ("phone_app", "infotainment"),
+    "dan duong nang cao cho xe dien tim tram sac goi y duong toi uu de sac": ("ev_routing", "infotainment"),
+    "dan duong nang cao cho xe dien": ("ev_routing", "infotainment"),
+    "che do xe co ban cam trai nguoi la thu cung rua xe": ("vehicle_modes", "infotainment"),
+    "giai tri co ban dai fm bluetooth usb": ("basic_entertainment", "infotainment"),
+    "giai tri co ban": ("basic_entertainment", "infotainment"),
+    "ban do co ban tim dia diem dan duong tinh trang giao thong hinh ve tinh": ("basic_map_navigation", "infotainment"),
+    "ban do co ban": ("basic_map", "infotainment"),
+    "sac vv": ("charging_etc", "general"),
+    "huong dan su dung": ("user_manual", "infotainment"),
+    "phan mem mien phi": ("free_software", "infotainment"),
+    "phan mem thu phi": ("paid_software", "infotainment"),
+    "cho ung dung": ("app_store", "infotainment"),
+    "lua chon che do van hanh dac biet": ("special_operation_modes", "infotainment"),
+    "cac che do van hanh dac biet": ("special_operation_modes", "infotainment"),
+    "cai dat gioi han thoi gian hoat dong & khu vuc hoat dong cua xe": ("activity_limits", "infotainment"),
+    "cai dat gioi han thoi gian hoat dong va khu vuc hoat dong cua xe": ("activity_limits", "infotainment"),
+    "che do van hanh dac biet": ("special_operation_modes", "infotainment"),
+    "che do cam trai": ("camping_mode", "infotainment"),
+    "de xuat lich bao tri bao duong tu dong": ("maintenance_reminder", "infotainment"),
+    "giai tri thong qua dong bo voi dien thoai": ("phone_media", "infotainment"),
+    "giai tri am thanh": ("audio_entertainment", "infotainment"),
+    "tra cuu va truy cap internet": ("internet_access", "infotainment"),
+    "dong bo lich va danh ba dien thoai": ("calendar_contact_sync", "infotainment"),
+    "dong bo danh ba dien thoai": ("contact_sync", "infotainment"),
+    "cap nhat phan mem mien phi fota": ("fota_update", "infotainment"),
+    "cap nhat phan mem thu phi sota": ("sota_update", "infotainment"),
+    "cap nhat phan mem khong day fota": ("fota_update", "infotainment"),
+    "dieu khien xe va cai dat bang giong noi": ("voice_control", "infotainment"),
+    "hoi dap tro ly ao": ("voice_search", "infotainment"),
+    "dieu khien xe bang giong noi": ("voice_control", "infotainment"),
+    "hoi dap thong tin thoi tiet tien ich tinh nang xe": ("voice_search", "infotainment"),
+    "dieu khien chuc nang tren xe": ("vehicle_control", "infotainment"),
+    # ── Safety ──
+    "he thong chong bo cung phanh abs": ("abs", "safety"),
+    "chuc nang phan phoi luc phanh dien tu ebd": ("ebd", "safety"),
+    "ho tro phanh khan cap ba": ("brake_assist", "safety"),
+    "he thong can bang dien tu esc": ("esc", "safety"),
+    "chuc nang kiem soat luc keo tcs": ("tcs", "safety"),
+    "ho tro khoi hanh ngang doc hsa": ("hsa", "safety"),
+    "giam sat ap suat lop": ("tpms", "safety"),
+    "tinh nang khoa dong co khi co trom": ("immobilizer", "security"),
+    "canh bao chong trom": ("anti_theft_alarm", "security"),
+    "chuc nang chong lat rom": ("rollover_mitigation", "safety"),
+    "den bao phanh khan cap ess": ("emergency_stop_signal", "safety"),
+    "den bao nguy hiem khi phanh khan cap ess": ("emergency_stop_signal", "safety"),
+    "khoa cua xe tu dong khi xe di chuyen": ("auto_door_lock", "safety"),
+    "cang dai khan cap": ("pretensioner_seatbelt", "safety"),
+    "cang dai khan cap ghe truoc": ("pretensioner_seatbelt", "safety"),
+    "mac co dinh ghe tre em isofix hang ghe thu 2": ("isofix", "safety"),
+    "moc co dinh ghe tre em isofix hang ghe thu 2": ("isofix", "safety"),
+    "moc co dinh ghe tre em isofix": ("isofix", "safety"),
+    "moc co dinh ghe tre em isofix hang ghe sau": ("isofix", "safety"),
+    "canh bao day an toan hang truoc va hang 2": ("seatbelt_warning", "safety"),
+    "canh bao that day an toan hang ghe truoc": ("seatbelt_warning", "safety"),
+    "xac dinh hanh khach & canh bao day an toan": ("seatbelt_warning", "safety"),
+    "xac dinh hanh khach va canh bao day an toan": ("seatbelt_warning", "safety"),
+    "khoa cua tre em": ("child_lock", "safety"),
+    "goi cuu ho tu dong va dich vu ho tro tren duong": ("emergency_call", "safety"),
+    # ── ADAS ──
+    "canh bao diem mu": ("blind_spot_warning", "adas"),
+    "canh bao chech lan": ("lane_departure_warning", "adas"),
+    "ho tro giu lan": ("lane_keep_assist", "adas"),
+    "ho tro giu lan khan cap": ("emergency_lane_keep", "adas"),
+    "canh bao va cham phia truoc": ("forward_collision_warning", "adas"),
+    "phanh tu dong khan cap truoc": ("aeb_front", "adas"),
+    "phanh tu dong khan cap truoc sau": ("aeb_front_rear", "adas"),
+    "ho tro tu dong chuyen lan": ("auto_lane_change", "adas"),
+    "tro lai tren cao toc di chuyen khi tac duong": ("highway_driving_assist", "adas"),
+    "ho tro di chuyen khi un tac": ("traffic_jam_assist", "adas"),
+    "ho tro lai tren duong cao toc": ("highway_assist", "adas"),
+    "canh bao phuong tien cat ngang phia sau": ("rear_cross_traffic_alert", "adas"),
+    "canh bao mo cua": ("door_open_warning", "adas"),
+    "canh bao tai xe buon ngu va mat tap trung": ("driver_monitoring", "adas"),
+    "he thong giam sat lai xe": ("driver_monitoring", "adas"),
+    "ho tro do xe phia sau": ("rear_parking_assist", "adas"),
+    "ho tro do phia sau": ("rear_parking_assist", "adas"),
+    "ho tro do phia truoc": ("front_parking_assist", "adas"),
+    "cam bien do xe phia sau": ("rear_parking_sensor", "adas"),
+    "cam bien do xe phia truoc": ("front_parking_sensor", "adas"),
+    "camera lui": ("rearview_camera", "adas"),
+    "he thong camera sau": ("rearview_camera", "adas"),
+    "camera 360": ("surround_view_camera", "adas"),
+    "he thong camera 360 do giam sat xung quanh": ("surround_view_camera", "adas"),
+    "giam sat xung quanh": ("surround_view_camera", "adas"),
+    "kiem soat hanh trinh": ("cruise_control_type", "adas"),
+    "giam sat hanh trinh": ("cruise_control_type", "adas"),
+    "giam sat hanh trinh thich ung": ("adaptive_cruise_control", "adas"),
+    "ga tu dong": ("cruise_control_type", "adas"),
+    "ga tu dong co ban": ("cruise_control_type", "adas"),
+    "ga tu dong thich ung": ("adaptive_cruise_control", "adas"),
+    "dieu chinh toc do thong minh": ("adaptive_cruise_control", "adas"),
+    "nhan biet bien bao giao thong": ("traffic_sign_recognition", "adas"),
+    "kiem soat di giua lan": ("lane_centering", "adas"),
+    "ho tro xuong doc hdc": ("hill_descent_control", "adas"),
+    "tu dong dung trong truong hop khan cap": ("emergency_stop", "adas"),
+    # ── Chassis ──
+    "he thong treo truoc": ("front_suspension_type", "chassis"),
+    "he thong treo sau": ("rear_suspension_type", "chassis"),
+    "he thong phanh truoc sau": ("brake_type", "chassis"),
+    "tro luc lai": ("steering_assist_type", "chassis"),
+    "thanh can bang truoc": ("stabilizer_bar", "chassis"),
+    "loai lop": ("tire_type", "chassis"),
+    "lop du phong": ("spare_tire_type", "chassis"),
+    # ── Powertrain ──
+    "che do lai": ("drive_modes", "powertrain"),
+    "chon che do lai": ("drive_modes", "powertrain"),
+    "suoi pin cao the": ("battery_heater", "powertrain"),
+    "bo sac tai nha": ("home_charger_type", "powertrain"),
+    "day sac di dong": ("mobile_charger_type", "powertrain"),
+    "he thong phanh tai sinh": ("regenerative_braking", "powertrain"),
+    # ── Connected car ──
+    "dinh vi xe tu xa": ("gps_tracking", "connected"),
+    "dinh vi vi tri xe tu xa": ("gps_tracking", "connected"),
+    "dong bo tai khoan ung dung phan quyen tai xe": ("account_sync", "connected"),
+    "dong bo va quan ly tai khoan": ("account_sync", "connected"),
+    "quan ly tai khoan uy quyen cho lai xe thu 2 dong bo lich": ("account_sync", "connected"),
+    "thong bao trang thai co ban tren xe trang thai hieu suat van hanh thong tin pin": ("vehicle_status_notification", "connected"),
+    "theo doi va hien thi thong tin tinh trang xe": ("vehicle_status_notification", "connected"),
+    "quan ly sac thanh toan phi sac": ("charge_management", "connected"),
+    "thanh toan phi sac": ("charge_payment", "connected"),
+    "ban do tram sac": ("charger_map", "connected"),
+    "tim tram sac": ("charger_map", "connected"),
+    "tim kiem tram sac": ("charger_map", "connected"),
+    "dich vu hau mai dat lich sua chua lai thu": ("service_booking", "connected"),
+    "nhan thong bao va dat dich vu hau mai": ("service_booking", "connected"),
+    "dat lich sua chua bao duong": ("service_booking", "connected"),
+    "ho tro hau mai": ("service_booking", "connected"),
+    "mua ban phu kien": ("online_accessory_shop", "connected"),
+    "quan ly goi cuoc thue pin truc tuyen": ("battery_lease_management", "connected"),
+    "thong tin khuyen mai va phu kien": ("promo_info", "connected"),
+    "nhan thong bao": ("notifications", "connected"),
+    "giam sat xe tu xa": ("vehicle_monitoring", "connected"),
+    "giam sat xe tu xa va nhan thong bao": ("vehicle_monitoring", "connected"),
+    "giam sat xe tu xa vi tri thong so": ("vehicle_monitoring", "connected"),
+    "dieu khien tu xa": ("remote_control", "connected"),
+    "thiet lap cai dat tu xa": ("remote_settings", "connected"),
+    "quan ly pin nang cao": ("advanced_battery_management", "connected"),
+    "quan ly wifi ket noi phat hotspot": ("wifi_management", "connected"),
+    "quan ly wifi": ("wifi_management", "connected"),
+    "quan ly thiet bi bluetooth dien thoai va nghe nhac": ("bluetooth_management", "connected"),
+    "quan ly thiet bi bluetooth": ("bluetooth_management", "connected"),
+    "quan ly esim": ("esim_management", "connected"),
+    "giam sat tinh trang pin gioi han dung luong dong sac": ("battery_monitoring", "connected"),
+    "ho so nguoi lai": ("driver_profile", "connected"),
+    "tao va ghi nho cai dat theo ho so nguoi lai": ("driver_profile", "connected"),
+    "ho so nang cao": ("advanced_profile", "connected"),
+
+    # ── Exterior extras (model_data CSVs) ──
+    "den pha tu dong bat/tat": ("auto_headlights", "exterior"),
+    "dieu khien do cao goc chieu den": ("headlight_leveling", "exterior"),
+    "den dinh vi": ("position_light", "exterior"),
+    "den chao mung": ("welcome_light", "exterior"),
+    "den nhan dien thuong hieu phia truoc/sau": ("brand_light", "exterior"),
+    "den nhan dien thuong hieu truoc va sau": ("brand_light", "exterior"),
+    "guong chieu hau ngoai": ("exterior_mirror_type", "exterior"),
+    "guong chieu hau trong xe": ("interior_mirror_type", "interior"),
+    "kinh cua so len/xuong mot cham": ("one_touch_windows", "exterior"),
+    "kinh cua so chinh dien": ("power_windows", "exterior"),
+    "tay nam cua": ("door_handle_type", "exterior"),
+    "co che lay mo cua": ("door_opening_mechanism", "exterior"),
+    "cua hit": ("power_suction_doors", "exterior"),
+    "den chieu sang khi mo cua": ("puddle_light", "exterior"),
+    "den chieu logo mat duong (cam bien da cop)": ("logo_light", "exterior"),
+    "bac len xuong": ("side_step", "exterior"),
+    "thanh trang tri noc xe": ("roof_rack", "exterior"),
+    "canh huong gio": ("spoiler", "exterior"),
+    "co che dong mo cong sac": ("charge_port_door", "exterior"),
+    "thanh gia cuong cua xe": ("door_impact_beam", "exterior"),
+    "dong/mo cop sau": ("trunk_lid_type", "exterior"),
+    "dong/mo cop da chan": ("kick_sensor_trunk", "exterior"),
+    "cop sau": ("trunk_lid_type", "exterior"),
+    # ── Interior extras (model_data CSVs) ──
+    "cua gio dieu hoa hang ghe thu 2 va thu 3": ("rear_ac_vents", "interior"),
+    "cua gio dieu hoa hang ghe thu 2: tren hop de do trung tam": ("row2_ac_vents", "interior"),
+    "cua gio dieu hoa hang ghe thu 2: tren cot b": ("row2_ac_vents", "interior"),
+    "he thong loc bui min combi 1.0": ("cabin_air_filter", "interior"),
+    "he thong loc bui min combi 1.0 va ion hoa khong khi": ("cabin_air_filter", "interior"),
+    "ghe vip": ("vip_seat", "interior"),
+    "ghe vip chinh dien": ("vip_seat_power", "interior"),
+    "ghe vip massage": ("vip_seat_massage", "interior"),
+    "ghe vip co thong gio": ("vip_seat_ventilation", "interior"),
+    "ghe vip co suoi": ("vip_seat_heating", "interior"),
+    "hang ghe thu 2 dieu chinh huong": ("second_row_adjust", "interior"),
+    "hang ghe thu 2 dieu chinh gap ty le": ("second_row_fold", "interior"),
+    "hang ghe thu 2 co thong gio": ("second_row_ventilation", "interior"),
+    "hang ghe thu 2 co suoi": ("second_row_heating", "interior"),
+    "hang ghe thu 2 co massage": ("second_row_massage", "interior"),
+    "gap lung ghe hang ghe thu 2": ("second_row_fold", "interior"),
+    "gap hang ghe thu 3": ("row3_fold", "interior"),
+    "len xuong de dang (len/xuong tu hang thu 2)": ("easy_access", "interior"),
+    "tua dau ghe lai": ("driver_headrest", "interior"),
+    "tua dau ghe phu": ("passenger_headrest", "interior"),
+    "tua dau ghe hang 2": ("row2_headrest", "interior"),
+    "tua dau ghe hang 3": ("row3_headrest", "interior"),
+    "boc vo lang": ("steering_wheel_wrap", "interior"),
+    "dieu chinh vo lang": ("steering_wheel_adjust", "interior"),
+    "suoi tay lai": ("heated_steering_wheel", "interior"),
+    "nho vi tri vo lang": ("steering_wheel_memory", "interior"),
+    "hop do hang ghe sau": ("rear_console_box", "interior"),
+    "phanh truoc": ("front_brake_type", "chassis"),
+    "phanh sau": ("rear_brake_type", "chassis"),
+    "cong usb": ("usb_ports", "interior"),
+    # ── Safety extras ──
+    "tui khi danh cho nguoi lai": ("driver_airbag", "safety"),
+    "tui khi phia truoc cho nguoi lai va hanh khach phia truoc": ("front_airbags", "safety"),
+    "tui khi ben hong": ("side_airbags", "safety"),
+    "khoa cua tre em": ("child_lock", "safety"),
+    "he thong chia khoa xe": ("key_system", "safety"),
+    "chia khoa": ("key_type", "safety"),
+    "cang dai khan cap ghe truoc": ("pretensioner_seatbelt", "safety"),
+    "den bao nguy hiem khi phanh khan cap (ess)": ("emergency_stop_signal", "safety"),
+    "den bao nguy hiem khi phanh khan cap ess": ("emergency_stop_signal", "safety"),
+    "goi cuu ho tu dong va dich vu ho tro tren duong": ("emergency_call", "safety"),
+    "he thong chong bo cung phanh (abs)": ("abs", "safety"),
+    "chuc nang phan phoi luc phanh dien tu (ebd)": ("ebd", "safety"),
+    "ho tro phanh khan cap (ba)": ("brake_assist", "safety"),
+    "ho tro luc phanh khan cap (ba)": ("brake_assist", "safety"),
+    "he thong can bang dien tu (esc)": ("esc", "safety"),
+    "chuc nang kiem soat luc keo (tcs)": ("tcs", "safety"),
+    "kiem soat luc keo (tcs)": ("tcs", "safety"),
+    "ho tro khoi hanh ngang doc (hsa)": ("hsa", "safety"),
+    "chuc nang chong lat (rom)": ("rollover_mitigation", "safety"),
+    # ── ADAS extras ──
+    "ho tro xuong doc hdc": ("hill_descent_control", "adas"),
+    "tu dong dung trong truong hop khan cap": ("emergency_stop", "adas"),
+    "ga tu dong": ("cruise_control_type", "adas"),
+    "ga tu dong co ban": ("cruise_control_type", "adas"),
+    "ga tu dong thich ung": ("adaptive_cruise_control", "adas"),
+    "giam sat hanh trinh": ("cruise_control_type", "adas"),
+    "giam sat hanh trinh thich ung": ("adaptive_cruise_control", "adas"),
+    "cam bien do xe phia truoc": ("front_parking_sensor", "adas"),
+    "cam bien do xe phia sau": ("rear_parking_sensor", "adas"),
+    "ho tro do phia truoc": ("front_parking_assist", "adas"),
+    "ho tro do phia sau": ("rear_parking_assist", "adas"),
+    "he thong camera sau": ("rearview_camera", "adas"),
+    "giam sat xung quanh": ("surround_view_camera", "adas"),
+    "den chieu xa tu dong": ("auto_high_beam", "exterior"),
+    # ── Chassis extras ──
+    "he thong treo (truoc/sau)": ("suspension_type", "chassis"),
+    "he thong treo truoc/sau": ("suspension_type", "chassis"),
+    "he thong phanh (truoc/sau)": ("brake_type", "chassis"),
+    "kich thuoc lop & la-zang": ("tire_wheel_size", "chassis"),
+    "kich thuoc lop": ("tire_size", "chassis"),
+    "thanh can bang truoc": ("stabilizer_bar", "chassis"),
+    "bo va lop": ("tire_repair_kit", "chassis"),
+    "bo dung cu kich xe": ("jack_kit", "chassis"),
+    # ── Battery extras ──
+    "loai pin": ("battery_type", "battery"),
+    "dung luong pin (kwh) - kha dung": ("battery_kwh", "battery"),
+    "tinh nang sac nhanh": ("fast_charge_capable", "battery"),
+    "thoi gian nap pin binh thuong (gio)": ("normal_charge_hours", "battery"),
+    "thoi gian nap pin nhanh (phut)": ("fast_charge_min", "battery"),
+    "thoi gian nap pin nhanh nhat tu 10% den 70% (phut)": ("fast_charge_min", "battery"),
+    "thoi gian nap pin nhanh nhat (phut) tu 10% den 70%": ("fast_charge_min", "battery"),
+    "cong suat sac toi da (kw)": ("max_charge_power_kw", "battery"),
+    "cong suat sac ac toi da (kw)": ("ac_charge_power_kw", "battery"),
+    "cong suat sac cham ac toi da (kw)": ("ac_charge_power_kw", "battery"),
+    "cong suat sac nhanh dc toi da (kw)": ("dc_charge_power_kw", "battery"),
+    # ── Powertrain extras ──
+    "cau hinh dong co": ("motor_configuration", "powertrain"),
+    "dong co": ("motor_configuration", "powertrain"),
+    "cach chuyen so": ("gear_shift_type", "powertrain"),
+    "can chuyen so sau vo lang": ("gear_shift_type", "powertrain"),
+    "che do thay doi toc do den dung": ("creep_mode", "powertrain"),
+    # ── Dimension extras ──
+    "duong kinh quay dau toi thieu (m)": ("turning_diameter_m", "dimension"),
+    "suc chua (kg)": ("payload_kg", "dimension"),
+    "tai trong (kg)": ("payload_kg", "dimension"),
+    # ── Infotainment/connected extras ──
+    "dieu khien goc chieu pha thong minh": ("adaptive_headlights", "exterior"),
+    "tu dong quay goc chieu den (den liec)": ("cornering_light", "exterior"),
+    "virtual_assistant": ("virtual_assistant", "infotainment"),
+    "vehicle_control": ("vehicle_control", "infotainment"),
+    "dieu khien xe tu xa": ("remote_control", "connected"),
+    "dong bo tai khoan & quan ly ho so nguoi lai": ("account_sync", "connected"),
+    "thong tin khuyen mai & phu kien": ("promo_info", "connected"),
+
+    # ── sion ──
+    "trong luong khong tai": ("curb_weight_kg", "dimension"),
+    "tai trong hanh ly noc xe": ("roof_load_kg", "dimension"),
+    "dung tich khoang chua hanh ly": ("trunk_capacity", "dimension"),
+}
+
+
+def norm(s: str) -> str:
+    """Normalize label: bỏ dấu, lowercase, gom space, strip trailing punct."""
+    s = no_diacritics(s.lower())
+    s = re.sub(r"\s+", " ", s).strip()
+    return s.strip(":|-–— \t")
+
+
+def norm_strict(s: str) -> str:
+    """Strict normalize: norm() + loại bỏ internal punctuation (, : ; / () & -)."""
+    s = norm(s)
+    s = re.sub(r"[,:;()/&\-–—]+", " ", s)
+    s = re.sub(r"\s+", " ", s).strip()
+    return s
+
+
+# ── FEATURE_ALIASES (strict-normalized) ──────────────────────────────────────
+FEATURE_ALIASES_STRICT = {norm_strict(k): k for k in FEATURE_NORM_MAP}
+FEATURE_ALIASES_BY_LEN = sorted(FEATURE_ALIASES_STRICT.keys(), key=len, reverse=True)
+
+# Section header = label không có value. Một số file dùng prefix "A. ", "B. " (vf2)
+SECTION_PREFIX_RE = re.compile(r"^[a-c]\.\s*")
+
+VERSION_HEADER_ALIASES = {"phien ban"}
 
 
 def parse_dimension_triple(value: str) -> list[tuple[str, str]]:
-    """'4701 x 1872 x 1670' / '3.967 x 1.723 x 1.579' → [(length_mm,'4701'),...].
-    Mỗi phần qua parse_number (dot=thousands → bỏ) + sanity range."""
+    """Tách '4.750 x 1.934 x 1.667' / '4,545 x 1,890 x 1,635.75' / '4701 x 1872 x 1670 (mm)'
+    → [(length_mm, val), (width_mm, val), (height_mm, val)].
+
+    Xử lý hỗn hợp dấu phân cách (dấu chấm phẩy hàng nghìn / dấu phẩy thập phân):
+      - '4.241'  → 4241        (dấu chấm = hàng nghìn)
+      - '4,545'  → 4545        (dấu phẩy = hàng nghìn)
+      - '1,635.75' → 1635.75   (cả 2: dấu chấm sau cùng = thập phân)
+      - '1.663,2' → 1663.2     (cả 2: dấu phẩy sau cùng = thập phân)
+    """
+    value = re.sub(r"\(mm\)|mm", "", value, flags=re.I).strip()
     parts = re.split(r"\s*[xX×]\s*", value)
-    out: list[tuple[str, str]] = []
-    for i, key in enumerate(DIMENSION_KEYS):
-        if i < len(parts):
-            cv = clean_value(key, parts[i])
-            if cv:
-                out.append((key, cv))
-    return out
-
-
-# ── Table parser (Format A) ─────────────────────────────────────────────────
-TABLE_ROW_RE = re.compile(r"^\s*\|(.+)\|\s*$")
-SEP_RE = re.compile(r"^\s*\|\s*[-:|\s]+\|\s*$")
-
-
-def split_cells(row: str) -> list[str]:
-    inner = row.strip()[1:-1]  # bỏ | đầu/cuối
-    return [c.strip() for c in inner.split("|")]
-
-
-def parse_tables(body: str) -> list[tuple[str, str, str | None]]:
-    """Trả list (label_norm, value_raw, edition_or_None)."""
-    out: list[tuple[str, str, str | None]] = []
-    lines = body.splitlines()
-    i = 0
-    while i < len(lines):
-        if not (TABLE_ROW_RE.match(lines[i]) and i + 1 < len(lines)
-                and SEP_RE.match(lines[i + 1])):
-            i += 1
+    keys = ["length_mm", "width_mm", "height_mm"]
+    result = []
+    for k, p in zip(keys, parts):
+        p = p.strip()
+        if not p:
+            result.append((k, None))
             continue
-        # header = dòng i, separator = i+1, data rows từ i+2
-        header = split_cells(lines[i])
-        data_start = i + 2
-        # Xác định cột edition từ header (bỏ cột 0 = label)
-        edition_cols: dict[int, str] = {}
-        for ci in range(1, len(header)):
-            ed = detect_edition(header[ci])
-            if ed:
-                edition_cols[ci] = ed
-        j = data_start
-        while j < len(lines) and TABLE_ROW_RE.match(lines[j]) and not SEP_RE.match(lines[j]):
-            cells = split_cells(lines[j])
-            if not cells:
-                j += 1
-                continue
-            label = norm(cells[0])
-            if not label or is_section_header(label) or is_price_row(label):
-                j += 1
-                continue
-            if not edition_cols:
-                # vertical list: cột 1 = value, 1 spec chung mọi bản
-                if len(cells) >= 2 and cells[1]:
-                    out.append((label, cells[1], None))
+        # Bỏ dấu phân cách dựa trên vị trí dấu thập phân
+        if "," in p and "." in p:
+            # dấu sau cùng là thập phân
+            if p.rfind(".") > p.rfind(","):
+                p = p.replace(",", "")  # bỏ hàng nghìn (dấu phẩy)
             else:
-                for ci, ed in edition_cols.items():
-                    if ci < len(cells) and cells[ci]:
-                        out.append((label, cells[ci], ed))
-            j += 1
-        i = j
-    return out
+                p = p.replace(".", "").replace(",", ".")
+        elif "," in p:
+            # chỉ có dấu phẩy: hàng nghìn (giá trị mm luôn ≥ 3 chữ số)
+            p = p.replace(",", "")
+        elif "." in p:
+            # chỉ có dấu chấm: hàng nghìn (giá trị mm luôn ≥ 3 chữ số)
+            p = p.replace(".", "")
+        try:
+            float(p)  # validate
+            result.append((k, p))
+        except ValueError:
+            result.append((k, None))
+    return result
 
 
-# ── Inline + line-paired parser (Format B/C) ────────────────────────────────
-def parse_inline(body: str) -> list[tuple[str, str, str | None]]:
-    """Duyệt dòng: label ở đầu dòng (norm startswith alias) → value = phần sau
-    (Format B); nếu dòng chỉ là label → value = dòng kế (Format C)."""
-    out: list[tuple[str, str, str | None]] = []
-    lines = body.splitlines()
-    n = len(lines)
-    for i, line in enumerate(lines):
-        if TABLE_ROW_RE.match(line):  # table cell → do parse_tables lo
-            continue
-        nline = norm(line)
-        if not nline or nline.startswith("#"):
-            continue
-        alias = None
-        for a in _ALIASES_BY_LEN:
-            if nline.startswith(a):
-                alias = a
-                break
-        if not alias:
-            continue
-        # value sau label (Format B): phần gốc sau alias.
-        # Vì norm có thể co/giãn độ dài (dấu tiếng Việt → 1 char), tìm vị trí cắt
-        # bằng cách norm từng prefix đến khi khớp alias.
-        value_text = _value_after_alias(line, alias)
-        if value_text and not is_section_header(norm(value_text)) \
-                and not _looks_like_label(value_text):
-            out.append((alias, value_text, None))
-            continue
-        # Format C: label đứng riêng → value = dòng kế không rỗng.
-        if nline == alias or value_text == "":
-            k = i + 1
-            while k < n:
-                nxt = lines[k].strip()
-                if not nxt:
-                    k += 1
-                    continue
-                if TABLE_ROW_RE.match(nxt) or nxt.startswith("#"):
-                    break
-                if not _looks_like_label(nxt) and not is_section_header(norm(nxt)):
-                    out.append((alias, nxt, None))
-                break
-    return out
-
-
-def _value_after_alias(line: str, alias: str) -> str:
-    """Phần gốc của `line` sau khi bỏ prefix label (đã normalize = alias)."""
-    # Norm từng ký tự gốc, so khớp với alias; dừng khi đủ alias.
-    res: list[str] = []
-    ai = 0
-    consumed_space_run = False
-    i = 0
-    while i < len(line) and ai < len(alias):
-        ch = line[i]
-        if ch.isspace():
-            if alias[ai] == " " and not consumed_space_run:
-                res.append(" ")
-                ai += 1
-                consumed_space_run = True
-            i += 1
-            continue
-        seg = norm(ch)
-        if not seg:  # combining mark dư
-            i += 1
-            continue
-        if seg == alias[ai]:
-            res.append(ch)
-            ai += 1
-            consumed_space_run = False
-            i += 1
-        else:
-            return ""  # không khớp
-    if ai == len(alias):
-        return line[i:]
-    return ""
-
-
-def _looks_like_label(text: str) -> bool:
-    """True nếu text trông như 1 label spec khác (tránh lấy nhầm label làm value)."""
-    nt = norm(text)
-    if not nt:
-        return True
-    if nt in LABEL_MAP:
-        return True
-    return any(nt.startswith(a) for a in _ALIASES_BY_LEN)
-
-
-def _find_alias_anywhere(text: str) -> str | None:
-    """Alias (label spec) xuất hiện BẤT KỲ đâu trong text (không cần ở đầu dòng)."""
-    n = no_diacritics(text).lower().replace("đ", "d")
-    for a in _ALIASES_BY_LEN:
-        if a in n:
-            return a
-    return None
-
-
-# ── Bảng spec 2 cột (VF6/VF7 dat-coc qua Firecrawl) ─────────────────────────
-# Format: label rồi 2 giá trị (Eco/Plus) trên dòng riêng, xen dòng trống / label
-# lặp đôi (VF7). VD:
-#   "Công suất tối đa" / "130 kW/174 hp" / "150 kW/201 hp"
-#   "Dài x Rộng x Cao (mm)" / "4.241 x 1.834 x 1.580" / "4.241 x 1.834 x 1.580"
-def parse_label_then_values(body: str) -> list[tuple[str, str, str | None]]:
-    out: list[tuple[str, str, str | None]] = []
-    lines = body.splitlines()
-    n = len(lines)
-    i = 0
-    while i < n:
-        line = lines[i].strip()
-        if TABLE_ROW_RE.match(line) or not line:
-            i += 1
-            continue
-        # Dòng bắt đầu bằng số = value-first (hero card VF6) → không phải label, bỏ qua.
-        if re.match(r"^[0-9]", line):
-            i += 1
-            continue
-        line = line[2:] if line.startswith("- ") else line  # strip markdown list marker (vf8_html)
-        alias = _find_alias_anywhere(line)
-        if not alias or is_price_row(alias) or is_section_header(alias):
-            i += 1
-            continue
-        # Bỏ qua dòng trống + label lặp đôi để tới dòng giá trị.
-        j = i + 1
-        base = no_diacritics(line).lower().replace("đ", "d").strip()
-        while j < n:
-            nxt = re.sub(r"[*`_]", "", lines[j].strip()).strip()
-            nxt = nxt[2:] if nxt.startswith("- ") else nxt
-            if not nxt or no_diacritics(nxt).lower().replace("đ", "d").strip() == base:
-                j += 1
-            else:
-                break
-        # Gom tối đa 2 dòng giá trị (bắt đầu bằng số; dòng prose thì dừng).
-        values: list[str] = []
-        while j < n and len(values) < 2:
-            v = re.sub(r"[*`_]", "", lines[j].strip()).strip()
-            v = v[2:] if v.startswith("- ") else v
-            if not v:
-                j += 1
-                continue
-            if TABLE_ROW_RE.match(v) or v.startswith("#") or len(v) > 40 \
-                    or not re.match(r"^[0-9]", v):
-                break
-            values.append(v)
-            j += 1
-        if len(values) == 2:
-            out.append((alias, values[0], "Eco"))
-            out.append((alias, values[1], "Plus"))
-        i = j if j > i + 1 else i + 1
-    return out
-
-
-# ── Value-trên-label (VF8 All New 2026) ─────────────────────────────────────
-# Format: value trên dòng TRƯỚC label ('170 kW' / 'Công suất tối đa'). Có thể
-# xen dòng trống. VD:
-#   "170 kW" / "Công suất tối đa" / "330 Nm" / "Mô men xoắn cực đại" ...
-def _value_matches_spec(value: str, spec_key: str) -> bool:
-    """Guard unit: value-trên-label chỉ tin khi value khớp unit kỳ vọng của spec.
-    Tránh lấy nhầm value của spec khác khi bảng sau trộn format (VD "Số ghế ngồi"
-    bên dưới 1 giá trị dimension)."""
-    v = value.lower()
-    dim = ("dimension",) if spec_key.startswith("length") or spec_key.startswith("width") \
-        or spec_key.startswith("height") else ()
-    if spec_key in ("length_mm", "width_mm", "height_mm"):
-        return "x" in v
-    if spec_key in ("power_kw", "dc_charge_kw", "ac_charge_kw"):
-        return "kw" in v
-    if spec_key == "torque_nm":
-        return "nm" in v
-    if spec_key == "battery_kwh":
-        return "kwh" in v
-    if spec_key == "range_km":
-        return "km" in v
-    if spec_key in ("wheel_size_inch", "display_inch"):
-        return "inch" in v
-    if spec_key == "seats":
-        return "ghế" in v or "ghe" in v
-    return True  # các spec khác không ép unit
-
-
-def parse_value_above_label(body: str) -> list[tuple[str, str, str | None]]:
-    out: list[tuple[str, str, str | None]] = []
-    lines = body.splitlines()
-    n = len(lines)
-    for i in range(1, n):
-        line = lines[i].strip()
-        line = line[2:] if line.startswith("- ") else line
-        if TABLE_ROW_RE.match(line) or not line:
-            continue
-        alias = _find_alias_anywhere(line)
-        if not alias or is_price_row(alias) or is_section_header(alias):
-            continue
-        mapped = lookup_label(alias)
-        if not mapped:
-            continue
-        k = i - 1
-        prev = ""
-        while k >= 0 and not prev:
-            prev = re.sub(r"[*`_]", "", lines[k].strip()).strip()
-            prev = prev[2:] if prev.startswith("- ") else prev
-            k -= 1
-        if re.match(r"^[0-9]", prev) and _value_matches_spec(prev, mapped[0]):
-            out.append((alias, prev, None))
-    return out
-
-
-# ── Hero card value-first (VF6 dat-coc) ─────────────────────────────────────
-# "59,6 kWDung lượng pin" — value TRƯỚC label CÙNG dòng (Firecrawl merge unit+label).
-# Bắt các spec chưa có trong bảng 2 cột (vd dung lượng pin).
-def parse_value_first(body: str) -> list[tuple[str, str, str | None]]:
-    out: list[tuple[str, str, str | None]] = []
-    for line in body.splitlines():
-        if TABLE_ROW_RE.match(line):
-            continue
-        m = re.match(r"^\s*([\d.,]+)(?:\s*/\s*[\d.,]+)?\s*(kW|Nm|kWh|km)?", line, re.IGNORECASE)
-        if not m:
-            continue
-        rest = line[m.end():].strip()
-        if not rest:
-            continue
-        alias = _find_alias_anywhere(rest)
-        if not alias or is_price_row(alias) or is_section_header(alias):
-            continue
-        mapped = lookup_label(alias)
-        if not mapped:
-            continue
-        # Guard unit: value-trước-label chỉ tin khi đơn vị khớp spec.
-        # Tránh false positive: "100 km/h khi dung lượng pin >50%" → battery_kwh.
-        if not _value_matches_spec(line, mapped[0]):
-            continue
-        out.append((alias, m.group(1), detect_edition(rest)))
-    return out
-
-
-# ── File → spec rows ────────────────────────────────────────────────────────
-def extract_specs_from_file(path: Path) -> list[dict[str, Any]]:
-    meta, body = parse_raw_file(path)
-    model_id = infer_model_raw(path)
-    if not model_id:
-        return []
-    model_code = MODEL_LABEL.get(model_id, model_id)
-    source_url = meta.get("source_url", "")
-
-    raw_pairs: list[tuple[str, str, str | None]] = []
-    raw_pairs.extend(parse_tables(body))
-    # value-trên-label (VF8 All New) chạy TRƯỚC để aggregate ưu tiên giá trị đúng
-    # khi cùng label bị parse_inline/label_then_values đọc nhầm value bên dưới.
-    raw_pairs.extend(parse_value_above_label(body))
-    raw_pairs.extend(parse_value_first(body))        # hero card value-first (VF6)
-    raw_pairs.extend(parse_inline(body))             # label-first B/C
-    raw_pairs.extend(parse_label_then_values(body))  # bảng spec 2 cột (VF6/VF7/VF8)
-
-    rows: list[dict[str, Any]] = []
-    seen: set[tuple[str, str | None, str]] = set()  # (key, edition) trong file
-    for label_norm, value_raw, edition in raw_pairs:
-        mapped = lookup_label(label_norm)
-        if not mapped:
-            continue
-        spec_key, spec_unit, category = mapped
-        if spec_key not in BASIC_SPECS and spec_key != "dimension_triple":
-            # Key ngoài whitelist spec cơ bản → drop (không phải yếu tố mua xe).
-            continue
-        if spec_key == "dimension_triple":
-            for sub_key, sub_val in parse_dimension_triple(value_raw):
-                if not sub_val:
-                    continue
-                k = (sub_key, edition)
-                if k in seen:
-                    continue
-                seen.add(k)
-                rows.append(_row(model_code, edition, "dimension", sub_key,
-                                 sub_val, "mm", source_url))
-            continue
-        value = clean_value(spec_key, value_raw)
-        if value is None:  # junk (sai format / ngoài sanity range) → drop
-            continue
-        k = (spec_key, edition)
-        if k in seen:
-            continue
-        seen.add(k)
-        # category/unit lấy từ BASIC_SPECS (canonical) — bỏ qua mapped của LABEL_MAP.
-        cat, unit = BASIC_SPECS.get(spec_key, (category, spec_unit))
-        rows.append(_row(model_code, edition, cat, spec_key, value,
-                         unit, source_url))
-    return rows
-
-
-def _row(model_code, edition, category, key, value, unit, source_url) -> dict[str, Any]:
+def make_row(model_code: str, edition: str, category: str,
+             key: str, value: str, unit: str, url: str) -> dict[str, Any]:
     return {
         "model_code": model_code,
-        "version_name": edition,  # None = chung mọi bản
+        "version_name": edition,
         "version_code": None,
         "spec_category": category,
+        "spec_category_vn": CATEGORY_VN_MAP.get(category, category),
         "spec_key": key,
+        "spec_key_vn": SPEC_KEY_VN_MAP.get(key, key),
         "spec_value": value,
-        "spec_unit": unit or "",
-        "source_url": source_url,
+        "spec_unit": unit,
+        "source_url": url,
     }
 
 
-# ── Crawl4AI brochure extraction ────────────────────────────────────────────
-def _llm_label_to_key(label: str, value: str) -> str | None:
-    """Map occasional LLM labels back to the strict BASIC_SPECS whitelist."""
-    n = norm(label)
-    v = norm(value)
-    if n in BASIC_SPECS:
-        return n
-    if n in ("dai x rong x cao", "kich thuoc") and re.search(r"[xX×]", value):
-        return "dimension_triple"
-    if "chieu dai co so" in n:
-        return "wheelbase_mm"
-    if "khoang sang gam" in n:
-        return "ground_clearance_mm"
-    if "cong suat sac" in n and ("dc" in n or "nhanh" in n):
-        return "dc_charge_kw"
-    if "cong suat toi da" in n or n == "cong suat":
-        return "power_kw"
-    if "mo men xoan" in n:
-        return "torque_nm"
-    if "dung luong pin" in n or n == "pack pin":
-        return "battery_kwh"
-    if "quang duong" in n or n == "pham vi di chuyen":
-        return "range_km"
-    if "dan dong" in n or "he dan dong" in n:
-        return "drivetrain"
-    if "so cho ngoi" in n or "so ghe ngoi" in n:
-        return "seats"
-    # Some PDF layouts put the dimension labels in one combined text block.
-    if "dai" in n and "rong" in n and "cao" in n and re.search(r"[xX×]", value):
-        return "dimension_triple"
-    return None
+def _parse_edition_header(value: str) -> str:
+    """Lấy edition từ row 'PHIÊN BẢN': 'VF 6 Eco' → 'Eco'; 'VF8 The All New' → 'The All New';
+    'VF 2' → '' (không có edition)."""
+    m = re.match(r"^vf\s*\d+[\s\-]*(.*)$", value, re.I)
+    if not m:
+        return ""
+    return m.group(1).strip()
 
 
-def _normalize_edition(value: Any) -> str | None:
-    if not value:
-        return None
-    text = str(value).strip().lower()
-    aliases = {
-        "pluscaptain": "PlusCaptain", "plus": "Plus", "eco": "Eco",
-        "tieuchuan": "TieuChuan", "nangcao": "NangCao", "caocap": "CaoCap",
-    }
-    if text in aliases:
-        return aliases[text]
-    if text == "base":
-        return "Eco"
-    return None
+# ── Brochure URL (source_url) ───────────────────────────────────────────────
+# data/raw/link_brochure.md: mỗi dòng `<Model Label>: <URL>` (VD
+# "VF 8 All New: https://..."). Label brochure trùng model_code (MODEL_LABEL)
+# nên dùng thẳng làm key.
 
 
-def _parse_crawl4ai_content(content: str) -> list[dict[str, Any]]:
-    if not content:
+def _load_brochure_urls() -> dict[str, str]:
+    """Đọc link_brochure.md → {model_code: brochure_pdf_url}."""
+    urls: dict[str, str] = {}
+    link_file = RAW_DIR / "link_brochure.md"
+    if not link_file.exists():
+        return urls
+    for line in link_file.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or ":" not in line:
+            continue
+        label, _, url = line.partition(":")
+        label = label.strip()
+        url = url.strip()
+        if not url.startswith("http"):
+            continue
+        urls[label] = url
+    return urls
+
+
+BROCHURE_URLS = _load_brochure_urls()
+
+
+def parse_model_csv(path: Path) -> list[dict[str, Any]]:
+    """Extract ALL spec rows từ 1 file CSV 2 cột (label, value)."""
+    model_id = infer_model(path)
+    if not model_id:
+        print(f"  [skip] can't infer model from {path.name}", file=sys.stderr)
         return []
-    try:
-        data = json.loads(content)
-    except json.JSONDecodeError:
-        return []
-    if isinstance(data, dict):
-        data = data.get("specs", data.get("items", []))
-    return data if isinstance(data, list) else []
+    model_code = MODEL_LABEL.get(model_id, model_id)
+    source_url = BROCHURE_URLS.get(model_code, f"model_data/{path.name}")
 
-
-def _vision_extract_brochure(url: str, model_id: str, schema: dict) -> list[dict[str, Any]]:
-    """Fallback for image-only PDFs: render pages and send them to a vision LLM."""
-    try:
-        import fitz
-    except ImportError:
-        print("  [vision] PyMuPDF missing; cannot render image-only PDF")
-        return []
-
-    response = requests.get(url, timeout=120)
-    response.raise_for_status()
-    prompt = (
-        f"Read these brochure pages for VinFast {model_id}. OCR the page images and "
-        "extract only explicit basic vehicle specs. Return JSON object {\"specs\": "
-        "[...]} with spec_key, spec_value, edition. Allowed keys: "
-        "length_mm, width_mm, height_mm, wheelbase_mm, ground_clearance_mm, "
-        "power_kw, torque_nm, drivetrain, battery_kwh, range_km, dc_charge_kw, seats. "
-        "For dimensions split length/width/height. Normalize drivetrain to FWD/RWD/AWD. "
-        "Use kW, not Hp, and prefer NEDC over WLTP. Never guess."
-    )
-    content: list[dict[str, Any]] = [{"type": "text", "text": prompt}]
-    with fitz.open(stream=response.content, filetype="pdf") as document:
-        for page in document[:20]:
-            pix = page.get_pixmap(matrix=fitz.Matrix(1.2, 1.2), alpha=False)
-            image = io.BytesIO(pix.tobytes("jpeg", jpg_quality=70))
-            encoded = base64.b64encode(image.getvalue()).decode("ascii")
-            content.append({
-                "type": "image_url",
-                "image_url": {"url": f"data:image/jpeg;base64,{encoded}"},
-            })
-
-    result = requests.post(
-        "https://openrouter.ai/api/v1/chat/completions",
-        headers={
-            "Authorization": f"Bearer {os.environ['OPENROUTER_API_KEY']}",
-            "Content-Type": "application/json",
-        },
-        json={
-            "model": os.environ.get("OPENROUTER_CHAT_MODEL", "openai/gpt-4o-mini"),
-            "messages": [{"role": "user", "content": content}],
-            "response_format": {"type": "json_object"},
-            "temperature": 0,
-        },
-        timeout=300,
-    )
-    result.raise_for_status()
-    body = result.json()
-    answer = body["choices"][0]["message"]["content"]
-    return _parse_crawl4ai_content(answer)
-
-
-BROCHURE_MODEL_ORDER = [
-    "VF2", "VF3", "VF5", "VF6", "VF7", "VF8", "VF8NEW", "VF9",
-]
-
-
-def _crawl_brochure_urls() -> list[tuple[str, str]]:
-    if not BROCHURE_LINKS.exists():
-        return []
-    urls: list[str] = []
-    for line in BROCHURE_LINKS.read_text(encoding="utf-8").splitlines():
-        match = re.search(r"https?://\S+", line.strip())
-        if match:
-            url = match.group(0).rstrip(")\"'")
-            if url not in urls:
-                urls.append(url)
-    return list(zip(BROCHURE_MODEL_ORDER, urls))
-
-
-async def _crawl_brochure_specs(urls: list[tuple[str, str]]) -> list[dict[str, Any]]:
-    """Crawl brochure PDFs with Crawl4AI and return validated raw spec rows."""
-    from crawl4ai import (AsyncWebCrawler, BrowserConfig, CacheMode,
-                          CrawlerRunConfig, LLMConfig, LLMExtractionStrategy,
-                          PDFContentScrapingStrategy)
-    from crawl4ai.processors.pdf import PDFCrawlerStrategy
-
-    schema = {
-        "type": "object",
-        "properties": {
-            "spec_key": {"type": "string", "enum": sorted(BASIC_SPECS)},
-            "spec_value": {"type": "string"},
-            "edition": {"type": ["string", "null"]},
-        },
-        "required": ["spec_key", "spec_value", "edition"],
-    }
-    instruction = (
-        "Extract only explicit basic VinFast vehicle specs from this brochure. "
-        "Return one item per value using exactly the allowed spec_key enum. "
-        "For Dài x Rộng x Cao return three items with length_mm, width_mm, height_mm. "
-        "For kW/Hp use the kW token, not Hp. Prefer NEDC over WLTP. "
-        "Detect Eco, Plus, PlusCaptain editions from table columns. Never guess."
-    )
-    provider = os.environ.get("OPENROUTER_CHAT_MODEL", "openai/gpt-4o-mini")
-    llm = LLMExtractionStrategy(
-        llm_config=LLMConfig(
-            provider=provider,
-            api_token="env:OPENROUTER_API_KEY",
-            base_url="https://openrouter.ai/api/v1",
-            temperature=0,
-        ),
-        schema=schema,
-        instruction=instruction,
-        input_format="markdown",
-        force_json_response=True,
-        verbose=False,
-    )
-    crawl_config = CrawlerRunConfig(
-        # Brochure images are decorative in this pass. Disabling image parsing
-        # avoids broken embedded image streams and keeps text/table extraction fast.
-        scraping_strategy=PDFContentScrapingStrategy(extract_images=False),
-        extraction_strategy=llm,
-        cache_mode=CacheMode.BYPASS,
-        page_timeout=120000,
-        verbose=False,
-    )
-    browser = BrowserConfig(headless=True, verbose=False)
     rows: list[dict[str, Any]] = []
-    async with AsyncWebCrawler(crawler_strategy=PDFCrawlerStrategy(), config=browser) as crawler:
-        for model_id, url in urls:
-            result = await crawler.arun(url, config=crawl_config)
-            content = result.extracted_content or ""
-            raw_items = _parse_crawl4ai_content(content)
-            if not raw_items:
-                print(f"  [crawl4ai] {model_id}: no text specs; trying vision OCR")
-                try:
-                    raw_items = _vision_extract_brochure(url, model_id, schema)
-                except Exception as exc:  # noqa: BLE001
-                    print(f"  [vision] {model_id} failed: {exc}")
-            count = 0
-            for item in raw_items:
-                if not isinstance(item, dict) or item.get("error"):
-                    continue
-                key = _llm_label_to_key(str(item.get("spec_key", "")),
-                                        str(item.get("spec_value", "")))
-                value = str(item.get("spec_value", "")).strip()
-                edition = _normalize_edition(item.get("edition"))
-                if not key:
-                    continue
-                if key == "dimension_triple":
-                    values = parse_dimension_triple(value)
+    seen: set[tuple[str, str]] = set()  # (spec_key, edition) — trùng trong file
+    current_section_category: str | None = None
+    edition: str | None = None
+
+    with path.open("r", encoding="utf-8-sig", newline="") as f:
+        reader = csv.reader(f)
+        for raw in reader:
+            if not raw:
+                continue
+            label = (raw[0] or "").strip()
+            if not label:
+                continue
+            value = (raw[1] or "").strip() if len(raw) > 1 else ""
+
+            label_norm = norm(label)
+
+            # Row header: "PHIÊN BẢN, VF 6 Eco" → model/edition
+            if label_norm in VERSION_HEADER_ALIASES:
+                ed = _parse_edition_header(value)
+                if ed:
+                    # Alias edition từ spec sheet → edition chuẩn (VD Plus AWD → PlusCaptain)
+                    edition = EDITION_ALIASES.get(model_id, {}).get(ed, ed)
                 else:
-                    cleaned = clean_value(key, value)
-                    values = [(key, cleaned)] if cleaned else []
-                for final_key, final_value in values:
-                    cat, unit = BASIC_SPECS[final_key]
-                    rows.append(_row(MODEL_LABEL[model_id], edition, cat, final_key,
-                                     final_value, unit, url))
-                    count += 1
-            if count:
-                print(f"  [crawl4ai] {model_id}: {count} validated specs from {url}")
+                    # Không có edition trong header → fallback MODEL_EDITIONS
+                    eds = MODEL_EDITIONS.get(model_id, [])
+                    edition = eds[0] if len(eds) == 1 else None
+                continue
+
+            # Section header: label có value rỗng → cập nhật category context
+            if not value:
+                sec_key = SECTION_PREFIX_RE.sub("", label_norm)
+                sec_cat = SECTION_CATEGORY_MAP.get(sec_key)
+                if sec_cat is not None:
+                    current_section_category = sec_cat
+                continue
+
+            # Value nhiều dòng (quoted trong CSV) → gom thành 1 dòng
+            value = re.sub(r"\s*\n\s*", " ", value)
+
+            # Mapping label → spec_key/category/unit
+            mapped = None
+            for alias in ALIASES_BY_LEN:
+                if label_norm.startswith(alias) or label_norm == alias:
+                    mapped = LABEL_MAP[alias]
+                    break
+
+            if mapped:
+                spec_key, spec_unit, spec_category = mapped
+                if spec_key == "dimension_triple":
+                    dim_parts = parse_dimension_triple(value)
+                    for sub_key, sub_val in dim_parts:
+                        if sub_val is None:
+                            continue
+                        dedup_key = (sub_key, edition)
+                        if dedup_key in seen:
+                            continue
+                        seen.add(dedup_key)
+                        rows.append(make_row(model_code, edition, "dimension",
+                                             sub_key, sub_val, "mm", source_url))
+                    continue
             else:
-                print(
-                    f"  [crawl4ai] {model_id}: brochure has no extractable text; "
-                    "keep dat-coc/raw fallback specs"
-                )
+                # Không có trong LABEL_MAP → check FEATURE_NORM_MAP (tính năng)
+                feat_mapped = None
+                label_strict = norm_strict(label)
+                for alias in FEATURE_ALIASES_BY_LEN:
+                    if label_strict.startswith(alias) or label_strict == alias:
+                        orig_key = FEATURE_ALIASES_STRICT[alias]
+                        feat_mapped = FEATURE_NORM_MAP[orig_key]
+                        break
+                if feat_mapped:
+                    spec_key, spec_category = feat_mapped
+                    spec_unit = ""
+                else:
+                    # Vẫn unmapped → dùng raw norm label
+                    spec_key = label_norm
+                    spec_unit = ""
+                    spec_category = current_section_category or "general"
+
+            # Dedup trong file
+            dedup_key = (spec_key, edition)
+            if dedup_key in seen:
+                continue
+            seen.add(dedup_key)
+
+            rows.append(make_row(model_code, edition, spec_category,
+                                 spec_key, value, spec_unit, source_url))
+
     return rows
 
 
-def crawl_brochure_specs() -> list[dict[str, Any]]:
-    load_dotenv(REPO_ROOT / ".env")
-    if not os.environ.get("OPENROUTER_API_KEY"):
-        raise RuntimeError("OPENROUTER_API_KEY is required for --crawl-brochures")
-    return asyncio.run(_crawl_brochure_specs(_crawl_brochure_urls()))
+VARIANT_DIR = MODEL_DATA_DIR / "variants"
+
+# vinfast_color.csv → car_colors: màu ngoại thất + phí màu nâng cao.
+# Giá xe = price_list (giá chuẩn) + color_fee_vnd nếu màu Nâng cao.
+# model_id dùng mã chuẩn (VF2, VF3, VF8NEW...) giống price_list/edition.
+COLOR_FIELDS = ["model_id", "version_code", "version_name",
+                "color_code", "color_name", "color_type", "color_fee_vnd",
+                "interior_code", "interior_name", "source_url"]
+
+# Chuẩn hóa version_name trong vinfast_*.csv → edition chuẩn (MODEL_EDITIONS)
+# để join được với edition/price_list/car_specs.
+VARIANT_EDITION_ALIAS = {
+    "VF2": {"Tiêu chuẩn": "TieuChuan"},
+    "VFMPV7": {"Tiêu chuẩn": "Eco"},
+    "VF8NEW": {"Comfort": "The All New"},
+    "VF9": {"Plus tùy chọn 7 chỗ": "Plus",
+             "Plus tùy chọn ghế cơ trưởng": "PlusCaptain"},
+}
+
+# Mã phiên bản nội bộ → edition chuẩn (ưu tiên hơn alias theo tên).
+# VF 7 Plus có 5 mã: GC12V (Plus), GC12V_CR151 (trần kính = PlusCaptain),
+# GC12V_T023 (AWD), GC12V_CR151_T023 (trần kính + AWD).
+# Edition option-combination đặt tên ổn định bằng slug tiếng Anh từ mã option
+# (T023→AWD, CR151→PanoramicRoof) thay vì nhãn tiếng Việt hay đổi trên site.
+VERSION_CODE_EDITION_ALIAS = {
+    "GC12V": "Plus",
+    "GC12V_CR151": "PlusCaptain",
+    "GC12V_T023": "Plus_AWD",
+    "GC12V_CR151_T023": "Plus_AWD_PanoramicRoof",
+}
+
+# Edition kế thừa spec của edition base (cùng cơ khí/tính năng, chỉ khác option
+# đã tách ở car_options). VD: VF 7 PlusCaptain (trần kính) = Plus + trần kính →
+# spec giống Plus; Plus_AWD_PanoramicRoof = Plus_AWD + trần kính → spec giống
+# Plus_AWD. Key = model_code (MODEL_LABEL) như trong specs.csv.
+SPEC_EDITION_INHERIT = {
+    "VF 7": {"PlusCaptain": "Plus", "Plus_AWD_PanoramicRoof": "Plus_AWD"},
+    "VF 9": {"PlusCaptain": "Plus"},
+}
+
+PRICE_CSV_FIELDS = ["model_id", "edition_id", "price_list_vnd", "price_promo_vnd",
+                     "promo_label", "vat_included", "battery_included",
+                     "valid_from", "valid_to", "updated_at", "source_url"]
+
+EDITION_CSV_FIELDS = ["model_id", "edition_id", "model_label", "edition_label",
+                       "year_range", "is_active", "created_at", "updated_at"]
+
+# Mẫu xe trong vinfast_*.csv → model_id chuẩn
+# "VF 8 The All New" → "VF8NEW"; "VF MPV 7" → "VFMPV7"
+MODEL_NAME_TO_ID = {
+    "vf 2": "VF2", "vf 3": "VF3", "vf 5": "VF5", "vf 6": "VF6",
+    "vf 7": "VF7", "vf 8": "VF8", "vf 8 the all new": "VF8NEW",
+    "vf 9": "VF9", "vf mpv 7": "VFMPV7",
+}
 
 
-# ── Aggregate (union all files) ─────────────────────────────────────────────
-def _source_rank(url: str) -> int:
-    for i, dom in enumerate(SOURCE_PRIORITY):
-        if dom in (url or ""):
-            return i
-    return len(SOURCE_PRIORITY)
+def _norm_price(v: str | None) -> str:
+    """'188.000.000' → '188000000'; '0' → '0'; '' → ''"""
+    if not v:
+        return ""
+    return re.sub(r"[^\d-]", "", str(v).strip())
 
 
-def aggregate(all_rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    """Gộp theo (model_code, version_name, category, spec_key); conflict → prefer
-    nguồn rank cao hơn (shop.vinfastauto.com). Rồi collapse: spec y hệt cho mọi
-    edition của model → 1 row version_name=None."""
-    # group key → list rows (giữ source rank)
-    grouped: dict[tuple, list[dict[str, Any]]] = {}
-    for r in all_rows:
-        gk = (r["model_code"], r["version_name"], r["spec_category"], r["spec_key"])
-        grouped.setdefault(gk, []).append(r)
+def _model_id_from_name(model_name: str) -> str | None:
+    """'VF 8 The All New' → 'VF8NEW' (fallback: infer_model-style match)."""
+    key = no_diacritics(model_name.lower()).strip()
+    mid = MODEL_NAME_TO_ID.get(key)
+    if mid:
+        return mid
+    # fallback: chứa từ khóa
+    for k in ("vf8theallnew", "vf8thenew", "vf8"):
+        if k in re.sub(r"[^a-z0-9]", "", key):
+            return "VF8NEW" if "allnew" in re.sub(r"[^a-z0-9]", "", key) else "VF8"
+    return None
 
-    picked: list[dict[str, Any]] = []
-    for gk, rows in grouped.items():
-        rows.sort(key=lambda r: _source_rank(r["source_url"]))
-        picked.append(rows[0])  # value tốt nhất
 
-    # Collapse: trong 1 model, (category, key, value) giống hết mọi edition → NULL.
-    by_model: dict[str, list[dict[str, Any]]] = {}
-    for r in picked:
-        by_model.setdefault(r["model_code"], []).append(r)
+def _edition_from(model_id: str, version_code: str, version_name: str) -> str:
+    """Chuẩn hóa edition: ưu tiên alias theo mã phiên bản, sau đó theo tên."""
+    if version_code and version_code in VERSION_CODE_EDITION_ALIAS:
+        return VERSION_CODE_EDITION_ALIAS[version_code]
+    return VARIANT_EDITION_ALIAS.get(model_id, {}).get(version_name, version_name)
 
-    collapsed: list[dict[str, Any]] = []
-    for model, rows in by_model.items():
-        # nhóm theo (category, key)
-        by_ck: dict[tuple, list[dict[str, Any]]] = {}
-        for r in rows:
-            by_ck.setdefault((r["spec_category"], r["spec_key"]), []).append(r)
-        for (cat, key), rs in by_ck.items():
-            editions = [r for r in rs if r["version_name"] is not None]
-            nulls = [r for r in rs if r["version_name"] is None]
-            if editions:
-                vals = {r["spec_value"] for r in editions}
-                if len(vals) == 1:
-                    # mọi edition cùng value → spec chung mọi bản → 1 row NULL.
-                    # (bỏ nulls: row "chung" mâu thuẫn khi editions đã khẳng định
-                    #  value chung này — hoặc nulls là junk conflict.)
-                    base = dict(editions[0])
-                    base["version_name"] = None
-                    collapsed.append(base)
-                else:
-                    # editions khác value → giữ từng edition, bỏ nulls (chung sai).
-                    collapsed.extend(editions)
+
+def parse_colors_csv(path: Path) -> list[dict[str, Any]]:
+    """Parse vinfast_color.csv → car_colors rows.
+
+    Mỗi dòng = 1 màu ngoại thất của 1 phiên bản (kèm nội thất đi kèm).
+    Phí màu nâng cao = số tiền cộng thêm vào giá chuẩn (price_list).
+    Drop PID/optionsName (chỉ dùng debug).
+    """
+    rows: list[dict[str, Any]] = []
+    seen: set[tuple[str, str, str]] = set()
+    with path.open("r", encoding="utf-8-sig", newline="") as f:
+        reader = csv.DictReader(f)
+        for raw in reader:
+            model_name = (raw.get("Mẫu xe") or "").strip()
+            if not model_name:
+                continue  # row trống cuối file
+            model_id = _model_id_from_name(model_name)
+            if not model_id:
+                print(f"    ⚠ skip unknown model: {model_name!r}", file=sys.stderr)
+                continue
+            version_code = (raw.get("Mã phiên bản") or "").strip()
+            version_name = (raw.get("Tên phiên bản") or "").strip()
+            version_name = _edition_from(model_id, version_code, version_name)
+            color_code = (raw.get("Mã màu") or "").strip()
+            color_name = (raw.get("Tên màu ngoại thất") or "").strip()
+            color_type = (raw.get("Phân loại màu") or "").strip()
+            fee = _norm_price(raw.get("Phí màu nâng cao (đ)"))
+            interior_code = (raw.get("Mã nội thất") or "").strip()
+            interior_name = (raw.get("Tên nội thất") or "").strip()
+            if not (version_code and color_code):
+                continue
+            key = (version_code, color_code, interior_code)
+            if key in seen:
+                continue
+            seen.add(key)
+            rows.append({
+                "model_id": model_id,
+                "version_code": version_code,
+                "version_name": version_name,
+                "color_code": color_code,
+                "color_name": color_name,
+                "color_type": color_type,
+                "color_fee_vnd": fee or "0",
+                "interior_code": interior_code,
+                "interior_name": interior_name,
+                "source_url": f"model_data/variants/{path.name}",
+            })
+    return rows
+
+
+def parse_models_prices(path: Path) -> dict[tuple[str, str], str]:
+    """Parse vinfast_models.csv → {(model_id, edition_name): giá chuẩn}.
+
+    Giá chuẩn = min('Giá chính xác (đ)') — giá thực tế theo từng tổ hợp màu
+    (màu cơ bản = giá chuẩn; màu nâng cao cộng phí nằm ở car_colors).
+    VD VF 3 Plus Solar Ruby -8tr → giá chuẩn 296tr.
+    """
+    out: dict[tuple[str, str], str] = {}
+    with path.open("r", encoding="utf-8-sig", newline="") as f:
+        reader = csv.DictReader(f)
+        for raw in reader:
+            model_name = (raw.get("Mẫu xe") or "").strip()
+            if not model_name:
+                continue
+            model_id = _model_id_from_name(model_name)
+            if not model_id:
+                continue
+            version_code = (raw.get("Mã phiên bản") or "").strip()
+            version_name = (raw.get("Tên phiên bản") or "").strip()
+            version_name = _edition_from(model_id, version_code, version_name)
+            if not version_name:
+                continue
+            exact = _norm_price(raw.get("Giá chính xác (đ)"))
+            if not exact:
+                continue
+            key = (model_id, version_name)
+            if key not in out:
+                out[key] = exact
             else:
-                # chỉ có row chung (không phân edition) → giữ.
-                collapsed.extend(nulls)
-    return collapsed
+                # nhiều mã/tổ hợp màu cùng edition → lấy giá thấp nhất (màu cơ bản)
+                out[key] = min(out[key], exact)
+    return out
 
 
-# ── Run ─────────────────────────────────────────────────────────────────────
-CSV_FIELDS = ["model_code", "version_name", "version_code", "spec_category",
-              "spec_key", "spec_value", "spec_unit", "source_url"]
+def count_csv_rows(path: Path, delimiter: str = "|") -> int:
+    """Đếm số dòng dữ liệu (không tính header) của 1 postgres CSV.
+
+    Dùng csv.reader thay vì đếm dòng thô vì value có thể chứa `|` được quote.
+    """
+    if not path.exists():
+        return 0
+    with path.open("r", encoding="utf-8", newline="") as f:
+        return sum(1 for _ in csv.reader(f, delimiter=delimiter)) - 1
 
 
-def run(version: str = "v1", crawl_brochures: bool = False) -> int:
+def sync_price_list_from_models(pg_dir: Path) -> None:
+    """Đồng bộ price_list + edition theo giá chuẩn từ vinfast_models.csv.
+
+    - Cập nhật price_list_vnd = giá chuẩn (bỏ giá promo cũ của dat-coc).
+    - Thêm edition/price nếu thiếu (VD VF 8 All New — dat-coc không có giá).
+    """
+    from datetime import datetime, timezone
+
+    ed_path = pg_dir / "edition.csv"
+    price_path = pg_dir / "price_list.csv"
+    models_path = VARIANT_DIR / "vinfast_models.csv"
+    if not (ed_path.exists() and price_path.exists() and models_path.exists()):
+        return
+
+    std_prices = parse_models_prices(models_path)
+    if not std_prices:
+        return
+
+    def _read(p: Path, fields: list[str]) -> list[dict[str, str]]:
+        with p.open("r", encoding="utf-8", newline="") as f:
+            return [dict(r) for r in csv.DictReader(f, delimiter="|")]
+
+    ed_rows = _read(ed_path, EDITION_CSV_FIELDS)
+    price_rows = _read(price_path, PRICE_CSV_FIELDS)
+    now = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+    n_updated = 0
+
+    # Cập nhật giá chuẩn cho các row hiện có
+    for pr in price_rows:
+        key = (pr["model_id"], pr["edition_id"])
+        std = std_prices.get(key)
+        if not std:
+            continue
+        if pr["price_list_vnd"] != std:
+            pr["price_list_vnd"] = std
+            n_updated += 1
+        pr["price_promo_vnd"] = ""   # chỉ lấy giá chuẩn hiện tại, bỏ promo cũ
+        pr["promo_label"] = ""
+        pr["updated_at"] = now
+        pr["source_url"] = f"model_data/variants/{models_path.name}"
+
+    # Thêm edition/price thiếu (VD VF8NEW)
+    for (mid, edition), std in sorted(std_prices.items()):
+        if any(r["model_id"] == mid and r["edition_id"] == edition for r in ed_rows):
+            continue
+        model_code = MODEL_LABEL.get(mid, mid)
+        ed_rows.append({
+            "model_id": mid, "edition_id": edition,
+            "model_label": model_code, "edition_label": edition,
+            "year_range": "2026", "is_active": "t",
+            "created_at": now, "updated_at": now,
+        })
+        price_rows.append({
+            "model_id": mid, "edition_id": edition,
+            "price_list_vnd": std, "price_promo_vnd": "",
+            "promo_label": "", "vat_included": "t", "battery_included": "t",
+            "valid_from": "2026-07-01", "valid_to": "",
+            "updated_at": now, "source_url": f"model_data/variants/{models_path.name}",
+        })
+        print(f"  ✓ thêm {model_code} | {edition} vào edition + price_list (giá {int(std):,})")
+
+    def _write(p: Path, fields: list[str], rows: list[dict[str, str]]) -> None:
+        with p.open("w", encoding="utf-8", newline="") as f:
+            w = csv.DictWriter(f, fieldnames=fields, delimiter="|")
+            w.writeheader()
+            for r in rows:
+                w.writerow({k: r.get(k, "") for k in fields})
+
+    _write(ed_path, EDITION_CSV_FIELDS, ed_rows)
+    _write(price_path, PRICE_CSV_FIELDS, price_rows)
+    print(f"  ✓ sync giá chuẩn từ vinfast_models.csv (cập nhật {n_updated} giá, bỏ promo cũ)")
+
+
+def run(version: str = "v1") -> int:
+    """Main: read model_data CSVs, extract all spec tables, write CSV."""
     version_dir = CLEAN_DIR / version
     pg_dir = version_dir / "postgres"
     pg_dir.mkdir(parents=True, exist_ok=True)
 
-    if not RAW_DIR.exists():
-        print(f"[parse_specs] raw dir not found: {RAW_DIR}", file=sys.stderr)
+    if not MODEL_DATA_DIR.exists():
+        print(f"[parse_specs] model_data dir not found: {MODEL_DATA_DIR}", file=sys.stderr)
         return 1
 
     all_rows: list[dict[str, Any]] = []
-    n_files = 0
     by_model: dict[str, int] = {}
-    if crawl_brochures:
-        print("[parse_specs] crawling brochure PDFs with Crawl4AI...")
-        crawled_rows = crawl_brochure_specs()
-        all_rows.extend(crawled_rows)
-        for r in crawled_rows:
-            by_model[r["model_code"]] = by_model.get(r["model_code"], 0) + 1
+    n_files = 0
 
-    for path in sorted(RAW_DIR.iterdir()):
-        if not path.is_file() or path.suffix not in (".txt", ".md"):
+    for path in sorted(MODEL_DATA_DIR.iterdir()):
+        if not path.is_file() or path.suffix.lower() != ".csv":
             continue
-        if path.name == "link_brochure.md":
+        print(f"  📄 {path.name}")
+        rows = parse_model_csv(path)
+        if not rows:
+            print("    → no spec rows found")
             continue
-        rows = extract_specs_from_file(path)
-        if rows:
-            n_files += 1
-            all_rows.extend(rows)
-            for r in rows:
-                by_model[r["model_code"]] = by_model.get(r["model_code"], 0) + 1
+        n_files += 1
+        all_rows.extend(rows)
+        for r in rows:
+            mc = r["model_code"]
+            by_model[mc] = by_model.get(mc, 0) + 1
+        editions = sorted({r["version_name"] or "" for r in rows})
+        print(f"    → {len(rows)} spec rows  (editions: {', '.join(editions)})")
 
-    final = aggregate(all_rows)
+    if not all_rows:
+        print("[parse_specs] no data found")
+        return 1
 
+    # Expand edition kế thừa spec (VD PlusCaptain = Plus + trần kính → spec giống Plus)
+    inherited: list[dict[str, Any]] = []
+    for model_code, mapping in SPEC_EDITION_INHERIT.items():
+        for child, parent in mapping.items():
+            n = 0
+            for r in all_rows:
+                if r["model_code"] == model_code and (r["version_name"] or "") == parent:
+                    nr = dict(r)
+                    nr["version_name"] = child
+                    inherited.append(nr)
+                    n += 1
+            if n:
+                print(f"    ↳ {model_code} {parent} → {child}: +{n} spec rows (kế thừa)")
+    all_rows.extend(inherited)
+
+    # Ghi CSV
     out_path = pg_dir / "specs.csv"
     with out_path.open("w", encoding="utf-8", newline="") as f:
         w = csv.DictWriter(f, fieldnames=CSV_FIELDS, delimiter="|")
         w.writeheader()
-        for r in final:
+        for r in all_rows:
             w.writerow({k: ("" if r.get(k) is None else r.get(k)) for k in CSV_FIELDS})
 
-    print(f"[parse_specs] version={version}  files_with_specs={n_files}")
+    # ── colors (variants/vinfast_color.csv: màu + phí màu nâng cao) ──
+    color_rows: list[dict[str, Any]] = []
+    color_path = VARIANT_DIR / "vinfast_color.csv"
+    if color_path.exists():
+        print(f"  📄 {color_path.name}")
+        color_rows = parse_colors_csv(color_path)
+        if color_rows:
+            out_colors = pg_dir / "colors.csv"
+            with out_colors.open("w", encoding="utf-8", newline="") as f:
+                w = csv.DictWriter(f, fieldnames=COLOR_FIELDS, delimiter="|")
+                w.writeheader()
+                for r in color_rows:
+                    w.writerow({k: ("" if r.get(k) is None else r.get(k)) for k in COLOR_FIELDS})
+            print(f"  → {out_colors}: {len(color_rows)} rows")
+        else:
+            print(f"  ⚠ {color_path.name} không có dữ liệu — skip colors", file=sys.stderr)
+    else:
+        print(f"  ⚠ {color_path} not found — skip colors", file=sys.stderr)
+
+    # ── Sync giá chuẩn từ vinfast_models.csv → price_list + edition ──
+    # (bỏ promo cũ, giá chuẩn = Giá cơ bản phiên bản; phí màu nâng cao
+    #  nằm ở car_colors, không cộng vào price_list)
+    sync_price_list_from_models(pg_dir)
+
+    print(f"\n[parse_specs] version={version}  files={n_files}")
     for mc in sorted(by_model):
-        print(f"  {mc}: {by_model[mc]} raw specs")
-    print(f"  → {out_path.name}: {len(final)} rows (sau aggregate + collapse)")
+        print(f"  {mc}: {by_model[mc]} rows")
+    print(f"  → {out_path}: {len(all_rows)} rows")
+
+    # Cập nhật manifest với car_specs info
+    manifest_path = version_dir / "_manifest.json"
+    if manifest_path.exists():
+        try:
+            import json
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            manifest["postgres"]["tables"]["car_specs"] = {
+                "file": "postgres/specs.csv",
+                "rows": len(all_rows),
+                "upserted": len(all_rows),
+            }
+            if color_rows:
+                manifest["postgres"]["tables"]["car_colors"] = {
+                    "file": "postgres/colors.csv",
+                    "rows": len(color_rows),
+                    "upserted": len(color_rows),
+                }
+            # edition/price_list đã được sync lại từ vinfast_models.csv → đếm row thật
+            for tbl, fname in (("edition", "edition.csv"), ("price_list", "price_list.csv")):
+                n = count_csv_rows(pg_dir / fname)
+                manifest["postgres"]["tables"][tbl] = {
+                    "file": f"postgres/{fname}",
+                    "rows": n,
+                    "upserted": n,
+                }
+            # Tính lại total_rows_upserted
+            total = sum(
+                t.get("upserted", 0)
+                for t in manifest["postgres"]["tables"].values()
+            )
+            manifest["postgres"]["total_rows_upserted"] = total
+            manifest_path.write_text(
+                json.dumps(manifest, ensure_ascii=False, indent=2),
+                encoding="utf-8"
+            )
+            print("  ✓ manifest updated with car_specs")
+        except Exception as e:
+            print(f"  ⚠ failed to update manifest: {e}", file=sys.stderr)
+
     return 0
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser(description="Trích spec kỹ thuật từ raw → specs.csv")
+    ap = argparse.ArgumentParser(description="Extract all spec rows from model_data CSVs.")
     ap.add_argument("--version", default="v1", help="Output version folder (default v1)")
-    ap.add_argument("--crawl-brochures", action="store_true",
-                    help="Crawl PDF brochure URLs with Crawl4AI + LLM extraction")
     args = ap.parse_args()
-    return run(args.version, crawl_brochures=args.crawl_brochures)
+    return run(args.version)
 
 
 if __name__ == "__main__":

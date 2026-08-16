@@ -24,28 +24,25 @@ Usage:
 """
 
 import argparse
-import os
 import sys
 from pathlib import Path
 
+# Windows console cp1252 → UTF-8 (emoji / tiếng Việt trong print)
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+
 import psycopg2
-from dotenv import load_dotenv
 from qdrant_client import QdrantClient, models
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(REPO_ROOT))
-sys.path.insert(0, str(REPO_ROOT / "backend"))
+# Chạy trực tiếp (`python scripts/version_manager.py`) → đưa repo root vào sys.path
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-load_dotenv(REPO_ROOT / ".env")
-
+from scripts.config import CLEAN_DIR, PG_DSN, QDRANT_API_KEY, QDRANT_URL  # noqa: E402
 from scripts.ingest import postgres_ingest  # noqa: E402
 
-QDRANT_URL = os.environ.get("QDRANT_URL", "http://localhost:6333")
-QDRANT_API_KEY = os.environ.get("QDRANT_API_KEY", "")
-PG_DSN = os.environ.get("PG_DSN", "postgresql://vivu:vivu@localhost:5432/vivu")
-
 SPARSE_ALIAS = "sparse"
-DENSE_ALIASES = ["vivu_product_info", "vivu_policy", "vivu_maintenance"]
+DENSE_ALIASES = ["vivu_product_info", "vivu_policy", "vivu_maintenance", "vivu_faq"]
 
 ALL_ALIASES = DENSE_ALIASES + [SPARSE_ALIAS]
 
@@ -62,7 +59,7 @@ def _conn():
 
 def dense_stems_for_version(version: str) -> list[str]:
     """Tên collection dense của 1 version (từ vector/*.jsonl stems)."""
-    vdir = REPO_ROOT / "data" / "clean" / version / "vector"
+    vdir = CLEAN_DIR / version / "vector"
     if not vdir.exists():
         return list(DENSE_ALIASES)
     stems = sorted(p.stem for p in vdir.glob("*.jsonl"))
@@ -221,6 +218,9 @@ def cmd_delete(args) -> int:
         cur = conn.cursor()
         cur.execute("DELETE FROM price_list WHERE version = %s", (version,))
         cur.execute("DELETE FROM edition WHERE version = %s", (version,))
+        cur.execute("DELETE FROM car_specs WHERE ingest_version = %s", (version,))
+        cur.execute("DELETE FROM car_colors WHERE ingest_version = %s", (version,))
+        cur.execute("DELETE FROM car_options WHERE ingest_version = %s", (version,))
         cur.execute("DELETE FROM ingest_version WHERE version = %s", (version,))
         conn.commit()
     finally:
@@ -228,7 +228,7 @@ def cmd_delete(args) -> int:
     print(f"[delete] version={version}")
     print(f"  dropped collections: {dropped}")
     print(f"  removed dangling aliases: {dangling}")
-    print(f"  deleted PG rows (edition/price_list/ingest_version) for version={version}")
+    print(f"  deleted PG rows (edition/price_list/car_specs/car_colors/car_options/ingest_version) for version={version}")
     print(f"  (folder data/clean/{version}/ giữ nguyên — audit)")
     return 0
 
@@ -279,7 +279,7 @@ def _backfill_cache(client: QdrantClient, version: str) -> int:
 
     cache = VectorCache()
     ns = _uuid.UUID("6ba7b810-9dad-11d1-80b4-00c04fd430c8")
-    vdir = REPO_ROOT / "data" / "clean" / version / "vector"
+    vdir = CLEAN_DIR / version / "vector"
     n = 0
     for f in sorted(vdir.glob("*.jsonl")):
         col = f.stem
@@ -314,10 +314,7 @@ def cmd_migrate_v1(args=None) -> int:
     version = "v1"
 
     # 1) Copy từng collection unversioned → `__v1` (giữ vector, không re-embed)
-    stems = DENSE_ALIASES  # mặc định
-    # phát hiện stems thật từ collection đang có (unversioned)
     existing = {c.name for c in client.get_collections().collections}
-    aliases = existing_aliases(client)
     print(f"[migrate-v1] existing collections: {sorted(existing)}")
     migrated = []
     for col in DENSE_ALIASES + [SPARSE_ALIAS]:
@@ -376,7 +373,7 @@ def cmd_migrate_v1(args=None) -> int:
         cur.execute(postgres_ingest.DDL)
         conn.commit()
         # ingest v1 CSV với version tag
-        version_dir = REPO_ROOT / "data" / "clean" / version
+        version_dir = CLEAN_DIR / version
         pg_dir = version_dir / "postgres"
         if pg_dir.exists():
             edition_rows = postgres_ingest.load_csv(pg_dir / "edition.csv")
@@ -388,10 +385,60 @@ def cmd_migrate_v1(args=None) -> int:
     finally:
         conn.close()
 
-    print(f"[migrate-v1] XONG. active=v1, alias `<col>` → `<col>__v1`.")
-    print(f"  Consumer query VIEW edition_active / price_list_active (= v1).")
-    print(f"  Giờ ingest v2: run_pipeline --version v2 --recreate --commit ${{...}}")
+    print("[migrate-v1] XONG. active=v1, alias `<col>` → `<col>__v1`.")
+    print("  Consumer query VIEW edition_active / price_list_active (= v1).")
+    print("  Giờ ingest v2: run_pipeline --version v2 --recreate --commit ${...}")
     return 0
+
+
+def cmd_recover(args=None) -> int:
+    """Recover 2-store consistency: sync PG is_current với Qdrant alias."""
+    client = _client()
+    conn = _conn()
+    try:
+        # 1) Đọc Qdrant alias hiện tại
+        aliases = existing_aliases(client)
+        if not aliases:
+            print("[recover] không có alias nào trong Qdrant")
+            return 1
+        
+        # Lấy version từ alias đầu tiên (tất cả alias phải cùng version)
+        qdrant_version = None
+        for alias_name, target in aliases.items():
+            if alias_name in ALL_ALIASES:
+                # target = <col>__<version>
+                if "__" in target:
+                    v = target.rsplit("__", 1)[1]
+                    if qdrant_version is None:
+                        qdrant_version = v
+                    elif qdrant_version != v:
+                        print(f"[recover] WARNING: alias trỏ đến nhiều version khác nhau: {qdrant_version} vs {v}")
+                        return 1
+        
+        if qdrant_version is None:
+            print("[recover] không tìm thấy version từ alias")
+            return 1
+        
+        # 2) Đọc PG is_current
+        pg_version = current_version_pg()
+        
+        print(f"[recover] Qdrant alias → {qdrant_version}")
+        print(f"[recover] PG is_current → {pg_version or 'None'}")
+        
+        if pg_version == qdrant_version:
+            print("[recover] ✓ already consistent")
+            return 0
+        
+        # 3) Sync PG → Qdrant
+        print(f"[recover] syncing PG is_current → {qdrant_version}")
+        postgres_ingest.set_current(conn, qdrant_version, rollback=False)
+        print(f"[recover] ✓ recovered: PG is_current = {qdrant_version}")
+        return 0
+    except Exception as e:
+        print(f"[recover] FAIL: {e}", file=sys.stderr)
+        return 1
+    finally:
+        conn.close()
 
 
 def main() -> int:
@@ -414,6 +461,8 @@ def main() -> int:
     p_del.set_defaults(func=cmd_delete)
 
     sub.add_parser("migrate-v1", help="(1 lần) chuyển v1 unversioned → __v1 + alias, không re-embed").set_defaults(func=cmd_migrate_v1)
+    
+    sub.add_parser("recover", help="Recover 2-store consistency: sync PG is_current với Qdrant alias").set_defaults(func=cmd_recover)
 
     args = ap.parse_args()
     return args.func(args)

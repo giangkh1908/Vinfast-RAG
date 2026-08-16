@@ -1,0 +1,61 @@
+[
+  {
+    "query": "Chính sách bảo hành pin như thế nào?",
+    "expected": {
+      "collection": "vivu_policy",
+      "keywords": ["bảo hành", "pin"]
+    }
+  },
+  {
+    "query": "Làm thế nào để đặt lịch bảo dưỡng?",
+    "expected": {
+      "collection": "vivu_maintenance",
+      "keywords": ["bảo dưỡng", "đặt lịch"]
+    }
+  },
+  {
+    "query": "VF 6 Eco có những tính năng an toàn nào?",
+    "expected": {
+      "collection": "vivu_product_info",
+      "model_id": "VF6",
+      "keywords": ["an toàn", "ADAS"]
+    }
+  },
+  {
+    "query": "Quãng đường di chuyển của VF 8 là bao nhiêu?",
+    "expected": {
+      "collection": "vivu_product_info",
+      "model_id": "VF8",
+      "keywords": ["quãng đường", "km"]
+    }
+  },
+  {
+    "query": "Phí cứu hộ 24/7 như thế nào?",
+    "expected": {
+      "collection": "vivu_policy",
+      "keywords": ["cứu hộ", "24/7"]
+    }
+  },
+  {
+    "query": "Tính năng thông minh của VF 8 là gì?",
+    "expected": {
+      "collection": "vivu_product_info",
+      "model_id": "VF8",
+      "keywords": ["thông minh"]
+    }
+  },
+  {
+    "query": "Chính sách thuê pin như thế nào?",
+    "expected": {
+      "collection": "vivu_policy",
+      "keywords": ["thuê pin", "chính sách"]
+    }
+  },
+  {
+    "query": "Bảo dưỡng định kỳ như thế nào?",
+    "expected": {
+      "collection": "vivu_maintenance",
+      "keywords": ["bảo dưỡng", "định kỳ"]
+    }
+  }
+]

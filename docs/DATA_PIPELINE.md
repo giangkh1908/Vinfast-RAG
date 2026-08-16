@@ -3,7 +3,14 @@
 Pipeline xử lý dữ liệu VinFast:
 
 ```text
-data/raw/ -> clean/chunk -> split -> specs -> embedding -> Qdrant/PostgreSQL
+data/raw/*.txt ──────────> clean_to_jsonl ──> intermediate ──> split_cold_hot ──> postgres/{edition,price_list}.csv
+
+data/raw_pdf/*.txt ──────> clean_to_jsonl ──> intermediate ──> split_cold_hot ──> vector/*.jsonl  (prose)
+
+data/model_data/*.csv ──> parse_specs ───────────────────────────────────────> postgres/specs.csv  (specs)
+
+Tất cả CSV ──────────────> postgres_ingest ──────────────────────────────────────> PostgreSQL
+vector/*.jsonl ──────────> vector_ingest + sparse_ingest ────────────────────────> Qdrant
 ```
 
 Pipeline chạy fail-fast. Mỗi version được build riêng, sau đó mới promote để
@@ -13,7 +20,6 @@ retriever sử dụng.
 
 - Python 3.11+
 - OpenRouter API key trong `.env`
-- Crawl4AI + Chromium cho brochure PDF
 - Qdrant Cloud + Neon (Postgres) — cấu hình trong `.env`
 - Docker chỉ cần khi chạy fallback local (xem `docker-compose.local.yml`)
 
@@ -25,14 +31,12 @@ Windows PowerShell:
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install -r requirements.txt
-crawl4ai-doctor
 ```
 
 Nếu `.venv` đã có sẵn:
 
 ```powershell
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
-.\.venv\Scripts\crawl4ai-doctor.exe
 ```
 
 Tạo `.env` từ `.env.example` và điền:
@@ -86,21 +90,24 @@ Crawl HTML hoặc PDF vào `data/raw/`:
   https://vinfastauto.com/vn_vi/dat-coc-xe-vf2
 ```
 
-`crawl.py` dùng Crawl4AI cho HTML và PyMuPDF cho PDF. Brochure PDF dùng cho
-spec được khai báo theo thứ tự VF2 -> VF9 trong:
+`crawl.py` dùng requests + BeautifulSoup cho HTML (trang SPA/JS-render cần
+`--firecrawl` với FIRECRAWL_API_KEY) và PyMuPDF cho PDF. Brochure PDF dùng cho
+spec được chuẩn bị thủ công thành `data/raw_pdf/*.txt`
+(pipeline đọc từ local, không crawl online):
 
-```text
-data/raw/link_brochure.md
+```powershell
+.\venv\Scripts\python.exe scripts/crawl.py <brochure_url>
 ```
 
-Không cần crawl brochure PDF thủ công. Full pipeline tự đọc các URL này.
+`data/raw/link_brochure.md` chỉ được dùng để ghi lại danh sách brochure URLs
+vào `_manifest.json` (link_only), không phải nguồn spec.
 
 ## 4. Chạy full pipeline
 
 ### 4.1. Một lệnh đầy đủ
 
-Dùng cho dev hằng ngày. Lệnh này tự clean, chunk, crawl brochure PDF, vision
-OCR khi cần, parse specs, embed, ingest và activate version:
+Dùng cho dev hằng ngày. Lệnh này tự clean, chunk, parse specs, embed, ingest
+và activate version:
 
 ```powershell
 .\.venv\Scripts\python.exe scripts/run_pipeline.py `
@@ -114,19 +121,17 @@ OCR khi cần, parse specs, embed, ingest và activate version:
 Đây là lệnh duy nhất cần dùng sau khi cài đặt. `--recreate` là tùy chọn an
 toàn khi rebuild sạch; bỏ nó nếu chỉ muốn chạy incremental.
 
-### 4.2. Chạy nhanh, bỏ qua brochure LLM
+### 4.2. Chạy nhanh (không crawl)
 
-Dùng khi brochure không thay đổi và chỉ muốn cập nhật raw HTML:
+Pipeline chỉ dùng raw_pdf local — không crawl online:
 
 ```powershell
 .\.venv\Scripts\python.exe scripts/run_pipeline.py `
-  --version v1 `
-  --no-crawl-brochures
+  --version v1
 ```
 
-Mặc định pipeline gọi LLM qua Crawl4AI cho 8 brochure PDF, vì vậy chạy lâu hơn
-và tốn token. PDF có text layer dùng extraction thường; PDF image-only fallback
-sang render ảnh + vision LLM OCR.
+`parse_specs.py` chỉ xử lý file `data/model_data/*.csv` local (spec sheets).
+Không cần crawl online / LLM.
 
 ### 4.3. Chạy từng version nhưng chưa activate
 
@@ -148,15 +153,44 @@ Nếu không dùng `--promote`, version chỉ được build, chưa active:
 
 | Bước | Thành phần | Kết quả |
 |---|---|---|
-| 1 | `clean_to_jsonl.py` | Làm sạch raw, loại giá khỏi vector, chunk tối đa 800 ký tự |
+| 1 | `clean_to_jsonl.py` | Làm sạch **raw + raw_pdf**, loại giá khỏi vector, chunk tối đa 800 ký tự |
 | 2 | `split_cold_hot.py` | Chia vector collections và PostgreSQL CSV |
-| 3 | `parse_specs.py` | Tạo `postgres/specs.csv`; có thể Crawl4AI + LLM brochure |
+| 3 | `parse_specs.py` → `parse_specs.py` | Extract spec từ **model_data** CSVs (basic + feature), không dùng raw dat-coc |
 | 4 | `vector_ingest.py` | Embed và ingest Qdrant dense |
 | 5 | `sparse_ingest.py` | Build BM25 sparse, có thể bỏ bằng `--no-sparse` |
 | 6 | `postgres_ingest.py` | UPSERT edition, prices, specs và ingest version |
 
 Spec số liệu không đi vào vector. Chúng được lưu ở `car_specs` để query chính
-xác theo model/edition.
+xác theo model/edition. Nguồn spec duy nhất: **brochure PDF** (`data/raw_pdf/`).
+
+### 5.1. Cấu trúc code
+
+```text
+scripts/
+|- config.py               # Paths + env chung (QDRANT_URL, PG_DSN, load .env)
+|- run_pipeline.py         # Orchestrator end-to-end (bước 1-6)
+|- version_manager.py      # Promote/rollback/delete version (alias Qdrant + PG)
+|- crawl.py                # Crawl raw (HTML bằng requests+BS4 / PDF bằng PyMuPDF)
+|- schemas.py              # Pydantic models: Chunk, DensePayload, SparsePayload
+|- clean_data/
+|  |- spec_common.py       # Dùng chung: MODEL_LABEL, no_diacritics, parse_raw_file, infer_model
+|  |- noise_patterns.py    # Lọc noise text (dòng/đoạn/PDF prose)
+|  |- chunk_filters.py     # Filter chunk (junk site, off-model, spec table)
+|  |- chunking.py          # Sentence-aware split (>max_len)
+|  |- clean_to_jsonl.py    # raw → intermediate JSONL (orchestrate 3 module trên)
+|  |- split_cold_hot.py    # intermediate → vector/*.jsonl + postgres/*.csv + manifest
+|  `- parse_specs.py       # model_data CSVs → postgres/specs.csv (car_specs)
+|- ingest/
+|  |- vector_ingest.py     # Embed + upsert Qdrant dense (incremental, cache)
+|  |- sparse_ingest.py     # BM25 sparse → Qdrant
+|  `- postgres_ingest.py   # CSV → PostgreSQL (versioned)
+`- eval/
+   |- smoke_test.py        # Retrieval quality test (golden set)
+   `- golden_set.json      # Test queries
+lib/
+|- openrouter.py           # OpenRouter API client (embed + chat)
+`- vector_cache.py         # Content-hash vector cache (SQLite)
+```
 
 ## 6. Output
 
@@ -182,12 +216,16 @@ data/clean/v1/
 `postgres/price_list.csv`. `specs.csv` theo contract ở
 [`SPEC_SCHEMA.md`](./SPEC_SCHEMA.md).
 
+Prose từ `data/raw_pdf/` (brochure marketing) đi vào `vector/` cùng với
+`data/raw/` prose. Spec sheets từ `data/model_data/*.csv` đi vào `specs.csv`
+(bao gồm cả BASIC_SPECS lẫn feature specs).
+
 ## 7. Chạy từng bước
 
 ```powershell
 .\.venv\Scripts\python.exe scripts/clean_data/clean_to_jsonl.py --version v1 --max-len 800
 .\.venv\Scripts\python.exe scripts/clean_data/split_cold_hot.py --version v1 --commit $(git rev-parse --short HEAD)
-.\.venv\Scripts\python.exe scripts/clean_data/parse_specs.py --version v1 --crawl-brochures
+.\.venv\Scripts\python.exe scripts/clean_data/parse_specs.py --version v1
 .\.venv\Scripts\python.exe scripts/ingest/vector_ingest.py --version v1 --recreate
 .\.venv\Scripts\python.exe scripts/ingest/sparse_ingest.py --version v1 --recreate
 .\.venv\Scripts\python.exe scripts/ingest/postgres_ingest.py --version v1
@@ -220,7 +258,7 @@ curl -u ":$env:QDRANT_API_KEY" "$env:QDRANT_URL/collections"
 - Không có `--recreate`: vector cache giúp tránh embed lại nội dung không đổi.
 - `--prev`: chỉ định version trước để tính diff; mặc định tự tìm từ manifest.
 - `--promote`: đổi alias active sau khi ingest thành công.
-- Full pipeline mặc định chạy `--crawl-brochures`; dùng `--no-crawl-brochures`
-  nếu chỉ muốn cập nhật raw HTML mà không gọi vision/LLM.
+- Pipeline chỉ dùng `parse_specs` với local `data/model_data/*.csv` — không crawl online.
+  Spec extract từ spec sheets (model_data), không dùng dat-coc pages.
 
 Chi tiết promote/rollback xem [`VERSIONING.md`](./VERSIONING.md).

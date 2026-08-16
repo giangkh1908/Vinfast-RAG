@@ -5,7 +5,7 @@ vector_ingest.py — Ingest vector JSONL vào Qdrant (versioned + incremental).
 Collection = `<stem>__<version>` (VD `vivu_product_info__v2`). Versioned → ingest v2
 KHÔNG đè v1. Promote/rollback swap alias (xem scripts/version_manager.py).
 
-Incremental embed: cache vector theo content-hash (backend/lib/vector_cache.py).
+Incremental embed: cache vector theo content-hash (lib/vector_cache.py).
 Chunk nào content không đổi → cache hit → lấy vector, không gọi API. Miss →
 embed + cache. Cuối cùng xóa orphan points (chunk bị bỏ ở version mới).
 
@@ -22,30 +22,28 @@ Usage:
 
 import argparse
 import json
-import os
 import sys
 import time
 import uuid
 from pathlib import Path
 from typing import Any
 
-from dotenv import dotenv_values
-_env = dotenv_values(Path(__file__).resolve().parents[2] / ".env")
-os.environ.setdefault("QDRANT_URL", _env.get("QDRANT_URL", ""))
-os.environ.setdefault("QDRANT_API_KEY", _env.get("QDRANT_API_KEY", ""))
-
 from qdrant_client import QdrantClient
-from qdrant_client.models import Distance, PointStruct, VectorParams
+from qdrant_client.models import Distance, PayloadSchemaType, PointStruct, VectorParams
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "backend"))
+# Chạy trực tiếp (`python scripts/ingest/vector_ingest.py`) → repo root vào sys.path
+if __package__ in (None, ""):
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+
+from scripts.config import CLEAN_DIR, QDRANT_API_KEY, QDRANT_TIMEOUT, QDRANT_URL  # noqa: E402
+from scripts.schemas import validate_chunk, make_dense_payload  # noqa: E402
 from lib.openrouter import (API_KEY, EMBED_MODEL, embed_texts,  # noqa: E402
                             summarize_metrics)
 from lib.vector_cache import VectorCache, content_hash  # noqa: E402
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
-VECTOR_DIR = REPO_ROOT / "data" / "clean" / "{version}" / "vector"
+VECTOR_DIR = CLEAN_DIR / "{version}" / "vector"
 
-DEFAULT_QDRANT_URL = os.environ.get("QDRANT_URL", "http://localhost:6333")
+DEFAULT_QDRANT_URL = QDRANT_URL
 BATCH_SIZE = 64
 UPSERT_BATCH = 100
 
@@ -57,6 +55,26 @@ def qdrant_id(chunk_id: str) -> str:
 
 def make_payload(chunk: dict[str, Any]) -> dict[str, Any]:
     return {k: v for k, v in chunk.items() if k not in {"id", "is_hot"}}
+
+
+def validate_chunks_and_payload(chunks: list[dict[str, Any]], context: str = "") -> list[dict[str, Any]]:
+    """Validate chunk schema + dense payload. Raise ValueError if invalid."""
+    valid_chunks = []
+    errors = []
+    for i, c in enumerate(chunks):
+        try:
+            chunk_model = validate_chunk(c, context=f"{context}[{i}]")
+            # Validate dense payload can be created
+            make_dense_payload(chunk_model)
+            valid_chunks.append(c)
+        except ValueError as e:
+            errors.append(str(e))
+    if errors:
+        msg = f"Payload validation failed {context}:\n" + "\n".join(errors[:5])
+        if len(errors) > 5:
+            msg += f"\n... and {len(errors) - 5} more errors"
+        raise ValueError(msg)
+    return valid_chunks
 
 
 def probe_dimension() -> int:
@@ -101,6 +119,10 @@ def ingest_file(client: QdrantClient, path: Path, recreate: bool,
         print("  empty file, skipping")
         return (0, 0, 0, 0)
 
+    # Validate chunk schema + payload structure
+    chunks = validate_chunks_and_payload(chunks, context=collection_name)
+    print(f"  ✓ validated {len(chunks)} chunks")
+
     # Tạo/xóa collection
     if recreate and client.collection_exists(collection_name):
         client.delete_collection(collection_name)
@@ -130,6 +152,13 @@ def ingest_file(client: QdrantClient, path: Path, recreate: bool,
             collection_name=collection_name,
             vectors_config=VectorParams(size=dim, distance=Distance.COSINE),
         )
+        # Payload indexes cho filter thường dùng (model_id, category, source_type)
+        for field in ("model_id", "category", "source_type"):
+            client.create_payload_index(
+                collection_name=collection_name,
+                field_name=field,
+                field_schema=PayloadSchemaType.KEYWORD,
+            )
         print(f"  created {collection_name} (dim={dim})")
 
     # Embed miss qua OpenRouter
@@ -186,7 +215,8 @@ def run(version: str = "v1", url: str = DEFAULT_QDRANT_URL, recreate: bool = Fal
         print(f"[vector_ingest] vector dir not found: {vector_dir}", file=sys.stderr)
         return 1
 
-    client = QdrantClient(url=url, api_key=os.environ.get("QDRANT_API_KEY", "") or None)
+    client = QdrantClient(url=url, api_key=QDRANT_API_KEY or None,
+                          timeout=QDRANT_TIMEOUT)
     try:
         client.get_collections()
     except Exception as e:
@@ -209,22 +239,6 @@ def run(version: str = "v1", url: str = DEFAULT_QDRANT_URL, recreate: bool = Fal
             total_deleted += deleted
     finally:
         cache.close()
-
-    # Create model_id index for all collections (required for filtering)
-    if recreate:
-        from qdrant_client.models import PayloadSchemaType
-        all_cols = [f"vivu_product_info__{version}", f"vivu_policy__{version}",
-                    f"vivu_maintenance__{version}"]
-        for col in all_cols:
-            try:
-                client.create_payload_index(
-                    collection_name=col,
-                    field_name="model_id",
-                    field_schema=PayloadSchemaType.KEYWORD,
-                )
-                print(f"  [index] {col}.model_id created")
-            except Exception as e:
-                print(f"  [index] {col}.model_id: {e}")
 
     sm = summarize_metrics()
     tot = sm["total"]

@@ -1,0 +1,29 @@
+# Fallback local — chỉ dùng khi muốn chạy DB local thay cho cloud.
+# Đổi .env về localhost (QDRANT_URL/PG_DSN rỗng api_key) rồi: docker compose -f docker-compose.local.yml up -d
+services:
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: vivu_qdrant
+    ports:
+      - "16333:6333"
+      - "16334:6334"
+    volumes:
+      - qdrant_storage:/qdrant/storage
+    environment:
+      QDRANT__SERVICE__GRPC_PORT: 6334
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: vivu_postgres
+    ports:
+      - "15432:5432"
+    environment:
+      POSTGRES_USER: vivu
+      POSTGRES_PASSWORD: vivu
+      POSTGRES_DB: vivu
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  qdrant_storage:
+  postgres_data:

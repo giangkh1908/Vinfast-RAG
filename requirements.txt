@@ -1,42 +1,13 @@
-# Pipeline data end-to-end — Python 3.11+
 
 # Crawl (scripts/crawl.py)
 requests>=2.31
 beautifulsoup4>=4.12
-crawl4ai>=0.9.2
-pypdf>=5.0            # Crawl4AI PDF content strategy
-pymupdf>=1.24            # rút text PDF (fitz)
-# pdfplumber>=0.11       # fallback PDF (tuỳ chọn)
+pymupdf>=1.24          
 
-# OpenRouter API (embed / chat) — backend/lib/openrouter.py
 python-dotenv>=1.0
-
+# Data validation
+pydantic>=2.0
 # Vector DB
 qdrant-client>=1.10
-
 # PostgreSQL
 psycopg2-binary>=2.9
-
-# (cũ) clean brochure mục 02
-jinja2>=3.1
-pyyaml>=6.0
-
-# App (FastAPI)
-fastapi>=0.104
-uvicorn>=0.24
-asyncpg>=0.29
-openai>=1.6
-
-# Agent graph
-langgraph>=0.2
-
-# Eval
-ragas>=0.1
-datasets>=2.14
-pandas>=2.0
-
-# Tracing (optional)
-arize-phoenix>=4.0
-openinference-instrumentation-openai>=0.1
-opentelemetry-api>=1.20
-opentelemetry-sdk>=1.20

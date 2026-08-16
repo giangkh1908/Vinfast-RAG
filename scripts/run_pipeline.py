@@ -1,43 +1,40 @@
 #!/usr/bin/env python3
 """
-run_pipeline.py — End-to-end data pipeline cho dữ liệu hiện có.
+run_pipeline.py — End-to-end data pipeline.
 
 Chạy đủ bước theo thứ tự cho 1 version:
-  data/raw/*.txt
+  data/raw/*.txt + data/raw_pdf/*.txt
     → 1. clean (clean_to_jsonl)      → intermediate/{vector,hot}.jsonl + link_only.json
     → 2. split cold/hot (split_cold_hot) → vector/*.jsonl + postgres/*.csv + _manifest.json
-    → 3. parse_specs → postgres/specs.csv (Crawl4AI/vision brochure + raw fallback)
-    → 4. embed + ingest Qdrant dense (vector_ingest)
-    → 5. BM25 sparse → Qdrant sparse (sparse_ingest)   [bỏ qua nếu --no-sparse]
-    → 6. UPSERT PostgreSQL (postgres_ingest)
+    → 3. parse_specs → postgres/specs.csv (feature specs từ data/model_data CSVs)
+    → 4. parse_car_deposit → postgres colors/options + sync price/edition (configurator scrape)
+    → 5. embed + ingest Qdrant dense (vector_ingest)
+    → 6. BM25 sparse → Qdrant sparse (sparse_ingest)   [bỏ qua nếu --no-sparse]
+    → 7. UPSERT PostgreSQL (postgres_ingest)
 
-Fail-fast: nếu 1 bước trả mã ≠0, dừng ngay, không chạy bước sau.
+Specs lấy từ data/model_data/*.csv (2 cột label,value, 1 file = 1 model+edition)
+qua parse_specs.
 
 Usage:
     python scripts/run_pipeline.py --version v1 --recreate --promote
-    python scripts/run_pipeline.py --version v1 --no-crawl-brochures  # bỏ PDF/LLM
-    python scripts/run_pipeline.py --version v1 --no-sparse            # bỏ BM25
+    python scripts/run_pipeline.py --version v1 --no-sparse  # bỏ BM25
 """
 
 import argparse
-import os
 import sys
 import time
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
-# Cho phép `from scripts... import` và `from lib... import`
-sys.path.insert(0, str(REPO_ROOT))
-sys.path.insert(0, str(REPO_ROOT / "backend"))
+# Chạy trực tiếp (`python scripts/run_pipeline.py`) → đưa repo root vào sys.path
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from scripts.clean_data import clean_to_jsonl, split_cold_hot, parse_specs  # noqa: E402
+from scripts.config import PG_DSN, QDRANT_API_KEY, QDRANT_URL, REPO_ROOT  # noqa: E402
+
+from scripts.clean_data import clean_to_jsonl, split_cold_hot  # noqa: E402
+from scripts.clean_data import parse_car_deposit, parse_specs  # noqa: E402
 from scripts.ingest import vector_ingest, sparse_ingest, postgres_ingest  # noqa: E402
 from lib import openrouter  # noqa: E402
 from scripts import version_manager  # noqa: E402
-
-QDRANT_URL = os.environ.get("QDRANT_URL", "http://localhost:6333")
-QDRANT_API_KEY = os.environ.get("QDRANT_API_KEY", "")
-PG_DSN = os.environ.get("PG_DSN", "postgresql://vivu:vivu@localhost:5432/vivu")
 
 
 def _bar(label: str) -> str:
@@ -50,6 +47,10 @@ def preflight(version: str, want_qdrant: bool, want_pg: bool) -> int:
     if not raw.exists() or not any(raw.iterdir()):
         print(f"[preflight] data/raw rỗng hoặc không tồn tại: {raw}", file=sys.stderr)
         return 1
+
+    model_data = REPO_ROOT / "data" / "model_data"
+    if not model_data.exists() or not any(model_data.iterdir()):
+        print("[preflight] data/model_data trống — pipeline sẽ không có spec data")
 
     if not openrouter.API_KEY:
         print("[preflight] OPENROUTER_API_KEY chưa set trong .env (xem .env.example)",
@@ -92,7 +93,7 @@ def _step(idx: str, label: str, fn, *args, **kwargs) -> int:
 
 def run(version: str, recreate: bool, no_sparse: bool, commit: str,
        max_len: int = 800, prev: str | None = None, promote: bool = False,
-       crawl_brochures: bool = True) -> int:
+       smoke_test: bool = False) -> int:
     want_qdrant = True
     want_pg = True
     if preflight(version, want_qdrant, want_pg) != 0:
@@ -102,26 +103,28 @@ def run(version: str, recreate: bool, no_sparse: bool, commit: str,
     print(_bar(f"END-TO-END DATA PIPELINE  version={version}"))
 
     steps = [
-        ("1/6", "clean (raw → intermediate)", clean_to_jsonl.run,
+        ("clean (raw → intermediate)", clean_to_jsonl.run,
          (version,), {"max_len": max_len}),
-        ("2/6", "split cold/hot → vector + postgres CSV", split_cold_hot.run,
+        ("split cold/hot → vector + postgres CSV", split_cold_hot.run,
         (version,), {"commit": commit, "prev": prev}),
-        ("3/6", "parse_specs → postgres/specs.csv (car_specs)", parse_specs.run,
-         (version,), {"crawl_brochures": crawl_brochures}),
-        ("4/6", "embed + ingest Qdrant dense (incremental)", vector_ingest.run,
+        ("parse_specs → postgres/specs.csv (feature specs từ model_data CSVs)", parse_specs.run,
+         (version,), {}),
+        ("parse_car_deposit → postgres colors/options + sync price/edition (configurator scrape)",
+         parse_car_deposit.run, (version,), {}),
+        ("embed + ingest Qdrant dense (incremental)", vector_ingest.run,
          (version,), {"url": QDRANT_URL, "recreate": recreate}),
     ]
     if not no_sparse:
-        steps.append(("5/6", "BM25 sparse → Qdrant sparse", sparse_ingest.run,
+        steps.append(("BM25 sparse → Qdrant sparse", sparse_ingest.run,
                       (version,), {"url": QDRANT_URL, "recreate": recreate}))
-    steps.append(("6/6" if not no_sparse else "5/5",
-                  "UPSERT PostgreSQL (versioned)", postgres_ingest.run,
+    steps.append(("UPSERT PostgreSQL (versioned)", postgres_ingest.run,
                   (version,), {"dsn": PG_DSN}))
 
-    for idx, label, fn, args, kwargs in steps:
-        rc = _step(idx, label, fn, *args, **kwargs)
+    total = len(steps)
+    for i, (label, fn, args, kwargs) in enumerate(steps, 1):
+        rc = _step(f"{i}/{total}", label, fn, *args, **kwargs)
         if rc != 0:
-            print(f"\n[run_pipeline] DỪNG ở bước {idx} ({label}). Các bước sau KHÔNG chạy.",
+            print(f"\n[run_pipeline] DỪNG ở bước {i} ({label}). Các bước sau KHÔNG chạy.",
                   file=sys.stderr)
             return rc
 
@@ -136,9 +139,28 @@ def run(version: str, recreate: bool, no_sparse: bool, commit: str,
                   file=sys.stderr)
             print(f"  sửa rồi chạy: version_manager.py promote --version {version}",
                   file=sys.stderr)
+            return rc
+        
+        # Smoke test sau khi promote thành công
+        if smoke_test:
+            print(_bar("SMOKE TEST"))
+            try:
+                from scripts.eval.smoke_test import run_smoke_test
+                rc = run_smoke_test(version)
+                if rc != 0:
+                    print("[run_pipeline] SMOKE TEST FAIL — version đã active nhưng retrieval có vấn đề",
+                          file=sys.stderr)
+                    print("  Kiểm tra golden set và thử rollback nếu cần",
+                          file=sys.stderr)
+                    return rc
+                print("→ Smoke test: PASS")
+            except Exception as e:
+                print(f"[run_pipeline] SMOKE TEST ERROR: {e}", file=sys.stderr)
+                print("  Version vẫn active, nhưng cần kiểm tra thủ công", file=sys.stderr)
+        
         return rc
     print("Verify:")
-    print(f"  python scripts/version_manager.py status")
+    print("  python scripts/version_manager.py status")
     print(f"  cat data/clean/{version}/_manifest.json")
     return 0
 
@@ -158,11 +180,11 @@ def main() -> int:
                     help="Version trước để diff (mặc định: auto-detect)")
     ap.add_argument("--promote", action="store_true",
                     help="Sau khi ingest xong, tự activate version (alias swap + is_current)")
-    ap.add_argument("--no-crawl-brochures", action="store_true",
-                    help="Bỏ qua Crawl4AI/vision brochure (chạy nhanh, dùng raw fallback)")
+    ap.add_argument("--smoke-test", action="store_true",
+                    help="Chạy smoke test sau khi promote (cần --promote)")
     args = ap.parse_args()
     return run(args.version, args.recreate, args.no_sparse, args.commit,
-               args.max_len, args.prev, args.promote, not args.no_crawl_brochures)
+               args.max_len, args.prev, args.promote, args.smoke_test)
 
 
 if __name__ == "__main__":

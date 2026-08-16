@@ -1,0 +1,13 @@
+feat(data): version car_specs + gộp raw_pdf vào pipeline + clean code
+
+- Thêm ingest_version column + car_specs_active VIEW cho rollback support
+- upsert_specs: DELETE per version + INSERT (không TRUNCATE)
+- version_manager delete: xoá car_specs theo version
+- Gộp raw_pdf prose vào vector pipeline (qua clean_to_jsonl)
+- parse_pdf_specs là nguồn specs duy nhất (không parse raw/ dat-coc)
+- Xoá dead code: fix_ocr.py, fix_ocr_vf3.py, llm_extract_specs.py,
+  format_brochure_specs.py, clean_pdf.py
+- run_pipeline: dùng parse_pdf_specs, bỏ --crawl-brochures flag
+- Update docs (DATA_PIPELINE, DATA_SCHEMA_SPEC, SPEC_SCHEMA, VERSIONING)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
