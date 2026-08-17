@@ -27,7 +27,7 @@ _QUERY_TOPIC_MAP = {
     "esc": ["safety"], "an toàn": ["safety"], "an toàn": ["safety"],
     "adas": ["adas"], "cruise": ["adas"], "lane": ["adas"], "collision": ["adas"],
     "aeb": ["adas"], "blind spot": ["adas"], "parking": ["adas"],
-    "nội thất": ["interior"], "ghế": ["interior"], "màn hình": ["interior"],
+    "nội thất": ["interior"], "ghế": ["interior"], "chỗ ngồi": ["interior"], "số chỗ": ["interior"], "màn hình": ["interior"],
     "loa": ["interior"], "điều hòa": ["interior"], "hud": ["interior"], "display": ["interior"],
     "cửa sổ trời": ["interior"], "kính trần": ["interior"], "sunroof": ["interior"], "panoramic": ["interior"],
     "ngoại thất": ["exterior"], "đèn": ["exterior"], "mâm": ["exterior"],

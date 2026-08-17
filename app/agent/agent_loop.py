@@ -275,8 +275,9 @@ class AgentLoop:
                             # Fallback: LLM chưa stream được gì (writer unavailable)
                             yield {"type": "token", "content": result.response}
                         elif result.source_url:
-                            # Token đã stream rồi → chỉ thêm URL ở cuối
-                            yield {"type": "token", "content": f"\n\n🔗 Xem thêm: {result.source_url}"}
+                            # Token đã stream rồi → chỉ thêm URL ngắn ở cuối
+                            from app.agent.nodes.respond import source_link_md
+                            yield {"type": "token", "content": "\n\n🔗 Xem thêm: " + source_link_md(result.source_url)}
                         
                         # Cache write: chỉ cache khi cacheable và decision là "answer"
                         # cache_key=None khi PG unreachable → skip cache write

@@ -3,11 +3,41 @@ import re
 import time
 import asyncio
 from dataclasses import dataclass, field
+from urllib.parse import unquote, urlparse
 
 from app.agent.decision import make_decision_log, log_store, get_clarify_messages
 from app.agent.graph_state import AgentState
+from app.agent.classifier import MODEL_RE, normalize_model
 
 logger = logging.getLogger("bds.graph.respond")
+
+
+# ── Rút nhãn ngắn cho link "Xem thêm" ────────────────────────────────────
+def _source_link_label(url: str, model_code: str | None = None) -> str:
+    """Rút nhãn ngắn dễ nhìn từ URL brochure (VD 'VF 6', 'VF 8 All New', 'VF MPV 7').
+
+    Ưu tiên: model rút từ URL → model_code (entities) → hostname → URL gốc.
+    """
+    try:
+        # unquote + thay '_' bằng khoảng trắng để khớp "VF_MPV 7" / "VF8_Brochure"
+        unq = unquote(url).replace("_", " ")
+    except Exception:
+        unq = url
+    m = MODEL_RE.search(unq)
+    if m:
+        return normalize_model(m.group(1))
+    if model_code:
+        return model_code
+    try:
+        host = urlparse(url).netloc
+        return host if host else url
+    except Exception:
+        return url
+
+
+def source_link_md(url: str, model_code: str | None = None) -> str:
+    """Trả markdown link click được với nhãn ngắn: '[VF 6](url)'."""
+    return f"[{_source_link_label(url, model_code)}]({url})"
 
 # Câu trả lời mặc định cho các case không trả lời được
 _DEFAULT_REPLY = "Xin lỗi, mình chưa có thông tin phù hợp. Bạn có thể hỏi lại bằng câu khác được không?"
@@ -92,7 +122,7 @@ async def respond_node(state: AgentState) -> dict:
     
     # Thêm link URL ở cuối câu trả lời (markdown link ngắn, click được)
     if source_url:
-        answer = answer.rstrip() + f"\n\n🔗 Xem thêm: {source_url}"
+        answer = answer.rstrip() + "\n\n🔗 Xem thêm: " + source_link_md(source_url, entities.get("model_code"))
 
     t0 = state.get("t0", time.time())
     latency_ms = (time.time() - t0) * 1000

@@ -9,7 +9,7 @@ Triết lý: LLM KHÔNG bao giờ chọn tool / đoán tham số tool (category,
 import logging
 import re
 
-from app.agent.classifier import MODEL_RE
+from app.agent.classifier import MODEL_RE, normalize_model
 
 logger = logging.getLogger("bds.intent")
 
@@ -55,7 +55,7 @@ _SPEC_CATEGORY_PATTERNS: list[tuple[str | None, tuple[str, ...]]] = [
         r"kích\s*thước", r"chiều\s*dài", r"chiều\s*rộng", r"chiều\s*cao",
         r"khoảng\s*sáng\s*gầm", r"trục\s*cơ\s*sở", r"\bwheelbase\b", r"trọng\s*lượng",
         r"cân\s*nặng", r"dung\s*tích\s*cốp", r"thể\s*tích\s*cốp", r"khoang\s*hành\s*lý",
-        r"số\s*chỗ", r"chỗ\s*ngồi", r"5\s*chỗ", r"7\s*chỗ", r"kích\s*thước\s*lốp",
+        r"kích\s*thước\s*lốp",
     )),
     ("safety", (
         r"túi\s*khí", r"\bairbag\b", r"phanh", r"\babs\b", r"\besc\b", r"an\s*toàn",
@@ -64,7 +64,9 @@ _SPEC_CATEGORY_PATTERNS: list[tuple[str | None, tuple[str, ...]]] = [
     )),
     ("interior", (
         r"cửa\s*sổ\s*trời", r"kính\s*trần", r"\bsunroof\b", r"\bpanoramic\b",
-        r"nội\s*thất", r"ghế", r"màn\s*hình", r"\bloa\b", r"âm\s*thanh", r"điều\s*hòa",
+        r"nội\s*thất", r"ghế", r"số\s*chỗ", r"chỗ\s*ngồi", r"mấy\s*chỗ", r"bao\s*nhiêu\s*chỗ",
+        r"5\s*chỗ", r"7\s*chỗ",
+        r"màn\s*hình", r"\bloa\b", r"âm\s*thanh", r"điều\s*hòa",
         r"vô\s*lăng", r"\bhud\b", r"sạc\s*không\s*dây", r"cửa\s*gió", r"hàng\s*ghế",
         r"ghế\s*massage", r"thông\s*gió", r"sưởi", r"vật\s*liệu\s*ghế",
     )),
@@ -181,7 +183,7 @@ _SPEC_KEY_KEYWORDS: list[tuple[str, tuple[str, ...]]] = [
     ("wheelbase_mm", (r"trục\s*cơ\s*sở", r"\bwheelbase\b")),
     ("ground_clearance_mm", (r"khoảng\s*sáng\s*gầm",)),
     ("curb_weight_kg", (r"trọng\s*lượng", r"cân\s*nặng")),
-    ("seats", (r"số\s*chỗ", r"chỗ\s*ngồi", r"5\s*chỗ", r"7\s*chỗ")),
+    ("seats", (r"số\s*chỗ", r"chỗ\s*ngồi", r"mấy\s*chỗ", r"bao\s*nhiêu\s*chỗ", r"5\s*chỗ", r"7\s*chỗ")),
     ("head_up_display", (r"\bhud\b",)),
     ("surround_view_camera", (r"camera\s*360", r"camera\s*toàn\s*cảnh")),
     ("leatherette_seats", (r"ghế\s*da",)),
@@ -232,13 +234,8 @@ def classify_intent(query: str, topic: str = "general") -> str:
 
 
 def _norm_model(raw: str) -> str:
-    """Chuẩn hóa về dạng DB: 'vf8' → 'VF 8', 'VF 8 all new' → 'VF 8 All New'."""
-    clean = re.sub(r"(VF)\s*(\d+)", r"\1 \2", raw, flags=re.IGNORECASE).strip()
-    parts = clean.split()
-    return " ".join(
-        p.upper() if p.upper().startswith("VF") or p.isdigit() else p.capitalize()
-        for p in parts
-    )
+    """Chuẩn hóa về dạng DB: 'vf8' → 'VF 8', 'VF 8 new' → 'VF 8 All New'."""
+    return normalize_model(raw)
 
 
 # ── LLM fallback (hybrid) — chỉ khi rule không quyết định được ──────────────

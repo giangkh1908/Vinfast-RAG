@@ -56,7 +56,9 @@ _TOPIC_KEYWORDS = {
         r"an\s*toàn", r"an\s*toàn\s*không", r"có\s*an\s*toàn",
     ],
     "nội_thất": [
-        r"nội\s*thất", r"ghế", r"màn\s*hình", r"loa", r"âm\s*thanh",
+        r"nội\s*thất", r"ghế", r"số\s*chỗ", r"chỗ\s*ngồi", r"mấy\s*chỗ",
+        r"5\s*chỗ", r"7\s*chỗ",
+        r"màn\s*hình", r"loa", r"âm\s*thanh",
         r"điều\s*hòa", r"khoang\s*xe", r"vô\s*lăng", r"HUD",
         r"leatherette", r"speaker", r"display",
     ],
@@ -77,7 +79,7 @@ _TOPIC_KEYWORDS = {
     "kích_thước": [
         r"kích\s*thước", r"chiều\s*dài", r"chiều\s*rộng", r"chiều\s*cao",
         r"trọng\s*lượng", r"wheelbase", r"không\s*gian",
-        r"chỗ\s*ngồi", r"ốp\s*lưng", r"boot", r"cốp",
+        r"ốp\s*lưng", r"boot", r"cốp",
     ],
     "thông_số_kỹ_thuật": [
         r"công\s*suất", r"mô[\s-]*men", r"xoắn", r"tốc\s*độ", r"tốc\s*tối\s*đa",
@@ -135,24 +137,31 @@ def _is_broad_topic(query: str) -> bool:
 
 
 def _extract_history_context(history: list[dict]) -> dict:
-    """Extract model, version, and topic from conversation history."""
+    """Extract model, version, and topic from conversation history.
+
+    Duyệt NGƯỢC (mới → cũ) để lấy model/version/topic GẦN NHẤT — follow-up bỏ trống
+    model (VD "pin xe bao nhiêu") phải dùng model vừa nói ở lượt trước (VF 8 sau
+    "vf8 thì sao"), chứ không phải model đầu hội thoại (VF 6).
+    """
     ctx: dict = {"model_code": None, "version": None, "topic": None}
     classifier = get_classifier()
-    for msg in history:
+    for msg in reversed(history):
         if msg.get("role") != "user":
             continue
         text = msg.get("content", "")
         try:
             cr = classifier.classify(text)
-            if cr.entities.get("model_code") and not ctx["model_code"]:
-                ctx["model_code"] = cr.entities["model_code"]
-            if cr.entities.get("version") and not ctx["version"]:
-                ctx["version"] = cr.entities["version"]
         except Exception:
-            pass
-        t = _classify_topic(text)
-        if t != "general" and not ctx["topic"]:
-            ctx["topic"] = t
+            cr = None
+        if cr is not None:
+            if not ctx["model_code"] and cr.entities.get("model_code"):
+                ctx["model_code"] = cr.entities["model_code"]
+            if not ctx["version"] and cr.entities.get("version"):
+                ctx["version"] = cr.entities["version"]
+        if not ctx["topic"]:
+            t = _classify_topic(text)
+            if t != "general":
+                ctx["topic"] = t
     return ctx
 
 

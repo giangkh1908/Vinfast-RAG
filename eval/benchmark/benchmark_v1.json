@@ -1,0 +1,134 @@
+{
+  "meta": {
+    "name": "vinfast_benchmark_v1",
+    "domain": "tư vấn xe VinFast (thông số kỹ thuật)",
+    "ground_truth_source": "car_specs (active ingest v2) — cross-checked với brochure VF 3/6/8/9, VF MPV 7, VF 8 The he moi",
+    "authorship": "Viết theo dữ liệu nguồn (không lấy từ hành vi code)",
+    "intended_behavior": [
+      "Follow-up thiếu model → dùng model GẦN NHẤT trong hội thoại (short-term ưu tiên).",
+      "Thiếu phiên bản → trả bản mặc định (Eco) + liệt kê bản khác (rule 14), KHÔNG hỏi lại.",
+      "Không có dữ liệu thông số (VD số chỗ VF 6) → nói 'chưa có thông tin', KHÔNG bịa số.",
+      "Không trộn thông số giữa các model / phiên bản."
+    ],
+    "scoring": {
+      "decision_accuracy": "tỷ lệ case đúng expected_decision (+ reason nếu clarify)",
+      "fact_recall": "tỷ lệ expected_facts xuất hiện trong câu trả lời",
+      "fact_precision": "1 - negative_hits / n_negatives (đo nhiễu)",
+      "case_pass": "case đạt decision + đủ facts + không vướng must_not"
+    }
+  },
+  "cases": [
+    {
+      "id": "BK-ANS-01",
+      "query": "VF 6 Eco công suất bao nhiêu?",
+      "expected": {"decision": "answer", "model": "VF 6", "version": "Eco", "facts": ["130", "kW"], "must_not": ["150"]},
+      "note": "happy path, explicit version — must không nhầm sang Plus (150)"
+    },
+    {
+      "id": "BK-ANS-02",
+      "query": "VF 8 Plus pin bao nhiêu kWh?",
+      "expected": {"decision": "answer", "model": "VF 8", "version": "Plus", "facts": ["87,7", "kWh"], "must_not": ["59,6"]},
+      "note": "cross-model: pin VF8 = 87,7, KHÔNG được trả 59,6 (pin VF6)"
+    },
+    {
+      "id": "BK-ANS-03",
+      "query": "VF 6 đi được bao xa sau một lần sạc?",
+      "expected": {"decision": "answer", "model": "VF 6", "facts": ["485"], "must_not": ["562", "457"]},
+      "note": "default version (Eco 485) — không lấy range VF8 (562/457)"
+    },
+    {
+      "id": "BK-ANS-04",
+      "query": "VF 9 có mấy chỗ ngồi?",
+      "expected": {"decision": "answer", "model": "VF 9", "facts": ["7"], "must_not": ["5"]},
+      "note": "VF9 7 chỗ (7 hoặc 6 ở Plus) — không trả 5 (VF8)"
+    },
+    {
+      "id": "BK-ANS-05",
+      "query": "VF MPV 7 công suất là bao nhiêu?",
+      "expected": {"decision": "answer", "model": "VF MPV 7", "facts": ["150"], "must_not": []},
+      "note": "MPV 7: 150 kW. (Truy vấn gộp 2 thông số sẽ route về 1 category — đây là hạn chế routing được ghi nhận, benchmark tách 1 thông số/truy vấn.)"
+    },
+    {
+      "id": "BK-ANS-06",
+      "query": "VF 8 All New pin bao nhiêu?",
+      "expected": {"decision": "answer", "model": "VF 8 All New", "facts": ["60,13"], "must_not": ["87,7"]},
+      "note": "VF 8 All New = 60,13 kWh — không nhầm với VF 8 thường 87,7"
+    },
+    {
+      "id": "BK-ANS-07",
+      "query": "VF 3 có mấy chỗ ngồi?",
+      "expected": {"decision": "answer", "model": "VF 3", "facts": ["4"], "must_not": ["5"]},
+      "note": "VF3 = 4 chỗ, không trả 5"
+    },
+    {
+      "id": "BK-ANS-08",
+      "query": "VF 6 có mấy chỗ ngồi?",
+      "expected": {"decision": "answer", "model": "VF 6", "facts": [], "must_not": ["5", "4", "7"], "absent_spec_keys": ["seats"]},
+      "note": "Anti-hallucination: KHÔNG có dữ liệu số chỗ VF6 → phải nói 'chưa có thông tin', KHÔNG được trả một con số"
+    },
+    {
+      "id": "BK-ANS-09",
+      "query": "VF 8 có mấy túi khí?",
+      "expected": {"decision": "answer", "model": "VF 8", "facts": ["10", "11"], "must_not": ["4"]},
+      "note": "VF8 Eco 10, Plus 11 túi khí — không trả 4 (VF6 Eco)"
+    },
+    {
+      "id": "BK-ANS-10",
+      "query": "VF 9 Eco đi được bao xa?",
+      "expected": {"decision": "answer", "model": "VF 9", "version": "Eco", "facts": ["626"], "must_not": ["602"]},
+      "note": "VF9 Eco 626 km, không trả 602 (Plus/PlusCaptain)"
+    },
+    {
+      "id": "BK-CL-01",
+      "query": "Xe này có camera 360 không?",
+      "expected": {"decision": "clarify", "reason_code": "ambiguous_context", "model": null, "facts": [], "must_not": ["camera 360"]},
+      "note": "Đại từ 'xe này', chưa có model trong hội thoại → hỏi lại, không được khẳng định tính năng"
+    },
+    {
+      "id": "BK-CL-02",
+      "query": "Xe có HUD không?",
+      "expected": {"decision": "clarify", "reason_code": "missing_model", "model": null, "facts": [], "must_not": ["HUD"]},
+      "note": "Thiếu model → hỏi lại, không đưa factual"
+    },
+    {
+      "id": "BK-CL-03",
+      "query": "Cho tôi biết về VF 6",
+      "expected": {"decision": "clarify", "reason_code": "missing_topic", "model": "VF 6", "facts": [], "must_not": []},
+      "note": "Broad query có model → hỏi topic"
+    },
+    {
+      "id": "BK-MIX-01",
+      "query": "VF 8 pin bao nhiêu?",
+      "expected": {"decision": "answer", "model": "VF 8", "facts": ["87,7"], "must_not": ["59,6"]},
+      "note": "Contamination: pin VF8 phải 87,7, cấm trả 59,6 (pin VF6)"
+    }
+  ],
+  "conversations": [
+    {
+      "id": "BK-MC-01",
+      "name": "model switch — memory recency",
+      "turns": [
+        {"query": "thông số vf6", "expected": {"decision": "answer", "model": "VF 6", "facts": []}},
+        {"query": "vf8 thì sao", "expected": {"decision": "answer", "model": "VF 8", "facts": []}},
+        {"query": "pin xe bao nhiêu", "expected": {"decision": "answer", "model": "VF 8", "facts": ["87,7"], "must_not": ["59,6"]}}
+      ]
+    },
+    {
+      "id": "BK-MC-02",
+      "name": "clarify (missing model) → resolve + version follow-up",
+      "turns": [
+        {"query": "Xe có HUD không?", "expected": {"decision": "clarify", "reason_code": "missing_model", "model": null, "facts": []}},
+        {"query": "VF 6 Eco.", "expected": {"decision": "answer", "model": "VF 6", "version": "Eco", "facts": [], "note": "bare model+version follow-up: mục đích resolve model/version, topic kế thừa từ turn trước (HUD)"}},
+        {"query": "vậy Plus thì sao?", "expected": {"decision": "answer", "model": "VF 6", "version": "Plus", "facts": [], "note": "version follow-up giữ model VF 6"}}
+      ]
+    },
+    {
+      "id": "BK-MC-03",
+      "name": "version follow-up range",
+      "turns": [
+        {"query": "VF 8 đi được bao xa?", "expected": {"decision": "answer", "model": "VF 8", "facts": ["562"], "must_not": []}},
+        {"query": "còn bản Plus?", "expected": {"decision": "answer", "model": "VF 8", "version": "Plus", "facts": ["457"], "must_not": ["562"]}}
+      ]
+    }
+  ]
+}

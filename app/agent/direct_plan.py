@@ -6,7 +6,7 @@ route_after_classify sẽ đưa về build_messages (LLM loop) làm fallback cu�
 """
 import re
 
-from app.agent.classifier import MODEL_RE
+from app.agent.classifier import MODEL_RE, normalize_model
 from app.agent.intent import MAIN_MODELS, classify_intent, extract_spec_category, extract_spec_key
 
 # Fallback topic→category (khi keyword map không khớp)
@@ -37,12 +37,7 @@ _UTILITY_PATTERNS = [
 
 
 def _norm_model(raw: str) -> str:
-    clean = re.sub(r"(VF)\s*(\d+)", r"\1 \2", raw, flags=re.IGNORECASE).strip()
-    parts = clean.split()
-    return " ".join(
-        p.upper() if p.upper().startswith("VF") or p.isdigit() else p.capitalize()
-        for p in parts
-    )
+    return normalize_model(raw)
 
 
 def _models_in_query(query: str, model: str | None) -> list[str]:

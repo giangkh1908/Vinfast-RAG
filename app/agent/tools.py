@@ -193,6 +193,13 @@ async def get_specs(model_code: str, version: str = None, category: str = None, 
             model_code,
         )
 
+    # Lọc bỏ rows value='Không' — đây là sentinel "không có dữ liệu" được chèn bởi
+    # ingest_full_specs_matrix (version NULL), KHÔNG phải giá trị thật ("Không có" của
+    # brochure luôn được lưu dạng khác, VD 'Không có thông tin' hoặc không có dòng).
+    # Nếu để lọt vào context, LLM sẽ tưởng 'Không' là giá trị thật và bịa dữ liệu
+    # (VD trả số ghế dù xe không ghi nhận) — vi phạm quy tắc "chưa có thông tin ≠ không có".
+    rows = [r for r in rows if r["spec_value"] != "Không"]
+
     source_urls = set(r["source_url"] for r in rows if r["source_url"])
     # Ưu tiên URL chứa tên model (tránh lấy nhầm brochure xe khác)
     primary_source = ""
