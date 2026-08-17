@@ -1,11 +1,38 @@
 import logging
+import re
 import time
+import asyncio
 from dataclasses import dataclass, field
 
 from app.agent.decision import make_decision_log, log_store, get_clarify_messages
 from app.agent.graph_state import AgentState
 
 logger = logging.getLogger("bds.graph.respond")
+
+# Câu trả lời refuse thuần (không chứa dữ liệu thật) → KHÔNG hiện nguồn.
+# Tránh trường hợp hỏi bảo hành mà data không có → hiện nguồn specs không liên quan.
+_REFUSAL_PHRASES = (
+    "chưa được ghi nhận",
+    "chưa thể xác nhận",
+    "không có dữ liệu",
+    "không tìm thấy",
+    "chưa có thông tin",
+)
+_HAS_DATA_RE = re.compile(r"(triệu|tỷ|kW|km|Nm|kWh|giây|%)")
+# Dấu hiệu câu trả lời CÓ dữ liệu/kết luận thật (bullets, in đậm, "có...", ": ") —
+# nếu có → không phải refuse thuần, giữ nguồn (tránh mất nguồn cho câu trả lời
+# kiểu "VF 8 Plus có cửa sổ trời... còn lại chưa ghi nhận")
+_HAS_FINDING_RE = re.compile(r"(có |gồm |bao gồm|\*\*|^\s*[-•]|: )", re.MULTILINE)
+
+
+def _is_pure_refusal(text: str) -> bool:
+    """Câu trả lời là refuse thuần (không có dữ liệu/kết luận thật) hay không."""
+    t = (text or "").strip()
+    if not t:
+        return True
+    if not any(p in t for p in _REFUSAL_PHRASES):
+        return False
+    return not (_HAS_DATA_RE.search(t) or _HAS_FINDING_RE.search(t))
 
 
 @dataclass
@@ -74,13 +101,20 @@ async def respond_node(state: AgentState) -> dict:
             entities=entities,
             specificity=state.get("specificity", "unknown"),
         )
-        dlog = make_decision_log(
-            state["query"], cr, tool_results, answer, citations,
-            latency_ms=latency_ms,
-            latency_retrieval_ms=latency_retrieval_ms,
-            latency_generation_ms=latency_generation_ms,
-            topic=state.get("category", ""),
-            history=state.get("history", []),
+        # make_decision_log gọi assess_evidence + build_retrieved_chunks
+        # (cả 2 đều sync + có thể gọi _openrouter_embed → block event loop)
+        # Wrap trong run_in_executor để không block stream.
+        loop = asyncio.get_running_loop()
+        dlog = await loop.run_in_executor(
+            None,
+            lambda: make_decision_log(
+                state["query"], cr, tool_results, answer, citations,
+                latency_ms=latency_ms,
+                latency_retrieval_ms=latency_retrieval_ms,
+                latency_generation_ms=latency_generation_ms,
+                topic=state.get("category", ""),
+                history=state.get("history", []),
+            ),
         )
         dlog.decision = decision
         dlog.reason_code = reason_code
@@ -91,7 +125,9 @@ async def respond_node(state: AgentState) -> dict:
         decision_log = {}
 
     sources = citations if citations else tool_results
-    if decision != "answer":
+    # Nguồn CHỈ hiển thị khi câu trả lời thực sự có dữ liệu.
+    # Refuse thuần ("chưa được ghi nhận...") → bỏ nguồn, tránh hiện nguồn lạc đề.
+    if decision != "answer" or _is_pure_refusal(answer):
         sources = []
 
     return {

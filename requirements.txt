@@ -11,3 +11,6 @@ pydantic>=2.0
 qdrant-client>=1.10
 # PostgreSQL
 psycopg2-binary>=2.9
+# Redis cache (Upstash)
+redis>=5.0
+upstash-redis>=2.0

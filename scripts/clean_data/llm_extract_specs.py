@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 llm_extract_specs.py — LLM-powered extraction of vehicle specifications.
-Replaces the rule-based parse_specs.py with a semantic parser using OpenRouter (DeepSeek V4 Flash).
+Replaces the rule-based parse_specs.py with a semantic parser using DeepInfra (DeepSeek V4 Flash).
 Extracts values based on docs/SPEC_SCHEMA.md.
 """
 
@@ -25,8 +25,8 @@ RAW_BROCHURE_DIR = REPO_ROOT / "data" / "raw" / "brochure"
 CLEAN_DIR = REPO_ROOT / "data" / "clean"
 SCHEMA_PATH = REPO_ROOT / "docs" / "SPEC_SCHEMA.md"
 
-OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY")
-MODEL_NAME = "deepseek/deepseek-v4-flash-0731"
+DEEPINFRA_API_KEY = os.environ.get("DEEPINFRA_API_KEY")
+MODEL_NAME = os.environ.get("DEEPINFRA_CHAT_MODEL", "deepseek-ai/DeepSeek-V4-Flash-0731")
 
 MAX_RETRIES = 3
 RETRY_DELAY = 2
@@ -173,8 +173,8 @@ def parse_source_url(text: str, path: Path) -> str:
 
 
 def call_llm(messages: List[Dict[str, str]], temperature: float = 0.0) -> Optional[str]:
-    if not OPENROUTER_API_KEY:
-        print("Error: OPENROUTER_API_KEY not set.")
+    if not DEEPINFRA_API_KEY:
+        print("Error: DEEPINFRA_API_KEY not set.")
         return None
 
     payload: Dict[str, Any] = {
@@ -188,11 +188,9 @@ def call_llm(messages: List[Dict[str, str]], temperature: float = 0.0) -> Option
     for attempt in range(1, MAX_RETRIES + 1):
         try:
             response = requests.post(
-                url="https://openrouter.ai/api/v1/chat/completions",
+                url="https://api.deepinfra.com/v1/openai/chat/completions",
                 headers={
-                    "Authorization": f"Bearer {OPENROUTER_API_KEY}",
-                    "HTTP-Referer": "https://vinfast-specs-extractor.local",
-                    "X-Title": "VinFast Specs Extractor",
+                    "Authorization": f"Bearer {DEEPINFRA_API_KEY}",
                     "Content-Type": "application/json",
                 },
                 data=json.dumps(payload),

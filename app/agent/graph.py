@@ -4,6 +4,7 @@ from app.agent.graph_state import AgentState
 from app.agent.nodes.classify import classify_node
 from app.agent.nodes.messages import build_messages_node
 from app.agent.nodes.tools import execute_tools_node
+from app.agent.nodes.direct import direct_fetch_node
 from app.agent.nodes.generate import generate_node
 from app.agent.nodes.validate import validate_node
 from app.agent.nodes.respond import respond_node
@@ -16,6 +17,7 @@ def build_graph() -> StateGraph:
     g.add_node("classify", classify_node)
     g.add_node("build_messages", build_messages_node)
     g.add_node("execute_tools", execute_tools_node)
+    g.add_node("direct_fetch", direct_fetch_node)
     g.add_node("generate", generate_node)
     g.add_node("validate", validate_node)
     g.add_node("respond", respond_node)
@@ -26,9 +28,11 @@ def build_graph() -> StateGraph:
         "out_of_scope": "respond",
         "respond": "respond",
         "build_messages": "build_messages",
+        "direct_fetch": "direct_fetch",
     })
 
     g.add_edge("build_messages", "execute_tools")
+    g.add_edge("direct_fetch", "generate")
 
     g.add_conditional_edges("execute_tools", route_after_tools, {
         "execute_tools": "execute_tools",

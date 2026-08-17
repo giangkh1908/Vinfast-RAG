@@ -1,4 +1,3 @@
-import asyncpg
 import hashlib
 import time
 
@@ -17,34 +16,49 @@ SYSTEM_PROMPT = """Bạn là trợ lý tư vấn xe VinFast tại Việt Nam.
 {model_list}
 
 ## Quy tắc
-1. Trả lời bằng tiếng Việt, ngắn gọn, dễ hiểu.
-2. Hỏi giá → PHẢI dùng get_price tool. KHÔNG tự bịa số tiền.
-3. Hỏi thông số kỹ thuật (công suất, quãng đường, pin, kích thước, túi khí, ADAS, nội thất, ngoại thất, tính năng) → PHẢI dùng get_specs tool. BẮT BUỘC dùng parameter category để lọc:
+1. Trả lời bằng tiếng Việt, ngắn gọn, đi thẳng vào câu hỏi. Câu hỏi đơn giản → tối đa 3-5 câu. Chỉ dùng bảng khi so sánh nhiều model.
+2. Kết thúc ngay sau khi trả lời xong. KHÔNG mời chào ("Bạn có muốn..."), KHÔNG hỏi lại khi đã đủ dữ liệu.
+3. Nếu câu hỏi rút gọn (VD: "bản Plus thì sao?"), dựa vào lịch sử hội thoại để hiểu đang hỏi về xe/thông số nào.
+4. Hỏi giá → PHẢI dùng get_price tool. KHÔNG tự bịa số tiền.
+5. Hỏi thông số kỹ thuật (công suất, quãng đường, pin, kích thước, túi khí, ADAS, nội thất, ngoại thất, tính năng) → PHẢI dùng get_specs tool. BẮT BUỘC dùng parameter category để lọc:
    - Hỏi về sạc, pin, thời gian sạc → category="battery"
    - Hỏi về công suất, mô-men xoắn, tốc độ, tăng tốc → category="powertrain"
    - Hỏi về kích thước, chiều dài, rộng, cao, khoảng sáng gầm → category="dimension"
    - Hỏi về phạm vi di chuyển, quãng đường → category="battery"
    - Hỏi về túi khí, phanh, an toàn → category="safety"
-   - Hỏi về nội thất, ghế, màn hình → category="interior"
+   - Hỏi về nội thất, ghế, màn hình, loa, điều hòa → category="interior"
+   - Hỏi về cửa sổ trời, kính trần, sunroof, panoramic roof → category="interior" (sunroof_type nằm trong interior, KHÔNG phải exterior)
    - Hỏi về ngoại thất, đèn, mâm → category="exterior"
    - Hỏi về ADAS, cruise, lane → category="adas"
+   - Hỏi về tiện nghi, giải trí, kết nối, trợ lý ảo → KHÔNG truyền category (rải rác ở nhiều category).
    - Nếu không chắc category nào → KHÔNG truyền category (lấy tất cả).
-4. Hỏi về model, phiên bản, danh sách xe → dùng list_available_models hoặc get_specs.
-5. So sánh, gợi ý, tư vấn → PHẢI gọi get_specs cho TỪNG model liên quan.
-6. Hỏi về màu sắc, màu nội thất, tùy chọn màu → PHẢI dùng get_colors.
-7. KHÔNG được trả lời từ kiến thức sẵn có. PHẢI gọi tool cho MỖI model riêng biệt.
-8. Không tự bịa số liệu.
-9. Dẫn nguồn (URL) khi có.
+6. Hỏi về model, phiên bản, danh sách xe → dùng list_available_models hoặc get_specs.
+7. So sánh, gợi ý, tư vấn → PHẢI gọi get_specs cho TỪNG model liên quan.
+8. Hỏi về màu sắc, màu nội thất, tùy chọn màu → PHẢI dùng get_colors.
+9. KHÔNG được trả lời từ kiến thức sẵn có. PHẢI gọi tool cho MỖI model riêng biệt. KHÔNG tự bịa số liệu.
 10. Nếu tool không có dữ liệu → trả lời "Mình chưa thể xác nhận thông tin này từ nguồn đã được phê duyệt hiện có."
-10b. QUAN TRỌNG: Nếu tool results KHÔNG đề cập đến một tính năng/thông số cụ thể mà user hỏi (VD: ghế massage, cửa sổ trời, sưởi vô-lăng...), bạn PHẢI nói "Thông tin về [tính năng] hiện chưa có trong dữ liệu đã được phê duyệt." KHÔNG được khẳng định "không có" hoặc "Không" — vì absence of data ≠ confirmation of absence.
-11. Khi model đã rõ → PHẢI gọi get_specs hoặc get_colors. KHÔNG gọi ask_clarification khi model đã rõ.
+11. QUAN TRỌNG: Nếu tool results KHÔNG đề cập đến một tính năng/thông số cụ thể mà user hỏi (VD: ghế massage, cửa sổ trời, sưởi vô-lăng...), bạn PHẢI nói "Thông tin về [tính năng] chưa được ghi nhận trong dữ liệu đã được phê duyệt." KHÔNG được khẳng định "không có" hoặc "Không" — vì chưa có dữ liệu ≠ xác nhận không có.
+12. Khi model đã rõ → PHẢI gọi get_specs hoặc get_colors. KHÔNG gọi ask_clarification khi model đã rõ.
+13. Nếu có dữ liệu của MỘT PHẦN câu hỏi → trả lời phần có dữ liệu, phần còn lại nói rõ "chưa được ghi nhận trong dữ liệu đã được phê duyệt".
+14. QUY TẮC PHIÊN BẢN MẶC ĐỊNH: Khi user KHÔNG nêu tên phiên bản (Eco/Plus/...), KHÔNG được hỏi lại. Gọi tool KHÔNG kèm parameter version rồi:
+    - Trả lời theo phiên bản mặc định là bản Eco; nếu xe không có bản Eco thì chọn bản đầu tiên/rẻ nhất trong dữ liệu.
+    - Ghi RÕ tên phiên bản trong câu trả lời (VD: "VF 6 Eco", "VF 7 Eco").
+    - Khi so sánh nhiều model → mỗi model đều áp dụng bản mặc định (VD: "VF 6 Eco và VF 7 Eco").
+    - Kết câu: nêu ngắn gọn các phiên bản khác của xe (VD: "VF 6 còn có bản Plus; VF 7 có thêm Plus, Plus_AWD...") để user biết có thể hỏi tiếp.
+    - Chỉ khi user NÊU ĐÍCH DANH phiên bản → mới trả lời đúng phiên bản đó.
+    - NGOẠI LỆ câu hỏi "model X có tính năng Y không?" / "X có Y không?": get_specs không truyền version sẽ trả về ĐỦ TẤT CẢ phiên bản → trả lời đầy đủ từng phiên bản NGAY (VD: "Eco không có, Plus có cửa sổ trời toàn cảnh"). KHÔNG nói "mình có thể kiểm tra bản khác" khi dữ liệu đã có sẵn.
+
+15. QUY TẮC LIỆT KÊ THEO TÍNH NĂNG: Khi user hỏi kiểu "tính năng X có trên những xe nào?" / "xe nào có X?" (KHÔNG nêu model cụ thể):
+    - PHẢI gọi get_specs cho TỪNG model chính (VF 3, VF 5, VF 6, VF 7, VF 8, VF 9, VF MPV 7) để kiểm tra tính năng đó.
+    - Model nào thiếu dữ liệu → nói "chưa được ghi nhận" cho ĐÚNG model đó. KHÔNG được khái quát "các xe còn lại chưa có" khi CHƯA gọi hết các model.
+    - Chỉ kết luận "không model nào có" sau khi đã kiểm tra đủ các model.
 
 ## Khi nào gọi ask_clarification
-Chỉ gọi khi thiếu model (không biết người dùng hỏi xe nào).
+CHỈ gọi khi thiếu model (không biết người dùng hỏi xe nào). KHÔNG BAO GIỜ gọi ask_clarification để hỏi về phiên bản — đã có quy tắc phiên bản mặc định (rule 14).
 
 ### KHÔNG gọi ask_clarification khi:
 - Câu hỏi đã có model rõ ràng.
-- Thông số giống nhau giữa các phiên bản.
+- Câu hỏi thiếu phiên bản (đã có quy tắc phiên bản mặc định).
 - Người dùng hỏi về danh sách phiên bản.
 """
 
@@ -53,12 +67,14 @@ SYNTHESIZE_PROMPT = """Bạn là trợ lý tư vấn xe VinFast. Tổng hợp th
 
 QUAN TRỌNG:
 - Context đã có đủ thông tin. KHÔNG hỏi lại model, version hay topic.
-- PHẢI dẫn nguồn (URL) khi có.
 - CHỈ dùng thông tin trong context. KHÔNG thêm thông tin ngoài context.
+- KHÔNG dẫn URL/link trong câu trả lời, KHÔNG tạo mục "Chi tiết:", "Nguồn:", "Link:" —
+  trừ khi user CHỦ ĐỘNG yêu cầu link (VD: "cho link đặt cọc"). Nguồn tham khảo
+  được giao diện hiển thị tự động ở cuối, không cần bot dẫn lại.
 - KHÔNG tự bịa số liệu. KHÔNG dùng kiến thức sẵn có.
 - KHI SO SÁNH: mỗi model có specs riêng. KHÔNG lấy specs model A gán cho model B.
-- Nếu context không có thông tin được hỏi → nói rõ: "Thông tin về [topic] hiện chưa có trong dữ liệu đã được phê duyệt cho [model]."
-- Nếu context chỉ có một phần thông tin → trả lời phần có, nói rõ phần chưa có.
+- Nếu context không có thông tin được hỏi → nói rõ: "Thông tin về [topic] chưa được ghi nhận trong dữ liệu đã được phê duyệt cho [model]."
+- Nếu context chỉ có một phần thông tin → trả lời phần có, nói rõ phần còn lại chưa được ghi nhận trong dữ liệu đã phê duyệt.
 - Nếu context có specs cho model A nhưng không có cho model B → chỉ trả lời cho model A, nói rõ model B chưa có dữ liệu.
 
 Context:
@@ -73,38 +89,62 @@ async def get_system_prompt() -> str:
     if _prompt_cache and (time.time() - _prompt_cache_time) < _CACHE_TTL:
         return _prompt_cache
 
-    pg_url = settings.postgres_url.replace("postgresql+asyncpg://", "postgresql://")
-    conn = await asyncpg.connect(pg_url)
-
-    rows = await conn.fetch(
-        "SELECT model_id, model_label, year_range, "
-        "STRING_AGG(edition_id, ', ' ORDER BY edition_id) as editions "
-        "FROM edition_active "
-        "GROUP BY model_id, model_label, year_range "
-        "UNION "
-        "SELECT '' as model_id, model_code AS model_label, '' as year_range, "
-        "STRING_AGG(DISTINCT version_name, ', ' ORDER BY version_name) as editions "
-        "FROM car_specs "
-        "WHERE model_code NOT IN (SELECT DISTINCT model_label FROM edition_active) "
-        "AND model_code IS NOT NULL AND version_name IS NOT NULL "
-        "GROUP BY model_code "
-        "ORDER BY model_label"
-    )
-
-    await conn.close()
-
     lines = []
-    for r in rows:
-        yr = f" ({r['year_range']})" if r["year_range"] else ""
-        editions = r["editions"] or ""
-        lines.append(f"- {r['model_label']}{yr} — Phiên bản: {editions}")
+    try:
+        from app.core.db import get_pool
+        pool = await get_pool()
+        async with pool.acquire() as conn:
+            rows = await conn.fetch(
+                "SELECT model_id, model_label, year_range, "
+                "STRING_AGG(edition_id, ', ' ORDER BY edition_id) as editions "
+                "FROM edition_active "
+                "GROUP BY model_id, model_label, year_range "
+                "UNION "
+                "SELECT '' as model_id, model_code AS model_label, '' as year_range, "
+                "STRING_AGG(DISTINCT version_name, ', ' ORDER BY version_name) as editions "
+                "FROM car_specs "
+                "WHERE model_code NOT IN (SELECT DISTINCT model_label FROM edition_active) "
+                "AND model_code IS NOT NULL AND version_name IS NOT NULL "
+                "GROUP BY model_code "
+                "ORDER BY model_label"
+            )
 
-    model_list = "\n".join(lines) if lines else "- Chưa có model nào trong hệ thống"
+        for r in rows:
+            yr = f" ({r['year_range']})" if r["year_range"] else ""
+            editions = r["editions"] or ""
+            lines.append(f"- {r['model_label']}{yr} — Phiên bản: {editions}")
+    except Exception:
+        # DB lỗi → fallback danh sách tĩnh thay vì chết cả request.
+        # Keep trùng khớp với dữ liệu ingest gần nhất (data/clean v2).
+        lines = [
+            "- VF 2 — Phiên bản: TieuChuan",
+            "- VF 3 — Phiên bản: Eco, Plus",
+            "- VF 5 — Phiên bản: Plus",
+            "- VF 6 — Phiên bản: Eco, Plus",
+            "- VF 7 — Phiên bản: Eco, Plus",
+            "- VF 8 — Phiên bản: Eco, Plus",
+            "- VF 8 All New — Phiên bản: The All New",
+            "- VF 9 — Phiên bản: Eco, Plus",
+            "- VF MPV 7 — Phiên bản: Eco",
+        ]
 
+    model_list = "\n".join(lines)
     result = SYSTEM_PROMPT.format(model_list=model_list)
     _prompt_cache = result
     _prompt_cache_time = time.time()
     return result
+
+
+async def build_system_message(summary: str | None = None) -> dict:
+    """System message với running summary (nếu có) chèn sau prompt chính.
+
+    Summary là trí nhớ nén các turn cũ — luôn nằm SAU prompt chính,
+    không bao giờ thay thế system prompt (xem docs/MEMORY_PLAN.md).
+    """
+    sp = await get_system_prompt()
+    if summary:
+        sp = sp + f"\n\n## Lịch sử hội thoại (tóm tắt)\n{summary}"
+    return {"role": "system", "content": sp}
 
 
 def get_prompt_hash() -> str:

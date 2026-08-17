@@ -1,10 +1,8 @@
-import asyncio
 import logging
 import time
 
-import asyncpg
-
 from app.config import settings
+from app.core.db import get_pool
 
 logger = logging.getLogger("bds.schemas")
 
@@ -13,22 +11,17 @@ _schemas_cache = None
 _schemas_cache_time = 0
 _CACHE_TTL = 300
 
-PG_URL = settings.postgres_url.replace("postgresql+asyncpg://", "postgresql://")
-
 
 async def _pg_fetch(sql: str, *params, retries: int = 2) -> list:
+    pool = await get_pool()
     for attempt in range(retries + 1):
         try:
-            conn = await asyncpg.connect(PG_URL)
-            try:
-                rows = await conn.fetch(sql, *params)
-                return rows
-            finally:
-                await conn.close()
-        except (asyncpg.exceptions.ConnectionDoesNotExistError,
-                asyncpg.InterfaceError, OSError) as e:
+            async with pool.acquire() as conn:
+                return await conn.fetch(sql, *params)
+        except Exception as e:
             if attempt < retries:
-                logger.warning("PG connect retry %d/%d: %s", attempt + 1, retries, e)
+                logger.warning("PG fetch retry %d/%d: %s", attempt + 1, retries, e)
+                import asyncio
                 await asyncio.sleep(0.5 * (attempt + 1))
             else:
                 raise
@@ -96,6 +89,7 @@ async def build_tool_schemas() -> list[dict]:
                         "model_code": {"type": "string", "enum": models, "description": "Mã xe VinFast"},
                         "version": {"type": "string", "enum": versions, "description": "Phiên bản. Để trống = tất cả."},
                         "category": {"type": "string", "enum": categories, "description": "Loại thông số. Để trống = tất cả."},
+                        "keys": {"type": "array", "items": {"type": "string"}, "description": "Chỉ lấy các spec_key cụ thể (VD: sunroof_type). Để trống = tất cả."},
                     },
                     "required": ["model_code"],
                 },

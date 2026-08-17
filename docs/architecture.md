@@ -8,35 +8,39 @@ flowchart LR
         U[Khách hàng]
     end
 
-    subgraph Agent["Agent Loop (OpenAI Function Calling)"]
+    subgraph Agent["Agent (hybrid intent + deterministic plan)"]
         direction TB
-        CLS[Classify<br/>regex + LLM] -->|ambiguous| ASK[Hỏi lại]
-        CLS -->|clear| LOOP[LLM + 11 tools<br/>parallel execution]
-        LOOP --> SYN[Synthesize]
-        SYN --> GND[Groundedness<br/>number check]
-        GND -->|fail| HOT[Hotline 1900 23 23 89]
+        CLS[Classify<br/>rule intent + entity] -->|thiếu model| ASK[Hỏi lại clarify]
+        CLS -->|intent rõ| PLAN[build_tool_plan<br/>deterministic]
+        CLS -.LLM fallback strict-JSON.-> CLS
+        PLAN --> EXEC[Execute plan song song<br/>asyncio.gather]
+        EXEC --> SYN[Generate — LLM tổng hợp]
+        SYN --> GND[Groundedness<br/>validate citations]
         GND -->|pass| RESP[Response]
+        GND -->|refuse thuần| RESP2[Response không nguồn]
     end
 
-    subgraph Tools["11 Tools"]
+    subgraph Memory["Multi-turn memory"]
+        direction TB
+        SESS[chat_sessions (PG)<br/>summary + turn_count]
+        WIN[Window 7 turn<br/>sanitize history]
+    end
+
+    subgraph Tools["Tools"]
         direction TB
         T1[get_price]
-        T2[get_specs]
+        T2[get_specs keys/category]
         T3[search_knowledge_base]
         T4[list_available_models]
-        T5[get_active_promotions]
-        T6[recommend_vehicle]
-        T7[get_onroad_cost_link]
-        T8[get_loan_estimate_link]
-        T9[get_showroom_charging_link]
-        T10[get_booking_link]
-        T11[get_maintenance_link]
+        T5[get_colors]
+        T6[get_active_promotions]
+        T7[link tools x5]
     end
 
     subgraph Data["Data Sources"]
         direction TB
-        PG[(PostgreSQL<br/>8 tables)]
-        QD[(Qdrant<br/>hybrid search)]
+        PG[(PostgreSQL<br/>car_specs, price, colors...)]
+        QD[(Qdrant<br/>hybrid search 3 collection)]
     end
 
     subgraph Pipeline["Data Pipeline"]
@@ -48,7 +52,11 @@ flowchart LR
     end
 
     U -->|SSE streaming| Agent
-    Agent --> Tools
+    Agent --> Memory
+    RESP --> U
+    Tools --> Data
+    Pipeline --> Data
+```    Agent --> Tools
     Tools --> Data
     Pipeline --> Data
 ```
@@ -120,50 +128,59 @@ flowchart LR
     D1 -->|Agent ready| D3
 ```
 
+## Module map (thêm từ 8/2026)
+
+| Module | Vai trò | Doc chi tiết |
+|---|---|---|
+| `app/agent/intent.py` | Hybrid intent (12 intent) + spec_category/spec_key maps + LLM fallback strict-JSON | `docs/INTENT_PLANNING.md` |
+| `app/agent/direct_plan.py` | `build_tool_plan` — intent → tool calls deterministic | `docs/INTENT_PLANNING.md` |
+| `app/agent/nodes/classify.py` | Rule entity + topic + hybrid intent; clarify đúng lúc | `docs/INTENT_PLANNING.md` |
+| `app/agent/history.py` | Sanitize history (chống injection, window 7 turn) | `docs/MEMORY_PLAN.md` |
+| `app/core/session_store.py` | `chat_sessions` (summary, turn_count) + summarize | `docs/MEMORY_PLAN.md` |
+| `app/agent/nodes/summarize.py` | Running summary mỗi 7 turn | `docs/MEMORY_PLAN.md` |
+| `app/agent/llm.py` | Token limits (input 1000 reject / output 4000), `truncate_messages`, `get_llm` | `docs/MEMORY_PLAN.md` |
+| `frontend/` | React+TS chat (SSE, StatusBar, markdown, localStorage session) | `docs/FRONTEND_PLAN.md` |
+
 ## Agent Loop chi tiết
 
 ```mermaid
 flowchart TD
-    Q[User query] --> PRE{Pre-guardrails}
-    PRE -->|blocked| REJECT[Reject + Hotline]
-    PRE -->|ok| CLS{Classify}
+    Q[User query] --> GATE{Validate}
+    GATE -->|session_id sai / >1000 token| REJECT[HTTP 400]
+    GATE -->|ok| SAN[Sanitize history<br/>chống injection]
+    SAN --> CLS{Classify: rule intent}
 
-    CLS -->|missing model| CLARIFY[Ask clarification]
-    CLARIFY --> WAIT[Wait reply] --> CLS
+    CLS -->|thiếu model cần thiết| CLARIFY[clarify]
+    CLS -->|intent rõ| PLAN[build_tool_plan<br/>deterministic]
+    CLS -.LLM fallback strict-JSON.-> CLS
 
-    CLS -->|clear| LLM[LLM + tool_schemas]
-    LLM -->|tool_calls| EXEC[Execute parallel<br/>asyncio.gather]
-    EXEC --> EVAL{Enough?}
-    EVAL -->|no| LLM
-    EVAL -->|yes| CTX[Build context]
+    PLAN --> EXEC[Execute plan song song<br/>asyncio.gather]
+    EXEC --> CTX[Build context + summary]
+    CTX --> SYN[Synthesize — LLM generate]
+    SYN --> VLD[Validate citations]
+    VLD -->|ok| DONE[Stream response + sources]
+    VLD -->|refuse thuần| DONE2[Stream response không nguồn]
 
-    CTX --> SYN[Synthesize response]
-    SYN --> GND{Numbers match<br/>context?}
-    GND -->|fail| STRicter[Retry stricter]
-    STRicter -->|fail again| HOTLINE[Append hotline]
-    GND -->|pass| DONE[Return response]
-    HOTLINE --> DONE
-
-    LLM -->|no tool_calls| DONE2[Direct response]
+    DONE --> MEM[Upsert session: turn_count+1]
+    MEM --> SUM{Turn % 7 == 0?}
+    SUM -->|yes| SUMM[Summarize → update_summary DB]
 ```
 
 ## Tool Routing
 
 ```mermaid
 flowchart LR
-    Q[Query] --> R{Regex}
-    R -->|giá| T1[get_price]
-    R -->|thông số| T2[get_specs]
-    R -->|khuyến mãi| T5[get_active_promotions]
-    R -->|so sánh| CMP[get_price + get_specs]
-    R -->|nên mua| T6[recommend_vehicle]
-    R -->|lăn bánh| T7[get_onroad_cost_link]
-    R -->|trả góp| T8[get_loan_estimate_link]
-    R -->|showroom| T9[get_showroom_charging_link]
-    R -->|đặt lịch| T10[get_booking_link]
-    R -->|bảo dưỡng| T11[get_maintenance_link]
-    R -->|no match| LLM{LLM classify}
-    LLM -->|câu hỏi mở| T3[search_knowledge_base]
-    LLM -->|out-of-scope| REF[Refuse + Hotline]
-    LLM -->|match tool| TOOLS[Gọi tool phù hợp]
+    Q[Query] --> I{Intent rules}
+    I -->|price| T1[get_price]
+    I -->|spec_query| T2[get_specs category/keys]
+    I -->|feature_presence| T3[get_specs version=None + keys]
+    I -->|cross_model_feature| T4[get_specs x9 model]
+    I -->|compare| T5[get_specs x models + price]
+    I -->|versions_list| T6[get_price]
+    I -->|models_list| T7[list_available_models]
+    I -->|colors| T8[get_colors]
+    I -->|utility| T9[link tools theo subtype]
+    I -->|policy| T10[search_knowledge_base]
+    I -->|general| T11[search_knowledge_base + LLM fallback]
+    I -->|out_of_scope| REF[Respond không tool]
 ```

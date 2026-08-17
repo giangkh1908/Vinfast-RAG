@@ -3,6 +3,7 @@ import re
 import unicodedata
 
 from app.agent.decision import assess_evidence, validate_citations, REFUSAL_MESSAGES
+import asyncio as _asyncio
 from app.agent.graph_state import AgentState
 
 logger = logging.getLogger("bds.graph.validate")
@@ -292,7 +293,12 @@ async def validate_node(state: AgentState) -> dict:
         if history_queries:
             scoring_query = " ".join(history_queries) + " " + query
 
-    assessment, valid_sources = assess_evidence(tool_results, scoring_query)
+    # assess_evidence gọi _rerank_texts → _openrouter_embed (sync HTTP call)
+    # Wrap trong run_in_executor để không block event loop.
+    loop = _asyncio.get_running_loop()
+    assessment, valid_sources = await loop.run_in_executor(
+        None, assess_evidence, tool_results, scoring_query
+    )
     citations = validate_citations(valid_sources, scoring_query)
 
     logger.info("VALIDATE: query=%s assessment=%s sources=%d citations=%d tools=%s",

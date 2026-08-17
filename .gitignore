@@ -14,6 +14,9 @@ data/clean/*/intermediate/
 # vector cache (artifact lớn — embed cache theo content-hash)
 data/.vector_cache/
 
+# Eval outputs (artifact sinh ra khi chạy smoke test)
+eval/results/
+
 # OS
 Thumbs.db
 .DS_Store

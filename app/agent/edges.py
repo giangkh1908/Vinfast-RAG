@@ -1,4 +1,5 @@
 from app.agent.graph_state import AgentState
+from app.agent.direct_plan import build_direct_plan
 
 MAX_ITERATIONS = 3
 
@@ -8,6 +9,8 @@ def route_after_classify(state: AgentState) -> str:
     decision = state.get("decision", "answer")
     if decision in ("out_of_scope", "clarify", "refuse"):
         return "respond"
+    if build_direct_plan(state) is not None:
+        return "direct_fetch"
     return "build_messages"
 
 

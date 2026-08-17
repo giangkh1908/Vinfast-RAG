@@ -1,9 +1,12 @@
 ﻿import hashlib
 import json
 import logging
+import os
 import re
 import subprocess
+import threading
 import time
+from collections import OrderedDict
 import unicodedata
 import uuid
 from dataclasses import dataclass, field, asdict
@@ -128,14 +131,21 @@ def _get_prompt_hash(prompt: str) -> str:
 
 
 def _get_data_snapshot_id() -> str:
-    """Read active data version from PG ingest_version table (is_current=True)."""
+    """Read active data version. Ưu tiên env DATA_SNAPSHOT_ID (0ms), sau đó
+    fallback PG ingest_version (chậm ~15s từ VN → Neon, nên warm up nền)."""
     global _cached_data_snapshot
     if _cached_data_snapshot is not None:
         return _cached_data_snapshot
+
+    env_snap = os.environ.get("DATA_SNAPSHOT_ID", "").strip()
+    if env_snap:
+        _cached_data_snapshot = env_snap
+        return _cached_data_snapshot
+
     try:
         import psycopg2
         pg_url = settings.postgres_url.replace("+asyncpg", "")
-        conn = psycopg2.connect(pg_url)
+        conn = psycopg2.connect(pg_url, connect_timeout=5)
         cur = conn.cursor()
         cur.execute(
             "SELECT version, created_at FROM ingest_version WHERE is_current LIMIT 1"
@@ -160,6 +170,17 @@ def _get_data_snapshot_id() -> str:
             pass
     _cached_data_snapshot = "unknown"
     return _cached_data_snapshot
+
+
+def _warm_snapshot_cache() -> None:
+    """Warm cache nền để request đầu tiên không bị block ~15s (PG round-trip)."""
+    if _cached_data_snapshot is not None:
+        return
+    import threading
+    threading.Thread(target=_get_data_snapshot_id, daemon=True).start()
+
+
+_warm_snapshot_cache()
 
 
 # ── P0 Decision Log ────────────────────────────────────────────────────────
@@ -440,11 +461,11 @@ def _rerank_texts(query: str, texts: list[str]) -> list[float] | None:
 
 
 def _score_specs_rerank(query: str, specs: list[dict], qtokens: set[str]) -> list[float]:
-    """Score specs using keyword matching first, embedding only for ambiguous specs.
+    """Score specs using keyword matching first, embedding only when needed.
 
-    Keyword matching is instant (no API call). Embedding is only used for specs
-    where keyword score is ambiguous (0.3-0.5). This avoids 200+ embedding calls
-    when most specs are clearly relevant or irrelevant.
+    Optimization: nếu keyword đã rõ ràng (≥70% specs match ≥0.7 VÀ ambiguous < 3 items)
+    → skip embedding call (tiết kiệm 2-3s API call). Embedding chỉ gọi khi keyword
+    không phân định được (nhiều specs ambiguous).
     """
     keyword_scores = [
         _spec_relevance_score(qtokens, s.get("key", ""), s.get("value", ""))
@@ -457,7 +478,16 @@ def _score_specs_rerank(query: str, specs: list[dict], qtokens: set[str]) -> lis
     if not ambiguous:
         return keyword_scores  # All clear, no embedding needed
 
-    # Only embed ambiguous specs
+    # OPTIMIZATION: Skip embedding nếu keyword đã đủ rõ ràng
+    # Điều kiện: ≥70% specs có score ≥ 0.7 VÀ ambiguous < 3 items
+    high_confidence = sum(1 for s in keyword_scores if s >= 0.7)
+    ratio = high_confidence / len(keyword_scores) if keyword_scores else 0
+    
+    if ratio >= 0.7 and len(ambiguous) < 3:
+        # Keyword đã đủ tin cậy → không cần embed
+        return keyword_scores
+
+    # Nhiều specs ambiguous → cần embedding để phân định
     ambiguous_specs = [specs[i] for i in ambiguous]
     spec_texts = [
         f"{s.get('key', '')}: {s.get('value', '')} {s.get('unit', '')}"
@@ -475,6 +505,49 @@ def _score_specs_rerank(query: str, specs: list[dict], qtokens: set[str]) -> lis
 
 
 def assess_evidence(tool_results: list[dict], query: str) -> tuple[str, list[dict]]:
+    # Memoize theo nội dung: hàm pure nên cùng (tool_results, query) → cùng
+    # kết quả. Cache khử lần tính lại trong respond/make_decision_log
+    # (~3s embedding OpenRouter) và các request lặp lại trong TTL.
+    key = _assess_cache_key(tool_results, query)
+    if key is not None:
+        with _assess_cache_lock:
+            hit = _assess_cache.get(key)
+            if hit is not None:
+                ts, assessment, sources = hit
+                if time.time() - ts < _ASSESS_CACHE_TTL:
+                    _assess_cache.move_to_end(key)
+                    return assessment, sources
+                del _assess_cache[key]
+
+    assessment, valid_sources = _assess_evidence_impl(tool_results, query)
+
+    if key is not None:
+        with _assess_cache_lock:
+            _assess_cache[key] = (time.time(), assessment, valid_sources)
+            while len(_assess_cache) > _ASSESS_CACHE_MAX:
+                _assess_cache.popitem(last=False)  # LRU: loại entry cũ nhất
+    return assessment, valid_sources
+
+
+# Cache assess_evidence: content-hash key, LRU 128 entries, TTL 2 phút.
+# Key theo NỘI DUNG nên không có rủi ro stale: data đổi → tool_results đổi
+# → key đổi → miss. LƯU Ý: sources trả về từ cache là object dùng chung —
+# caller chỉ đọc, không mutate.
+_ASSESS_CACHE_TTL = 120
+_ASSESS_CACHE_MAX = 128
+_assess_cache: OrderedDict = OrderedDict()
+_assess_cache_lock = threading.Lock()
+
+
+def _assess_cache_key(tool_results: list[dict], query: str) -> str | None:
+    try:
+        payload = json.dumps(tool_results, sort_keys=True, ensure_ascii=False, default=str)
+    except Exception:
+        return None  # Không serialize được → bỏ cache, vẫn chạy bình thường
+    return hashlib.sha256((payload + "\x00" + query).encode("utf-8")).hexdigest()
+
+
+def _assess_evidence_impl(tool_results: list[dict], query: str) -> tuple[str, list[dict]]:
     if not tool_results:
         return "insufficient", []
 
@@ -509,30 +582,6 @@ def assess_evidence(tool_results: list[dict], query: str) -> tuple[str, list[dic
                     has_direct = True
                 elif score >= 0.2:
                     has_partial = True
-
-        elif tool == "get_colors" and result.get("colors"):
-            mc = result.get("model_code", "")
-            colors = result.get("colors", [])
-            interiors = result.get("interiors", [])
-            rank += 1
-            chunks.append(RetrievedChunk(
-                rank=rank,
-                chunk_id=f"colors_{mc}",
-                source_id="car_colors",
-                source_title=f"Màu sắc {mc}",
-                source_url="",
-                document_name="",
-                page="",
-                section="colors",
-                content=f"{len(colors)} màu ngoại thất, {len(interiors)} màu nội thất",
-                vehicle_model=mc,
-                vehicle_version="all_versions",
-                topic="ngoại_thất",
-                market="Vietnam",
-                language="vi",
-                approval_status="approved",
-                retrieval_score=0.9,
-            ).__dict__)
 
         elif tool == "get_price" and result.get("prices"):
             score = _price_relevance_score(qtokens)
@@ -603,9 +652,9 @@ def assess_evidence(tool_results: list[dict], query: str) -> tuple[str, list[dic
             colors = result.get("colors", [])
             interiors = result.get("interiors", [])
             text = f"{mc}: {len(colors)} màu ngoại thất, {len(interiors)} màu nội thất"
-            # Use VinFast product page as source
+            # Ưu tiên source_url thật từ DB; fallback trang sản phẩm VinFast
             model_slug = mc.lower().replace(" ", "")
-            source_url = f"https://shop.vinfastauto.com/vn_vi/dat-coc-xe-{model_slug}.html"
+            source_url = result.get("source_url") or f"https://shop.vinfastauto.com/vn_vi/dat-coc-xe-{model_slug}.html"
             valid_sources.append({
                 "tool": tool,
                 "model_code": mc,

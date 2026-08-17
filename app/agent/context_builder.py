@@ -2,6 +2,18 @@ import re
 
 _TOKEN_RE = re.compile(r"[a-zà-ỹ0-9]+", re.UNICODE)
 
+# Nguồn tham khảo hiển thị qua SourcesBox (UI) — KHÔNG để URL lọt vào context
+# để tránh LLM copy thành "Chi tiết: ..." / "Nguồn: ..." inline.
+_URL_RE = re.compile(r"\[([^\]]+)\]\([^)]+\)")  # markdown link [text](url) → text
+_BARE_URL_RE = re.compile(r"https?://\S+")  # url trần
+
+
+def _strip_urls(text: str) -> str:
+    """Bỏ URL khỏi text context (giữ label text của markdown link)."""
+    text = _URL_RE.sub(r"\1", text)
+    text = _BARE_URL_RE.sub("", text)
+    return text
+
 # Query keywords → relevant spec categories
 _QUERY_TOPIC_MAP = {
     "sạc": ["battery"], "pin": ["battery"], "charge": ["battery"], "kwh": ["battery"],
@@ -17,6 +29,7 @@ _QUERY_TOPIC_MAP = {
     "aeb": ["adas"], "blind spot": ["adas"], "parking": ["adas"],
     "nội thất": ["interior"], "ghế": ["interior"], "màn hình": ["interior"],
     "loa": ["interior"], "điều hòa": ["interior"], "hud": ["interior"], "display": ["interior"],
+    "cửa sổ trời": ["interior"], "kính trần": ["interior"], "sunroof": ["interior"], "panoramic": ["interior"],
     "ngoại thất": ["exterior"], "đèn": ["exterior"], "mâm": ["exterior"],
     "wheel": ["exterior"], "la-zăng": ["exterior"], "headlight": ["exterior"],
     "giá": ["price"], "price": ["price"],
@@ -79,14 +92,11 @@ def build_structured_context(tool_results: list[dict], query: str = "") -> str:
 
 
 def _format_prices(result: dict) -> str:
-    source_url = result.get("source_url", "")
     lines = [f"Giá xe {result['model_code']}:"]
     for p in result.get("prices", []):
         promo = f"{p['promo_price_vnd']:,} VNĐ" if p.get("promo_price_vnd") else "N/A"
         price = f"{p['price_vnd']:,} VNĐ" if p.get("price_vnd") else "N/A"
         lines.append(f"  - {p['version_name']}: Giá niêm yết {price} | Giá ưu đãi {promo}")
-    if source_url:
-        lines.append(f"\n  Nguồn: {source_url}")
     related = result.get("related_models", [])
     if related:
         lines.append("\n  Model liên quan:")
@@ -175,7 +185,6 @@ def _format_colors(result: dict) -> str:
 
 
 def _format_specs(result: dict, relevant_cats: set[str] | None = None) -> str:
-    source_url = result.get("source_url", "")
     lines = [f"Thông số kỹ thuật {result['model_code']}:"]
     current_cat = None
     for s in result.get("specs", []):
@@ -195,8 +204,6 @@ def _format_specs(result: dict, relevant_cats: set[str] | None = None) -> str:
             lines.append(f"    {key}{label_str}: {s['value']}{unit}{page}")
         else:
             lines.append(f"    {ver} — {key}{label_str}: {s['value']}{unit}{page}")
-    if source_url:
-        lines.append(f"\n  Nguồn: {source_url}")
     related = result.get("related_models", [])
     if related:
         lines.append("\n  Model liên quan:")
@@ -211,11 +218,9 @@ def _format_specs(result: dict, relevant_cats: set[str] | None = None) -> str:
 def _format_search_results(result: dict) -> str:
     lines = [f"Kết quả tìm kiếm cho: \"{result['query']}\":"]
     for i, r in enumerate(result.get("results", []), 1):
-        src = r.get("source_url", "")
         lines.append(f"\n  [{i}] ({r['source_type']}, score={r['score']})")
-        lines.append(f"      {r['text']}")
-        if src:
-            lines.append(f"      Nguồn: {src}")
+        # strip URL khỏi text — tránh LLM copy link inline
+        lines.append(f"      {_strip_urls(r['text'])}")
     return "\n".join(lines)
 
 

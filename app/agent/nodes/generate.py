@@ -7,6 +7,7 @@ from openai import AsyncOpenAI
 from app.config import settings
 from app.agent.graph_state import AgentState
 from app.agent.context_builder import build_structured_context
+from app.agent.llm import OUTPUT_MAX_TOKENS, stream_chat_with_fallback
 from app.agent.prompts import SYNTHESIZE_PROMPT
 
 logger = logging.getLogger("bds.graph.generate")
@@ -23,7 +24,7 @@ _llm_client: AsyncOpenAI | None = None
 def _get_llm() -> AsyncOpenAI:
     global _llm_client
     if _llm_client is None:
-        _llm_client = AsyncOpenAI(api_key=settings.openai_api_key, base_url=settings.openai_base_url)
+        _llm_client = AsyncOpenAI(api_key=settings.deepinfra_api_key, base_url=settings.deepinfra_base_url)
     return _llm_client
 
 
@@ -63,15 +64,11 @@ async def generate_node(state: AgentState) -> dict:
     t_generate_start = time.time()
 
     try:
-        resp = await llm.chat.completions.create(
-            model=settings.llm_model,
-            messages=messages,
-        )
-        new_response = resp.choices[0].message.content or ""
+        new_response, _, _ = await stream_chat_with_fallback(llm, messages, max_tokens=OUTPUT_MAX_TOKENS)
         if new_response:
             final_response = new_response
     except Exception as e:
-        logger.error("generate_node LLM error: %s", e)
+        logger.error("generate_node LLM error (all models): %s", e)
         return {
             "final_response": final_response,
             "t_generate_start": t_generate_start,

@@ -1,7 +1,13 @@
 import logging
 import re
 
-from app.agent.classifier import get_classifier
+from app.agent.classifier import get_classifier, MODEL_RE
+from app.agent.intent import (
+    classify_intent,
+    extract_spec_category,
+    extract_spec_key,
+    llm_classify_fallback,
+)
 from app.agent.graph_state import AgentState
 
 logger = logging.getLogger("bds.graph.classify")
@@ -201,17 +207,28 @@ async def classify_node(state: AgentState) -> dict:
     if topic == "general" and hist_ctx["topic"]:
         topic = hist_ctx["topic"]
 
-    # Missing model — but utility queries don't need model
-    if not has_model:
-        # Utility queries (showroom, charging, booking, loan, promotions) → answer directly
-        if _UTILITY_QUERY_RE.search(query):
-            return {
-                "decision": "answer",
-                "reason_code": "utility_query",
-                "entities": cr.entities,
-                "specificity": "unclear",
-                "category": "utility",
-            }
+    # ── Hybrid intent: rule trước → LLM fallback khi rule ra "general" ──
+    # TÍNH TRƯỚC các nhánh clarify — intent cụ thể (price/policy/spec...) không
+    # được phép bị chặn bởi "broad topic" hay "missing model" không cần thiết.
+    entities = dict(cr.entities)
+    intent = classify_intent(query, topic)
+    # Fallback rule: query có keyword spec rõ ("công suất", "sạc"...) nhưng chưa
+    # match intent rule → coi là spec_query (category từ map, không để LLM đoán)
+    if intent == "general" and extract_spec_category(query):
+        intent = "spec_query"
+    spec_category = (
+        extract_spec_category(query)
+        if intent in ("spec_query", "feature_presence", "cross_model_feature", "compare")
+        else None
+    )
+    # Feature check: intent so sánh/kiểm tra 1 tính năng cụ thể → lấy ĐÚNG field
+    spec_key = extract_spec_key(query) if intent in ("feature_presence", "cross_model_feature") else None
+
+    # Intent KHÔNG cần model → đi thẳng (KB search, cross-model scan, danh sách, link...)
+    _NO_MODEL_INTENTS = {"cross_model_feature", "models_list", "policy", "general", "utility", "out_of_scope"}
+
+    # Missing model — chỉ clarify khi intent THẬT SỰ cần model
+    if not has_model and intent not in _NO_MODEL_INTENTS:
         if _AMBIGUOUS_PRONOUN_RE.search(query):
             return {
                 "decision": "clarify",
@@ -221,18 +238,18 @@ async def classify_node(state: AgentState) -> dict:
                 "specificity": "unclear",
                 "category": topic,
             }
-        if topic != "general":
-            return {
-                "decision": "clarify",
-                "reason_code": "missing_model",
-                "response_text": "Bạn muốn hỏi về xe VinFast nào?",
-                "entities": cr.entities,
-                "specificity": "unclear",
-                "category": topic,
-            }
+        return {
+            "decision": "clarify",
+            "reason_code": "missing_model",
+            "response_text": "Bạn muốn hỏi về xe VinFast nào?",
+            "entities": cr.entities,
+            "specificity": "unclear",
+            "category": topic,
+        }
 
-    # Broad topic (model known, topic vague, NOT a follow-up)
-    if has_model and topic == "general" and _is_broad_topic(query) and not is_followup:
+    # Broad topic (model known, topic vague, NOT a follow-up) — chỉ khi intent
+    # còn là general (chưa xác định hướng); intent cụ thể không clarify
+    if has_model and intent == "general" and topic == "general" and _is_broad_topic(query) and not is_followup:
         model = cr.entities["model_code"]
         return {
             "decision": "clarify",
@@ -243,25 +260,33 @@ async def classify_node(state: AgentState) -> dict:
             "category": "general",
         }
 
-    # Missing version (only for version-dependent topics)
-    if has_model and not has_version and not VERSION_QUERY_RE.search(query):
-        if topic in _VERSION_DEPENDENT_TOPICS:
-            model = cr.entities["model_code"]
-            return {
-                "decision": "clarify",
-                "reason_code": "missing_version",
-                "response_text": f"Bạn muốn hỏi phiên bản nào của {model}?",
-                "entities": cr.entities,
-                "specificity": "unclear",
-                "category": topic,
-            }
+    # Missing version → KHÔNG ngắt hỏi lại (UX kém). Chuyển decision=answer,
+    # prompt sẽ điều hướng LLM trả lời bản mặc định (Eco) + liệt kê bản khác.
+
+    # LLM fallback (hybrid) — rule vẫn "general" nhưng query rõ ràng là câu hỏi thật
+    if intent == "general" and (has_model or len(query.split()) >= 4):
+        llm_res = await llm_classify_fallback(query, history)
+        if llm_res:
+            intent = llm_res["intent"]
+            if llm_res.get("model_code") and not entities.get("model_code"):
+                entities["model_code"] = llm_res["model_code"]
+            if llm_res.get("version") and not entities.get("version"):
+                entities["version"] = llm_res["version"]
+            if llm_res.get("spec_category"):
+                spec_category = llm_res["spec_category"]
+
+    if spec_category:
+        entities["spec_category"] = spec_category
+    if spec_key:
+        entities["spec_key"] = spec_key
 
     # Answer
     return {
         "decision": "answer",
         "reason_code": "sufficient_direct_evidence",
-        "entities": cr.entities,
+        "entities": entities,
         "specificity": cr.specificity,
         "category": topic,
+        "intent": intent,
         "allowed_tools": _TOPIC_TOOLS.get(topic),
     }

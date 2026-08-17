@@ -58,9 +58,9 @@ async def main():
         ("xe này có an toàn không", [], "clarify", "ambiguous", "clarify: pronoun 'xe này'"),
         ("mẫu này đi được bao xa", [], "clarify", "ambiguous", "clarify: pronoun 'mẫu này'"),
 
-        # Clarify: missing version (version-dependent)
-        ("vf8 đi được bao xa", [], "clarify", "missing_version", "clarify: range needs version"),
-        ("vf6 công suất bao nhiêu", [], "clarify", "missing_version", "clarify: power needs version"),
+        # Answer: version-dependent (trả lời luôn với version mặc định)
+        ("vf8 đi được bao xa", [], "answer", None, "answer: range with default version"),
+        ("vf6 công suất bao nhiêu", [], "answer", None, "answer: power with default version"),
 
         # Answer: version-independent (no version needed)
         ("vf8 sạc nhanh bao lâu", [], "answer", None, "v-indep: charging"),

@@ -16,6 +16,9 @@ class AgentState(TypedDict, total=False):
     reason_code: str
     response_text: str
 
+    summary: str | None
+    session_id: str | None
+
     entities: dict[str, Any]
     specificity: str
     category: str | None
