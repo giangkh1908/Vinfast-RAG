@@ -461,12 +461,10 @@ def _rerank_texts(query: str, texts: list[str]) -> list[float] | None:
 
 
 def _score_specs_rerank(query: str, specs: list[dict], qtokens: set[str]) -> list[float]:
-    """Score specs by keyword matching ONLY (không gọi embedding).
+    """Score specs by keyword matching ONLY.
 
-    Quan trọng: sau khi LLM đã sinh answer, việc scoring này chỉ phục vụ
-    validate/logging. Gọi OpenRouter embedding ở đây block stream 2-3s
-    khiến user thấy "answer xong mà ko dừng". Keyword score đủ để quyết
-    định answer/refuse — bỏ hẳn embedding khỏi đường này.
+    Không gọi embedding — keyword score đủ cho answer generation.
+    Embedding chỉ dùng trong background logging (make_decision_log).
     """
     return [
         _spec_relevance_score(qtokens, s.get("key", ""), s.get("value", ""))
@@ -713,11 +711,10 @@ def build_retrieved_chunks(tool_results: list[dict], query: str = "", topic: str
     topic_keywords |= qtokens - {"xe", "vinfast", "vf", "của", "và", "là", "cho", "tôi", "bạn", "có", "không", "nào", "gì"}
 
     def _embed_score(texts: list[str]) -> list[float]:
-        """Score texts vs query — keyword overlap ONLY (không network).
+        """Score texts vs query — keyword overlap ONLY (nhanh, không network).
 
-        Bỏ hẳn _rerank_texts (OpenRouter embedding 2-3s). Log chạy nền
-        nhưng embedding API call vẫn tốn cost + chậm — keyword đủ cho
-        xếp hạng chunk hiển thị.
+        Không gọi embedding trong answer path — keyword đủ cho ranking.
+        Embedding chỉ dùng trong background logging.
         """
         results = []
         for t in texts:

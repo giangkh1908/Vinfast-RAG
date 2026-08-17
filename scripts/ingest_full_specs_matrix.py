@@ -12,8 +12,21 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 async def ingest_full_matrix():
     from app.core.db import get_pool
+    from pathlib import Path
     
     pool = await get_pool()
+    
+    # Đọc link brochure từ file
+    brochure_path = Path(__file__).parent.parent / "data" / "raw" / "link_brochure.md"
+    model_urls = {}
+    if brochure_path.exists():
+        for line in brochure_path.read_text(encoding="utf-8").splitlines():
+            if ":" in line:
+                model_name, url = line.split(":", 1)
+                model_urls[model_name.strip()] = url.strip()
+        print(f"Đã đọc {len(model_urls)} brochure URLs từ file")
+    else:
+        print("Không tìm thấy file link_brochure.md")
     
     print("Đang lấy danh sách specs và models...")
     async with pool.acquire() as conn:
@@ -59,13 +72,15 @@ async def ingest_full_matrix():
             for model in models:
                 combo = (spec['spec_key'], model['model_code'], spec['spec_category'])
                 if combo not in existing_combos:
+                    # Lấy URL đúng từ file link_brochure.md
+                    brochure_url = model_urls.get(model['model_code'], None)
                     missing.append({
                         'spec_key': spec['spec_key'],
                         'spec_category': spec['spec_category'],
                         'spec_category_vn': spec['spec_category_vn'],
                         'spec_key_vn': spec['spec_key_vn'],
                         'model_code': model['model_code'],
-                        'source_url': spec['source_url'],
+                        'source_url': brochure_url,
                     })
         
         print(f"Cần thêm {len(missing)} rows với value='Không'")

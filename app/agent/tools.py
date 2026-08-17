@@ -194,7 +194,18 @@ async def get_specs(model_code: str, version: str = None, category: str = None, 
         )
 
     source_urls = set(r["source_url"] for r in rows if r["source_url"])
-    primary_source = source_urls.pop() if source_urls else ""
+    # Ưu tiên URL chứa tên model (tránh lấy nhầm brochure xe khác)
+    primary_source = ""
+    if source_urls:
+        model_slug = model_code.lower().replace(" ", "")
+        # Tìm URL chứa tên model
+        for url in source_urls:
+            if model_slug in url.lower():
+                primary_source = url
+                break
+        # Fallback: lấy URL đầu tiên
+        if not primary_source:
+            primary_source = next(iter(source_urls))
 
     related_models = [{"model_code": r["model_code"]} for r in related]
 

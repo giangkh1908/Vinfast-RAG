@@ -64,16 +64,35 @@ async def respond_node(state: AgentState) -> dict:
     # Lấy URL nguồn từ tool results (nếu có)
     source_url = ""
     if decision == "answer" and tool_results:
-        for tr in tool_results:
-            if tr.get("success") and isinstance(tr.get("result"), dict):
-                url = tr["result"].get("source_url", "")
-                if url:
-                    source_url = url
-                    break
+        # Ưu tiên get_specs → get_price → get_colors → khác
+        # (tránh lấy URL từ search_knowledge_base - có thể là brochure xe khác)
+        tool_priority = ['get_specs', 'get_price', 'get_colors']
+        
+        # Ưu tiên theo tool name
+        for tool_name in tool_priority:
+            for tr in tool_results:
+                if tr.get("tool") != tool_name:
+                    continue
+                if tr.get("success") and isinstance(tr.get("result"), dict):
+                    url = tr["result"].get("source_url", "")
+                    if url:
+                        source_url = url
+                        break
+            if source_url:
+                break
+        
+        # Fallback: lấy từ bất kỳ tool nào có source_url
+        if not source_url:
+            for tr in tool_results:
+                if tr.get("success") and isinstance(tr.get("result"), dict):
+                    url = tr["result"].get("source_url", "")
+                    if url:
+                        source_url = url
+                        break
     
     # Thêm link URL ở cuối câu trả lời (markdown link ngắn, click được)
     if source_url:
-        answer = answer.rstrip() + f"\n\n🔗 Xem thêm: [tại đây]({source_url})"
+        answer = answer.rstrip() + f"\n\n🔗 Xem thêm: {source_url}"
 
     t0 = state.get("t0", time.time())
     latency_ms = (time.time() - t0) * 1000
