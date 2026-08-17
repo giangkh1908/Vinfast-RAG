@@ -154,66 +154,6 @@ class AgentLoop:
             entities["version"] = version
         entities["intent"] = intent
         
-        # Nguồn hiển thị cho user: 1 nguồn tốt nhất, label TIẾNG VIỆT thân thiện
-        # (không hiện tên kỹ thuật pricing/specs, không hiện % score)
-        _SOURCE_TYPE_LABELS = {
-            "pricing": "Bảng giá",
-            "specs": "Thông số kỹ thuật",
-            "colors": "Màu sắc",
-            "catalog": "Danh mục sản phẩm",
-            "utility": "Tiện ích",
-            "raw_html": "Trang thông tin",
-            "raw_pdf": "Tài liệu/Brochure",
-        }
-        # Label theo NỘI DUNG chunk — giải thích VÌ SAO trích nguồn
-        # ("Tài liệu/Brochure" chung chung dễ gây hiểu nhầm, VD hỏi bảo hành
-        #  chung mà nguồn là brochure của 1 model cụ thể)
-        _CONTENT_LABELS = [
-            (re.compile(r"bảo hành", re.I), "Chính sách bảo hành"),
-            (re.compile(r"bảo dưỡng|định kỳ", re.I), "Bảo dưỡng định kỳ"),
-            (re.compile(r"điều khoản|pháp lý", re.I), "Điều khoản & pháp lý"),
-            (re.compile(r"khuyến mãi|ưu đãi", re.I), "Khuyến mãi"),
-            (re.compile(r"hỗ trợ mua|đặt cọc|giao xe", re.I), "Hỗ trợ mua xe"),
-            (re.compile(r"đặt lịch|showroom|trạm sạc", re.I), "Đặt lịch & địa điểm"),
-        ]
-        _MAX_SOURCES = 1
-
-        def _content_label(c: dict) -> str | None:
-            text = c.get("text", "") or ""
-            for pat, label in _CONTENT_LABELS:
-                if pat.search(text):
-                    return label
-            return None
-
-        def _format_sources(result) -> list[dict]:
-            seen = set()
-            formatted = []
-            for c in sorted(result.sources, key=lambda x: x.get("score", 0), reverse=True):
-                url = c.get("source_url", "")
-                # Fallback: nếu source_url là file path, dùng trang sản phẩm VinFast
-                if url and not url.startswith("http"):
-                    model = c.get("model_code", "") or c.get("model_id", "")
-                    model_slug = model.lower().replace(" ", "")
-                    url = f"https://shop.vinfastauto.com/vn_vi/dat-coc-xe-{model_slug}.html"
-                if not url or url in seen:
-                    continue
-                seen.add(url)
-                model = c.get("model_code", "") or c.get("model_id", "")
-                content_label = _content_label(c)
-                stype = c.get("source_type", "")
-                if content_label:
-                    # Nguồn chính sách chung (bảo hành/bảo dưỡng...) → KHÔNG hiện model
-                    # (model trong nguồn chỉ là ngẫu nhiên, gây hiểu nhầm "sao ra xe VF 9")
-                    label = content_label
-                    text = label
-                else:
-                    label = _SOURCE_TYPE_LABELS.get(stype, "Nguồn tham khảo")
-                    text = f"{model} — {label}" if model else label
-                formatted.append({"text": text, "url": url, "type": label})
-                if len(formatted) >= _MAX_SOURCES:
-                    break
-            return formatted
-        
         # Check cacheability
         cacheable = _is_cacheable(history, session_id, intent)
         cache_key = None  # sẽ set bên dưới nếu cacheable
@@ -231,16 +171,7 @@ class AgentLoop:
                 if cached:
                     # Cache hit - replay SSE events
                     response = cached["response"]
-                    sources = cached.get("sources", [])
                     decision = cached.get("decision", "answer")
-                    
-                    # Format sources
-                    class FakeResult:
-                        def __init__(self, sources):
-                            self.sources = sources
-                    
-                    fake_result = FakeResult(sources)
-                    formatted_sources = _format_sources(fake_result) if sources else []
                     
                     # Yield SSE events (không cần status "Đang tra cứu" vì đã có câu trả lời ngay)
                     yield {"type": "decision", "content": decision}
@@ -249,8 +180,6 @@ class AgentLoop:
                         "entities": entities,
                     }}
                     yield {"type": "token", "content": response}
-                    if formatted_sources:
-                        yield {"type": "sources", "content": formatted_sources}
                     yield {"type": "done"}
                     return
         
@@ -329,6 +258,8 @@ class AgentLoop:
                         tool_results_seen = len(all_tr)
 
                     elif node_name == "respond":
+                        # Clear status khi response xong
+                        yield {"type": "status", "content": ""}
                         result = node_output.get("result")
                         if result is None:
                             continue
@@ -337,18 +268,15 @@ class AgentLoop:
                             yield {"type": "answer", "content": result.response}
                         elif result.decision == "clarify":
                             yield {"type": "clarify", "content": result.response}
-                            yield {"type": "sources", "content": []}
                         elif result.decision == "refuse":
                             if not yielded_tokens:
                                 yield {"type": "token", "content": result.response}
                         elif not yielded_tokens:
                             # Fallback: LLM chưa stream được gì (writer unavailable)
                             yield {"type": "token", "content": result.response}
-
-                        if result.sources and result.decision == "answer":
-                            formatted = _format_sources(result)
-                            if formatted:
-                                yield {"type": "sources", "content": formatted}
+                        elif result.source_url:
+                            # Token đã stream rồi → chỉ thêm link ngắn ở cuối
+                            yield {"type": "token", "content": f"\n\n🔗 Xem thêm: [tại đây]({result.source_url})"}
                         
                         # Cache write: chỉ cache khi cacheable và decision là "answer"
                         # cache_key=None khi PG unreachable → skip cache write

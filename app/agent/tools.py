@@ -226,22 +226,26 @@ async def search_knowledge_base(query: str, model_id: str = None, skip_rerank: b
     mid = _model_id(model_id) if model_id else None
     results = await hybrid_search(query, model_id=mid, top_k=5, skip_rerank=skip_rerank)
 
+    # Filter chunks score thấp (< 0.3) để tránh LLM bịa thông tin từ KB nhiễu
+    filtered_results = [
+        {
+            "id": r.get("id", ""),
+            "text": r["text"],
+            "model_id": r["model_id"],
+            "text_type": r["text_type"],
+            "source_type": r["source_type"],
+            "source_url": r["source_url"],
+            "page": r.get("page", ""),
+            "section": r.get("section", ""),
+            "score": round(r["score"], 3),
+        }
+        for r in results
+        if r.get("score", 0) >= 0.3
+    ]
+
     return {
         "query": query,
-        "results": [
-            {
-                "id": r.get("id", ""),
-                "text": r["text"],
-                "model_id": r["model_id"],
-                "text_type": r["text_type"],
-                "source_type": r["source_type"],
-                "source_url": r["source_url"],
-                "page": r.get("page", ""),
-                "section": r.get("section", ""),
-                "score": round(r["score"], 3),
-            }
-            for r in results
-        ],
+        "results": filtered_results,
     }
 
 

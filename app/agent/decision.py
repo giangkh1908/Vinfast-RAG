@@ -322,17 +322,17 @@ log_store = LogStore()
 # ── Response Messages ──────────────────────────────────────────────────────
 
 REFUSAL_MESSAGES = {
-    "insufficient_evidence": "Mình chưa thể xác nhận thông tin chính từ nguồn hiện có.",
-    "no_citation": "Mình chưa thể xác nhận vì chưa có nguồn kiểm chứng hợp lệ.",
-    "grounding_fail": "Mình chưa thể xác nhận thông tin này từ nguồn đã được phê duyệt hiện có.",
-    "system_error": "Mình chưa thể hoàn tất câu trả lời lúc này. Vui lòng thử lại.",
+    "insufficient_evidence": "Xin lỗi, mình chưa có thông tin phù hợp. Bạn có thể hỏi lại bằng câu khác được không?",
+    "no_citation": "Xin lỗi, mình chưa có thông tin phù hợp. Bạn có thể hỏi lại bằng câu khác được không?",
+    "grounding_fail": "Xin lỗi, mình chưa có thông tin phù hợp. Bạn có thể hỏi lại bằng câu khác được không?",
+    "system_error": "Có lỗi xảy ra. Vui lòng thử lại.",
 }
 
 
 def get_clarify_messages() -> dict[str, str]:
     return {
-        "model_code": "Bạn muốn hỏi về xe VinFast nào?",
-        "topic": "Bạn muốn tìm thông tin nào về {model}?",
+        "model_code": _DEFAULT_REPLY,
+        "topic": _DEFAULT_REPLY,
     }
 
 
@@ -461,47 +461,17 @@ def _rerank_texts(query: str, texts: list[str]) -> list[float] | None:
 
 
 def _score_specs_rerank(query: str, specs: list[dict], qtokens: set[str]) -> list[float]:
-    """Score specs using keyword matching first, embedding only when needed.
+    """Score specs by keyword matching ONLY (không gọi embedding).
 
-    Optimization: nếu keyword đã rõ ràng (≥70% specs match ≥0.7 VÀ ambiguous < 3 items)
-    → skip embedding call (tiết kiệm 2-3s API call). Embedding chỉ gọi khi keyword
-    không phân định được (nhiều specs ambiguous).
+    Quan trọng: sau khi LLM đã sinh answer, việc scoring này chỉ phục vụ
+    validate/logging. Gọi OpenRouter embedding ở đây block stream 2-3s
+    khiến user thấy "answer xong mà ko dừng". Keyword score đủ để quyết
+    định answer/refuse — bỏ hẳn embedding khỏi đường này.
     """
-    keyword_scores = [
+    return [
         _spec_relevance_score(qtokens, s.get("key", ""), s.get("value", ""))
         for s in specs
     ]
-
-    # Find indices where keyword score is ambiguous (needs embedding)
-    ambiguous = [i for i, s in enumerate(keyword_scores) if 0.25 <= s < 0.5]
-
-    if not ambiguous:
-        return keyword_scores  # All clear, no embedding needed
-
-    # OPTIMIZATION: Skip embedding nếu keyword đã đủ rõ ràng
-    # Điều kiện: ≥70% specs có score ≥ 0.7 VÀ ambiguous < 3 items
-    high_confidence = sum(1 for s in keyword_scores if s >= 0.7)
-    ratio = high_confidence / len(keyword_scores) if keyword_scores else 0
-    
-    if ratio >= 0.7 and len(ambiguous) < 3:
-        # Keyword đã đủ tin cậy → không cần embed
-        return keyword_scores
-
-    # Nhiều specs ambiguous → cần embedding để phân định
-    ambiguous_specs = [specs[i] for i in ambiguous]
-    spec_texts = [
-        f"{s.get('key', '')}: {s.get('value', '')} {s.get('unit', '')}"
-        for s in ambiguous_specs
-    ]
-    embed_scores = _rerank_texts(query, spec_texts)
-
-    if embed_scores and len(embed_scores) == len(ambiguous):
-        result = list(keyword_scores)
-        for j, idx in enumerate(ambiguous):
-            result[idx] = max(embed_scores[j], keyword_scores[idx])
-        return result
-
-    return keyword_scores
 
 
 def assess_evidence(tool_results: list[dict], query: str) -> tuple[str, list[dict]]:
@@ -689,6 +659,13 @@ def _assess_evidence_impl(tool_results: list[dict], query: str) -> tuple[str, li
         return "direct_support", valid_sources
     if has_partial:
         return "partial_support", valid_sources
+    
+    # Special case: get_specs returned data for the model (dù không match với query)
+    # → coi như có partial evidence, LLM sẽ trả lời "không có thông tin về tính năng này"
+    for tr in tool_results:
+        if tr.get("tool") == "get_specs" and tr.get("result", {}).get("specs"):
+            return "partial_support", valid_sources
+    
     return "insufficient", valid_sources
 
 
@@ -736,11 +713,12 @@ def build_retrieved_chunks(tool_results: list[dict], query: str = "", topic: str
     topic_keywords |= qtokens - {"xe", "vinfast", "vf", "của", "và", "là", "cho", "tôi", "bạn", "có", "không", "nào", "gì"}
 
     def _embed_score(texts: list[str]) -> list[float]:
-        """Score texts against query using embedding cosine similarity."""
-        scores = _rerank_texts(query, texts)
-        if scores is not None:
-            return scores
-        # Fallback: keyword overlap ratio
+        """Score texts vs query — keyword overlap ONLY (không network).
+
+        Bỏ hẳn _rerank_texts (OpenRouter embedding 2-3s). Log chạy nền
+        nhưng embedding API call vẫn tốn cost + chậm — keyword đủ cho
+        xếp hạng chunk hiển thị.
+        """
         results = []
         for t in texts:
             t_tokens = set(_TOKEN_RE.findall(t.lower()))

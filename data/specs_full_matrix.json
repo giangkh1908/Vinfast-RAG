@@ -1,0 +1,3936 @@
+{
+  "adaptive_cruise_control": {
+    "category": "adas",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Eco: Không; Plus: Có",
+      "VF 7": "Eco: Không; Plus: Có; PlusCaptain: Có; Plus_AWD: Có; Plus_AWD_PanoramicRoof: Có",
+      "VF 8": "Eco: Không; Plus: Có",
+      "VF 8 All New": "The All New: Có",
+      "VF 9": "Eco: Có; Plus: Có; PlusCaptain: Có",
+      "VF MPV 7": "Không"
+    }
+  },
+  "aeb_front": {
+    "category": "adas",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Eco: Không; Plus: Có",
+      "VF 8 All New": "The All New: Có",
+      "VF 9": "Eco: Có; Plus: Có; PlusCaptain: Có",
+      "VF MPV 7": "Không"
+    }
+  },
+  "aeb_front_rear": {
+    "category": "adas",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Eco: Không; Plus: Có",
+      "VF 7": "Eco: Không; Plus: Có; PlusCaptain: Có; Plus_AWD: Có; Plus_AWD_PanoramicRoof: Có",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "auto_lane_change": {
+    "category": "adas",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Eco: Không; Plus: Có",
+      "VF 7": "Eco: Không; Plus: Có; PlusCaptain: Có; Plus_AWD: Có; Plus_AWD_PanoramicRoof: Có",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "blind_spot_warning": {
+    "category": "adas",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Plus: Có",
+      "VF 6": "Eco: Có; Plus: Có",
+      "VF 7": "Eco: Có; Plus: Có; PlusCaptain: Có; Plus_AWD: Có; Plus_AWD_PanoramicRoof: Có",
+      "VF 8": "Eco: Có; Plus: Có",
+      "VF 8 All New": "The All New: Có",
+      "VF 9": "Eco: Có; Plus: Có; PlusCaptain: Có",
+      "VF MPV 7": "Không"
+    }
+  },
+  "cruise_control_type": {
+    "category": "adas",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Plus: Có",
+      "VF 6": "Eco: Tiêu chuẩn; Plus: Thích ứng",
+      "VF 7": "Eco: Tiêu chuẩn; Plus: Thích ứng; PlusCaptain: Thích ứng; Plus_AWD: Thích ứng; Plus_AWD_PanoramicRoof: Thích ứng",
+      "VF 8": "Eco: Ga tự động cơ bản; Plus: Ga tự động thích ứng",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "Có"
+    }
+  },
+  "door_open_warning": {
+    "category": "adas",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Plus: Có",
+      "VF 6": "Eco: Không; Plus: Có",
+      "VF 7": "Eco: Không; Plus: Có; PlusCaptain: Có; Plus_AWD: Có; Plus_AWD_PanoramicRoof: Có",
+      "VF 8": "Eco: Không; Plus: Có",
+      "VF 8 All New": "The All New: Có",
+      "VF 9": "Eco: Có; Plus: Có; PlusCaptain: Có",
+      "VF MPV 7": "Không"
+    }
+  },
+  "driver_monitoring": {
+    "category": "adas",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Eco: Không; Plus: Có",
+      "VF 7": "Không",
+      "VF 8": "Eco: Không; Plus: Có",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: Có; Plus: Có; PlusCaptain: Có",
+      "VF MPV 7": "Không"
+    }
+  },
+  "emergency_lane_keep": {
+    "category": "adas",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Eco: Không; Plus: Có",
+      "VF 7": "Không",
+      "VF 8": "Eco: Không; Plus: Có",
+      "VF 8 All New": "The All New: Có",
+      "VF 9": "Eco: Có; Plus: Có; PlusCaptain: Có",
+      "VF MPV 7": "Không"
+    }
+  },
+  "emergency_stop": {
+    "category": "adas",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "The All New: Có",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "forward_collision_warning": {
+    "category": "adas",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Eco: Không; Plus: Có",
+      "VF 7": "Không",
+      "VF 8": "Eco: Không; Plus: Có",
+      "VF 8 All New": "The All New: Có",
+      "VF 9": "Eco: Có; Plus: Có; PlusCaptain: Có",
+      "VF MPV 7": "Không"
+    }
+  },
+  "front_parking_assist": {
+    "category": "adas",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: Có; Plus: Có; PlusCaptain: Có",
+      "VF MPV 7": "Không"
+    }
+  },
+  "front_parking_sensor": {
+    "category": "adas",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "The All New: Có",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "highway_assist": {
+    "category": "adas",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Eco: Không; Plus: Có",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: Có; Plus: Có; PlusCaptain: Có",
+      "VF MPV 7": "Không"
+    }
+  },
+  "highway_driving_assist": {
+    "category": "adas",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Eco: Không; Plus: Có",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "The All New: Có",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "hill_descent_control": {
+    "category": "adas",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "The All New: Có",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "lane_centering": {
+    "category": "adas",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Eco: Không; Plus: Có; PlusCaptain: Có; Plus_AWD: Có; Plus_AWD_PanoramicRoof: Có",
+      "VF 8": "Eco: Không; Plus: Có",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: Có; Plus: Có; PlusCaptain: Có",
+      "VF MPV 7": "Không"
+    }
+  },
+  "lane_departure_warning": {
+    "category": "adas",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Eco: Không; Plus: Có",
+      "VF 7": "Eco: Không; Plus: Có; PlusCaptain: Có; Plus_AWD: Có; Plus_AWD_PanoramicRoof: Có",
+      "VF 8": "Eco: Không; Plus: Có",
+      "VF 8 All New": "The All New: Có",
+      "VF 9": "Eco: Có; Plus: Có; PlusCaptain: Có",
+      "VF MPV 7": "Không"
+    }
+  },
+  "lane_keep_assist": {
+    "category": "adas",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Eco: Không; Plus: Có",
+      "VF 7": "Eco: Không; Plus: Có; PlusCaptain: Có; Plus_AWD: Có; Plus_AWD_PanoramicRoof: Có",
+      "VF 8": "Eco: Không; Plus: Có",
+      "VF 8 All New": "The All New: Có",
+      "VF 9": "Eco: Có; Plus: Có; PlusCaptain: Có",
+      "VF MPV 7": "Không"
+    }
+  },
+  "rear_cross_traffic_alert": {
+    "category": "adas",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Plus: Có",
+      "VF 6": "Eco: Không; Plus: Có",
+      "VF 7": "Eco: Không; Plus: Có; PlusCaptain: Có; Plus_AWD: Có; Plus_AWD_PanoramicRoof: Có",
+      "VF 8": "Eco: Không; Plus: Có",
+      "VF 8 All New": "The All New: Có",
+      "VF 9": "Eco: Có; Plus: Có; PlusCaptain: Có",
+      "VF MPV 7": "Không"
+    }
+  },
+  "rear_parking_assist": {
+    "category": "adas",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Có",
+      "VF 5": "Plus: Có",
+      "VF 6": "Eco: Có; Plus: Có",
+      "VF 7": "Eco: Có; Plus: Có; PlusCaptain: Có; Plus_AWD: Có; Plus_AWD_PanoramicRoof: Có",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: Có; Plus: Có; PlusCaptain: Có",
+      "VF MPV 7": "Không"
+    }
+  },
+  "rear_parking_sensor": {
+    "category": "adas",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "The All New: Có",
+      "VF 9": "Không",
+      "VF MPV 7": "Có"
+    }
+  },
+  "rearview_camera": {
+    "category": "adas",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "AFS",
+      "VF 5": "Plus: Có",
+      "VF 6": "Eco: Có; Plus: Có",
+      "VF 7": "Eco: Có; Plus: Có; PlusCaptain: Có; Plus_AWD: Có; Plus_AWD_PanoramicRoof: Có",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: Có; Plus: Có; PlusCaptain: Có",
+      "VF MPV 7": "Có"
+    }
+  },
+  "surround_view_camera": {
+    "category": "adas",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Eco: Không; Plus: Có",
+      "VF 7": "Eco: Không; Plus: Có; PlusCaptain: Có; Plus_AWD: Có; Plus_AWD_PanoramicRoof: Có",
+      "VF 8": "Eco: Có; Plus: Có",
+      "VF 8 All New": "The All New: Có",
+      "VF 9": "Eco: Có; Plus: Có; PlusCaptain: Có",
+      "VF MPV 7": "Không"
+    }
+  },
+  "traffic_jam_assist": {
+    "category": "adas",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Eco: Không; Plus: Có",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: Có; Plus: Có; PlusCaptain: Có",
+      "VF MPV 7": "Không"
+    }
+  },
+  "traffic_sign_recognition": {
+    "category": "adas",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Eco: Không; Plus: Có",
+      "VF 7": "Eco: Không; Plus: Có; PlusCaptain: Có; Plus_AWD: Có; Plus_AWD_PanoramicRoof: Có",
+      "VF 8": "Eco: Không; Plus: Có",
+      "VF 8 All New": "The All New: Có",
+      "VF 9": "Eco: Có; Plus: Có; PlusCaptain: Có",
+      "VF MPV 7": "Không"
+    }
+  },
+  "ac_charge_power_kw": {
+    "category": "battery",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "The All New: 7.2 kW",
+      "VF 9": "Eco: 6,6 kW 1 pha, 11 kW 3 pha; Plus: 6,6 kW 1 pha, 11 kW 3 pha; PlusCaptain: 6,6 kW 1 pha, 11 kW 3 pha",
+      "VF MPV 7": "6,9 kW"
+    }
+  },
+  "battery_kwh": {
+    "category": "battery",
+    "models": {
+      "VF 2": "TieuChuan: 18,3",
+      "VF 3": "18,64",
+      "VF 5": "Plus: 37,23",
+      "VF 6": "Eco: 59,6; Plus: 59,6",
+      "VF 7": "Eco: 59,6; Plus: 75,6; PlusCaptain: 75,6; Plus_AWD: 75,6; Plus_AWD_PanoramicRoof: 75,6",
+      "VF 8": "Eco: 87,7; Plus: 87,7",
+      "VF 8 All New": "The All New: 60,13",
+      "VF 9": "Eco: 123; Plus: 123; PlusCaptain: 123",
+      "VF MPV 7": "60,13"
+    }
+  },
+  "battery_type": {
+    "category": "battery",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "LFP",
+      "VF 5": "Plus: LFP",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: CATL; Plus: CATL; PlusCaptain: CATL",
+      "VF MPV 7": "Không"
+    }
+  },
+  "dc_charge_power_kw": {
+    "category": "battery",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "The All New: 100 kW",
+      "VF 9": "Không",
+      "VF MPV 7": "80 kW"
+    }
+  },
+  "fast_charge_capable": {
+    "category": "battery",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Có",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "fast_charge_min": {
+    "category": "battery",
+    "models": {
+      "VF 2": "TieuChuan: 34",
+      "VF 3": "36 phút (10 - 70%)",
+      "VF 5": "Plus: 33",
+      "VF 6": "Eco: 25 phút (từ 10% - 70%); Plus: 25 phút (từ 10% - 70%)",
+      "VF 7": "Eco: 24.1 phút (từ 10% - 70%); Plus: 28.15 phút (từ 10% - 70%); PlusCaptain: 28.15 phút (từ 10% - 70%); Plus_AWD: 28.15 phút (từ 10% - 70%); Plus_AWD_PanoramicRoof: 28.15 phút (từ 10% - 70%)",
+      "VF 8": "Eco: 31; Plus: 31",
+      "VF 8 All New": "The All New: Dưới 30 phút sạc nhanh tại trạm sạc 250kW (10-70%)",
+      "VF 9": "Eco: 35 phút (10 - 70%); Plus: 35 phút (10 - 70%); PlusCaptain: 35 phút (10 - 70%)",
+      "VF MPV 7": "30 phút từ 10% đến 70 %"
+    }
+  },
+  "max_charge_power_kw": {
+    "category": "battery",
+    "models": {
+      "VF 2": "TieuChuan: 24",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "normal_charge_hours": {
+    "category": "battery",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "5 giờ (10 - 70%)",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "range_km": {
+    "category": "battery",
+    "models": {
+      "VF 2": "TieuChuan: 210",
+      "VF 3": "210",
+      "VF 5": "Plus: 326",
+      "VF 6": "Eco: 485; Plus: 460",
+      "VF 7": "Eco: 498; Plus: Thông báo sau; PlusCaptain: Thông báo sau; Plus_AWD: 496; Plus_AWD_PanoramicRoof: 496",
+      "VF 8": "Eco: 562 (NEDC); Plus: 457 (WLTP)",
+      "VF 8 All New": "The All New: 480 - 500 km (NEDC)*** tùy điều kiện vận hành",
+      "VF 9": "Eco: 626; Plus: 602; PlusCaptain: 602",
+      "VF MPV 7": "450"
+    }
+  },
+  "brake_type": {
+    "category": "chassis",
+    "models": {
+      "VF 2": "TieuChuan: ĐĨA/TANG TRỐNG",
+      "VF 3": "Không",
+      "VF 5": "Plus: Đĩa thông gió/đĩa",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Eco: Đĩa thông gió/Đĩa thông gió; Plus: Đĩa thông gió/Đĩa thông gió",
+      "VF 8 All New": "The All New: Đĩa thông gió/Đĩa đặc",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "front_brake_type": {
+    "category": "chassis",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Phanh đĩa, calip nổi",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: Đĩa thông gió; Plus: Đĩa thông gió; PlusCaptain: Đĩa thông gió",
+      "VF MPV 7": "Đĩa thông gió"
+    }
+  },
+  "front_suspension_type": {
+    "category": "chassis",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Độc lập, MacPherson",
+      "VF 5": "Plus: Độc lập, MacPherson",
+      "VF 6": "Eco: Độc lập, MacPherson; Plus: Độc lập, MacPherson",
+      "VF 7": "Eco: Độc lập, MacPherson; Plus: Độc lập, MacPherson; PlusCaptain: Độc lập, MacPherson; Plus_AWD: Độc lập, MacPherson; Plus_AWD_PanoramicRoof: Độc lập, MacPherson",
+      "VF 8": "Eco: Treo độc lập thông minh; Plus: Treo độc lập thông minh",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: Độc lập, tay đòn kép; Plus: Độc lập, tay đòn kép; PlusCaptain: Độc lập, tay đòn kép",
+      "VF MPV 7": "MacPherson độc lập"
+    }
+  },
+  "jack_kit": {
+    "category": "chassis",
+    "models": {
+      "VF 2": "TieuChuan: PHỤ KIỆN CHÍNH HÃNG",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "rear_brake_type": {
+    "category": "chassis",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Phanh tay trống",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: Đĩa thông gió; Plus: Đĩa thông gió; PlusCaptain: Đĩa thông gió",
+      "VF MPV 7": "Đĩa"
+    }
+  },
+  "rear_suspension_type": {
+    "category": "chassis",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Phụ thuộc, trục cứng với thanh xoắn Panhard",
+      "VF 5": "Plus: Dầm xoắn",
+      "VF 6": "Eco: Thanh điều hướng đa điểm; Plus: Thanh điều hướng đa điểm",
+      "VF 7": "Eco: Thanh điều hướng đa điểm; Plus: Thanh điều hướng đa điểm; PlusCaptain: Thanh điều hướng đa điểm; Plus_AWD: Thanh điều hướng đa điểm; Plus_AWD_PanoramicRoof: Thanh điều hướng đa điểm",
+      "VF 8": "Eco: Thanh điều hướng đa điểm; Plus: Thanh điều hướng đa điểm",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: Liên kết đa điểm, giảm chấn khí nén; Plus: Liên kết đa điểm, giảm chấn khí nén; PlusCaptain: Liên kết đa điểm, giảm chấn khí nén",
+      "VF MPV 7": "Đa liên kết"
+    }
+  },
+  "stabilizer_bar": {
+    "category": "chassis",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Có",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "steering_assist_type": {
+    "category": "chassis",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Có",
+      "VF 5": "Plus: EPS/Trợ lực điện",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Eco: Trợ lực điện; Plus: Trợ lực điện",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "Trợ lực điện"
+    }
+  },
+  "suspension_type": {
+    "category": "chassis",
+    "models": {
+      "VF 2": "TieuChuan: MACPHERSON/MACPHERSON",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "The All New: MacPherson/Treo đa liên kết",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "tire_repair_kit": {
+    "category": "chassis",
+    "models": {
+      "VF 2": "TieuChuan: PHỤ KIỆN CHÍNH HÃNG",
+      "VF 3": "Có",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "account_sync": {
+    "category": "connected",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Có (Màn hình và ứng dụng VinFast)",
+      "VF 5": "Plus: Có",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Eco: Có; Plus: Có",
+      "VF 8 All New": "The All New: Có",
+      "VF 9": "Không",
+      "VF MPV 7": "Có"
+    }
+  },
+  "advanced_battery_management": {
+    "category": "connected",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "The All New: Tùy chọn",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "advanced_profile": {
+    "category": "connected",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "Có"
+    }
+  },
+  "battery_lease_management": {
+    "category": "connected",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Có (Ứng dụng VinFast)",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "battery_monitoring": {
+    "category": "connected",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "The All New: Có",
+      "VF 9": "Không",
+      "VF MPV 7": "Có"
+    }
+  },
+  "bluetooth_management": {
+    "category": "connected",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Plus: Có",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "The All New: Có",
+      "VF 9": "Không",
+      "VF MPV 7": "Có"
+    }
+  },
+  "charge_management": {
+    "category": "connected",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Eco: Có; Plus: Có",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "charge_payment": {
+    "category": "connected",
+    "models": {
+      "VF 2": "TieuChuan: CÓ",
+      "VF 3": "Không",
+      "VF 5": "Plus: Có",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "The All New: Có",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "charger_map": {
+    "category": "connected",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Plus: Có",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Eco: Có; Plus: Có",
+      "VF 8 All New": "The All New: Có",
+      "VF 9": "Không",
+      "VF MPV 7": "Có"
+    }
+  },
+  "driver_profile": {
+    "category": "connected",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "The All New: Có",
+      "VF 9": "Không",
+      "VF MPV 7": "Có"
+    }
+  },
+  "esim_management": {
+    "category": "connected",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "The All New: Có",
+      "VF 9": "Không",
+      "VF MPV 7": "Có"
+    }
+  },
+  "gps_tracking": {
+    "category": "connected",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Có (Ứng dụng VinFast)",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Eco: Không có thông tin; Plus: Không có thông tin",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "notifications": {
+    "category": "connected",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "Có"
+    }
+  },
+  "online_accessory_shop": {
+    "category": "connected",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Eco: Có; Plus: Có",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "promo_info": {
+    "category": "connected",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Plus: Có",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "remote_control": {
+    "category": "connected",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "The All New: Tùy chọn",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "remote_settings": {
+    "category": "connected",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "The All New: Tùy chọn",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "service_booking": {
+    "category": "connected",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Có (Ứng dụng VinFast)",
+      "VF 5": "Plus: Có",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Eco: Có; Plus: Có",
+      "VF 8 All New": "The All New: Có",
+      "VF 9": "Không",
+      "VF MPV 7": "Có"
+    }
+  },
+  "vehicle_monitoring": {
+    "category": "connected",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Plus: Có",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "The All New: Có",
+      "VF 9": "Không",
+      "VF MPV 7": "Cơ bản"
+    }
+  },
+  "vehicle_status_notification": {
+    "category": "connected",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Có (Ứng dụng VinFast)",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Eco: Có; Plus: Có",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "wifi_management": {
+    "category": "connected",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Plus: Có",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "The All New: Có phát Hotspot",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "epb_auto_hold": {
+    "category": "convenience",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Eco: Có; Plus: Có",
+      "VF 7": "Eco: Có; Plus: Có; PlusCaptain: Có; Plus_AWD: Có; Plus_AWD_PanoramicRoof: Có",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "Có"
+    }
+  },
+  "curb_weight_kg": {
+    "category": "dimension",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "857",
+      "VF 5": "Plus: 1.34",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Eco: 2.328 Kg; Plus: 2.520 Kg",
+      "VF 8 All New": "The All New: 1870 (kg)",
+      "VF 9": "Eco: 2.911; Plus: 7 chỗ: 2.968 6 chỗ: 2.932; PlusCaptain: 7 chỗ: 2.968 6 chỗ: 2.932",
+      "VF MPV 7": "1.875"
+    }
+  },
+  "frunk_capacity_l": {
+    "category": "dimension",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Eco: 88; Plus: 88",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: 100; Plus: 100; PlusCaptain: 100",
+      "VF MPV 7": "Không"
+    }
+  },
+  "ground_clearance_mm": {
+    "category": "dimension",
+    "models": {
+      "VF 2": "TieuChuan: 166,3",
+      "VF 3": "191",
+      "VF 5": "Plus: 160",
+      "VF 6": "Eco: 170; Plus: 170",
+      "VF 7": "Eco: 190; Plus: 190; PlusCaptain: 190; Plus_AWD: 190; Plus_AWD_PanoramicRoof: 190",
+      "VF 8": "Eco: 162; Plus: 157",
+      "VF 8 All New": "The All New: 170 (mm)",
+      "VF 9": "Eco: 174; Plus: 184; PlusCaptain: 184",
+      "VF MPV 7": "185"
+    }
+  },
+  "height_mm": {
+    "category": "dimension",
+    "models": {
+      "VF 2": "TieuChuan: 1663.2",
+      "VF 3": "1622",
+      "VF 5": "Plus: 1579",
+      "VF 6": "Eco: 1580; Plus: 1580",
+      "VF 7": "Eco: 1635.75; Plus: 1635.75; PlusCaptain: 1635.75; Plus_AWD: 1635.75; Plus_AWD_PanoramicRoof: 1635.75",
+      "VF 8": "Eco: 1667; Plus: 1667",
+      "VF 8 All New": "The All New: 1670",
+      "VF 9": "Eco: 1697; Plus: 1697; PlusCaptain: 1697",
+      "VF MPV 7": "1734"
+    }
+  },
+  "length_mm": {
+    "category": "dimension",
+    "models": {
+      "VF 2": "TieuChuan: 3090",
+      "VF 3": "3190",
+      "VF 5": "Plus: 3967",
+      "VF 6": "Eco: 4241; Plus: 4241",
+      "VF 7": "Eco: 4545; Plus: 4545; PlusCaptain: 4545; Plus_AWD: 4545; Plus_AWD_PanoramicRoof: 4545",
+      "VF 8": "Eco: 4750; Plus: 4750",
+      "VF 8 All New": "The All New: 4701",
+      "VF 9": "Eco: 5119; Plus: 5119; PlusCaptain: 5119",
+      "VF MPV 7": "4740"
+    }
+  },
+  "payload_kg": {
+    "category": "dimension",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "300",
+      "VF 5": "Plus: 325",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: 550; Plus: 7 chỗ: 550 6 chỗ: 475; PlusCaptain: 7 chỗ: 550 6 chỗ: 475",
+      "VF MPV 7": "Không"
+    }
+  },
+  "roof_load_kg": {
+    "category": "dimension",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "50",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Eco: 70; Plus: 70",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: 75; Plus: 75; PlusCaptain: 75",
+      "VF MPV 7": "Không"
+    }
+  },
+  "trunk_capacity": {
+    "category": "dimension",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "36",
+      "VF 5": "Plus: 331/1015",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Eco: 376/1.373; Plus: 376/1.373",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: 212; Plus: 212; PlusCaptain: 212",
+      "VF MPV 7": "Không"
+    }
+  },
+  "turning_diameter_m": {
+    "category": "dimension",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "8,1",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "wheelbase_mm": {
+    "category": "dimension",
+    "models": {
+      "VF 2": "TieuChuan: 2.065",
+      "VF 3": "2.075",
+      "VF 5": "Plus: 2.514",
+      "VF 6": "Eco: 2.730; Plus: 2.730",
+      "VF 7": "Eco: 2,840; Plus: 2,840; PlusCaptain: 2,840; Plus_AWD: 2,840; Plus_AWD_PanoramicRoof: 2,840",
+      "VF 8": "Eco: 2.950; Plus: 2.950",
+      "VF 8 All New": "The All New: 2840 (mm)",
+      "VF 9": "Eco: 3.149; Plus: 3.149; PlusCaptain: 3.149",
+      "VF MPV 7": "2.840"
+    }
+  },
+  "width_mm": {
+    "category": "dimension",
+    "models": {
+      "VF 2": "TieuChuan: 1496",
+      "VF 3": "1679",
+      "VF 5": "Plus: 1723",
+      "VF 6": "Eco: 1834; Plus: 1834",
+      "VF 7": "Eco: 1890; Plus: 1890; PlusCaptain: 1890; Plus_AWD: 1890; Plus_AWD_PanoramicRoof: 1890",
+      "VF 8": "Eco: 1934; Plus: 1934",
+      "VF 8 All New": "The All New: 1872",
+      "VF 9": "Eco: 2254; Plus: 2254; PlusCaptain: 2254",
+      "VF MPV 7": "1872"
+    }
+  },
+  "adaptive_headlights": {
+    "category": "exterior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Eco: Không; Plus: Có",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: Có; Plus: Có; PlusCaptain: Có",
+      "VF MPV 7": "Không"
+    }
+  },
+  "auto_headlights": {
+    "category": "exterior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Eco: Không; Plus: Có",
+      "VF 7": "Eco: Có; Plus: Có; PlusCaptain: Có; Plus_AWD: Có; Plus_AWD_PanoramicRoof: Có",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: Có; Plus: Có; PlusCaptain: Có",
+      "VF MPV 7": "Có"
+    }
+  },
+  "auto_high_beam": {
+    "category": "exterior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Eco: Không; Plus: Có",
+      "VF 7": "Eco: Không; Plus: Có; PlusCaptain: Có; Plus_AWD: Có; Plus_AWD_PanoramicRoof: Có",
+      "VF 8": "Không",
+      "VF 8 All New": "The All New: Có",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "auto_wiper": {
+    "category": "exterior",
+    "models": {
+      "VF 2": "TieuChuan: ĐIỀU CHỈNH GIÁN ĐOẠN",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Eco: Không; Plus: Có",
+      "VF 7": "Eco: Có; Plus: Có; PlusCaptain: Có; Plus_AWD: Có; Plus_AWD_PanoramicRoof: Có",
+      "VF 8": "Eco: Tự động; Plus: Tự động",
+      "VF 8 All New": "The All New: Tự động",
+      "VF 9": "Không",
+      "VF MPV 7": "Điều khiển gián đoạn"
+    }
+  },
+  "brand_light": {
+    "category": "exterior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "The All New: Có",
+      "VF 9": "Không",
+      "VF MPV 7": "LED"
+    }
+  },
+  "charge_port_door": {
+    "category": "exterior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Chỉnh cơ",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "cornering_light": {
+    "category": "exterior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Eco: Không; Plus: Có",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: Có; Plus: Có; PlusCaptain: Có",
+      "VF MPV 7": "Không"
+    }
+  },
+  "daytime_running_light": {
+    "category": "exterior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Eco: Có; Plus: Có",
+      "VF 8 All New": "The All New: Có",
+      "VF 9": "Eco: Có; Plus: Có; PlusCaptain: Có",
+      "VF MPV 7": "Có"
+    }
+  },
+  "door_handle_type": {
+    "category": "exterior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Eco: Dạng ẩn; Plus: Dạng ẩn; PlusCaptain: Dạng ẩn; Plus_AWD: Dạng ẩn; Plus_AWD_PanoramicRoof: Dạng ẩn",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: Loại ẩn; Plus: Loại ẩn; PlusCaptain: Loại ẩn",
+      "VF MPV 7": "Không"
+    }
+  },
+  "door_impact_beam": {
+    "category": "exterior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Có",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "door_opening_mechanism": {
+    "category": "exterior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: Nút bấm điện; Plus: Nút bấm điện; PlusCaptain: Nút bấm điện",
+      "VF MPV 7": "Không"
+    }
+  },
+  "drl_type": {
+    "category": "exterior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Eco: LED; Plus: LED",
+      "VF 7": "Eco: LED; Plus: LED; PlusCaptain: LED; Plus_AWD: LED; Plus_AWD_PanoramicRoof: LED",
+      "VF 8": "Eco: LED; Plus: LED",
+      "VF 8 All New": "The All New: LED",
+      "VF 9": "Eco: LED; Plus: LED; PlusCaptain: LED",
+      "VF MPV 7": "LED"
+    }
+  },
+  "exterior_mirror_type": {
+    "category": "exterior",
+    "models": {
+      "VF 2": "TieuChuan: CHỈNH CƠ",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "fog_light_front": {
+    "category": "exterior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Eco: Không; Plus: Có",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "front_brand_light": {
+    "category": "exterior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Eco: Có; Plus: Có",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "headlight_leveling": {
+    "category": "exterior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "Chỉnh cơ"
+    }
+  },
+  "headlight_type": {
+    "category": "exterior",
+    "models": {
+      "VF 2": "TieuChuan: LED",
+      "VF 3": "Halogen",
+      "VF 5": "Plus: Halogen Tự động bật/tắt",
+      "VF 6": "Eco: LED; Plus: LED",
+      "VF 7": "Eco: LED; Plus: LED; PlusCaptain: LED; Plus_AWD: LED; Plus_AWD_PanoramicRoof: LED",
+      "VF 8": "Eco: LED, Tự động bật/tắt, điều chỉnh góc chiếu thông minh; Plus: LED, Tự động bật/tắt, điều chỉnh góc chiếu thông minh",
+      "VF 8 All New": "The All New: LED tự động",
+      "VF 9": "Eco: LED Matrix; Plus: LED Matrix; PlusCaptain: LED Matrix",
+      "VF MPV 7": "LED"
+    }
+  },
+  "high_mount_brake_light": {
+    "category": "exterior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Eco: LED; Plus: LED",
+      "VF 8 All New": "The All New: LED",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "kick_sensor_trunk": {
+    "category": "exterior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: Có; Plus: Có; PlusCaptain: Có",
+      "VF MPV 7": "Không"
+    }
+  },
+  "logo_light": {
+    "category": "exterior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: Có; Plus: Có; PlusCaptain: Có",
+      "VF MPV 7": "Không"
+    }
+  },
+  "one_touch_windows": {
+    "category": "exterior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Eco: Có, lên/xuống một chạm tất cả các vị trí; Plus: Có, lên/xuống một chạm tất cả các vị trí",
+      "VF 7": "Eco: Có, lên/xuống một chạm tất cả các vị trí; Plus: Có, lên/xuống một chạm tất cả các vị trí; PlusCaptain: Có, lên/xuống một chạm tất cả các vị trí; Plus_AWD: Có, lên/xuống một chạm tất cả các vị trí; Plus_AWD_PanoramicRoof: Có, lên/xuống một chạm tất cả các vị trí",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: 4 cửa; Plus: 4 cửa; PlusCaptain: 4 cửa",
+      "VF MPV 7": "Có"
+    }
+  },
+  "position_light": {
+    "category": "exterior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Halogen",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: LED, tích hợp cùng đèn chiếu sáng ban ngày; Plus: LED, tích hợp cùng đèn chiếu sáng ban ngày; PlusCaptain: LED, tích hợp cùng đèn chiếu sáng ban ngày",
+      "VF MPV 7": "Không"
+    }
+  },
+  "power_folding_mirrors": {
+    "category": "exterior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Eco: Có; Plus: Có",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "power_suction_doors": {
+    "category": "exterior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: Có; Plus: Có; PlusCaptain: Có",
+      "VF MPV 7": "Không"
+    }
+  },
+  "power_windows": {
+    "category": "exterior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Plus: Có",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "Có"
+    }
+  },
+  "privacy_glass": {
+    "category": "exterior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Eco: Hàng ghế sau; Plus: Hàng ghế sau",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: Kính đen mờ; Plus: Kính đen mờ; PlusCaptain: Kính đen mờ",
+      "VF MPV 7": "Không"
+    }
+  },
+  "puddle_light": {
+    "category": "exterior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: Có (Chiếu hình logo); Plus: Có (Chiếu hình logo); PlusCaptain: Có (Chiếu hình logo)",
+      "VF MPV 7": "Không"
+    }
+  },
+  "rear_brand_light": {
+    "category": "exterior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Eco: Không; Plus: Có",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "rearview_mirror_type": {
+    "category": "exterior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Plus: Chỉnh điện tích hợp báo rẽ",
+      "VF 6": "Eco: Không; Plus: Có",
+      "VF 7": "Eco: Có; Plus: Có; PlusCaptain: Có; Plus_AWD: Có; Plus_AWD_PanoramicRoof: Có",
+      "VF 8": "Eco: Chỉnh điện, gập điện Tích hợp báo rẽ, sấy mặt gương; Plus: Chỉnh điện, gập điện, nhớ vị trí Tích hợp báo rẽ, sấy mặt gương, chống chói tự động, tự động chỉnh khi lùi",
+      "VF 8 All New": "The All New: Chỉnh điện, gập điện. Tích hợp báo rẽ, tự động chỉnh khi lùi, nhớ vị trí",
+      "VF 9": "Eco: Có; Plus: Có; PlusCaptain: Có",
+      "VF MPV 7": "Chỉnh điện, gập điện, tích hợp đèn báo rẽ"
+    }
+  },
+  "roof_rack": {
+    "category": "exterior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: AFS; Plus: AFS; PlusCaptain: AFS",
+      "VF MPV 7": "Phụ kiện chính hãng"
+    }
+  },
+  "side_step": {
+    "category": "exterior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: AFS; Plus: Có; PlusCaptain: Có",
+      "VF MPV 7": "Không"
+    }
+  },
+  "smart_key": {
+    "category": "exterior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Eco: Có; Plus: Có",
+      "VF 7": "Eco: Có; Plus: Có; PlusCaptain: Có; Plus_AWD: Có; Plus_AWD_PanoramicRoof: Có",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "spoiler": {
+    "category": "exterior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Tích hợp vào cốp",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "tail_light_type": {
+    "category": "exterior",
+    "models": {
+      "VF 2": "TieuChuan: HALOGEN",
+      "VF 3": "Halogen",
+      "VF 5": "Plus: Halogen",
+      "VF 6": "Eco: LED; Plus: LED",
+      "VF 7": "Eco: LED; Plus: LED; PlusCaptain: LED; Plus_AWD: LED; Plus_AWD_PanoramicRoof: LED",
+      "VF 8": "Eco: LED; Plus: LED",
+      "VF 8 All New": "The All New: LED",
+      "VF 9": "Không",
+      "VF MPV 7": "LED"
+    }
+  },
+  "tire_size": {
+    "category": "exterior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "235/50 R19"
+    }
+  },
+  "tire_wheel_size": {
+    "category": "exterior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "175/75R16",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "trunk_lid_type": {
+    "category": "exterior",
+    "models": {
+      "VF 2": "TieuChuan: CHỈNH CƠ",
+      "VF 3": "Chỉnh cơ",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Eco: Chỉnh cơ; Plus: Chỉnh điện; PlusCaptain: Chỉnh điện; Plus_AWD: Chỉnh điện; Plus_AWD_PanoramicRoof: Chỉnh điện",
+      "VF 8": "Eco: Chỉnh cơ; Plus: Chỉnh điện Đóng/mở cốp đá chân",
+      "VF 8 All New": "The All New: Chỉnh điện",
+      "VF 9": "Eco: Chỉnh điện; Plus: Chỉnh điện; PlusCaptain: Chỉnh điện",
+      "VF MPV 7": "Không"
+    }
+  },
+  "underbody_protection": {
+    "category": "exterior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Plus: Có",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Eco: Có; Plus: Có",
+      "VF 8 All New": "The All New: Có",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "welcome_light": {
+    "category": "exterior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "The All New: Có",
+      "VF 9": "Eco: Có; Plus: Có; PlusCaptain: Có",
+      "VF MPV 7": "Không"
+    }
+  },
+  "wheel_size_inch": {
+    "category": "exterior",
+    "models": {
+      "VF 2": "TieuChuan: 13",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Eco: 17 inch; Plus: 18 inch",
+      "VF 7": "Eco: 19 inch; Plus: 20 inch; PlusCaptain: 20 inch; Plus_AWD: 20 inch; Plus_AWD_PanoramicRoof: 20 inch",
+      "VF 8": "Không",
+      "VF 8 All New": "The All New: 19 Inch",
+      "VF 9": "Eco: 20 Inch; Plus: 21 Inch; PlusCaptain: 21 Inch",
+      "VF MPV 7": "Mâm hợp kim 19 inch"
+    }
+  },
+  "wheel_type": {
+    "category": "exterior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Plus: Hợp kim 17 inch",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Eco: Hợp kim 19inch; Plus: Hợp kim 20inch",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: Hợp kim; Plus: Hợp kim; PlusCaptain: Hợp kim",
+      "VF MPV 7": "Không"
+    }
+  },
+  "window_type": {
+    "category": "exterior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Eco: Chỉnh điện, lên/xuống Một chạm cả 4 cửa Hàng ghế trước: kính cách âm 2 lớp, hàng ghế sau: kính 1 lớp; Plus: Chỉnh điện, lên/xuống Một chạm cả 4 cửa Hàng ghế trước: kính cách âm 2 lớp, hàng ghế sau: kính 1 lớp",
+      "VF 8 All New": "The All New: Chỉnh điện, lên/xuống một chạm cả 4 cửa",
+      "VF 9": "Eco: Hàng ghế trước: kính cách âm 2 lớp. Hàng ghế sau: kính 1 lớp; Plus: Hàng ghế trước: kính cách âm 2 lớp. Hàng ghế sau: kính 1 lớp; PlusCaptain: Hàng ghế trước: kính cách âm 2 lớp. Hàng ghế sau: kính 1 lớp",
+      "VF MPV 7": "Không"
+    }
+  },
+  "windshield_type": {
+    "category": "exterior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Plus: Chống tia UV",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Eco: Chống tia UV; Plus: Chống tia UV",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "activity_limits": {
+    "category": "infotainment",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Eco: Có; Plus: Có; PlusCaptain: Có; Plus_AWD: Có; Plus_AWD_PanoramicRoof: Có",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: Có; Plus: Có; PlusCaptain: Có",
+      "VF MPV 7": "Không"
+    }
+  },
+  "advanced_settings": {
+    "category": "infotainment",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "The All New: Tùy chọn",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "app_store": {
+    "category": "infotainment",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "The All New: Tùy chọn",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "assistant_feedback": {
+    "category": "infotainment",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "The All New: Có",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "audio_entertainment": {
+    "category": "infotainment",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Có (Trên màn hình)",
+      "VF 5": "Plus: FM Radio, USB, Bluetooth",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "basic_entertainment": {
+    "category": "infotainment",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Eco: Có; Plus: Có",
+      "VF 8 All New": "The All New: Có (Đài FM, Bluetooth, USB)",
+      "VF 9": "Không",
+      "VF MPV 7": "Có"
+    }
+  },
+  "basic_map": {
+    "category": "infotainment",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "The All New: Tiêu chuẩn: HERE map Tuỳ chọn: Vietmap",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "basic_map_navigation": {
+    "category": "infotainment",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Eco: Có; Plus: Có",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "basic_settings": {
+    "category": "infotainment",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "The All New: Có",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "basic_widgets": {
+    "category": "infotainment",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Eco: Có; Plus: Có",
+      "VF 8 All New": "The All New: Tiêu chuẩn: Cơ bản Tùy chọn: Nâng cao",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "calendar_contact_sync": {
+    "category": "infotainment",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Có (Màn hình và ứng dụng VinFast)",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "camping_mode": {
+    "category": "infotainment",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Có",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "contact_sync": {
+    "category": "infotainment",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Có (Bluetooth và kết nối dây)",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "ev_routing": {
+    "category": "infotainment",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Eco: Có; Plus: Có",
+      "VF 8 All New": "The All New: Có",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "fota_update": {
+    "category": "infotainment",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Có (Chỉ màn hình)",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "Có"
+    }
+  },
+  "free_software": {
+    "category": "infotainment",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "The All New: Có",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "gaming": {
+    "category": "infotainment",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Eco: Có; Plus: Có",
+      "VF 7": "Eco: Có; Plus: Có; PlusCaptain: Có; Plus_AWD: Có; Plus_AWD_PanoramicRoof: Có",
+      "VF 8": "Không",
+      "VF 8 All New": "The All New: Tùy chọn",
+      "VF 9": "Eco: Có; Plus: Có; PlusCaptain: Có",
+      "VF MPV 7": "Không"
+    }
+  },
+  "general_qa": {
+    "category": "infotainment",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "The All New: Có",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "handsfree_call": {
+    "category": "infotainment",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "The All New: Có",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "internet_access": {
+    "category": "infotainment",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Có",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "maintenance_reminder": {
+    "category": "infotainment",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Có (Ứng dụng VinFast)",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "media_control": {
+    "category": "infotainment",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "The All New: Có",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "navigation": {
+    "category": "infotainment",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Có (Android Auto/Apple Carplay) *Sẽ được cập nhật phần mềm sau",
+      "VF 5": "Không",
+      "VF 6": "Eco: Có; Plus: Có",
+      "VF 7": "Eco: Có; Plus: Có; PlusCaptain: Có; Plus_AWD: Có; Plus_AWD_PanoramicRoof: Có",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: Có; Plus: Có; PlusCaptain: Có",
+      "VF MPV 7": "Không"
+    }
+  },
+  "online_entertainment": {
+    "category": "infotainment",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Eco: Có; Plus: Có",
+      "VF 7": "Eco: Có; Plus: Có; PlusCaptain: Có; Plus_AWD: Có; Plus_AWD_PanoramicRoof: Có",
+      "VF 8": "Eco: Có; Plus: Có",
+      "VF 8 All New": "The All New: Tuỳ chọn",
+      "VF 9": "Eco: Có; Plus: Có; PlusCaptain: Có",
+      "VF MPV 7": "Không"
+    }
+  },
+  "ota_update": {
+    "category": "infotainment",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Eco: Có; Plus: Có",
+      "VF 7": "Eco: Có; Plus: Có; PlusCaptain: Có; Plus_AWD: Có; Plus_AWD_PanoramicRoof: Có",
+      "VF 8": "Eco: Có; Plus: Có",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: Có; Plus: Có; PlusCaptain: Có",
+      "VF MPV 7": "Không"
+    }
+  },
+  "paid_software": {
+    "category": "infotainment",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "The All New: Có",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "phone_app": {
+    "category": "infotainment",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Eco: Có; Plus: Có",
+      "VF 7": "Eco: Có; Plus: Có; PlusCaptain: Có; Plus_AWD: Có; Plus_AWD_PanoramicRoof: Có",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: Có; Plus: Có; PlusCaptain: Có",
+      "VF MPV 7": "Không"
+    }
+  },
+  "phone_media": {
+    "category": "infotainment",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Có (Android Auto/Apple Carplay) *Sẽ được cập nhật phần mềm sau",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "quick_control": {
+    "category": "infotainment",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "The All New: Có",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "self_diagnosis": {
+    "category": "infotainment",
+    "models": {
+      "VF 2": "TieuChuan: CÓ",
+      "VF 3": "Không",
+      "VF 5": "Plus: Có",
+      "VF 6": "Eco: Có; Plus: Có",
+      "VF 7": "Eco: Có; Plus: Có; PlusCaptain: Có; Plus_AWD: Có; Plus_AWD_PanoramicRoof: Có",
+      "VF 8": "Không",
+      "VF 8 All New": "The All New: Có",
+      "VF 9": "Eco: Có; Plus: Có; PlusCaptain: Có",
+      "VF MPV 7": "Có"
+    }
+  },
+  "small_talk": {
+    "category": "infotainment",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "The All New: Có",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "smartphone_integration": {
+    "category": "infotainment",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Plus: Có",
+      "VF 6": "Eco: Có; Plus: Có",
+      "VF 7": "Eco: Có; Plus: Có; PlusCaptain: Có; Plus_AWD: Có; Plus_AWD_PanoramicRoof: Có",
+      "VF 8": "Eco: Có; Plus: Có",
+      "VF 8 All New": "The All New: Có",
+      "VF 9": "Không",
+      "VF MPV 7": "Có"
+    }
+  },
+  "sota_update": {
+    "category": "infotainment",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Có (Chỉ màn hình)",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "special_operation_modes": {
+    "category": "infotainment",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Eco: Có; Plus: Có",
+      "VF 7": "Eco: Có; Plus: Có; PlusCaptain: Có; Plus_AWD: Có; Plus_AWD_PanoramicRoof: Có",
+      "VF 8": "Không",
+      "VF 8 All New": "The All New: Tiêu chuẩn: Giới hạn Tùy chọn: Đầy đủ tính năng",
+      "VF 9": "Eco: Có; Plus: Có; PlusCaptain: Có",
+      "VF MPV 7": "Chế độ Cắm trại"
+    }
+  },
+  "usage_guidance": {
+    "category": "infotainment",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "The All New: Có",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "user_manual": {
+    "category": "infotainment",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "The All New: Có",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "vehicle_control": {
+    "category": "infotainment",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Có (Trên màn hình)",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "vehicle_modes": {
+    "category": "infotainment",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Eco: Có; Plus: Có",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "vehicle_status_assist": {
+    "category": "infotainment",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Eco: Có; Plus: Có",
+      "VF 8 All New": "The All New: Có",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "virtual_assistant": {
+    "category": "infotainment",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Eco: Có; Plus: Có",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "The All New: Tùy chọn",
+      "VF 9": "Không",
+      "VF MPV 7": "Có"
+    }
+  },
+  "voice_control": {
+    "category": "infotainment",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Plus: Có",
+      "VF 6": "Không",
+      "VF 7": "Eco: Có; Plus: Có; PlusCaptain: Có; Plus_AWD: Có; Plus_AWD_PanoramicRoof: Có",
+      "VF 8": "Eco: Có; Plus: Có",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: Có; Plus: Có; PlusCaptain: Có",
+      "VF MPV 7": "Không"
+    }
+  },
+  "voice_greeting": {
+    "category": "infotainment",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Eco: Có; Plus: Có",
+      "VF 8 All New": "The All New: Có",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "voice_navigation": {
+    "category": "infotainment",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Eco: Có; Plus: Có",
+      "VF 8 All New": "The All New: Có",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "voice_search": {
+    "category": "infotainment",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Plus: Có",
+      "VF 6": "Không",
+      "VF 7": "Eco: Có; Plus: Có; PlusCaptain: Có; Plus_AWD: Có; Plus_AWD_PanoramicRoof: Có",
+      "VF 8": "Eco: Có; Plus: Có",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: Có; Plus: Có; PlusCaptain: Có",
+      "VF MPV 7": "Không"
+    }
+  },
+  "web_browser": {
+    "category": "infotainment",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Eco: Có; Plus: Có",
+      "VF 7": "Eco: Có; Plus: Có; PlusCaptain: Có; Plus_AWD: Có; Plus_AWD_PanoramicRoof: Có",
+      "VF 8": "Eco: Có; Plus: Có",
+      "VF 8 All New": "The All New: Có",
+      "VF 9": "Eco: Có; Plus: Có; PlusCaptain: Có",
+      "VF MPV 7": "Có"
+    }
+  },
+  "12v_outlet": {
+    "category": "interior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "Hàng ghế thứ nhất: 1 cổng 12 V. Cốp sau: 1 cổng 12 V"
+    }
+  },
+  "12v_trunk_outlet": {
+    "category": "interior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: Có; Plus: Có; PlusCaptain: Có",
+      "VF MPV 7": "Không"
+    }
+  },
+  "ac_power_outlet": {
+    "category": "interior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: Không; Plus: 230 V/150 W; PlusCaptain: 230 V/150 W",
+      "VF MPV 7": "Không"
+    }
+  },
+  "ac_type": {
+    "category": "interior",
+    "models": {
+      "VF 2": "TieuChuan: MÁY LẠNH, CHỈNH CƠ",
+      "VF 3": "Chỉnh cơ, 1 vùng",
+      "VF 5": "Plus: 1 vùng",
+      "VF 6": "Eco: Tự động 1 vùng; Plus: Tự động, 2 vùng",
+      "VF 7": "Eco: Tự động, 2 vùng; Plus: Tự động, 2 vùng; PlusCaptain: Tự động, 2 vùng; Plus_AWD: Tự động, 2 vùng; Plus_AWD_PanoramicRoof: Tự động, 2 vùng",
+      "VF 8": "Eco: Tự động, 2 vùng Tích hợp chức năng kiểm soát chất lượng; Plus: Tự động, 2 vùng Tích hợp chức năng kiểm soát chất lượng, chức năng ion hóa không khí",
+      "VF 8 All New": "The All New: Tự động, 2 vùng. Tích hợp chức năng kiểm soát chất lượng, ion hóa không khí",
+      "VF 9": "Eco: Tự động, 3 vùng; Plus: Tự động, 3 vùng; PlusCaptain: Tự động, 3 vùng",
+      "VF MPV 7": "Tự động, 1 vùng"
+    }
+  },
+  "air_ionizer": {
+    "category": "interior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Eco: Không; Plus: Có",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: Có; Plus: Có; PlusCaptain: Có",
+      "VF MPV 7": "Không"
+    }
+  },
+  "air_quality_control": {
+    "category": "interior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Eco: Không; Plus: Có",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: Có; Plus: Có; PlusCaptain: Có",
+      "VF MPV 7": "Không"
+    }
+  },
+  "ambient_lighting": {
+    "category": "interior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Eco: Không; Plus: Đa màu",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: Có (Đa màu); Plus: Có (Đa màu); PlusCaptain: Có (Đa màu)",
+      "VF MPV 7": "Không"
+    }
+  },
+  "amplifier": {
+    "category": "interior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: Không; Plus: Có; PlusCaptain: Có",
+      "VF MPV 7": "Không"
+    }
+  },
+  "bluetooth_connectivity": {
+    "category": "interior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Có",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Eco: Có; Plus: Có",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "cabin_air_filter": {
+    "category": "interior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Lọc bụi",
+      "VF 5": "Plus: PM2.5",
+      "VF 6": "Eco: Không; Plus: Có",
+      "VF 7": "Eco: Có; Plus: Có; PlusCaptain: Có; Plus_AWD: Có; Plus_AWD_PanoramicRoof: Có",
+      "VF 8": "Eco: Combi 1.0; Plus: Combi 1.0",
+      "VF 8 All New": "The All New: Combi 1.0",
+      "VF 9": "Eco: Combi 1.0; Plus: Combi 1.0; PlusCaptain: Combi 1.0",
+      "VF MPV 7": "Lọc bụi mịn PM 2.5"
+    }
+  },
+  "cabin_lights": {
+    "category": "interior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "Có"
+    }
+  },
+  "cupholders": {
+    "category": "interior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "2",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "defroster": {
+    "category": "interior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Có",
+      "VF 5": "Plus: Có",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "display_inch": {
+    "category": "interior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "10 inch",
+      "VF 5": "Plus: 8-inch",
+      "VF 6": "Eco: 12,9 inch; Plus: 12,9 inch",
+      "VF 7": "Eco: 12,9 inch; Plus: 12,9 inch; PlusCaptain: 12,9 inch; Plus_AWD: 12,9 inch; Plus_AWD_PanoramicRoof: 12,9 inch",
+      "VF 8": "Eco: 15,6 Inch; Plus: 15,6 Inch",
+      "VF 8 All New": "The All New: 12,9 Inch",
+      "VF 9": "Eco: 15,6 Inch; Plus: 15,6 Inch; PlusCaptain: 15,6 Inch",
+      "VF MPV 7": "10,1 inch"
+    }
+  },
+  "dome_light": {
+    "category": "interior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Dạng bóng",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "driver_display_inch": {
+    "category": "interior",
+    "models": {
+      "VF 2": "TieuChuan: 7 INCH",
+      "VF 3": "Không",
+      "VF 5": "Plus: 7-inch",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "The All New: Có",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "driver_headrest": {
+    "category": "interior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Có - tích hợp",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "driver_seat_type": {
+    "category": "interior",
+    "models": {
+      "VF 2": "TieuChuan: CHỈNH CƠ 4 HƯỚNG",
+      "VF 3": "Chỉnh cơ 4 hướng",
+      "VF 5": "Plus: Chỉnh cơ 6 hướng",
+      "VF 6": "Eco: Chỉnh cơ 6 hướng; Plus: Chỉnh điện 8 hướng",
+      "VF 7": "Eco: Chỉnh điện 8 hướng; Plus: Chỉnh điện 8 hướng; PlusCaptain: Chỉnh điện 8 hướng; Plus_AWD: Chỉnh điện 8 hướng; Plus_AWD_PanoramicRoof: Chỉnh điện 8 hướng",
+      "VF 8": "Eco: Chỉnh điện 6 hướng; Plus: Chỉnh điện 12 hướng, nhớ vị trí Tích hợp thông gió, sưởi",
+      "VF 8 All New": "The All New: Chỉnh điện 6 hướng, nhớ vị trí",
+      "VF 9": "Eco: Chỉnh điện 8 hướng; Plus: Chỉnh điện 12 hướng; PlusCaptain: Chỉnh điện 12 hướng",
+      "VF MPV 7": "Chỉnh cơ 6 hướng"
+    }
+  },
+  "easy_access": {
+    "category": "interior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Có",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "entertainment_function": {
+    "category": "interior",
+    "models": {
+      "VF 2": "TieuChuan: FM",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "frunk_light": {
+    "category": "interior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: Có; Plus: Có; PlusCaptain: Có",
+      "VF MPV 7": "Không"
+    }
+  },
+  "glovebox_light": {
+    "category": "interior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: Có; Plus: Có; PlusCaptain: Có",
+      "VF MPV 7": "Không"
+    }
+  },
+  "head_up_display": {
+    "category": "interior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Eco: Không; Plus: Có",
+      "VF 7": "Eco: OPT; Plus: Có; PlusCaptain: Có; Plus_AWD: Có; Plus_AWD_PanoramicRoof: Có",
+      "VF 8": "Eco: Có; Plus: Có",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: Có; Plus: Có; PlusCaptain: Có",
+      "VF MPV 7": "Không"
+    }
+  },
+  "heated_steering_wheel": {
+    "category": "interior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: Có; Plus: Có; PlusCaptain: Có",
+      "VF MPV 7": "Không"
+    }
+  },
+  "interior_mirror_type": {
+    "category": "interior",
+    "models": {
+      "VF 2": "TieuChuan: CHẾ ĐỘ NGÀY & ĐÊM",
+      "VF 3": "Ngày và đêm (loại thường)",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Eco: Chế độ ngày/đêm; Plus: Chống chói tự động; PlusCaptain: Chống chói tự động; Plus_AWD: Chống chói tự động; Plus_AWD_PanoramicRoof: Chống chói tự động",
+      "VF 8": "Eco: Chống chói tự động; Plus: Chống chói tự động",
+      "VF 8 All New": "The All New: Chống chói tự động",
+      "VF 9": "Eco: Chống chói tự động; Plus: Chống chói tự động; PlusCaptain: Chống chói tự động",
+      "VF MPV 7": "Điều chỉnh chế độ ngày/đêm ."
+    }
+  },
+  "leatherette_seats": {
+    "category": "interior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Eco: Có; Plus: Có",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "parking_brake": {
+    "category": "interior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Kích hoạt phanh tay bằng nút P ở cần gạt vô lăng",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "The All New: Điện tử tích hợp giữ phanh tự động",
+      "VF 9": "Eco: Điện tử; Plus: Điện tử; PlusCaptain: Điện tử",
+      "VF MPV 7": "Không"
+    }
+  },
+  "passenger_headrest": {
+    "category": "interior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Có - tích hợp",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "passenger_seat_type": {
+    "category": "interior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Chỉnh cơ 4 hướng",
+      "VF 5": "Plus: Chỉnh cơ 4 hướng",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Eco: Chỉnh điện 6 hướng; Plus: Chỉnh điện 10 hướng Tích hợp thông gió, sưởi",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: Chỉnh điện 6 hướng; Plus: Chỉnh điện 10 hướng; PlusCaptain: Chỉnh điện 10 hướng",
+      "VF MPV 7": "Chỉnh cơ 4 hướng"
+    }
+  },
+  "rear_ac_vents": {
+    "category": "interior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Eco: Có; Plus: Có; PlusCaptain: Có; Plus_AWD: Có; Plus_AWD_PanoramicRoof: Có",
+      "VF 8": "Eco: Có; Plus: Có",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: Có; Plus: Có; PlusCaptain: Có",
+      "VF MPV 7": "Có"
+    }
+  },
+  "rear_console_box": {
+    "category": "interior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: Không; Plus: 6 chỗ: Có, tích hợp sạc không dây 7 chỗ: Không; PlusCaptain: 6 chỗ: Có, tích hợp sạc không dây 7 chỗ: Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "rear_defroster": {
+    "category": "interior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "Có"
+    }
+  },
+  "rear_display_inch": {
+    "category": "interior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: Không; Plus: 8 Inch; PlusCaptain: 8 Inch",
+      "VF MPV 7": "Không"
+    }
+  },
+  "row2_ac_vents": {
+    "category": "interior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: Có; Plus: Có; PlusCaptain: Có",
+      "VF MPV 7": "Không"
+    }
+  },
+  "row2_headrest": {
+    "category": "interior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Có - cố định",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "row3_fold": {
+    "category": "interior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "Có"
+    }
+  },
+  "row3_headrest": {
+    "category": "interior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "Có"
+    }
+  },
+  "seat_material_type": {
+    "category": "interior",
+    "models": {
+      "VF 2": "TieuChuan: NỈ",
+      "VF 3": "Nỉ",
+      "VF 5": "Plus: Giả da",
+      "VF 6": "Không",
+      "VF 7": "Eco: Da nhân tạo; Plus: Da nhân tạo cao cấp; PlusCaptain: Da nhân tạo cao cấp; Plus_AWD: Da nhân tạo cao cấp; Plus_AWD_PanoramicRoof: Da nhân tạo cao cấp",
+      "VF 8": "Eco: Giả da; Plus: Da nhân tạo",
+      "VF 8 All New": "The All New: Bọc da nhân tạo",
+      "VF 9": "Eco: Da nhân tạo; Plus: Da nhân tạo cao cấp; PlusCaptain: Da nhân tạo cao cấp",
+      "VF MPV 7": "Da nhân tạo"
+    }
+  },
+  "seats": {
+    "category": "interior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "4",
+      "VF 5": "Plus: 5",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Eco: 5; Plus: 5",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: 7; Plus: 7 hoặc 6; PlusCaptain: 7 hoặc 6",
+      "VF MPV 7": "7"
+    }
+  },
+  "second_row_adjust": {
+    "category": "interior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "The All New: Ngả ghế; tỉ lệ gập 60:40",
+      "VF 9": "Eco: Chỉnh điện 4 hướng; Plus: Chỉnh điện 8 hướng; PlusCaptain: Chỉnh điện 8 hướng",
+      "VF MPV 7": "Điều chỉnh ngả lưng ghế và trượt tiến/lùi"
+    }
+  },
+  "second_row_fold": {
+    "category": "interior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Gập hoàn toàn",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: 40:20:40, hỗ trợ dễ vào hàng 3; Plus: 40:20:40, hỗ trợ dễ vào hàng 3; PlusCaptain: 40:20:40, hỗ trợ dễ vào hàng 3",
+      "VF MPV 7": "60:40"
+    }
+  },
+  "second_row_heating": {
+    "category": "interior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: Không; Plus: Có; PlusCaptain: Có",
+      "VF MPV 7": "Không"
+    }
+  },
+  "second_row_massage": {
+    "category": "interior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: Không; Plus: Có; PlusCaptain: Có",
+      "VF MPV 7": "Không"
+    }
+  },
+  "second_row_seat_type": {
+    "category": "interior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Plus: Có thể gập theo tỷ lệ 60:40",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Eco: Chỉnh cơ 2 hướng, tỷ lệ gập 60:40; Plus: Chỉnh cơ 2 hướng, tỷ lệ gập 60:40 Tích hợp thông gió, sưởi",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "second_row_ventilation": {
+    "category": "interior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: Không; Plus: Có; PlusCaptain: Có",
+      "VF MPV 7": "Không"
+    }
+  },
+  "speaker_system": {
+    "category": "interior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "The All New: 8 loa",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "speakers": {
+    "category": "interior",
+    "models": {
+      "VF 2": "TieuChuan: 2 LOA",
+      "VF 3": "2",
+      "VF 5": "Plus: 4",
+      "VF 6": "Eco: 6; Plus: 6",
+      "VF 7": "Eco: 6; Plus: 8; PlusCaptain: 8; Plus_AWD: 8; Plus_AWD_PanoramicRoof: 8",
+      "VF 8": "Eco: 8; Plus: 10",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: 11; Plus: 13; PlusCaptain: 13",
+      "VF MPV 7": "4 loa"
+    }
+  },
+  "steering_wheel_adjust": {
+    "category": "interior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: Chỉnh cơ 4 hướng; Plus: Chỉnh điện 4 hướng; PlusCaptain: Chỉnh điện 4 hướng",
+      "VF MPV 7": "Không"
+    }
+  },
+  "steering_wheel_memory": {
+    "category": "interior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: Không; Plus: Có; PlusCaptain: Có",
+      "VF MPV 7": "Không"
+    }
+  },
+  "steering_wheel_type": {
+    "category": "interior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Eco: Bọc da, dạng D-cut Chỉnh cơ 4 hướng Tích hợp nút bấm điều khiển tính năng giải trí và ADAS; Plus: Bọc da, dạng D-cut Chỉnh điện 4 hướng Tích hợp sưởi, nút bấm điều khiển tính năng giải trí và ADAS",
+      "VF 8 All New": "The All New: Bọc da nhân tạo. Chỉnh cơ 4 hướng. Tích hợp nút bấm điều khiển tính năng giải trí và ADAS",
+      "VF 9": "Eco: Dạng D-cut; Plus: Dạng D-cut; PlusCaptain: Dạng D-cut",
+      "VF MPV 7": "Chỉnh cơ 4 hướng"
+    }
+  },
+  "steering_wheel_wrap": {
+    "category": "interior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: Da thân thiện môi trường; Plus: Da thân thiện môi trường; PlusCaptain: Da thân thiện môi trường",
+      "VF MPV 7": "Da nhân tạo"
+    }
+  },
+  "subwoofer": {
+    "category": "interior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Eco: Không; Plus: 1",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: 0; Plus: 1; PlusCaptain: 1",
+      "VF MPV 7": "Không"
+    }
+  },
+  "sun_visor_mirror": {
+    "category": "interior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Có (Loại không gương)",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: Ghế lái và ghế phụ, thêm đèn; Plus: Ghế lái và ghế phụ, thêm đèn; PlusCaptain: Ghế lái và ghế phụ, thêm đèn",
+      "VF MPV 7": "Không"
+    }
+  },
+  "sunroof_type": {
+    "category": "interior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Eco: Không; Plus: Toàn cảnh, chỉnh điện",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "supported_languages": {
+    "category": "interior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Tiếng Việt/Tiếng Anh",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "tool_kit": {
+    "category": "interior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Có (Túi vải)",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "tow_hook": {
+    "category": "interior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Có (Có thể tách rời)",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "trunk_light": {
+    "category": "interior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: Có; Plus: Có; PlusCaptain: Có",
+      "VF MPV 7": "Có"
+    }
+  },
+  "usb_a_front": {
+    "category": "interior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: 2; Plus: 2; PlusCaptain: 2",
+      "VF MPV 7": "Không"
+    }
+  },
+  "usb_a_row2": {
+    "category": "interior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Có, 1 cổng 1,5 A",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: 2; Plus: 7 chỗ: 2 | 6 chỗ: 4; PlusCaptain: 7 chỗ: 2 | 6 chỗ: 4",
+      "VF MPV 7": "Không"
+    }
+  },
+  "usb_a_row3": {
+    "category": "interior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: 2; Plus: 2; PlusCaptain: 2",
+      "VF MPV 7": "Không"
+    }
+  },
+  "usb_port_type_a": {
+    "category": "interior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Eco: Hàng ghế trước: 2 Hàng ghế thứ hai: 2; Plus: Hàng ghế trước: 2 Hàng ghế thứ hai: 2",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "usb_port_type_c": {
+    "category": "interior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Eco: Có, 90 W; Plus: Có, 90 W",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: Có; Plus: Có; PlusCaptain: Có",
+      "VF MPV 7": "Không"
+    }
+  },
+  "usb_ports": {
+    "category": "interior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Plus: Hàng ghế trước: 1 (Cổng dữ liệu và sạc 7,5W) Hàng ghế thứ hai: 1 (Cổng sạc 18W)",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "The All New: Hàng trước: 1 x Type-A & 1 x Type-C Hàng ghế 2: 2 x Type-C",
+      "VF 9": "Không",
+      "VF MPV 7": "Hàng ghế thứ nhất: 1 cồng USB-A & 1 cổng USB-C. Hàng ghế thứ hai: 1 cồng USB-A & 1 cổng USB-C"
+    }
+  },
+  "vip_seat": {
+    "category": "interior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Plus: Có, lựa chọn từ đầu khi mua xe; PlusCaptain: Có, lựa chọn từ đầu khi mua xe",
+      "VF MPV 7": "Không"
+    }
+  },
+  "vip_seat_heating": {
+    "category": "interior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: Không; Plus: Có; PlusCaptain: Có",
+      "VF MPV 7": "Không"
+    }
+  },
+  "vip_seat_massage": {
+    "category": "interior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: Không; Plus: Có; PlusCaptain: Có",
+      "VF MPV 7": "Không"
+    }
+  },
+  "vip_seat_power": {
+    "category": "interior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: Không; Plus: 6 chỗ: Chỉnh điện 8 hướng 7 chỗ: Không; PlusCaptain: 6 chỗ: Chỉnh điện 8 hướng 7 chỗ: Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "vip_seat_ventilation": {
+    "category": "interior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: Không; Plus: Có; PlusCaptain: Có",
+      "VF MPV 7": "Không"
+    }
+  },
+  "wifi_connectivity": {
+    "category": "interior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Có (Chỉ dùng cập nhật phần mềm từ xa)",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Eco: Có; Plus: Có",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "wireless_charging": {
+    "category": "interior",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Eco: Không; Plus: Có; PlusCaptain: Có; Plus_AWD: Có; Plus_AWD_PanoramicRoof: Có",
+      "VF 8": "Eco: Không; Plus: Có",
+      "VF 8 All New": "The All New: Có",
+      "VF 9": "Eco: Có; Plus: Có; PlusCaptain: Có",
+      "VF MPV 7": "Không"
+    }
+  },
+  "acceleration_0_100_s": {
+    "category": "powertrain",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "19,3",
+      "VF 5": "Plus: 12",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Eco: 11,8; Plus: 5,58",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "acceleration_0_50_s": {
+    "category": "powertrain",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "5,3",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "battery_heater": {
+    "category": "powertrain",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Eco: Có; Plus: Có",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "brake_pedal_start": {
+    "category": "powertrain",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Có",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "creep_mode": {
+    "category": "powertrain",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Có (Lăn/Bò)",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: Có; Plus: Có; PlusCaptain: Có",
+      "VF MPV 7": "Không"
+    }
+  },
+  "drive_modes": {
+    "category": "powertrain",
+    "models": {
+      "VF 2": "TieuChuan: ECO/NORMAL",
+      "VF 3": "Có (Eco/Normal)",
+      "VF 5": "Plus: Eco/Sport",
+      "VF 6": "Eco: Eco/ Normal/ Sport; Plus: Eco/ Normal/ Sport",
+      "VF 7": "Eco: Eco/ Normal/ Sport; Plus: Eco/ Normal/ Sport; PlusCaptain: Eco/ Normal/ Sport; Plus_AWD: Eco/ Normal/ Sport; Plus_AWD_PanoramicRoof: Eco/ Normal/ Sport",
+      "VF 8": "Eco: Eco/Normal/Sport; Plus: Eco/Normal/Sport",
+      "VF 8 All New": "The All New: Tiết kiệm/ Thường/ Thể thao",
+      "VF 9": "Eco: Eco/Normal/Sport; Plus: Eco/Normal/Sport; PlusCaptain: Eco/Normal/Sport",
+      "VF MPV 7": "Eco/Normal/Sport"
+    }
+  },
+  "drivetrain": {
+    "category": "powertrain",
+    "models": {
+      "VF 2": "TieuChuan: RWD/CẦU SAU",
+      "VF 3": "RWD",
+      "VF 5": "Plus: FWD/Cầu trước",
+      "VF 6": "Eco: Cầu trước (FWD); Plus: Cầu trước (FWD)",
+      "VF 7": "Eco: Cầu trước (FWD); Plus: Cầu trước (FWD); PlusCaptain: Cầu trước (FWD); Plus_AWD: Hai cầu (AWD); Plus_AWD_PanoramicRoof: Hai cầu (AWD)",
+      "VF 8": "Eco: FWD/Cầu trước; Plus: AWD/ 2 cầu toàn thời gian",
+      "VF 8 All New": "The All New: Cầu trước (FWD)",
+      "VF 9": "Eco: AWD/2 cầu toàn thời gian; Plus: AWD/2 cầu toàn thời gian; PlusCaptain: AWD/2 cầu toàn thời gian",
+      "VF MPV 7": "Cầu trước (FWD)"
+    }
+  },
+  "energy_consumption_kwh_100km": {
+    "category": "powertrain",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "9 kWh/100 km (NEDC)",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "gear_shift_type": {
+    "category": "powertrain",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Tích hợp vào cần lái",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: Nút bấm; Plus: Nút bấm; PlusCaptain: Nút bấm",
+      "VF MPV 7": "Có"
+    }
+  },
+  "home_charger_type": {
+    "category": "powertrain",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Eco: Phụ kiện (AFS 7,4kW); Plus: Phụ kiện (AFS 7,4kW)",
+      "VF 7": "Eco: Phụ kiện (AFS 7,4 kW); Plus: Phụ kiện (AFS 7,4 kW); PlusCaptain: Phụ kiện (AFS 7,4 kW); Plus_AWD: Phụ kiện (AFS 7,4 kW); Plus_AWD_PanoramicRoof: Phụ kiện (AFS 7,4 kW)",
+      "VF 8": "Không",
+      "VF 8 All New": "The All New: Phụ kiện chính hãng: 7.4 kW",
+      "VF 9": "Không",
+      "VF MPV 7": "7,4 kW (Phụ kiện chính hãng)"
+    }
+  },
+  "mobile_charger_type": {
+    "category": "powertrain",
+    "models": {
+      "VF 2": "TieuChuan: PHỤ KIỆN CHÍNH HÃNG SẠC DC 3 kW",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Eco: Phụ kiện (AFS 3,5kW); Plus: Phụ kiện (AFS 3,5kW)",
+      "VF 7": "Eco: Phụ kiện (AFS 3,5 kW); Plus: Phụ kiện (AFS 3,5 kW); PlusCaptain: Phụ kiện (AFS 3,5 kW); Plus_AWD: Phụ kiện (AFS 3,5 kW); Plus_AWD_PanoramicRoof: Phụ kiện (AFS 3,5 kW)",
+      "VF 8": "Không",
+      "VF 8 All New": "The All New: Phụ kiện chính hãng: 3.5 kW",
+      "VF 9": "Không",
+      "VF MPV 7": "3,5 kW (Phụ kiện chính hãng)"
+    }
+  },
+  "motor_configuration": {
+    "category": "powertrain",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Plus: 1 Motor điện",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: 2 motor 150 kW; Plus: 2 motor 150 kW; PlusCaptain: 2 motor 150 kW",
+      "VF MPV 7": "Không"
+    }
+  },
+  "power_kw": {
+    "category": "powertrain",
+    "models": {
+      "VF 2": "TieuChuan: 30",
+      "VF 3": "32",
+      "VF 5": "Plus: 100/134",
+      "VF 6": "Eco: 130; Plus: 150",
+      "VF 7": "Eco: 130; Plus: 150; PlusCaptain: 150; Plus_AWD: 260; Plus_AWD_PanoramicRoof: 260",
+      "VF 8": "Eco: 150/201; Plus: 300/402",
+      "VF 8 All New": "The All New: 170 (kW)",
+      "VF 9": "Eco: 402/300; Plus: 402/300; PlusCaptain: 402/300",
+      "VF MPV 7": "150"
+    }
+  },
+  "regenerative_braking": {
+    "category": "powertrain",
+    "models": {
+      "VF 2": "TieuChuan: CÓ",
+      "VF 3": "Có",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "The All New: Có",
+      "VF 9": "Eco: Có (Tắt, Thấp, Trung bình, Cao); Plus: Có (Tắt, Thấp, Trung bình, Cao); PlusCaptain: Có (Tắt, Thấp, Trung bình, Cao)",
+      "VF MPV 7": "Có"
+    }
+  },
+  "top_speed_kmh": {
+    "category": "powertrain",
+    "models": {
+      "VF 2": "TieuChuan: 80",
+      "VF 3": "100 km/h khi dung lượng pin >50%, với mọi điều kiện thời tiết",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: 200; Plus: 200; PlusCaptain: 200",
+      "VF MPV 7": "Không"
+    }
+  },
+  "torque_nm": {
+    "category": "powertrain",
+    "models": {
+      "VF 2": "TieuChuan: 65",
+      "VF 3": "110",
+      "VF 5": "Plus: 135",
+      "VF 6": "Eco: 250; Plus: 310",
+      "VF 7": "Eco: 250; Plus: 310; PlusCaptain: 310; Plus_AWD: 500; Plus_AWD_PanoramicRoof: 500",
+      "VF 8": "Eco: 310; Plus: 620",
+      "VF 8 All New": "The All New: 330 (Nm)",
+      "VF 9": "Eco: 620; Plus: 620; PlusCaptain: 620",
+      "VF MPV 7": "280"
+    }
+  },
+  "abs": {
+    "category": "safety",
+    "models": {
+      "VF 2": "TieuChuan: CÓ",
+      "VF 3": "Có",
+      "VF 5": "Plus: Có",
+      "VF 6": "Eco: Có; Plus: Có",
+      "VF 7": "Eco: Có; Plus: Có; PlusCaptain: Có; Plus_AWD: Có; Plus_AWD_PanoramicRoof: Có",
+      "VF 8": "Eco: Có; Plus: Có",
+      "VF 8 All New": "The All New: Có",
+      "VF 9": "Eco: Có; Plus: Có; PlusCaptain: Có",
+      "VF MPV 7": "Có"
+    }
+  },
+  "airbags": {
+    "category": "safety",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "1",
+      "VF 5": "Plus: 6",
+      "VF 6": "Eco: 4; Plus: 7",
+      "VF 7": "Eco: 6; Plus: 8; PlusCaptain: 8; Plus_AWD: 8; Plus_AWD_PanoramicRoof: 8",
+      "VF 8": "Eco: 10; Plus: 11",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: 11; Plus: 11; PlusCaptain: 11",
+      "VF MPV 7": "Không"
+    }
+  },
+  "auto_door_lock": {
+    "category": "safety",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Có (5 km/h)",
+      "VF 5": "Plus: Có",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Eco: Có; Plus: Có",
+      "VF 8 All New": "The All New: Có",
+      "VF 9": "Không",
+      "VF MPV 7": "Có"
+    }
+  },
+  "brake_assist": {
+    "category": "safety",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Có",
+      "VF 5": "Plus: Có",
+      "VF 6": "Eco: Có; Plus: Có",
+      "VF 7": "Eco: Có; Plus: Có; PlusCaptain: Có; Plus_AWD: Có; Plus_AWD_PanoramicRoof: Có",
+      "VF 8": "Eco: Có; Plus: Có",
+      "VF 8 All New": "The All New: Có",
+      "VF 9": "Eco: Có; Plus: Có; PlusCaptain: Có",
+      "VF MPV 7": "Có"
+    }
+  },
+  "center_airbags": {
+    "category": "safety",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Eco: 0; Plus: 1",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: 1; Plus: 1; PlusCaptain: 1",
+      "VF MPV 7": "Không"
+    }
+  },
+  "child_lock": {
+    "category": "safety",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "Có"
+    }
+  },
+  "curtain_airbags": {
+    "category": "safety",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Plus: 2",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Eco: 2; Plus: 2",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: 2; Plus: 2; PlusCaptain: 2",
+      "VF MPV 7": "Không"
+    }
+  },
+  "driver_airbag": {
+    "category": "safety",
+    "models": {
+      "VF 2": "TieuChuan: CÓ",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "ebd": {
+    "category": "safety",
+    "models": {
+      "VF 2": "TieuChuan: CÓ",
+      "VF 3": "Không",
+      "VF 5": "Plus: Có",
+      "VF 6": "Eco: Có; Plus: Có",
+      "VF 7": "Eco: Có; Plus: Có; PlusCaptain: Có; Plus_AWD: Có; Plus_AWD_PanoramicRoof: Có",
+      "VF 8": "Eco: Có; Plus: Có",
+      "VF 8 All New": "The All New: Có",
+      "VF 9": "Eco: Có; Plus: Có; PlusCaptain: Có",
+      "VF MPV 7": "Có"
+    }
+  },
+  "emergency_call": {
+    "category": "safety",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: Có; Plus: Có; PlusCaptain: Có",
+      "VF MPV 7": "Không"
+    }
+  },
+  "emergency_stop_signal": {
+    "category": "safety",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Plus: Có",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Eco: Có; Plus: Có",
+      "VF 8 All New": "The All New: Có",
+      "VF 9": "Eco: Có; Plus: Có; PlusCaptain: Có",
+      "VF MPV 7": "Có"
+    }
+  },
+  "esc": {
+    "category": "safety",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Plus: Có",
+      "VF 6": "Eco: Có; Plus: Có",
+      "VF 7": "Eco: Có; Plus: Có; PlusCaptain: Có; Plus_AWD: Có; Plus_AWD_PanoramicRoof: Có",
+      "VF 8": "Eco: Có; Plus: Có",
+      "VF 8 All New": "The All New: Có",
+      "VF 9": "Eco: Có; Plus: Có; PlusCaptain: Có",
+      "VF MPV 7": "Có"
+    }
+  },
+  "front_airbags": {
+    "category": "safety",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Túi khí trước lái",
+      "VF 5": "Plus: 2",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Eco: 2; Plus: 2",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: 2; Plus: 2; PlusCaptain: 2",
+      "VF MPV 7": "2"
+    }
+  },
+  "hsa": {
+    "category": "safety",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Có",
+      "VF 5": "Plus: Có",
+      "VF 6": "Eco: Có; Plus: Có",
+      "VF 7": "Eco: Có; Plus: Có; PlusCaptain: Có; Plus_AWD: Có; Plus_AWD_PanoramicRoof: Có",
+      "VF 8": "Eco: Có; Plus: Có",
+      "VF 8 All New": "The All New: Có",
+      "VF 9": "Eco: Có; Plus: Có; PlusCaptain: Có",
+      "VF MPV 7": "Có"
+    }
+  },
+  "isofix": {
+    "category": "safety",
+    "models": {
+      "VF 2": "TieuChuan: CÓ",
+      "VF 3": "Không",
+      "VF 5": "Plus: Có",
+      "VF 6": "Không",
+      "VF 7": "Eco: Có; Plus: Có; PlusCaptain: Có; Plus_AWD: Có; Plus_AWD_PanoramicRoof: Có",
+      "VF 8": "Eco: Có; Plus: Có",
+      "VF 8 All New": "The All New: Có",
+      "VF 9": "Không",
+      "VF MPV 7": "Có"
+    }
+  },
+  "key_system": {
+    "category": "safety",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "Chìa khóa thông minh"
+    }
+  },
+  "key_type": {
+    "category": "safety",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Plus: Chìa khóa từ xa",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "Không"
+    }
+  },
+  "knee_airbags": {
+    "category": "safety",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Eco: 2; Plus: 2",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: 2; Plus: 2; PlusCaptain: 2",
+      "VF MPV 7": "Không"
+    }
+  },
+  "pretensioner_seatbelt": {
+    "category": "safety",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Có",
+      "VF 5": "Plus: Có",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Eco: Có; Plus: Có",
+      "VF 8 All New": "The All New: Trước và sau",
+      "VF 9": "Không",
+      "VF MPV 7": "Hàng ghế trước"
+    }
+  },
+  "rollover_mitigation": {
+    "category": "safety",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Eco: Có; Plus: Có; PlusCaptain: Có; Plus_AWD: Có; Plus_AWD_PanoramicRoof: Có",
+      "VF 8": "Eco: Có; Plus: Có",
+      "VF 8 All New": "The All New: Có",
+      "VF 9": "Eco: Có; Plus: Có; PlusCaptain: Có",
+      "VF MPV 7": "Có"
+    }
+  },
+  "seatbelt_warning": {
+    "category": "safety",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Ghế phụ trước",
+      "VF 5": "Plus: Có",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Eco: Có; Plus: Có",
+      "VF 8 All New": "The All New: Có",
+      "VF 9": "Không",
+      "VF MPV 7": "Hàng ghế trước"
+    }
+  },
+  "side_airbags": {
+    "category": "safety",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Không",
+      "VF 8 All New": "Không",
+      "VF 9": "Không",
+      "VF MPV 7": "2"
+    }
+  },
+  "side_airbags_front": {
+    "category": "safety",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Plus: 2",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Eco: 2; Plus: 2",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: 2; Plus: 2; PlusCaptain: 2",
+      "VF MPV 7": "Không"
+    }
+  },
+  "side_airbags_rear": {
+    "category": "safety",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Không",
+      "VF 6": "Không",
+      "VF 7": "Không",
+      "VF 8": "Eco: 2; Plus: 2",
+      "VF 8 All New": "Không",
+      "VF 9": "Eco: 2; Plus: 2; PlusCaptain: 2",
+      "VF MPV 7": "Không"
+    }
+  },
+  "tcs": {
+    "category": "safety",
+    "models": {
+      "VF 2": "TieuChuan: CÓ",
+      "VF 3": "Có",
+      "VF 5": "Plus: Có",
+      "VF 6": "Eco: Có; Plus: Có",
+      "VF 7": "Eco: Có; Plus: Có; PlusCaptain: Có; Plus_AWD: Có; Plus_AWD_PanoramicRoof: Có",
+      "VF 8": "Eco: Có; Plus: Có",
+      "VF 8 All New": "The All New: Có",
+      "VF 9": "Eco: Có; Plus: Có; PlusCaptain: Có",
+      "VF MPV 7": "Có"
+    }
+  },
+  "tpms": {
+    "category": "safety",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Plus: ITPMS",
+      "VF 6": "Eco: Có; Plus: Có",
+      "VF 7": "Eco: Có; Plus: Có; PlusCaptain: Có; Plus_AWD: Có; Plus_AWD_PanoramicRoof: Có",
+      "VF 8": "Eco: dTPMS; Plus: dTPMS",
+      "VF 8 All New": "The All New: dTPMS",
+      "VF 9": "Eco: dTPMS; Plus: dTPMS; PlusCaptain: dTPMS",
+      "VF MPV 7": "Không"
+    }
+  },
+  "anti_theft_alarm": {
+    "category": "security",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Không",
+      "VF 5": "Plus: Có",
+      "VF 6": "Eco: Có; Plus: Có",
+      "VF 7": "Eco: Có; Plus: Có; PlusCaptain: Có; Plus_AWD: Có; Plus_AWD_PanoramicRoof: Có",
+      "VF 8": "Không",
+      "VF 8 All New": "The All New: Có",
+      "VF 9": "Eco: Có; Plus: Có; PlusCaptain: Có",
+      "VF MPV 7": "Có"
+    }
+  },
+  "immobilizer": {
+    "category": "security",
+    "models": {
+      "VF 2": "Không",
+      "VF 3": "Có",
+      "VF 5": "Plus: Có",
+      "VF 6": "Eco: Có; Plus: Có",
+      "VF 7": "Eco: Có; Plus: Có; PlusCaptain: Có; Plus_AWD: Có; Plus_AWD_PanoramicRoof: Có",
+      "VF 8": "Không",
+      "VF 8 All New": "The All New: Có",
+      "VF 9": "Không",
+      "VF MPV 7": "Có"
+    }
+  }
+}

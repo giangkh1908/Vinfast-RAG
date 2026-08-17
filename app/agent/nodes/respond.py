@@ -9,36 +9,15 @@ from app.agent.graph_state import AgentState
 
 logger = logging.getLogger("bds.graph.respond")
 
-# Câu trả lời refuse thuần (không chứa dữ liệu thật) → KHÔNG hiện nguồn.
-# Tránh trường hợp hỏi bảo hành mà data không có → hiện nguồn specs không liên quan.
-_REFUSAL_PHRASES = (
-    "chưa được ghi nhận",
-    "chưa thể xác nhận",
-    "không có dữ liệu",
-    "không tìm thấy",
-    "chưa có thông tin",
-)
-_HAS_DATA_RE = re.compile(r"(triệu|tỷ|kW|km|Nm|kWh|giây|%)")
-# Dấu hiệu câu trả lời CÓ dữ liệu/kết luận thật (bullets, in đậm, "có...", ": ") —
-# nếu có → không phải refuse thuần, giữ nguồn (tránh mất nguồn cho câu trả lời
-# kiểu "VF 8 Plus có cửa sổ trời... còn lại chưa ghi nhận")
-_HAS_FINDING_RE = re.compile(r"(có |gồm |bao gồm|\*\*|^\s*[-•]|: )", re.MULTILINE)
-
-
-def _is_pure_refusal(text: str) -> bool:
-    """Câu trả lời là refuse thuần (không có dữ liệu/kết luận thật) hay không."""
-    t = (text or "").strip()
-    if not t:
-        return True
-    if not any(p in t for p in _REFUSAL_PHRASES):
-        return False
-    return not (_HAS_DATA_RE.search(t) or _HAS_FINDING_RE.search(t))
+# Câu trả lời mặc định cho các case không trả lời được
+_DEFAULT_REPLY = "Xin lỗi, mình chưa có thông tin phù hợp. Bạn có thể hỏi lại bằng câu khác được không?"
 
 
 @dataclass
 class AgentResult:
     response: str
     sources: list[dict] = field(default_factory=list)
+    source_url: str = ""  # URL nguồn (hiển thị ở cuối câu trả lời)
     needs_clarification: bool = False
     classify_result: dict = field(default_factory=dict)
     decision: str = "answer"
@@ -64,18 +43,37 @@ async def respond_node(state: AgentState) -> dict:
     entities = state.get("entities", {})
     assessment = state.get("assessment", "")
 
-    logger.info("RESPOND: decision=%s reason=%s assessment=%s tools=%s",
-                decision, reason_code, assessment,
-                [t.get("tool") for t in tool_results if t.get("success")])
+    logger.info("RESPOND: decision=%s reason=%s assessment=%s tools=%d",
+                decision, reason_code, assessment, len(tool_results))
+    
+    # Debug: check tool_results for source_url
+    for i, tr in enumerate(tool_results):
+        if tr.get("success") and isinstance(tr.get("result"), dict):
+            url = tr["result"].get("source_url", "")
+            logger.info("RESPOND: tool[%d]=%s source_url=%s", i, tr.get("tool"), url or "EMPTY")
 
     if decision == "clarify":
-        answer = response_text or "Bạn muốn tìm thông tin nào?"
+        answer = _DEFAULT_REPLY
     elif decision == "refuse":
-        answer = response_text or final_response or "Mình chưa thể xác nhận thông tin này."
+        answer = _DEFAULT_REPLY
     elif decision == "out_of_scope":
-        answer = response_text or "Ngoài phạm vi hỗ trợ."
+        answer = _DEFAULT_REPLY
     else:
         answer = final_response
+    
+    # Lấy URL nguồn từ tool results (nếu có)
+    source_url = ""
+    if decision == "answer" and tool_results:
+        for tr in tool_results:
+            if tr.get("success") and isinstance(tr.get("result"), dict):
+                url = tr["result"].get("source_url", "")
+                if url:
+                    source_url = url
+                    break
+    
+    # Thêm link URL ở cuối câu trả lời (markdown link ngắn, click được)
+    if source_url:
+        answer = answer.rstrip() + f"\n\n🔗 Xem thêm: [tại đây]({source_url})"
 
     t0 = state.get("t0", time.time())
     latency_ms = (time.time() - t0) * 1000
@@ -102,38 +100,44 @@ async def respond_node(state: AgentState) -> dict:
             specificity=state.get("specificity", "unknown"),
         )
         # make_decision_log gọi assess_evidence + build_retrieved_chunks
-        # (cả 2 đều sync + có thể gọi _openrouter_embed → block event loop)
-        # Wrap trong run_in_executor để không block stream.
+        # (cả 2 đều sync + có thể gọi _openrouter_embed → block event loop 2-3s).
+        # KHÔNG await để response trả ngay — log chạy nền (fire-and-forget).
         loop = asyncio.get_running_loop()
-        dlog = await loop.run_in_executor(
-            None,
-            lambda: make_decision_log(
-                state["query"], cr, tool_results, answer, citations,
-                latency_ms=latency_ms,
-                latency_retrieval_ms=latency_retrieval_ms,
-                latency_generation_ms=latency_generation_ms,
-                topic=state.get("category", ""),
-                history=state.get("history", []),
-            ),
-        )
-        dlog.decision = decision
-        dlog.reason_code = reason_code
-        log_store.add(dlog)
-        decision_log = dlog.to_dict()
+
+        async def _background_log():
+            try:
+                dlog = await loop.run_in_executor(
+                    None,
+                    lambda: make_decision_log(
+                        state["query"], cr, tool_results, answer, citations,
+                        latency_ms=latency_ms,
+                        latency_retrieval_ms=latency_retrieval_ms,
+                        latency_generation_ms=latency_generation_ms,
+                        topic=state.get("category", ""),
+                        history=state.get("history", []),
+                    ),
+                )
+                dlog.decision = decision
+                dlog.reason_code = reason_code
+                log_store.add(dlog)
+            except Exception as e:
+                logger.warning("Background decision log failed: %s", e)
+
+        asyncio.ensure_future(_background_log())
+        decision_log = {}
     except Exception as e:
         logger.warning("Failed to create decision log: %s", e)
         decision_log = {}
 
     sources = citations if citations else tool_results
-    # Nguồn CHỈ hiển thị khi câu trả lời thực sự có dữ liệu.
-    # Refuse thuần ("chưa được ghi nhận...") → bỏ nguồn, tránh hiện nguồn lạc đề.
-    if decision != "answer" or _is_pure_refusal(answer):
-        sources = []
+    # KHÔNG gửi sources cho frontend — chỉ giữ nội dung câu trả lời.
+    sources = []
 
     return {
         "result": AgentResult(
             response=answer,
             sources=sources,
+            source_url=source_url,
             needs_clarification=(decision == "clarify"),
             classify_result=_build_classify_result(state),
             decision=decision,

@@ -12,6 +12,9 @@ from app.agent.graph_state import AgentState
 
 logger = logging.getLogger("bds.graph.classify")
 
+# Câu trả lời mặc định cho các case không trả lời được
+_DEFAULT_REPLY = "Xin lỗi, mình chưa có thông tin phù hợp. Bạn có thể hỏi lại bằng câu khác được không?"
+
 VERSION_QUERY_RE = re.compile(
     r"(phi[eê]n\s+b[aả]n|b[aả]n\s+n[aà]o|c[oó]\s+m[aấ]y\s+b[aả]n|version|edition|có\s*mấy)",
     re.IGNORECASE,
@@ -184,7 +187,7 @@ async def classify_node(state: AgentState) -> dict:
         return {
             "decision": "clarify",
             "reason_code": "missing_context",
-            "response_text": "Bạn muốn hỏi về xe nào?",
+            "response_text": _DEFAULT_REPLY,
             "entities": cr.entities,
             "specificity": "unclear",
         }
@@ -233,7 +236,7 @@ async def classify_node(state: AgentState) -> dict:
             return {
                 "decision": "clarify",
                 "reason_code": "ambiguous_context",
-                "response_text": "Bạn muốn hỏi về xe nào?",
+                "response_text": _DEFAULT_REPLY,
                 "entities": cr.entities,
                 "specificity": "unclear",
                 "category": topic,
@@ -241,7 +244,7 @@ async def classify_node(state: AgentState) -> dict:
         return {
             "decision": "clarify",
             "reason_code": "missing_model",
-            "response_text": "Bạn muốn hỏi về xe VinFast nào?",
+            "response_text": _DEFAULT_REPLY,
             "entities": cr.entities,
             "specificity": "unclear",
             "category": topic,
@@ -254,7 +257,7 @@ async def classify_node(state: AgentState) -> dict:
         return {
             "decision": "clarify",
             "reason_code": "missing_topic",
-            "response_text": f"Bạn muốn tìm thông tin nào về {model}?",
+            "response_text": _DEFAULT_REPLY,
             "entities": cr.entities,
             "specificity": "unclear",
             "category": "general",

@@ -38,7 +38,6 @@ class ChatRequest(BaseModel):
 
 class ChatResponse(BaseModel):
     response: str
-    sources: list[dict] = []
     needs_clarification: bool = False
     classify: dict = {}
     decision: str = "answer"
@@ -95,8 +94,17 @@ async def _finish_turn(
     history: list[dict],
     summary: str | None,
     session: dict,
+    decision: str = "answer",
 ) -> None:
-    """Sau 1 turn: ghi nhận turn + summarize nếu tới biên (không block câu trả lời)."""
+    """Sau 1 turn: ghi nhận turn + summarize nếu tới biên (không block câu trả lời).
+
+    Chỉ tính turn khi decision='answer' — refuse/clarify/out_of_scope không được
+    lưu vào memory (turn_count không tăng, summary không thay đổi).
+    """
+    # Không tính turn cho các case không trả lời được
+    if decision != "answer":
+        return
+    
     await touch_session(session_id, last_message=message)
     new_turn = (session.get("turn_count") or 0) + 1
     if new_turn % SUMMARY_EVERY == 0:
@@ -138,10 +146,9 @@ async def chat(request: ChatRequest):
     result = await agent.run(
         request.message, history, summary=summary, session_id=request.session_id
     )
-    await _finish_turn(request.session_id, request.message, history, summary, session)
+    await _finish_turn(request.session_id, request.message, history, summary, session, decision=result.decision)
     return ChatResponse(
         response=result.response,
-        sources=result.sources,
         needs_clarification=result.needs_clarification,
         classify=result.classify_result,
         decision=result.decision,
@@ -162,13 +169,17 @@ async def chat_stream(request: ChatRequest):
     agent = get_agent()
 
     async def generate():
+        decision = "answer"  # default, sẽ được cập nhật từ SSE event
         try:
             async for event in agent.run_stream(
                 request.message, history, summary=summary, session_id=request.session_id
             ):
+                # Capture decision từ SSE event để biết có nên ghi turn không
+                if event.get("type") == "decision":
+                    decision = event.get("content", "answer")
                 yield f"data: {json.dumps(event, ensure_ascii=False)}\n\n"
         finally:
-            await _finish_turn(request.session_id, request.message, history, summary, session)
+            await _finish_turn(request.session_id, request.message, history, summary, session, decision=decision)
 
     return StreamingResponse(
         generate(),

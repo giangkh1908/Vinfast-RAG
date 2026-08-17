@@ -215,6 +215,16 @@ body {
   text-decoration: underline;
 }
 
+/* ── Markdown links (Xem thêm...) ──────────────────────── */
+.md a {
+  color: #1a73e8;
+  text-decoration: none;
+  font-weight: 500;
+}
+.md a:hover {
+  text-decoration: underline;
+}
+
 /* ── Input ──────────────────────────────────────────────── */
 .input-area {
   padding: 16px 20px;

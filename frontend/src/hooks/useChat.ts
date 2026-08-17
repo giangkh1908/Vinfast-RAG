@@ -105,6 +105,7 @@ export function useChat() {
               contentRef.current += token
               setState((s) => ({
                 ...s,
+                phase: 'streaming',
                 hasTokens: true,
                 messages: s.messages.map((m) =>
                   m.id === asstMsg.id
@@ -115,7 +116,7 @@ export function useChat() {
             },
             onAnswer: (answer) => {
               contentRef.current = answer
-              patch({ hasTokens: true })
+              patch({ phase: 'streaming', hasTokens: true })
               updateMsg(asstMsg.id, { content: answer, status: 'streaming' })
             },
             onSources: (sources: Source[]) => {
