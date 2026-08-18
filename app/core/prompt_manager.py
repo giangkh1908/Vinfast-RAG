@@ -184,8 +184,12 @@ class PromptManager:
                             )
                         logger.info("Prompt registry initialized with %d default prompts", len(_INITIAL_PROMPTS))
 
-            await run_with_db_retry(_init_db, label="ensure prompt_registry schema")
-            _schema_ready = True
+            try:
+                await run_with_db_retry(_init_db, label="ensure prompt_registry schema")
+                _schema_ready = True
+            except Exception as e:
+                logger.warning("DB offline or unreachable during prompt ensure_schema: %s", e)
+
 
     @staticmethod
     def invalidate_cache(prompt_type: Optional[str] = None) -> None:
@@ -386,14 +390,21 @@ class PromptManager:
     @staticmethod
     async def get_active_versions_map() -> dict[str, str]:
         """Trả về map tất cả active versions: {'system': 'v1.0.0', 'synthesize': 'v1.0.0', ...}"""
-        await PromptManager.ensure_schema()
+        try:
+            await PromptManager.ensure_schema()
 
-        async def _fetch():
-            pool = await get_pool()
-            return await pool.fetch("SELECT prompt_type, version FROM prompt_registry WHERE is_active = true")
+            async def _fetch():
+                pool = await get_pool()
+                return await pool.fetch("SELECT prompt_type, version FROM prompt_registry WHERE is_active = true")
 
-        rows = await run_with_db_retry(_fetch, label="get_active_versions_map")
-        return {r["prompt_type"]: r["version"] for r in rows}
+            rows = await run_with_db_retry(_fetch, label="get_active_versions_map")
+            if rows:
+                return {r["prompt_type"]: r["version"] for r in rows}
+        except Exception as e:
+            logger.warning("Error fetching active versions map from DB: %s (using static fallback)", e)
+
+        return {p["prompt_type"]: p["version"] for p in _INITIAL_PROMPTS if p.get("is_active")}
+
 
 
 prompt_manager = PromptManager()
