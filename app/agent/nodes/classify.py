@@ -264,7 +264,7 @@ async def classify_node(state: AgentState) -> dict:
         return {
             "decision": "respond",
             "reason_code": "identity",
-            "response_text": "Xin chào Quý khách! Mình là ViVu — trợ lý ảo tư vấn xe VinFast. Mình có thể hỗ trợ Quý khách tra cứu thông tin sản phẩm, giá bán, thông số kỹ thuật, so sánh xe và các chính sách ưu đãi của các dòng ô tô điện VinFast (VF 3, VF 5, VF 6, VF 7, VF 8, VF 9...). Quý khách đang quan tâm đến mẫu xe nào ạ? 😊",
+            "response_text": "Xin chào Quý khách! Mình là ViVu — trợ lý ảo tư vấn xe VinFast. Mình có thể hỗ trợ Quý khách tra cứu thông tin sản phẩm, giá bán, thông số kỹ thuật, so sánh xe và các chính sách ưu đãi của các dòng ô tô điện VinFast (VF2, VF 3, VF 5, VF 6, VF 7, VF 8, VF 9...). Quý khách đang quan tâm đến mẫu xe nào ạ? 😊",
             "entities": entities,
             "specificity": "clear",
             "category": "general",
