@@ -1,16 +1,21 @@
+# Web API Framework
+fastapi>=0.110.0
+uvicorn[standard]>=0.28.0
+pydantic>=2.6.0
+python-dotenv>=1.0.0
 
-# Crawl (scripts/crawl.py)
-requests>=2.31
-beautifulsoup4>=4.12
-pymupdf>=1.24          
+# LLM & Agent
+openai>=1.14.0
+langgraph>=0.0.26
 
-python-dotenv>=1.0
-# Data validation
-pydantic>=2.0
-# Vector DB
-qdrant-client>=1.10
-# PostgreSQL
-psycopg2-binary>=2.9
-# Redis cache (Upstash)
-redis>=5.0
-upstash-redis>=2.0
+# Database & Cache
+asyncpg>=0.29.0
+psycopg2-binary>=2.9.9
+redis>=5.0.0
+upstash-redis>=1.0.0
+qdrant-client>=1.10.0
+
+# Crawl & PDF Processing
+requests>=2.31.0
+beautifulsoup4>=4.12.0
+pymupdf>=1.24.0

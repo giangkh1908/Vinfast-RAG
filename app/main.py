@@ -2,7 +2,10 @@ import logging
 
 from app.tracing import setup_tracing
 
+from pathlib import Path
+
 from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
@@ -18,13 +21,27 @@ logging.basicConfig(
 )
 logging.getLogger("bds").setLevel(logging.INFO)
 
-app = FastAPI(title="Vivu Chatbot")
+app = FastAPI(title="Vivu Chatbot Backend API")
+
+# CORS Middleware (Cho phép frontend từ Vercel/Netlify/Localhost kết nối)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Rate limiting + backpressure middleware
 setup_rate_limiting(app)
 
 app.include_router(chat_router)
-app.mount("/", StaticFiles(directory="app/static", html=True))
+
+# Mount StaticFiles nếu có folder static (nếu chạy pure API thì bỏ qua)
+static_dir = Path("app/static")
+if static_dir.exists() and (static_dir / "index.html").exists():
+    app.mount("/", StaticFiles(directory="app/static", html=True))
+
 setup_tracing()
 
 
