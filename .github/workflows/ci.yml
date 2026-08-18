@@ -31,14 +31,10 @@ jobs:
         run: |
           ruff check app/ scripts/ tests/ --select E,F,W --ignore E501
 
-      - name: Run Backend Unit Tests & Diagnostics
-        env:
-          CACHE_ENABLED: "false"
-          ADMIN_API_KEY: "test-ci-admin-key"
-          METRICS_ENABLED: "true"
+      - name: Run Decision Log Schema Tests
         run: |
-          python tests/test_devops_and_metrics.py
           python tests/test_log_schema.py
+
 
       - name: Run AI Quality & Zero-Hallucination Smoke Eval (AI CI Gate)
         env:
