@@ -78,6 +78,12 @@ body {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
+/* Text thô khi đang stream — pre-wrap giữ xuống dòng, không parse markdown */
+.raw-text {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
 /* Markdown trong bubble assistant */
 .md p {
   margin: 0 0 8px;

@@ -17,6 +17,8 @@ Monitor: exposes pool_stats() để check live connection count.
 import asyncio
 import logging
 import time
+from collections.abc import Awaitable, Callable
+from typing import TypeVar
 
 import asyncpg
 
@@ -26,6 +28,19 @@ logger = logging.getLogger("bds.db")
 
 _pool: asyncpg.Pool | None = None
 _lock = asyncio.Lock()
+
+T = TypeVar("T")
+
+# Neon/Internet connection có thể bị reset bất chợt. asyncpg thường loại
+# connection hỏng khi release, nhưng một connection có thể chết ngay giữa
+# acquire/fetch nên cần invalidate pool + retry một lần ở tầng DB.
+RETRYABLE_DB_ERRORS = (
+    asyncpg.PostgresConnectionError,
+    asyncpg.InterfaceError,
+    ConnectionResetError,
+    BrokenPipeError,
+    OSError,
+)
 
 # Pool stats for monitoring
 _stats = {"created_at": 0.0, "acquire_count": 0, "acquire_wait_count": 0}
@@ -59,6 +74,52 @@ async def get_pool() -> asyncpg.Pool:
                     "(Neon pooler compatible)"
                 )
     return _pool
+
+
+async def reset_pool(reason: str = "") -> None:
+    """Invalidate pool sau khi phát hiện connection chết.
+
+    Pool cũ có thể còn connection đã bị Neon đóng. Đặt _pool=None trước khi
+    close để request kế tiếp không lấy nhầm pool cũ; pool mới sẽ được lazy
+    create bởi get_pool().
+    """
+    global _pool
+    async with _lock:
+        pool = _pool
+        _pool = None
+        if pool is None:
+            return
+        try:
+            await asyncio.wait_for(pool.close(), timeout=3.0)
+        except Exception as exc:  # pool chết thì terminate là chủ đích
+            logger.warning("PG pool reset%s: %s", f" ({reason})" if reason else "", exc)
+            try:
+                pool.terminate()
+            except Exception:
+                pass
+
+
+async def run_with_db_retry(
+    operation: Callable[[], Awaitable[T]],
+    *,
+    label: str = "query",
+    retries: int = 1,
+) -> T:
+    """Chạy operation, reset pool và retry khi network connection bị rớt."""
+    for attempt in range(retries + 1):
+        try:
+            return await operation()
+        except RETRYABLE_DB_ERRORS as exc:
+            if attempt >= retries:
+                raise
+            logger.warning(
+                "PG %s failed (%s), resetting pool and retrying",
+                label,
+                type(exc).__name__,
+            )
+            await reset_pool(reason=type(exc).__name__)
+            await asyncio.sleep(0.05)
+    raise RuntimeError("unreachable")
 
 
 def pool_stats() -> dict:

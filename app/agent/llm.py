@@ -121,6 +121,7 @@ async def _stream_chat(llm, model: str, messages: list, writer, **kwargs) -> tup
     content_parts: list[str] = []
     tool_calls_acc: dict[int, dict] = {}
     got_chunk = False
+    word_buffer = ""
     try:
         stream = await llm.chat.completions.create(
             model=model, messages=messages, stream=True, **kwargs
@@ -135,8 +136,22 @@ async def _stream_chat(llm, model: str, messages: list, writer, **kwargs) -> tup
             if delta.content:
                 content_parts.append(delta.content)
                 if writer:
-                    writer({"type": "token", "content": delta.content})
+                    word_buffer += delta.content
+                    # Tìm ranh giới từ cuối cùng (khoảng trắng hoặc xuống dòng)
+                    last_break = max(
+                        word_buffer.rfind(" "),
+                        word_buffer.rfind("\n"),
+                        word_buffer.rfind("\t"),
+                    )
+                    if last_break != -1:
+                        to_emit = word_buffer[:last_break + 1]
+                        word_buffer = word_buffer[last_break + 1:]
+                        if to_emit:
+                            writer({"type": "token", "content": to_emit})
             if delta.tool_calls:
+                if writer and word_buffer:
+                    writer({"type": "token", "content": word_buffer})
+                    word_buffer = ""
                 for tc in delta.tool_calls:
                     acc = tool_calls_acc.setdefault(
                         tc.index or 0, {"id": "", "name": "", "arguments": ""}
@@ -148,6 +163,10 @@ async def _stream_chat(llm, model: str, messages: list, writer, **kwargs) -> tup
                             acc["name"] += tc.function.name
                         if tc.function.arguments:
                             acc["arguments"] += tc.function.arguments
+        # Flush phần còn lại ở cuối câu
+        if writer and word_buffer:
+            writer({"type": "token", "content": word_buffer})
+            word_buffer = ""
     except Exception as e:
         if got_chunk:
             raise PartialStreamError(str(e)) from e

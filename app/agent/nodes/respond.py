@@ -35,6 +35,48 @@ def _source_link_label(url: str, model_code: str | None = None) -> str:
         return url
 
 
+def format_source_links(tool_results: list[dict], default_model: str | None = None) -> str:
+    """Thu thập toàn bộ URL nguồn duy nhất từ các tool results, trả về chuỗi markdown link.
+
+    Ví dụ: '[VF 5](url_1), [VF 8](url_2)'
+    """
+    seen_urls = set()
+    links = []
+
+    tool_priority = ['get_specs', 'get_price', 'get_colors', 'search_knowledge_base']
+
+    # Ưu tiên các tool lấy dữ liệu theo model
+    for priority_tool in tool_priority:
+        for tr in tool_results:
+            if tr.get("tool") != priority_tool or not tr.get("success"):
+                continue
+            res = tr.get("result")
+            if not isinstance(res, dict):
+                continue
+            url = res.get("source_url", "")
+            if not url or url in seen_urls:
+                continue
+            seen_urls.add(url)
+            model_code = res.get("model_code") or (tr.get("args") or {}).get("model_code")
+            links.append(source_link_md(url, model_code or default_model))
+
+    # Fallback các tool còn lại
+    for tr in tool_results:
+        if not tr.get("success"):
+            continue
+        res = tr.get("result")
+        if not isinstance(res, dict):
+            continue
+        url = res.get("source_url", "")
+        if not url or url in seen_urls:
+            continue
+        seen_urls.add(url)
+        model_code = res.get("model_code") or (tr.get("args") or {}).get("model_code")
+        links.append(source_link_md(url, model_code or default_model))
+
+    return ", ".join(links)
+
+
 def source_link_md(url: str, model_code: str | None = None) -> str:
     """Trả markdown link click được với nhãn ngắn: '[VF 6](url)'."""
     return f"[{_source_link_label(url, model_code)}]({url})"
@@ -47,7 +89,7 @@ _DEFAULT_REPLY = "Xin lỗi, mình chưa có thông tin phù hợp. Bạn có th
 class AgentResult:
     response: str
     sources: list[dict] = field(default_factory=list)
-    source_url: str = ""  # URL nguồn (hiển thị ở cuối câu trả lời)
+    source_url: str = ""  # URL nguồn hoặc danh sách markdown link
     needs_clarification: bool = False
     classify_result: dict = field(default_factory=dict)
     decision: str = "answer"
@@ -91,38 +133,14 @@ async def respond_node(state: AgentState) -> dict:
     else:
         answer = final_response
     
-    # Lấy URL nguồn từ tool results (nếu có)
-    source_url = ""
+    # Lấy toàn bộ link URL nguồn từ tool results (hỗ trợ nhiều model khi so sánh)
+    source_links_str = ""
     if decision == "answer" and tool_results:
-        # Ưu tiên get_specs → get_price → get_colors → khác
-        # (tránh lấy URL từ search_knowledge_base - có thể là brochure xe khác)
-        tool_priority = ['get_specs', 'get_price', 'get_colors']
-        
-        # Ưu tiên theo tool name
-        for tool_name in tool_priority:
-            for tr in tool_results:
-                if tr.get("tool") != tool_name:
-                    continue
-                if tr.get("success") and isinstance(tr.get("result"), dict):
-                    url = tr["result"].get("source_url", "")
-                    if url:
-                        source_url = url
-                        break
-            if source_url:
-                break
-        
-        # Fallback: lấy từ bất kỳ tool nào có source_url
-        if not source_url:
-            for tr in tool_results:
-                if tr.get("success") and isinstance(tr.get("result"), dict):
-                    url = tr["result"].get("source_url", "")
-                    if url:
-                        source_url = url
-                        break
+        source_links_str = format_source_links(tool_results, entities.get("model_code"))
     
     # Thêm link URL ở cuối câu trả lời (markdown link ngắn, click được)
-    if source_url:
-        answer = answer.rstrip() + "\n\n🔗 Xem thêm: " + source_link_md(source_url, entities.get("model_code"))
+    if source_links_str:
+        answer = answer.rstrip() + "\n\n🔗 Xem thêm: " + source_links_str
 
     t0 = state.get("t0", time.time())
     latency_ms = (time.time() - t0) * 1000
@@ -186,7 +204,7 @@ async def respond_node(state: AgentState) -> dict:
         "result": AgentResult(
             response=answer,
             sources=sources,
-            source_url=source_url,
+            source_url=source_links_str,
             needs_clarification=(decision == "clarify"),
             classify_result=_build_classify_result(state),
             decision=decision,

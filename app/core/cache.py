@@ -148,6 +148,18 @@ def make_dedup_key(session_id: str, message_id: str) -> str:
     return f"dedup:{_sha1(session_id, message_id)}"
 
 
+def make_exact_io_key(query: str) -> str:
+    """Key cho exact I/O cache — thuần câu hỏi chuẩn hoá (không phụ thuộc session/history).
+
+    Args:
+        query: Câu hỏi người dùng
+
+    Returns:
+        Key dạng 'io:{sha1(normalized_query)}'
+    """
+    return f"io:{_sha1(normalize_query(query))}"
+
+
 
 
 async def make_tool_price_key(model_code: str, version: str = None) -> str | None:

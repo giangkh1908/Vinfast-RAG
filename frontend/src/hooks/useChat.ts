@@ -43,6 +43,31 @@ export function useChat() {
   /** Guard đồng bộ chống gửi trùng — closure `busy` bị stale khi Enter+click cùng tick */
   const busyRef = useRef(false)
 
+  // ── Word-boundary smoothing ──────────────────────────────────────
+  // Provider stream KHÔNG đều (burst rồi nghỉ). Nhưng KHÔNG xả theo thời gian
+  // cố định 40ms (sẽ cắt giữa chừng từ: "đấy l" rồi "à ai").
+  // Thay vào đó gom buffer, CHỈ xả khi trọn 1 TỪ (đến dấu cách/xuống dòng)
+  // → tiếng Việt hiển thị mượt, không lộ từ dở dang.
+  // `force=true` (khi done/stop) thì xả hết cả phần đuôi bất kể chưa trọn từ.
+  const flushTimerRef = useRef<number | null>(null)
+  const flushRef = useRef<(force?: boolean) => void>(() => {})
+  const pendingRef = useRef('')
+  const lastReleaseRef = useRef(Date.now())
+  const FLUSH_MS = 30 // chu kỳ quét — từ hoàn chỉnh được ưu tiên xả nhanh
+  // Nếu từ quá dài (URL/số không dấu cách) mà ứ lâu quá → xả luôn để tiến độ
+  const FORCE_PARTIAL_AFTER_MS = 350
+
+  const clearFlushTimer = useCallback(() => {
+    if (flushTimerRef.current != null) {
+      clearInterval(flushTimerRef.current)
+      flushTimerRef.current = null
+    }
+    // xả nốt buffer còn dở (force) để DOM khớp contentRef (tránh mất chữ cuối)
+    flushRef.current(true)
+    pendingRef.current = ''
+    flushRef.current = () => {}
+  }, [])
+
   const patch = useCallback((p: Partial<ChatState>) => {
     setState((s) => ({ ...s, ...p }))
   }, [])
@@ -87,6 +112,95 @@ export function useChat() {
       const sessionId = getSessionId()
       const window = getWindow() // đã gồm message vừa push (slice -14)
 
+      // Hàm commit 1 cục token lên state (gọi theo chu kỳ, không phải từng token)
+      const commitChunk = (chunk: string) => {
+        if (!chunk) return
+        setState((s) => ({
+          ...s,
+          phase: 'streaming',
+          hasTokens: true,
+          messages: s.messages.map((m) =>
+            m.id === asstMsg.id
+              ? { ...m, content: m.content + chunk, status: 'streaming' }
+              : m,
+          ),
+        }))
+      }
+
+      // flushRef: xả buffer theo RANH GIỚI TỪ.
+      // Mỗi nhịp chỉ xả tối đa một từ hoàn chỉnh để tránh provider gửi burst
+      // lớn làm UI phun ra cả đoạn. Phần từ dở được giữ lại cho token tiếp theo.
+      // `force` (done/stop) thì xả hết phần còn lại, kể cả từ chưa có dấu cách.
+      flushRef.current = (force = false) => {
+        const buf = pendingRef.current
+        if (!buf) return
+
+        // Tìm dấu cách/xuống dòng đầu tiên: đó là ranh giới của từ hoàn chỉnh đầu.
+        const boundary = buf.search(/\s/)
+        if (!force && boundary < 0) {
+          // URL hoặc chuỗi không có dấu cách có thể bị giữ mãi; cho phép xả
+          // sau một khoảng an toàn. Các từ bình thường vẫn luôn chờ đủ từ.
+          if (Date.now() - lastReleaseRef.current <= FORCE_PARTIAL_AFTER_MS) return
+          force = true
+        }
+
+        const chunk = force ? buf : buf.slice(0, boundary + 1)
+        pendingRef.current = force ? '' : buf.slice(boundary + 1)
+        lastReleaseRef.current = Date.now()
+        commitChunk(chunk)
+      }
+
+      // Quét buffer đều; nếu provider gửi burst thì mỗi tick chỉ nhả một từ.
+      const ensureFlushing = () => {
+        if (flushTimerRef.current == null) {
+          // globalThis.setInterval — tránh `window` local (getWindow) shadow biến toàn cục
+          flushTimerRef.current = globalThis.setInterval(
+            () => flushRef.current(),
+            FLUSH_MS,
+          )
+        }
+      }
+
+      let finalAnswerFromEvent = ''
+      let finishScheduled = false
+
+      // `done` có thể đến ngay sau token cuối trong cùng một lần đọc SSE.
+      // Không force-flush ngay, vì như vậy toàn bộ câu ngắn sẽ xồ ra một lần.
+      // Chờ bộ word-buffer xả hết rồi mới chuyển message sang `done`.
+      const finishAfterDrain = () => {
+        if (finishScheduled) return
+        if (pendingRef.current) {
+          finishScheduled = true
+          globalThis.setTimeout(() => {
+            finishScheduled = false
+            finishAfterDrain()
+          }, FLUSH_MS)
+          return
+        }
+
+        clearFlushTimer()
+        const finalContent = finalAnswerFromEvent || contentRef.current
+        if (finalContent) {
+          pushMessage('assistant', finalContent, asstMsg.id)
+        }
+        contentRef.current = ''
+        setState((s) => ({
+          ...s,
+          phase: 'idle',
+          statusText: '',
+          hasTokens: false,
+          messages: s.messages.map((x) =>
+            x.id === asstMsg.id
+              ? {
+                  ...x,
+                  status: finalContent ? 'done' : 'error',
+                  error: finalContent ? undefined : 'Không có phản hồi.',
+                }
+              : x,
+          ),
+        }))
+      }
+
       try {
         await streamChat(
           sessionId,
@@ -103,52 +217,38 @@ export function useChat() {
             },
             onToken: (token) => {
               contentRef.current += token
-              setState((s) => ({
-                ...s,
-                phase: 'streaming',
-                hasTokens: true,
-                messages: s.messages.map((m) =>
-                  m.id === asstMsg.id
-                    ? { ...m, content: m.content + token, status: 'streaming' }
-                    : m,
-                ),
-              }))
+              // Bắt đầu tính timeout từ lúc có phần từ dở mới, không tính từ
+              // lần stream trước hoặc từ lúc request bắt đầu (TTFT có thể lâu).
+              if (!pendingRef.current) lastReleaseRef.current = Date.now()
+              pendingRef.current += token
+              ensureFlushing()
             },
             onAnswer: (answer) => {
+              // Một số nhánh (clarify/out_of_scope) gửi nguyên câu qua `answer`
+              // thay vì token stream. Vẫn đưa vào cùng word-buffer để câu ngắn
+              // không xồ ra toàn bộ trong một render.
+              finalAnswerFromEvent = answer
               contentRef.current = answer
+              pendingRef.current = answer
+              lastReleaseRef.current = Date.now()
               patch({ phase: 'streaming', hasTokens: true })
-              updateMsg(asstMsg.id, { content: answer, status: 'streaming' })
+              updateMsg(asstMsg.id, { content: '', status: 'streaming' })
+              ensureFlushing()
             },
             onSources: (sources: Source[]) => {
               updateMsg(asstMsg.id, { sources })
             },
             onError: (errMsg) => {
               // không lưu assistant lỗi vào localStorage — retry sẽ gửi lại sạch
+              clearFlushTimer()
+              pendingRef.current = ''
+              flushRef.current = () => {}
               updateMsg(asstMsg.id, { status: 'error', error: errMsg, content: '' })
               contentRef.current = ''
               patch({ phase: 'error', statusText: '' })
             },
             onDone: () => {
-              const finalContent = contentRef.current
-              if (finalContent) {
-                pushMessage('assistant', finalContent, asstMsg.id)
-              }
-              contentRef.current = ''
-              setState((s) => ({
-                ...s,
-                phase: 'idle',
-                statusText: '',
-                hasTokens: false,
-                messages: s.messages.map((x) =>
-                  x.id === asstMsg.id
-                    ? {
-                        ...x,
-                        status: finalContent ? 'done' : 'error',
-                        error: finalContent ? undefined : 'Không có phản hồi.',
-                      }
-                    : x,
-                ),
-              }))
+              finishAfterDrain()
             },
           },
         )
@@ -157,7 +257,7 @@ export function useChat() {
         if (abortRef.current === ac) abortRef.current = null
       }
     },
-    [patch, updateMsg], // bỏ busy khỏi deps — guard dùng busyRef
+    [patch, updateMsg, clearFlushTimer], // bỏ busy khỏi deps — guard dùng busyRef
   )
 
   /** Nút ⏹ Stop: hủy request — chốt phần đã stream */
@@ -165,6 +265,7 @@ export function useChat() {
     abortRef.current?.abort()
     abortRef.current = null
     busyRef.current = false
+    clearFlushTimer()
     const partial = contentRef.current
     contentRef.current = ''
     if (partial) pushMessage('assistant', partial)
@@ -204,9 +305,13 @@ export function useChat() {
     abortRef.current?.abort()
     abortRef.current = null
     contentRef.current = ''
+    clearFlushTimer()
+    pendingRef.current = ''
+    flushRef.current = () => {}
     clearSession()
     setState({ phase: 'idle', messages: [], statusText: '', hasTokens: false })
   }, [])
 
   return { ...state, busy, send, stop, retry, clearChat }
 }
+

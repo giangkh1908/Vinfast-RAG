@@ -6,7 +6,7 @@ import time
 from app.agent.graph import get_compiled_graph
 from app.agent.nodes.respond import AgentResult
 from app.agent.llm import USER_INPUT_MAX_TOKENS, truncate_text
-from app.core.cache import cache, make_answer_key, ANS_TTL
+from app.core.cache import cache, make_answer_key, make_exact_io_key, ANS_TTL
 from app.agent.classifier import get_classifier
 from app.agent.intent import classify_intent
 
@@ -47,6 +47,23 @@ class AgentLoop:
     ) -> AgentResult:
         # Cap input người dùng: cắt đuôi nếu vượt token budget
         query = truncate_text(query, USER_INPUT_MAX_TOKENS)
+        
+        # 1. Exact I/O Cache: Kiểm tra ngay input -> output bất kể single hay multi-turn
+        io_key = make_exact_io_key(query)
+        if cache.enabled:
+            cached_io = await cache.get_json(io_key)
+            if cached_io:
+                resp_text = cached_io if isinstance(cached_io, str) else cached_io.get("response", "")
+                sources = cached_io.get("sources", []) if isinstance(cached_io, dict) else []
+                return AgentResult(
+                    response=resp_text,
+                    sources=sources,
+                    decision="answer",
+                    classify_result={
+                        "decision": "answer",
+                        "reason_code": "exact_io_cache_hit",
+                    },
+                )
         
         # Fast classify để extract entities và intent (deterministic, không LLM)
         classifier = get_classifier()
@@ -106,7 +123,19 @@ class AgentLoop:
                 classify_result={"decision": "refuse", "reason_code": "system_error"},
             )
         
-        # Cache write: chỉ cache khi cacheable và decision là "answer"
+        # Exact I/O Cache write: lưu input user -> output text cho mọi lần hỏi sau (bất kể single/multi-turn)
+        if cache.enabled and result.decision == "answer" and result.response:
+            await cache.set_json(
+                io_key,
+                {
+                    "response": result.response,
+                    "sources": result.sources,
+                    "decision": result.decision,
+                },
+                ttl=ANS_TTL,
+            )
+
+        # Answer Cache write: chỉ cache khi cacheable và decision là "answer"
         # cache_key=None khi PG unreachable → skip cache write
         if cacheable and cache.enabled and result.decision == "answer" and cache_key is not None:
             await cache.set_json(
@@ -140,6 +169,21 @@ class AgentLoop:
         - Không phát lại cả câu ở respond nếu token đã stream rồi
         """
         query = truncate_text(query, USER_INPUT_MAX_TOKENS)
+        
+        # 1. Exact I/O Cache: Kiểm tra ngay input -> output bất kể single hay multi-turn
+        io_key = make_exact_io_key(query)
+        if cache.enabled:
+            cached_io = await cache.get_json(io_key)
+            if cached_io:
+                resp_text = cached_io if isinstance(cached_io, str) else cached_io.get("response", "")
+                yield {"type": "decision", "content": "answer"}
+                yield {"type": "classify", "content": {
+                    "specificity": "exact",
+                    "entities": {"cache": "exact_io_hit"},
+                }}
+                yield {"type": "token", "content": resp_text}
+                yield {"type": "done"}
+                return
         
         # Fast classify để extract entities và intent (deterministic, không LLM)
         classifier = get_classifier()
@@ -275,11 +319,26 @@ class AgentLoop:
                             # Fallback: LLM chưa stream được gì (writer unavailable)
                             yield {"type": "token", "content": result.response}
                         elif result.source_url:
-                            # Token đã stream rồi → chỉ thêm URL ngắn ở cuối
-                            from app.agent.nodes.respond import source_link_md
-                            yield {"type": "token", "content": "\n\n🔗 Xem thêm: " + source_link_md(result.source_url)}
+                            # Token đã stream rồi → chỉ thêm URL ngắn ở cuối (hỗ trợ nhiều link khi so sánh xe)
+                            if result.source_url.startswith("["):
+                                yield {"type": "token", "content": "\n\n🔗 Xem thêm: " + result.source_url}
+                            else:
+                                from app.agent.nodes.respond import source_link_md
+                                yield {"type": "token", "content": "\n\n🔗 Xem thêm: " + source_link_md(result.source_url)}
                         
-                        # Cache write: chỉ cache khi cacheable và decision là "answer"
+                        # Exact I/O Cache write: lưu input user -> output text cho mọi lần hỏi sau (bất kể single/multi-turn)
+                        if cache.enabled and result.decision == "answer" and result.response:
+                            await cache.set_json(
+                                io_key,
+                                {
+                                    "response": result.response,
+                                    "sources": result.sources,
+                                    "decision": result.decision,
+                                },
+                                ttl=ANS_TTL,
+                            )
+
+                        # Answer Cache write: chỉ cache khi cacheable và decision là "answer"
                         # cache_key=None khi PG unreachable → skip cache write
                         if cacheable and cache.enabled and result.decision == "answer" and cache_key is not None:
                             await cache.set_json(

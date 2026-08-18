@@ -259,19 +259,7 @@ async def classify_node(state: AgentState) -> dict:
             "category": topic,
         }
 
-    # Broad topic (model known, topic vague, NOT a follow-up) — chỉ khi intent
-    # còn là general (chưa xác định hướng); intent cụ thể không clarify
-    if has_model and intent == "general" and topic == "general" and _is_broad_topic(query) and not is_followup:
-        model = cr.entities["model_code"]
-        return {
-            "decision": "clarify",
-            "reason_code": "missing_topic",
-            "response_text": _DEFAULT_REPLY,
-            "entities": cr.entities,
-            "specificity": "unclear",
-            "category": "general",
-        }
-
+    # Broad topic / Tổng quan: Nếu đã có model (VF 3, VF 8...) thì cho phép trả lời tổng quan (KB search) thay vì từ chối
     # Missing version → KHÔNG ngắt hỏi lại (UX kém). Chuyển decision=answer,
     # prompt sẽ điều hướng LLM trả lời bản mặc định (Eco) + liệt kê bản khác.
 

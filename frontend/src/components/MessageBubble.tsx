@@ -51,15 +51,25 @@ export default function MessageBubble({ msg }: { msg: Message }) {
 
   if (pending) return null
 
+  // Đang stream: render TEXT THƯỜNG, không markdown.
+  // Lý do — mỗi token setState đã gây re-render; nếu còn parse markdown dở dang
+  // (`**`, bảng `|`) thì layout nhảy tưng tưng + nặng. Stream bằng text trơn
+  // (white-space: pre-wrap) cho chữ chảy đều; chỉ render markdown khi đã xong.
+  const streaming = msg.status === 'streaming' && !!msg.content
+
   return (
     <div className="msg assistant">
-      <div className="md">
-        <ReactMarkdown
-          rehypePlugins={[[rehypeSanitize, _schema]]}
-          components={{ a: SafeLink }}
-        >
-          {msg.content}
-        </ReactMarkdown>
+      <div className={streaming ? 'raw-text' : 'md'}>
+        {streaming ? (
+          msg.content
+        ) : (
+          <ReactMarkdown
+            rehypePlugins={[[rehypeSanitize, _schema]]}
+            components={{ a: SafeLink }}
+          >
+            {msg.content}
+          </ReactMarkdown>
+        )}
       </div>
       <SourcesBox sources={msg.sources} />
     </div>
