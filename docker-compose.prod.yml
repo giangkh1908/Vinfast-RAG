@@ -1,0 +1,43 @@
+# ==============================================================================
+# Production Docker Compose for Vivu Chatbot (Cloud-Native Architecture)
+# ==============================================================================
+# Hạ tầng Cloud-managed (không chạy local DBs):
+# - PostgreSQL: Neon Serverless (PG_DSN / POSTGRES_URL)
+# - Vector DB: Qdrant Cloud (QDRANT_URL + QDRANT_API_KEY)
+# - Cache: Upstash Redis (REDIS_URL + REDIS_TOKEN)
+# - LLM / Embedding: DeepInfra + OpenRouter
+# ==============================================================================
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: vivu_api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      - PORT=8000
+      - PYTHONUTF8=1
+      # Fallback defaults nếu trong .env chưa gán
+      - METRICS_ENABLED=${METRICS_ENABLED:-true}
+      - ADMIN_API_KEY=${ADMIN_API_KEY:-vivu-admin-secret-key-2026}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/healthz"]
+      interval: 20s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G

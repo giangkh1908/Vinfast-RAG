@@ -270,18 +270,30 @@ async def classify_node(state: AgentState) -> dict:
             "category": "general",
             "intent": "identity",
         }
+    if intent == "out_of_scope":
+        return {
+            "decision": "out_of_scope",
+            "reason_code": "out_of_scope",
+            "response_text": "Xin lỗi Quý khách, mình là trợ lý ảo chuyên tư vấn về các dòng xe ô tô điện VinFast và dịch vụ liên quan. Câu hỏi này nằm ngoài phạm vi hỗ trợ của mình. Quý khách có thắc mắc gì về xe VinFast không ạ?",
+            "entities": entities,
+            "specificity": "clear",
+            "category": "general",
+            "intent": "out_of_scope",
+        }
+
+    # Ambiguous pronoun (xe này / mẫu này) khi chưa có ngữ cảnh xe -> phải clarify
+    if not has_model and _AMBIGUOUS_PRONOUN_RE.search(query):
+        return {
+            "decision": "clarify",
+            "reason_code": "ambiguous_context",
+            "response_text": "Dạ Quý khách đang hỏi về dòng xe VinFast nào ạ (VF 3, VF 5, VF 6, VF 7, VF 8, VF 9)?",
+            "entities": cr.entities,
+            "specificity": "unclear",
+            "category": topic,
+        }
 
     # Missing model — chỉ clarify khi intent THẬT SỰ cần model
     if not has_model and intent not in _NO_MODEL_INTENTS:
-        if _AMBIGUOUS_PRONOUN_RE.search(query):
-            return {
-                "decision": "clarify",
-                "reason_code": "ambiguous_context",
-                "response_text": _DEFAULT_REPLY,
-                "entities": cr.entities,
-                "specificity": "unclear",
-                "category": topic,
-            }
         return {
             "decision": "clarify",
             "reason_code": "missing_model",
@@ -290,6 +302,7 @@ async def classify_node(state: AgentState) -> dict:
             "specificity": "unclear",
             "category": topic,
         }
+
 
     # Broad topic / Tổng quan: Nếu đã có model (VF 3, VF 8...) thì cho phép trả lời tổng quan (KB search) thay vì từ chối
     # Missing version → KHÔNG ngắt hỏi lại (UX kém). Chuyển decision=answer,

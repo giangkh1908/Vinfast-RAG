@@ -50,6 +50,12 @@ class Settings:
         self.llm_tool_call_max_tokens: int = int(_get_env("LLM_TOOL_CALL_MAX_TOKENS", "1024"))
         self.llm_input_max_tokens: int = int(_get_env("LLM_INPUT_MAX_TOKENS", "16000"))
         self.llm_user_input_max_tokens: int = int(_get_env("LLM_USER_INPUT_MAX_TOKENS", "1000"))
+        # Admin & Metrics Telemetry (Mặc định để trống để FE gọi API trực tiếp)
+        self.admin_api_key: str = _get_env("ADMIN_API_KEY", "")
+        self.metrics_enabled: bool = _get_env("METRICS_ENABLED", "true").lower() == "true"
+        self.usd_vnd_rate: float = float(_get_env("USD_VND_EXCHANGE_RATE", "25400.0"))
+        self.app_version: str = _get_env("APP_VERSION", "v1.0.0")
+
 
 
 def llm_extra_kwargs(model: str) -> dict:

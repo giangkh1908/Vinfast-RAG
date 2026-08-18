@@ -98,10 +98,18 @@ Câu hỏi: {query}
 """
 
 
+from app.core.prompt_manager import prompt_manager
+
+
+_active_system_version = "v1.0.0"
+
+
 async def get_system_prompt() -> str:
-    global _prompt_cache, _prompt_cache_time, _prompt_hash
-    # Cache miss nếu chưa có, quá TTL, hoặc prompt text đã đổi (hash khác)
-    cur_hash = hashlib.sha256(SYSTEM_PROMPT.encode('utf-8')).hexdigest()[:12]
+    global _prompt_cache, _prompt_cache_time, _prompt_hash, _active_system_version
+    template, version = await prompt_manager.get_active_prompt("system")
+    _active_system_version = version
+
+    cur_hash = hashlib.sha256(template.encode('utf-8')).hexdigest()[:12]
     if (
         _prompt_cache
         and _prompt_hash == cur_hash
@@ -135,7 +143,6 @@ async def get_system_prompt() -> str:
             lines.append(f"- {r['model_label']}{yr} — Phiên bản: {editions}")
     except Exception:
         # DB lỗi → fallback danh sách tĩnh thay vì chết cả request.
-        # Keep trùng khớp với dữ liệu ingest gần nhất (data/clean v2).
         lines = [
             "- VF 2 — Phiên bản: TieuChuan",
             "- VF 3 — Phiên bản: Eco, Plus",
@@ -149,19 +156,20 @@ async def get_system_prompt() -> str:
         ]
 
     model_list = "\n".join(lines)
-    result = SYSTEM_PROMPT.format(model_list=model_list)
+    result = template.format(model_list=model_list)
     _prompt_cache = result
-    _prompt_hash = hashlib.sha256(SYSTEM_PROMPT.encode('utf-8')).hexdigest()[:12]
+    _prompt_hash = cur_hash
     _prompt_cache_time = time.time()
     return result
 
 
-async def build_system_message(summary: str | None = None) -> dict:
-    """System message với running summary (nếu có) chèn sau prompt chính.
+async def get_synthesize_prompt_template() -> tuple[str, str]:
+    """Lấy synthesize prompt template và version."""
+    return await prompt_manager.get_active_prompt("synthesize")
 
-    Summary là trí nhớ nén các turn cũ — luôn nằm SAU prompt chính,
-    không bao giờ thay thế system prompt (xem docs/MEMORY_PLAN.md).
-    """
+
+async def build_system_message(summary: str | None = None) -> dict:
+    """System message với running summary (nếu có) chèn sau prompt chính."""
     sp = await get_system_prompt()
     if summary:
         sp = sp + f"\n\n## Lịch sử hội thoại (tóm tắt)\n{summary}"
@@ -173,3 +181,9 @@ def get_prompt_hash() -> str:
     if _prompt_hash is None:
         _prompt_hash = hashlib.sha256(SYSTEM_PROMPT.encode('utf-8')).hexdigest()[:12]
     return _prompt_hash
+
+
+def get_active_system_version() -> str:
+    """Trả về version của system prompt đang active."""
+    return _active_system_version
+

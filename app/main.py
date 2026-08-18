@@ -10,6 +10,9 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.api.chat import router as chat_router
+from app.api.health import router as health_router
+from app.api.metrics import router as metrics_router
+from app.api.admin_prompts import router as admin_prompts_router
 from app.core.rate_limit import setup_rate_limiting
 from app.core.db import pool_stats
 
@@ -21,7 +24,7 @@ logging.basicConfig(
 )
 logging.getLogger("bds").setLevel(logging.INFO)
 
-app = FastAPI(title="Vivu Chatbot Backend API")
+app = FastAPI(title="Vivu Chatbot Backend API", version="1.0.0")
 
 # CORS Middleware (Cho phép frontend từ Vercel/Netlify/Localhost kết nối)
 app.add_middleware(
@@ -35,7 +38,10 @@ app.add_middleware(
 # Rate limiting + backpressure middleware
 setup_rate_limiting(app)
 
+app.include_router(health_router)
 app.include_router(chat_router)
+app.include_router(metrics_router)
+app.include_router(admin_prompts_router)
 
 # Mount StaticFiles nếu có folder static (nếu chạy pure API thì bỏ qua)
 static_dir = Path("app/static")
@@ -45,25 +51,23 @@ if static_dir.exists() and (static_dir / "index.html").exists():
 setup_tracing()
 
 
-@app.get("/api/health")
-async def health():
-    """Health check + pool stats for monitoring."""
-    stats = pool_stats()
-    return JSONResponse(content={"status": "ok", "pool": stats})
-
-
 @app.on_event("startup")
 async def _prewarm():
-    """Warm cache system prompt + tool schemas để request đầu không trả
+    """Warm cache system prompt + tool schemas + telemetry + prompt registry để request đầu không trả
     ~2s PG cold-load giữa stream."""
     try:
         from app.agent.prompts import get_system_prompt
         from app.agent.schemas import build_tool_schemas
         from app.core.db import get_pool
+        from app.core.telemetry import ensure_telemetry_schema
+        from app.core.prompt_manager import prompt_manager
         # Pre-warm pool: tạo min_size connections ngay
         await get_pool()
+        await ensure_telemetry_schema()
+        await prompt_manager.ensure_schema()
         await get_system_prompt()
         await build_tool_schemas()
-        logging.getLogger("bds").info("Prewarm OK: pool + system prompt + tool schemas")
+        logging.getLogger("bds").info("Prewarm OK: pool + telemetry + prompt registry + system prompt + tool schemas")
     except Exception as e:
         logging.getLogger("bds").warning("Prewarm failed (sẽ lazy-load): %s", e)
+

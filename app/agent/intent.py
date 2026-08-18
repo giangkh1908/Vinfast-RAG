@@ -111,7 +111,9 @@ _IDENTITY_RE = re.compile(
     re.IGNORECASE,
 )
 _OUT_OF_SCOPE_RE = re.compile(
-    r"(thời\s*tiết|chứng\s*khoán|bóng\s*đá|chính\s*trị|tập\s*làm\s*thơ|kể\s*chuyện\s*cười)",
+    r"(thời\s*tiết|chứng\s*khoán|bóng\s*đá|chính\s*trị|tập\s*làm\s*thơ|kể\s*chuyện\s*cười|"
+    r"viết\s*code|viết\s*cho\s*tôi\s*.*code|code\s*python|thuật\s*toán|quicksort|dijkstra|"
+    r"nấu\s*món|công\s*thức\s*nấu|phở\s*bò|tổng\s*thống|hack\s*|bẻ\s*khóa|mật\s*khẩu\s*wifi)",
     re.IGNORECASE,
 )
 _PRICE_RE = re.compile(

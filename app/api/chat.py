@@ -14,6 +14,7 @@ from app.core.session_store import get_session, touch_session, update_summary
 from app.core.cache import cache, make_dedup_key, make_answer_key, DEDUP_TTL, ANS_TTL
 from app.agent.classifier import get_classifier
 from app.agent.intent import classify_intent
+from app.agent.prompts import get_active_system_version
 
 logger = logging.getLogger("bds.api")
 
@@ -132,8 +133,15 @@ async def _check_dedupe(session_id: str, message_id: str | None) -> bool:
     return not set_success
 
 
+from app.core.telemetry import log_metric_background, record_metric
+import time
+
+
 @router.post("/api/chat")
 async def chat(request: ChatRequest):
+    req_id = request.message_id or str(uuid.uuid4())
+    t_start = time.monotonic()
+    
     # Check dedupe nếu có message_id
     if await _check_dedupe(request.session_id, request.message_id):
         return JSONResponse(
@@ -147,6 +155,36 @@ async def chat(request: ChatRequest):
         request.message, history, summary=summary, session_id=request.session_id
     )
     await _finish_turn(request.session_id, request.message, history, summary, session, decision=result.decision)
+
+    t_end = time.monotonic()
+    total_latency_ms = int((t_end - t_start) * 1000)
+    reason_code = (result.classify_result or {}).get("reason_code", "")
+    cache_hit = "cache_hit" in reason_code
+    cache_type = "exact_io" if "exact_io" in reason_code else ("answer_cache" if cache_hit else "none")
+
+    prompt_toks = estimate_tokens(request.message) + sum(estimate_tokens(str(m.get("content", ""))) for m in history)
+    compl_toks = estimate_tokens(result.response or "")
+    intent_val = (result.classify_result or {}).get("entities", {}).get("intent") or "general"
+
+    log_metric_background(
+        record_metric(
+            request_id=req_id,
+            session_id=request.session_id,
+            query_text=request.message,
+            intent=str(intent_val),
+            decision=result.decision,
+            model_used="",
+            prompt_version=get_active_system_version(),
+            prompt_tokens=prompt_toks,
+            completion_tokens=compl_toks,
+            ttft_ms=total_latency_ms if not cache_hit else 5,
+            total_latency_ms=total_latency_ms,
+            cache_hit=cache_hit,
+            cache_type=cache_type,
+            status_code=200,
+        )
+    )
+
     return ChatResponse(
         response=result.response,
         needs_clarification=result.needs_clarification,
@@ -158,6 +196,9 @@ async def chat(request: ChatRequest):
 
 @router.post("/api/chat/stream")
 async def chat_stream(request: ChatRequest):
+    req_id = request.message_id or str(uuid.uuid4())
+    t_start = time.monotonic()
+
     # Check dedupe nếu có message_id
     if await _check_dedupe(request.session_id, request.message_id):
         return JSONResponse(
@@ -170,16 +211,73 @@ async def chat_stream(request: ChatRequest):
 
     async def generate():
         decision = "answer"  # default, sẽ được cập nhật từ SSE event
+        t_first_token: float | None = None
+        tools_used: list[str] = []
+        intent_val = "general"
+        cache_hit = False
+        cache_type = "none"
+        accumulated_response = []
+        error_msg = None
+
         try:
             async for event in agent.run_stream(
                 request.message, history, summary=summary, session_id=request.session_id
             ):
-                # Capture decision từ SSE event để biết có nên ghi turn không
-                if event.get("type") == "decision":
+                evt_type = event.get("type")
+                if evt_type == "decision":
                     decision = event.get("content", "answer")
+                elif evt_type == "classify":
+                    cls_content = event.get("content", {})
+                    ents = cls_content.get("entities", {})
+                    if "cache" in ents:
+                        cache_hit = True
+                        cache_type = "exact_io"
+                    elif "intent" in ents:
+                        intent_val = ents.get("intent", "general")
+                elif evt_type == "token":
+                    if t_first_token is None:
+                        t_first_token = time.monotonic()
+                    accumulated_response.append(event.get("content", ""))
+                elif evt_type == "tool_call":
+                    tool_info = event.get("content", {})
+                    if isinstance(tool_info, dict) and "tool" in tool_info:
+                        tools_used.append(tool_info["tool"])
+                elif evt_type == "error":
+                    error_msg = event.get("content")
+
                 yield f"data: {json.dumps(event, ensure_ascii=False)}\n\n"
+        except Exception as exc:
+            error_msg = str(exc)
+            raise
         finally:
             await _finish_turn(request.session_id, request.message, history, summary, session, decision=decision)
+            t_end = time.monotonic()
+            ttft_ms = int((t_first_token - t_start) * 1000) if t_first_token else int((t_end - t_start) * 1000)
+            total_latency_ms = int((t_end - t_start) * 1000)
+            
+            prompt_toks = estimate_tokens(request.message) + sum(estimate_tokens(str(m.get("content", ""))) for m in history)
+            compl_toks = estimate_tokens("".join(accumulated_response))
+
+            log_metric_background(
+                record_metric(
+                    request_id=req_id,
+                    session_id=request.session_id,
+                    query_text=request.message,
+                    intent=intent_val,
+                    decision=decision,
+                    model_used="",
+                    prompt_version=get_active_system_version(),
+                    prompt_tokens=prompt_toks,
+                    completion_tokens=compl_toks,
+                    ttft_ms=ttft_ms,
+                    total_latency_ms=total_latency_ms,
+                    cache_hit=cache_hit,
+                    cache_type=cache_type,
+                    tools_used=tools_used,
+                    status_code=200 if not error_msg else 500,
+                    error_message=error_msg,
+                )
+            )
 
     return StreamingResponse(
         generate(),
@@ -191,6 +289,7 @@ async def chat_stream(request: ChatRequest):
             "X-Accel-Buffering": "no",
         },
     )
+
 
 
 from app.agent.decision import log_store

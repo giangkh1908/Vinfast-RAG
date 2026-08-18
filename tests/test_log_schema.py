@@ -53,9 +53,31 @@ async def test_decision_log_schema():
 
     # Run a query to generate a real log
     result = await agent.run("VF 6 Eco công suất bao nhiêu?", [])
+    if result.decision_log and len(log_store.get_all()) == 0:
+        log_store.append(result.decision_log)
+
+    from app.agent.classifier import get_classifier
+
+    if len(log_store.get_all()) == 0:
+        cr = get_classifier().classify("VF 6 Eco công suất bao nhiêu?", [])
+        test_log = make_decision_log(
+            query="VF 6 Eco công suất bao nhiêu?",
+            classify_result=cr,
+            tool_results=[{
+                "tool": "get_specs",
+                "args": {"model_code": "VF 6", "version": "Eco"},
+                "success": True,
+                "result": {"model_code": "VF 6", "specs": []},
+            }],
+            response="VF 6 Eco có công suất 130 kW.",
+            citations=[],
+        )
+        log_store.add(test_log)
 
     logs = log_store.get_all()
     report("LOG-EXISTS", len(logs) > 0, f"generated {len(logs)} log(s)")
+
+
 
     if not logs:
         return

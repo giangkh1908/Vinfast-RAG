@@ -95,10 +95,15 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         if not settings.rate_limit_enabled:
             return await call_next(request)
 
-        # Skip rate limiting for static files and health checks
+        # Skip rate limiting for static files, health checks, and admin endpoints
         path = request.url.path
-        if path.startswith("/static") or path == "/api/health":
+        if (
+            path.startswith("/static")
+            or path in ("/api/health", "/healthz", "/ready")
+            or path.startswith("/api/admin")
+        ):
             return await call_next(request)
+
 
         # Extract client IP (respect X-Forwarded-For behind proxy)
         client_ip = request.client.host if request.client else "unknown"

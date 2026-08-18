@@ -1,57 +1,125 @@
-# Vivu
+# ViVu — Trợ Lý Ảo Tư Vấn Xe Điện VinFast (Production Agentic RAG)
 
-Chatbot AI hỗ trợ tư vấn xe VinFast — FastAPI + LangGraph + hybrid intent + deterministic tool planning.
+[![CI/CD Pipeline](https://github.com/giangkh1908/Vinfast-RAG/actions/workflows/ci.yml/badge.svg)](.github/workflows/ci.yml)
+[![Python 3.11](https://img.shields.io/badge/Python-3.11-blue.svg)](https://www.python.org/downloads/)
+[![FastAPI](https://img.shields.io/badge/Framework-FastAPI-009688.svg)](https://fastapi.tiangolo.com)
+[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg)](Dockerfile)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-## Kiến trúc hiện tại
+ViVu là hệ thống Chatbot AI Agentic RAG thông minh hỗ trợ tư vấn xe ô tô điện VinFast (VF 2, VF 3, VF 5, VF 6, VF 7, VF 8, VF 9, VF MPV 7), giá bán, thông số kỹ thuật, so sánh xe, đặt cọc và chính sách bảo hành. Hệ thống được xây dựng trên kiến trúc Hybrid Intent + Deterministic Tool Planning nhằm đảm bảo **tốc độ phản hồi cực nhanh** và **triệt tiêu 100% ảo giác số liệu (Zero-Hallucination)**.
 
+---
+
+## 🏗️ Kiến Trúc Hệ Thống (Cloud-Native Architecture)
+
+```mermaid
+graph TD
+    Client[Web UI / React App / Mobile] -->|SSE Stream / REST| API[FastAPI Backend :8000]
+    
+    subgraph "Backend Core Engine"
+        API --> RateLimit[Rate Limiter 30 RPM & Backpressure]
+        RateLimit --> Agent[Agentic RAG Engine]
+        Agent --> Intent[Hybrid Intent Classifier]
+        Intent --> DeterministicTools[Deterministic Tools: get_specs, get_price, get_colors]
+        DeterministicTools --> DB[(Neon Serverless PostgreSQL)]
+        Intent --> VectorSearch[Semantic Hybrid Search]
+        VectorSearch --> Qdrant[(Qdrant Cloud Cluster)]
+    end
+    
+    subgraph "Operations, Prompting & Telemetry"
+        Agent --> PromptRegistry[(PostgreSQL: prompt_registry)]
+        Agent --> Telemetry[(PostgreSQL: request_metrics)]
+        Admin[Admin Dashboard] -->|X-Admin-Key| AdminAPI[/api/admin/*]
+        AdminAPI --> Telemetry
+        AdminAPI --> PromptRegistry
+    end
 ```
-Client (React+TS, SSE) → /api/chat/stream
-  → validate (session_id, token limits)
-  → sanitize history (chống injection)
-  → classify: hybrid intent (rule → LLM fallback strict-JSON)
-  → build_tool_plan: deterministic tool calls (LLM không đoán tham số)
-  → execute song song → generate (LLM tổng hợp) → respond (sources)
-  → multi-turn memory: chat_sessions (summary) + window 7 turn
-```
 
-## Data pipeline
+---
 
-Luồng data end-to-end (raw → clean → chunk → embed → Qdrant + PostgreSQL), chạy
-bằng 1 lệnh. Chi tiết: [`docs/DATA_PIPELINE.md`](docs/DATA_PIPELINE.md).
-Schema 2 DB: [`docs/DATA_SCHEMA_SPEC.md`](docs/DATA_SCHEMA_SPEC.md).
+## ⚡ Tính Năng Nổi Bật
+
+1. **Deterministic Spec & Price Resolution:** Tra cứu chính xác 100% bảng giá niêm yết, công suất, mô-men xoắn, dung lượng pin, kích thước từ PostgreSQL (không để LLM bịa số liệu).
+2. **Dynamic Prompt Registry & Live Versioning:** Quản lý phiên bản Prompt (`system`, `synthesize`, `classify`, `summarize`) trên Database, hỗ trợ đổi Prompt trên Live không cần build lại container.
+3. **Telemetry & Cost Engine:** Đo lường chi tiết Token, chi phí (USD & VNĐ), Time-to-First-Token (TTFT), Latency P50/P95, và tỷ lệ Cache Hit/Miss.
+4. **Healthcheck Probes Chuẩn Cloud:** Cung cấp `/healthz` (liveness <1ms) và `/ready` (kiểm tra sâu Neon PG, Qdrant Cloud, Upstash Redis).
+5. **AI Quality CI Gates:** Tự động kiểm tra chất lượng AI trên mỗi PR, yêu cầu Intent Accuracy $\ge 95\%$ và Zero-Hallucination $100\%$.
+
+---
+
+## 🚀 Khởi Động Dự Án (Quickstart)
+
+### 1. Chạy Trực Tiếp Bằng Python (Development)
 
 ```bash
+# 1. Clone repository & tạo môi trường ảo
+git clone https://github.com/giangkh1908/Vinfast-RAG.git
+cd Vinfast-RAG
+python -m venv .venv
+source .venv/bin/activate  # Hoặc .venv\Scripts\activate trên Windows
+
+# 2. Cài đặt dependencies
 pip install -r requirements.txt
-cp .env.example .env   # điền OPENROUTER_API_KEY, QDRANT_*, PG_DSN
-PYTHONUTF8=1 python scripts/run_pipeline.py --version v1 --recreate --promote
+
+# 3. Cấu hình biến môi trường
+cp .env.example .env
+# Mở file .env và điền các API Key (DeepInfra/OpenRouter, Qdrant Cloud, Neon PostgreSQL...)
+
+# 4. Khởi chạy Server
+uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-## Chạy app
+- **API Documentation (Swagger UI):** [http://localhost:8000/docs](http://localhost:8000/docs)
+- **ReDoc Interactive Docs:** [http://localhost:8000/redoc](http://localhost:8000/redoc)
+
+---
+
+### 2. Chạy Bằng Production Docker
+
+Toàn bộ dịch vụ cơ sở dữ liệu (PostgreSQL, Qdrant, Redis) được kết nối trực tiếp đến Managed Cloud:
 
 ```bash
-# Backend (serve cả frontend đã build ở app/static):
-PYTHONUTF8=1 .venv/Scripts/python -m uvicorn app.main:app --port 8000
+# Build và chạy container
+docker compose -f docker-compose.prod.yml up -d --build
 
-# Frontend dev (nếu sửa UI — build lại khi xong):
-cd frontend && npm run dev        # http://localhost:5173 (proxy /api → :8000)
-cd frontend && npm run build      # build thẳng vào app/static
+# Kiểm tra logs container
+docker compose -f docker-compose.prod.yml logs -f api
 ```
 
-## Tài liệu
+---
 
-| Doc | Nội dung |
+## 📖 Danh Mục Tài Liệu Kỹ Thuật (Documentation)
+
+| Tài liệu | Mục đích |
 |---|---|
-| [`docs/INTENT_PLANNING.md`](docs/INTENT_PLANNING.md) | Hybrid intent (12 intent) + deterministic tool plan — LLM không đoán tham số |
-| [`docs/MEMORY_PLAN.md`](docs/MEMORY_PLAN.md) | Multi-turn memory: chat_sessions, summary mỗi 7 turn, window 7 turn, token limits |
-| [`docs/FRONTEND_PLAN.md`](docs/FRONTEND_PLAN.md) | Frontend React+TS: SSE, StatusBar, markdown, localStorage session |
-| [`docs/LATENCY.md`](docs/LATENCY.md) | Đo latency, feature check (context -40x), TTFT provider, hướng Redis |
-| [`docs/architecture.md`](docs/architecture.md) | Kiến trúc tổng + module map |
-| [`docs/GUIDE.md`](docs/GUIDE.md) | Hướng dẫn chung |
-| [`docs/DATA_PIPELINE.md`](docs/DATA_PIPELINE.md) | Pipeline data |
-| [`docs/DATA_SCHEMA_SPEC.md`](docs/DATA_SCHEMA_SPEC.md) | Schema DB (car_specs, price_list, chat_sessions...) |
+| 📘 [**API Integration Guide**](docs/API_INTEGRATION_GUIDE.md) | **Dành cho Frontend / Mobile**: Chi tiết request/response SSE, REST API, mã mẫu TypeScript/React. |
+| 🛠️ [**DevOps & Monitoring Plan**](walkthrough.md) | Báo cáo chi tiết hạ tầng Docker, Healthcheck, Telemetry, Prompt Registry và CI/CD. |
+| 🧠 [**Intent & Planning Spec**](docs/INTENT_PLANNING.md) | Kiến trúc Hybrid Intent và bảng quy tắc ánh xạ công cụ xác định. |
+| 💾 [**Data Pipeline & Ingestion**](docs/DATA_PIPELINE.md) | Quy trình ETL, làm sạch dữ liệu xe VinFast, tạo embeddings và nạp vào Qdrant + PostgreSQL. |
+| 🗄️ [**Database Schema Specification**](docs/DATA_SCHEMA_SPEC.md) | Chi tiết thiết kế các bảng: `car_specs`, `price_list_active`, `chat_sessions`, `request_metrics`, `prompt_registry`. |
+| ⚡ [**Caching & Latency Optimization**](docs/LATENCY.md) | Chiến lược tối ưu TTFT, Exact-IO caching và Upstash Redis. |
 
-## Hạn chế data đã biết
+---
 
-- **Bảo hành tổng quát**: ✅ CÓ — 28 chunks từ `data/raw/vn_vi_chinh-sach-bao-hanh-oto...txt` (model_id null) trong `vivu_policy` (thời hạn bảo hành từng dòng xe, phạm vi bảo hành...). Lưu ý: `data/05_chinh_sach_dich_vu/chinh_sach_bao_hanh.md` rỗng (0 byte) nhưng KHÔNG ảnh hưởng — pipeline ingest từ raw txt.
-- **Bảo hành theo model (SVC PDF)**: chỉ có VF3/5/6/MPV7 — VF2/7/8/9 chưa có bản policy model-specific (nhưng general policy đã phủ).
-- VF6 không có dòng `sunroof_type` trong car_specs → bot trả "chưa được ghi nhận" (đúng rule).
+## 🧪 Kiểm Thử Tự Động (Testing & Quality Gates)
+
+Dự án tích hợp 3 bộ kiểm thử tự động toàn diện:
+
+```bash
+# 1. Kiểm tra Healthcheck, Cost Engine & Prompt Admin APIs
+python tests/test_devops_and_metrics.py
+
+# 2. Kiểm tra 48 tiêu chuẩn Decision Log Schema
+python tests/test_log_schema.py
+
+# 3. AI Quality & Zero-Hallucination Smoke Benchmark (AI CI Gate)
+python tests/test_ai_smoke_eval.py
+```
+
+---
+
+## 🤝 Liên Hệ & Đóng Góp
+
+- **Maintainer:** ViVu Engineering Team
+- **Repository:** [giangkh1908/Vinfast-RAG](https://github.com/giangkh1908/Vinfast-RAG)
+- **License:** MIT License
