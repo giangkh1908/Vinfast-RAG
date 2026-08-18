@@ -237,7 +237,39 @@ async def classify_node(state: AgentState) -> dict:
     spec_key = extract_spec_key(query) if intent in ("feature_presence", "cross_model_feature") else None
 
     # Intent KHÔNG cần model → đi thẳng (KB search, cross-model scan, danh sách, link...)
-    _NO_MODEL_INTENTS = {"cross_model_feature", "models_list", "policy", "general", "utility", "out_of_scope"}
+    _NO_MODEL_INTENTS = {"greeting", "thanks", "identity", "cross_model_feature", "models_list", "policy", "general", "utility", "out_of_scope"}
+
+    # Xử lý các câu chào hỏi / cảm ơn / giới thiệu bot thân thiện như Vivi VinFast
+    if intent == "greeting":
+        return {
+            "decision": "respond",
+            "reason_code": "greeting",
+            "response_text": "Xin chào Quý khách! Vivi rất hân hạnh được hỗ trợ. Quý khách đang quan tâm đến sản phẩm hoặc dịch vụ nào của VinFast ạ? 😊",
+            "entities": entities,
+            "specificity": "clear",
+            "category": "general",
+            "intent": "greeting",
+        }
+    if intent == "thanks":
+        return {
+            "decision": "respond",
+            "reason_code": "thanks",
+            "response_text": "Dạ không có gì ạ! Vivi rất vui được hỗ trợ Quý khách. Nếu cần thêm thông tin gì về xe VinFast, Quý khách cứ nhắn Vivi nhé! 😊",
+            "entities": entities,
+            "specificity": "clear",
+            "category": "general",
+            "intent": "thanks",
+        }
+    if intent == "identity":
+        return {
+            "decision": "respond",
+            "reason_code": "identity",
+            "response_text": "Xin chào Quý khách! Mình là Vivi — trợ lý ảo tư vấn xe VinFast. Mình có thể hỗ trợ Quý khách tra cứu thông tin sản phẩm, giá bán, thông số kỹ thuật, so sánh xe và các chính sách ưu đãi của các dòng ô tô điện VinFast (VF 3, VF 5, VF 6, VF 7, VF 8, VF 9...). Quý khách đang quan tâm đến mẫu xe nào ạ? 😊",
+            "entities": entities,
+            "specificity": "clear",
+            "category": "general",
+            "intent": "identity",
+        }
 
     # Missing model — chỉ clarify khi intent THẬT SỰ cần model
     if not has_model and intent not in _NO_MODEL_INTENTS:

@@ -124,12 +124,14 @@ async def respond_node(state: AgentState) -> dict:
             url = tr["result"].get("source_url", "")
             logger.info("RESPOND: tool[%d]=%s source_url=%s", i, tr.get("tool"), url or "EMPTY")
 
-    if decision == "clarify":
+    if response_text:
+        answer = response_text
+    elif decision == "clarify":
         answer = _DEFAULT_REPLY
     elif decision == "refuse":
         answer = _DEFAULT_REPLY
     elif decision == "out_of_scope":
-        answer = _DEFAULT_REPLY
+        answer = "Xin lỗi, câu hỏi này nằm ngoài phạm vi tư vấn xe VinFast. Quý khách có thể hỏi về thông số kỹ thuật, giá bán hoặc chính sách của các dòng xe VinFast ạ! 😊"
     else:
         answer = final_response
     

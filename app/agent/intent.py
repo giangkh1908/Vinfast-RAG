@@ -15,6 +15,9 @@ logger = logging.getLogger("bds.intent")
 
 # ── Các intent (enum) ──────────────────────────────────────────────────────
 INTENTS = (
+    "greeting",             # chào hỏi (xin chào, hello, hi...)
+    "thanks",               # cảm ơn, tạm biệt
+    "identity",             # bạn là ai, giới thiệu bot
     "price",                # giá / giá niêm yết
     "spec_query",           # hỏi thông số kỹ thuật (có topic)
     "feature_presence",     # "X có Y không?"
@@ -26,7 +29,7 @@ INTENTS = (
     "utility",              # link / đặt lịch / showroom / trả góp...
     "policy",               # bảo hành / bảo dưỡng / chính sách (nội dung)
     "general",              # chưa xác định
-    "out_of_scope",         # chào hỏi / không liên quan
+    "out_of_scope",         # không liên quan
 )
 
 # Intent liên quan thông số → cần spec_category
@@ -95,20 +98,20 @@ _SPEC_CATEGORY_PATTERNS: list[tuple[str | None, tuple[str, ...]]] = [
 ]
 
 # ── Intent rules (thứ tự ưu tiên quan trọng) ───────────────────────────────
-_UTILITY_RE = re.compile(
-    r"(showroom|trạm\s*sạc|đại\s*lý|cửa\s*hàng|chi\s*nhánh|"
-    r"lái\s*thử|test\s*drive|đăng\s*ký\s*lái|"
-    r"đặt\s*lịch|booking|lịch\s*hẹn|"
-    r"trả\s*góp|vay|thẩm\s*định|lăn\s*bánh|đăng\s*ký\s*xe|"
-    r"khuyến\s*mãi|ưu\s*đãi|voucher|"
-    r"hotline|liên\s*hệ|gặp\s*sales|"
-    r"link\s*bảo\s*dưỡng|lịch\s*bảo\s*dưỡng)",
+_GREETING_ONLY_RE = re.compile(
+    r"^(xin\s*chào|chào\s*(bạn|em|ad|admin|vivu|vinfast|mình|nhé|nha)?|hello|hi\b|helo|alo|hế\s*lô|chào\s*buổi\s*(sáng|trưa|chiều|tối))\b[\s!.,?~😊👋❤️]*$",
+    re.IGNORECASE,
+)
+_THANKS_ONLY_RE = re.compile(
+    r"^(cảm\s*ơn|cam\s*on|cám\s*ơn|thank\s*you|thanks|tks|tạm\s*biệt|bye\b|bai\s*bai)\b[\s!.,?~😊👋❤️]*$",
+    re.IGNORECASE,
+)
+_IDENTITY_RE = re.compile(
+    r"(bạn\s*là\s*ai|bạn\s*tên\s*gì|bạn\s*giúp\s*được\s*gì|chức\s*năng\s*của\s*bạn|giới\s*thiệu\s*bản\s*thân|em\s*là\s*ai|vivi\s*là\s*ai)",
     re.IGNORECASE,
 )
 _OUT_OF_SCOPE_RE = re.compile(
-    r"(^|\s)(chào|hello|hi\b|xin\s*chào|alo)\b|"
-    r"cảm\s*ơn|thank|cám\s*ơn|tạm\s*biệt|bye|"
-    r"bạn\s*là\s*ai|giúp\s*được\s*gì|rảnh\s*không",
+    r"(thời\s*tiết|chứng\s*khoán|bóng\s*đá|chính\s*trị|tập\s*làm\s*thơ|kể\s*chuyện\s*cười)",
     re.IGNORECASE,
 )
 _PRICE_RE = re.compile(
@@ -149,6 +152,18 @@ _COLORS_RE = re.compile(
 _POLICY_RE = re.compile(
     r"(bảo\s*hành|bảo\s*dưỡng|chính\s*sách|điều\s*khoản|sửa\s*chữa|cứu\s*hộ|"
     r"dịch\s*vụ\s*sau\s*bán|pháp\s*lý|hỗ\s*trợ\s*kỹ\s*thuật|đặt\s*cọc|đặt\s*coc)",
+    re.IGNORECASE,
+)
+
+
+_UTILITY_RE = re.compile(
+    r"(showroom|trạm\s*sạc|đại\s*lý|cửa\s*hàng|chi\s*nhánh|"
+    r"lái\s*thử|test\s*drive|đăng\s*ký\s*lái|"
+    r"đặt\s*lịch|booking|lịch\s*hẹn|"
+    r"trả\s*góp|vay|thẩm\s*định|lăn\s*bánh|đăng\s*ký\s*xe|"
+    r"khuyến\s*mãi|ưu\s*đãi|voucher|"
+    r"hotline|liên\s*hệ|gặp\s*sales|"
+    r"link\s*bảo\s*dưỡng|lịch\s*bảo\s*dưỡng)",
     re.IGNORECASE,
 )
 
@@ -207,9 +222,17 @@ def extract_spec_key(query: str) -> str | None:
 
 def classify_intent(query: str, topic: str = "general") -> str:
     """Rule-based intent. topic từ _classify_topic (nodes/classify.py)."""
-    q = query
-    if _OUT_OF_SCOPE_RE.search(q):
-        return "out_of_scope"
+    q = query.strip()
+
+    # 1. Chào hỏi / Cảm ơn / Giới thiệu thuần tuý
+    if _GREETING_ONLY_RE.match(q):
+        return "greeting"
+    if _THANKS_ONLY_RE.match(q):
+        return "thanks"
+    if _IDENTITY_RE.search(q):
+        return "identity"
+
+    # 2. Các câu hỏi nghiệp vụ xe VinFast (ưu tiên nhận diện để không chặn câu hỏi có kèm lời chào)
     if _UTILITY_RE.search(q):
         return "utility"
     if _PRICE_RE.search(q):
@@ -230,6 +253,11 @@ def classify_intent(query: str, topic: str = "general") -> str:
         return "policy"
     if topic != "general":
         return "spec_query"
+
+    # 3. Câu hỏi ngoài phạm vi
+    if _OUT_OF_SCOPE_RE.search(q):
+        return "out_of_scope"
+
     return "general"
 
 
