@@ -100,10 +100,11 @@ def is_junk_chunk(chunk: dict[str, Any]) -> bool:
         return True
     # (3) nav menu leak: KHÔNG có section title (chunk gốc) + text là/mở đầu bằng nav items
     if len(chunk.get("section_path", [])) <= 1:
-        lines = [l.strip() for l in text.splitlines() if l.strip()]
-        nav_lines = [l for l in lines if _NAV_ITEM_RE.match(l)]
+        lines = [line.strip() for line in text.splitlines() if line.strip()]
+        nav_lines = [line for line in lines if _NAV_ITEM_RE.match(line)]
         if len(nav_lines) >= 2 and len(nav_lines) / max(len(lines), 1) >= 0.5:
             return True
+
         if re.search(r"^-\s*(gi[aá] b[aá]n|gi[ớo]i thi[ệe]u|ngo[ạa]i th[ấa]t|"
                      r"n[ộo]i th[ấa]t|th[ôo]ng s[ốo])\s*\n", text, re.MULTILINE):
             return True

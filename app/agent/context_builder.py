@@ -24,7 +24,7 @@ _QUERY_TOPIC_MAP = {
     "kích thước": ["dimension"], "chiều dài": ["dimension"], "chiều rộng": ["dimension"],
     "chiều cao": ["dimension"], "trọng lượng": ["dimension"], "wheelbase": ["dimension"],
     "túi khí": ["safety"], "airbag": ["safety"], "phanh": ["safety"], "abs": ["safety"],
-    "esc": ["safety"], "an toàn": ["safety"], "an toàn": ["safety"],
+    "esc": ["safety"], "an toàn": ["safety"],
     "adas": ["adas"], "cruise": ["adas"], "lane": ["adas"], "collision": ["adas"],
     "aeb": ["adas"], "blind spot": ["adas"], "parking": ["adas"],
     "nội thất": ["interior"], "ghế": ["interior"], "chỗ ngồi": ["interior"], "số chỗ": ["interior"], "màn hình": ["interior"],
@@ -169,7 +169,7 @@ def _format_colors(result: dict) -> str:
     if variants:
         # Group by color to show fee
         seen = set()
-        lines.append(f"\n  Chi tiết màu:")
+        lines.append("\n  Chi tiết màu:")
         for v in variants:
             key = f"{v['color']}|{v['interior']}"
             if key in seen:
@@ -254,8 +254,8 @@ def _format_links(result: dict, label: str) -> str:
     if not links:
         return f"Không tìm thấy link {label}."
     lines = [f"Link {label}:"]
-    for l in links:
-        lines.append(f"  - {l['label']}: {l['url']}")
+    for item in links:
+        lines.append(f"  - {item['label']}: {item['url']}")
     return "\n".join(lines)
 
 
@@ -264,6 +264,7 @@ def _format_maintenance(result: dict) -> str:
     if not links:
         return "Không tìm thấy link bảo dưỡng."
     lines = ["Link bảo dưỡng:"]
-    for l in links:
-        lines.append(f"  - Năm {l['year']}: {l['source_url']}")
+    for item in links:
+        lines.append(f"  - Năm {item['year']}: {item['source_url']}")
     return "\n".join(lines)
+

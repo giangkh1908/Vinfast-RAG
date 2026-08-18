@@ -11,12 +11,11 @@ Thu thập và tổng hợp chỉ số vận hành của chatbot:
 import asyncio
 import json
 import logging
-import time
 import uuid
 from typing import Any
 
 from app.config import settings
-from app.core.db import get_pool, run_with_db_retry, RETRYABLE_DB_ERRORS
+from app.core.db import get_pool, run_with_db_retry
 
 logger = logging.getLogger("bds.telemetry")
 
@@ -208,7 +207,7 @@ def log_metric_background(task_coro):
 async def get_metrics_overview(hours: int = 24) -> dict[str, Any]:
     """Lấy số liệu KPI tổng quan trong N giờ qua."""
     await ensure_telemetry_schema()
-    
+
     query = """
     SELECT
         COUNT(*) AS total_requests,
@@ -228,7 +227,7 @@ async def get_metrics_overview(hours: int = 24) -> dict[str, Any]:
     FROM request_metrics
     WHERE created_at >= now() - ($1 || ' hours')::interval
     """
-    
+
     async def _fetch():
         pool = await get_pool()
         return await pool.fetchrow(query, str(hours))
@@ -268,7 +267,7 @@ async def get_metrics_overview(hours: int = 24) -> dict[str, Any]:
 async def get_metrics_timeseries(hours: int = 24) -> list[dict[str, Any]]:
     """Lấy dữ liệu chuỗi thời gian phân đoạn theo giờ."""
     await ensure_telemetry_schema()
-    
+
     query = """
     SELECT
         date_trunc('hour', created_at) AS timestamp,
@@ -307,7 +306,7 @@ async def get_metrics_timeseries(hours: int = 24) -> list[dict[str, Any]]:
 async def get_metrics_intents(hours: int = 168) -> list[dict[str, Any]]:
     """Phân bổ các loại câu hỏi (intent) và mức độ phổ biến."""
     await ensure_telemetry_schema()
-    
+
     query = """
     SELECT
         COALESCE(intent, 'general') AS intent,
@@ -362,7 +361,7 @@ async def get_metrics_logs(
     where_clause = " AND ".join(conditions)
 
     count_query = f"SELECT COUNT(*) FROM request_metrics WHERE {where_clause}"
-    
+
     query = f"""
     SELECT
         id, request_id, session_id, created_at, query_text, intent, decision,

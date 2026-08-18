@@ -3,7 +3,11 @@ Test decision log schema against sample-smoke-log.json format.
 
 Run: python tests/test_log_schema.py
 """
-import sys, os, io, asyncio, json, time
+import sys
+import os
+import io
+import asyncio
+import json
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
@@ -45,7 +49,7 @@ async def test_decision_log_schema():
     print("\n═══ 1. DECISION LOG SCHEMA TESTS ═══")
 
     from app.agent.agent_loop import AgentLoop
-    from app.agent.decision import DecisionLog, RetrievedChunk, DisplayedCitation, make_decision_log, log_store
+    from app.agent.decision import make_decision_log, log_store
 
     agent = AgentLoop()
     log_store.clear()
@@ -165,10 +169,11 @@ async def test_log_store_export():
     # Verify each line is valid JSON
     for i, line in enumerate(lines[:3]):
         try:
-            d = json.loads(line)
-            report(f"EXPORT-json-{i}", True, f"valid JSON")
+            json.loads(line)
+            report(f"EXPORT-json-{i}", True, "valid JSON")
         except json.JSONDecodeError:
-            report(f"EXPORT-json-{i}", False, f"invalid JSON")
+            report(f"EXPORT-json-{i}", False, "invalid JSON")
+
 
     os.unlink(path)
 

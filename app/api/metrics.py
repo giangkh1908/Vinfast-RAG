@@ -6,10 +6,9 @@ Bảo mật: Yêu cầu Header `X-Admin-Key` khớp với `ADMIN_API_KEY` trong 
 import logging
 from typing import Optional
 
-from fastapi import APIRouter, Header, HTTPException, Query, Security, status
+from fastapi import APIRouter, Header, HTTPException, Query, Security
 from fastapi.responses import JSONResponse
 
-from app.config import settings
 from app.core.telemetry import (
     get_metrics_intents,
     get_metrics_logs,

@@ -1,11 +1,10 @@
 import logging
-import re
 import time
 import asyncio
 from dataclasses import dataclass, field
 from urllib.parse import unquote, urlparse
 
-from app.agent.decision import make_decision_log, log_store, get_clarify_messages
+from app.agent.decision import make_decision_log, log_store
 from app.agent.graph_state import AgentState
 from app.agent.classifier import MODEL_RE, normalize_model
 
@@ -117,7 +116,7 @@ async def respond_node(state: AgentState) -> dict:
 
     logger.info("RESPOND: decision=%s reason=%s assessment=%s tools=%d",
                 decision, reason_code, assessment, len(tool_results))
-    
+
     # Debug: check tool_results for source_url
     for i, tr in enumerate(tool_results):
         if tr.get("success") and isinstance(tr.get("result"), dict):
@@ -134,12 +133,12 @@ async def respond_node(state: AgentState) -> dict:
         answer = "Xin lỗi, câu hỏi này nằm ngoài phạm vi tư vấn xe VinFast. Quý khách có thể hỏi về thông số kỹ thuật, giá bán hoặc chính sách của các dòng xe VinFast ạ! 😊"
     else:
         answer = final_response
-    
+
     # Lấy toàn bộ link URL nguồn từ tool results (hỗ trợ nhiều model khi so sánh)
     source_links_str = ""
     if decision == "answer" and tool_results:
         source_links_str = format_source_links(tool_results, entities.get("model_code"))
-    
+
     # Thêm link URL ở cuối câu trả lời (markdown link ngắn, click được)
     if source_links_str:
         answer = answer.rstrip() + "\n\n🔗 Xem thêm: " + source_links_str

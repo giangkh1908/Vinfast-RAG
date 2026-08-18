@@ -2,7 +2,11 @@
 
 Run: python tests/test_classify.py
 """
-import sys, os, io, asyncio, time
+import sys
+import os
+import io
+import asyncio
+import time
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
@@ -23,9 +27,9 @@ def report(tid, passed, step, detail):
 
 async def main():
     from app.agent.nodes.classify import classify_node
-    from app.agent.graph_state import AgentState
 
     print("╔═══════════════════════════════════════╗")
+
     print("║   CLASSIFY EDGE CASE TESTS            ║")
     print("╚═══════════════════════════════════════╝\n")
 
@@ -106,13 +110,13 @@ async def main():
     ]
 
     for query, history, exp_decision, exp_reason_kw, desc in cases:
-        state = AgentState = {"query": query, "history": history, "t0": time.time()}
+        state = {"query": query, "history": history, "t0": time.time()}
         try:
             cr = await classify_node(state)
             decision = cr.get("decision")
             reason = cr.get("reason_code", "")
             entities = cr.get("entities", {})
-            category = cr.get("category", "")
+
 
             decision_ok = decision == exp_decision
             reason_ok = exp_reason_kw is None or exp_reason_kw in reason

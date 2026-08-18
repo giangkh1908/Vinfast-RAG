@@ -1,7 +1,6 @@
 import logging
 import time
 
-from app.config import settings
 from app.core.db import get_pool
 
 logger = logging.getLogger("bds.schemas")

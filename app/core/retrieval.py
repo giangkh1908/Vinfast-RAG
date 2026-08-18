@@ -1,5 +1,6 @@
-﻿import json
+import json
 import logging
+import os as _os
 import re
 import time
 import unicodedata
@@ -12,6 +13,7 @@ from requests.adapters import HTTPAdapter
 
 from app.config import settings
 from app.core.cache import cache, make_embed_key, make_hs_key
+
 
 logger = logging.getLogger("retrieval")
 
@@ -40,8 +42,8 @@ def _get_embed_client():
     return _embed_client
 
 # Collections to search. Override via QDRANT_DENSE_COLLECTIONS env var.
-import os as _os
 _dense_env = _os.environ.get("QDRANT_DENSE_COLLECTIONS", "")
+
 DENSE_COLLECTIONS = [c.strip() for c in _dense_env.split(",") if c.strip()] if _dense_env else ["vivu_product_info", "vivu_policy", "vivu_maintenance"]
 SPARSE_COLLECTION = "sparse"
 

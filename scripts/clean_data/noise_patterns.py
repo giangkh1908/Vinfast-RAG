@@ -144,7 +144,7 @@ def remove_money_sentences(paragraphs: list[str]) -> list[str]:
 def strip_price_spans(text: str) -> str:
     """Remove price statements (amount + currency unit) that leaked into text.
 
-    Handles amount and unit split across lines (e.g. "613.700.000\n\nVNĐ\*")
+    Handles amount and unit split across lines (e.g. "613.700.000\n\nVNĐ\\*")
     which remove_money_sentences misses because it checks per-paragraph.
     Also drops leftover standalone price phrases such as "Giá bán từ".
     """

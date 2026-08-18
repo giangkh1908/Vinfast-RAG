@@ -140,7 +140,7 @@ def run(version: str, recreate: bool, no_sparse: bool, commit: str,
             print(f"  sửa rồi chạy: version_manager.py promote --version {version}",
                   file=sys.stderr)
             return rc
-        
+
         # Smoke test sau khi promote thành công
         if smoke_test:
             print(_bar("SMOKE TEST"))
@@ -157,7 +157,7 @@ def run(version: str, recreate: bool, no_sparse: bool, commit: str,
             except Exception as e:
                 print(f"[run_pipeline] SMOKE TEST ERROR: {e}", file=sys.stderr)
                 print("  Version vẫn active, nhưng cần kiểm tra thủ công", file=sys.stderr)
-        
+
         return rc
     print("Verify:")
     print("  python scripts/version_manager.py status")

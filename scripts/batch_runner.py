@@ -33,7 +33,7 @@ def run_batch(input_path: str, output_path: str, api_url: str, history_turns: in
         return 1
 
     run_id = f"run_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:6]}"
-    run_timestamp = datetime.now(timezone.utc).isoformat()
+    datetime.now(timezone.utc).isoformat()
 
     print(f"[batch_runner] run_id={run_id}")
     print(f"[batch_runner] input={input_file}")

@@ -286,7 +286,8 @@ def _backfill_cache(client: QdrantClient, version: str) -> int:
         collection = f"{col}__{version}"
         if not client.collection_exists(collection):
             continue
-        chunks = [_json.loads(l) for l in f.read_text(encoding="utf-8").splitlines() if l.strip()]
+        chunks = [_json.loads(line) for line in f.read_text(encoding="utf-8").splitlines() if line.strip()]
+
         if not chunks:
             continue
         ids = [str(_uuid.uuid5(ns, c["id"])) for c in chunks]
@@ -401,7 +402,7 @@ def cmd_recover(args=None) -> int:
         if not aliases:
             print("[recover] không có alias nào trong Qdrant")
             return 1
-        
+
         # Lấy version từ alias đầu tiên (tất cả alias phải cùng version)
         qdrant_version = None
         for alias_name, target in aliases.items():
@@ -414,21 +415,21 @@ def cmd_recover(args=None) -> int:
                     elif qdrant_version != v:
                         print(f"[recover] WARNING: alias trỏ đến nhiều version khác nhau: {qdrant_version} vs {v}")
                         return 1
-        
+
         if qdrant_version is None:
             print("[recover] không tìm thấy version từ alias")
             return 1
-        
+
         # 2) Đọc PG is_current
         pg_version = current_version_pg()
-        
+
         print(f"[recover] Qdrant alias → {qdrant_version}")
         print(f"[recover] PG is_current → {pg_version or 'None'}")
-        
+
         if pg_version == qdrant_version:
             print("[recover] ✓ already consistent")
             return 0
-        
+
         # 3) Sync PG → Qdrant
         print(f"[recover] syncing PG is_current → {qdrant_version}")
         postgres_ingest.set_current(conn, qdrant_version, rollback=False)
@@ -461,7 +462,7 @@ def main() -> int:
     p_del.set_defaults(func=cmd_delete)
 
     sub.add_parser("migrate-v1", help="(1 lần) chuyển v1 unversioned → __v1 + alias, không re-embed").set_defaults(func=cmd_migrate_v1)
-    
+
     sub.add_parser("recover", help="Recover 2-store consistency: sync PG is_current với Qdrant alias").set_defaults(func=cmd_recover)
 
     args = ap.parse_args()

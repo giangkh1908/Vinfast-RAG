@@ -1,11 +1,7 @@
-import asyncio
-import json
-from collections import Counter
 
-from app.config import settings
 from app.core.db import get_pool
 from app.core.cache import (
-    cache, 
+    cache,
     make_tool_price_key, make_tool_specs_key, make_tool_colors_key, make_tool_models_key,
     TOOL_PRICE_TTL, TOOL_DATA_TTL
 )
@@ -27,7 +23,7 @@ async def get_price(model_code: str, version: str = None) -> dict:
         cached = await cache.get_json(cache_key)
         if cached:
             return cached
-    
+
     pool = await get_pool()
     mid = _model_id(model_code)
 
@@ -79,7 +75,7 @@ async def get_price(model_code: str, version: str = None) -> dict:
         "related_models": related_models,
         "note": "Giá niêm yết chưa bao gồm chi phí lăn bánh. Khuyến mãi có thể thay đổi theo thời gian và khu vực.",
     }
-    
+
     # Set cache. Skip nếu cache_key=None (PG down)
     if cache_key is not None:
         await cache.set_json(cache_key, result, TOOL_PRICE_TTL)
@@ -99,7 +95,7 @@ async def get_colors(model_code: str, version: str = None) -> dict:
         cached = await cache.get_json(cache_key)
         if cached:
             return cached
-    
+
     pool = await get_pool()
     mid = _model_id(model_code)
 
@@ -145,7 +141,7 @@ async def get_colors(model_code: str, version: str = None) -> dict:
             for r in rows
         ],
     }
-    
+
     if cache_key is not None:
         await cache.set_json(cache_key, result, TOOL_DATA_TTL)
     return result
@@ -158,7 +154,7 @@ async def get_specs(model_code: str, version: str = None, category: str = None, 
         cached = await cache.get_json(cache_key)
         if cached:
             return cached
-    
+
     pool = await get_pool()
 
     conditions = ["model_code = $1"]
@@ -233,7 +229,7 @@ async def get_specs(model_code: str, version: str = None, category: str = None, 
         "related_models": related_models,
         "note": "Thông số có thể khác nhau giữa các phiên bản. Tham khảo thêm model liên quan để so sánh.",
     }
-    
+
     if cache_key is not None:
         await cache.set_json(cache_key, result, TOOL_DATA_TTL)
     return result
@@ -274,7 +270,7 @@ async def list_available_models() -> dict:
         cached = await cache.get_json(cache_key)
         if cached:
             return cached
-    
+
     pool = await get_pool()
     async with pool.acquire() as conn:
         rows = await conn.fetch(

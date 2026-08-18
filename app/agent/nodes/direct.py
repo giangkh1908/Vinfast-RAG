@@ -10,7 +10,7 @@ import time
 from app.agent.direct_plan import build_direct_plan, needs_kb
 from app.agent.graph_state import AgentState
 from app.agent.prompts import build_system_message
-from app.agent.tools import TOOL_REGISTRY, search_knowledge_base
+from app.agent.tools import TOOL_REGISTRY
 from app.agent.llm import INPUT_MAX_TOKENS, truncate_messages
 
 logger = logging.getLogger("bds.graph.direct")
@@ -29,7 +29,7 @@ async def direct_fetch_node(state: AgentState) -> dict:
         for name, args in names_args:
             func = TOOL_REGISTRY.get(name)
             coros.append(func(**args) if func else None)
-        
+
         # Auto-inject knowledge base NGAY TỪ ĐẦU (song song với các tool khác)
         # BỎ QUA khi intent là feature check — specs đã đủ, KB noise làm phình context
         kb_task = None
@@ -39,7 +39,7 @@ async def direct_fetch_node(state: AgentState) -> dict:
                 from app.agent.tools import search_knowledge_base
                 kb_task = search_knowledge_base(state.get("query", ""), model_id=model_code)
                 coros.append(kb_task)
-        
+
         # Chạy TẤT CẢ song song
         gathered = await asyncio.gather(*coros, return_exceptions=True)
 

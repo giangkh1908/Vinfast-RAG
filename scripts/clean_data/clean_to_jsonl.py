@@ -123,16 +123,17 @@ def chunks_from_text(text: str, meta: dict[str, Any], cls: dict[str, Any],
         lines.append(line)
 
     # Bỏ dòng lặp lại >=3 lần (nav/sidebar lặp) — giữ lần đầu
-    line_counts = Counter(clean_line(l) for l in lines)
+    line_counts = Counter(clean_line(item) for item in lines)
     seen_dup: set[str] = set()
     deduped: list[str] = []
-    for l in lines:
-        key = clean_line(l)
+    for item in lines:
+        key = clean_line(item)
         if line_counts.get(key, 0) >= 3:
             if key in seen_dup:
                 continue
             seen_dup.add(key)
-        deduped.append(l)
+        deduped.append(item)
+
     lines = deduped
 
     chunks: list[dict[str, Any]] = []

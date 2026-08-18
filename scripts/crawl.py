@@ -339,8 +339,9 @@ def parse_chunks(md_text: str) -> list[dict]:
 
 def _clean_md(marker_md: str) -> str:
     """Bỏ các dòng marker chunk -> Markdown sạch để người đọc/verify."""
-    lines = [l for l in marker_md.splitlines() if not CHUNK_MARKER_RE.match(l.strip())]
+    lines = [line for line in marker_md.splitlines() if not CHUNK_MARKER_RE.match(line.strip())]
     md = "\n".join(lines)
+
     md = re.sub(r"[ \t]+\n", "\n", md)
     md = re.sub(r"\n{3,}", "\n\n", md)
     return md.strip() + "\n"

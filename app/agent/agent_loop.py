@@ -1,6 +1,5 @@
 import asyncio
 import logging
-import re
 import time
 
 from app.agent.graph import get_compiled_graph
@@ -20,16 +19,16 @@ def _is_cacheable(history: list[dict], session_id: str, intent: str) -> bool:
     # Single-turn: history rỗng
     if history:
         return False
-    
+
     # Có session_id
     if not session_id:
         return False
-    
+
     # Intent rõ ràng (không phải greeting, clarify, out_of_scope)
     non_cacheable_intents = {"out_of_scope", "greeting", "chitchat", "clarify"}
     if intent in non_cacheable_intents:
         return False
-    
+
     return True
 
 
@@ -47,7 +46,7 @@ class AgentLoop:
     ) -> AgentResult:
         # Cap input người dùng: cắt đuôi nếu vượt token budget
         query = truncate_text(query, USER_INPUT_MAX_TOKENS)
-        
+
         # 1. Exact I/O Cache: Kiểm tra ngay input -> output bất kể single hay multi-turn
         io_key = make_exact_io_key(query)
         if cache.enabled:
@@ -64,12 +63,12 @@ class AgentLoop:
                         "reason_code": "exact_io_cache_hit",
                     },
                 )
-        
+
         # Fast classify để extract entities và intent (deterministic, không LLM)
         classifier = get_classifier()
         model, version = classifier._detect_model(query)
         intent = classify_intent(query, topic="general")
-        
+
         # Build entities dict cho cache key
         entities = {}
         if model:
@@ -77,10 +76,10 @@ class AgentLoop:
         if version:
             entities["version"] = version
         entities["intent"] = intent
-        
+
         # Check cacheability
         cacheable = _is_cacheable(history, session_id, intent)
-        
+
         # Check cache nếu cacheable và cache enabled
         # cache_key=None khi PG unreachable → skip cache
         if cacheable and cache.enabled:
@@ -88,7 +87,7 @@ class AgentLoop:
                 entities=entities,
                 query=query,
             )
-            
+
             if cache_key is not None:
                 cached = await cache.get_json(cache_key)
                 if cached:
@@ -105,7 +104,7 @@ class AgentLoop:
                     )
         else:
             cache_key = None
-        
+
         # Cache miss hoặc không cacheable - chạy graph bình thường
         state = {
             "query": query,
@@ -122,7 +121,7 @@ class AgentLoop:
                 decision="refuse",
                 classify_result={"decision": "refuse", "reason_code": "system_error"},
             )
-        
+
         # Exact I/O Cache write: lưu input user -> output text cho mọi lần hỏi sau (bất kể single/multi-turn)
         if cache.enabled and result.decision == "answer" and result.response:
             await cache.set_json(
@@ -147,7 +146,7 @@ class AgentLoop:
                 },
                 ttl=ANS_TTL,
             )
-        
+
         return result
 
     async def run_stream(
@@ -169,7 +168,7 @@ class AgentLoop:
         - Không phát lại cả câu ở respond nếu token đã stream rồi
         """
         query = truncate_text(query, USER_INPUT_MAX_TOKENS)
-        
+
         # 1. Exact I/O Cache: Kiểm tra ngay input -> output bất kể single hay multi-turn
         io_key = make_exact_io_key(query)
         if cache.enabled:
@@ -184,12 +183,12 @@ class AgentLoop:
                 yield {"type": "token", "content": resp_text}
                 yield {"type": "done"}
                 return
-        
+
         # Fast classify để extract entities và intent (deterministic, không LLM)
         classifier = get_classifier()
         model, version = classifier._detect_model(query)
         intent = classify_intent(query, topic="general")
-        
+
         # Build entities dict cho cache key
         entities = {}
         if model:
@@ -197,11 +196,11 @@ class AgentLoop:
         if version:
             entities["version"] = version
         entities["intent"] = intent
-        
+
         # Check cacheability
         cacheable = _is_cacheable(history, session_id, intent)
         cache_key = None  # sẽ set bên dưới nếu cacheable
-        
+
         # Check cache nếu cacheable và cache enabled
         # cache_key=None khi PG unreachable → skip cache
         if cacheable and cache.enabled:
@@ -209,14 +208,14 @@ class AgentLoop:
                 entities=entities,
                 query=query,
             )
-            
+
             if cache_key is not None:
                 cached = await cache.get_json(cache_key)
                 if cached:
                     # Cache hit - replay SSE events
                     response = cached["response"]
                     decision = cached.get("decision", "answer")
-                    
+
                     # Yield SSE events (không cần status "Đang tra cứu" vì đã có câu trả lời ngay)
                     yield {"type": "decision", "content": decision}
                     yield {"type": "classify", "content": {
@@ -226,7 +225,7 @@ class AgentLoop:
                     yield {"type": "token", "content": response}
                     yield {"type": "done"}
                     return
-        
+
         # Cache miss hoặc không cacheable - chạy graph bình thường
         state = {
             "query": query,
@@ -325,7 +324,7 @@ class AgentLoop:
                             else:
                                 from app.agent.nodes.respond import source_link_md
                                 yield {"type": "token", "content": "\n\n🔗 Xem thêm: " + source_link_md(result.source_url)}
-                        
+
                         # Exact I/O Cache write: lưu input user -> output text cho mọi lần hỏi sau (bất kể single/multi-turn)
                         if cache.enabled and result.decision == "answer" and result.response:
                             await cache.set_json(

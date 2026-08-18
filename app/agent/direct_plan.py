@@ -7,7 +7,7 @@ route_after_classify sẽ đưa về build_messages (LLM loop) làm fallback cu�
 import re
 
 from app.agent.classifier import MODEL_RE, normalize_model
-from app.agent.intent import MAIN_MODELS, classify_intent, extract_spec_category, extract_spec_key
+from app.agent.intent import MAIN_MODELS, classify_intent
 
 # Fallback topic→category (khi keyword map không khớp)
 _TOPIC_TO_CATEGORY = {

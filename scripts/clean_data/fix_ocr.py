@@ -738,8 +738,6 @@ _VF7 = {
         "| Dung lượng pin (kWh) – khả dụng | 59.6 | 75.3 (ODC 94%) |",
     "| Chủ động chạy chayı mtj tái sap dý (km) – tiêu chuán NEDCC\\*\\*\\* | 430 | 430 |":
         "| Quãng đường chạy một lần sạc đầy (km) – tiêu chuẩn NEDC*** | 430 | 430 |",
-    "| Chủ động chạy chayı mtj tái sap dý (km) – tiêu chuán NEDCC\\*\\*\\* | 430 | 430 |":
-        "| Quãng đường chạy một lần sạc đầy (km) – tiêu chuẩn NEDC*** | 430 | 430 |",
     "| Chủ động trans sac cóng công |": "| Chủ động trạm sạc công cộng |",
     "| Dày sac di đàng |": "| Dây sạc di động |",
     "| Bố sac tịnh nhã |": "| Bộ sạc tại nhà |",
@@ -1282,7 +1280,6 @@ FILE_DICTS = {
 
 def _build_apply(files: list[str]) -> tuple[list[tuple[str, str]], list[tuple[str, str]]]:
     """Ghép shared + file dict thành list (bad, good) theo độ dài giảm dần."""
-    import re
     shared = list(_SHARED.items())
     file_entries = []
     for f in files:

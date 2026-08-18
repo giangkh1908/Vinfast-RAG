@@ -1,5 +1,6 @@
 import json
 import logging
+import time
 import uuid
 
 from fastapi import APIRouter, HTTPException
@@ -7,14 +8,15 @@ from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel
 
 from app.agent.agent_loop import AgentLoop
+from app.agent.decision import log_store
 from app.agent.history import MAX_HISTORY_TOKENS, sanitize_history
 from app.agent.llm import USER_INPUT_MAX_TOKENS, estimate_tokens
 from app.agent.nodes.summarize import SUMMARY_EVERY, summarize_conversation
-from app.core.session_store import get_session, touch_session, update_summary
-from app.core.cache import cache, make_dedup_key, make_answer_key, DEDUP_TTL, ANS_TTL
-from app.agent.classifier import get_classifier
-from app.agent.intent import classify_intent
 from app.agent.prompts import get_active_system_version
+from app.core.cache import DEDUP_TTL, cache, make_dedup_key
+from app.core.session_store import get_session, touch_session, update_summary
+from app.core.telemetry import log_metric_background, record_metric
+
 
 logger = logging.getLogger("bds.api")
 
@@ -105,7 +107,7 @@ async def _finish_turn(
     # Không tính turn cho các case không trả lời được
     if decision != "answer":
         return
-    
+
     await touch_session(session_id, last_message=message)
     new_turn = (session.get("turn_count") or 0) + 1
     if new_turn % SUMMARY_EVERY == 0:
@@ -124,7 +126,7 @@ async def _check_dedupe(session_id: str, message_id: str | None) -> bool:
     """Kiểm tra message đã được xử lý chưa. Trả True nếu là trùng lặp."""
     if not message_id or not cache.enabled:
         return False
-    
+
     dedup_key = make_dedup_key(session_id, message_id)
     # Thử SET NX (chỉ set nếu key chưa tồn tại)
     # Trả về True nếu set thành công (key chưa tồn tại) -> không phải duplicate
@@ -133,22 +135,19 @@ async def _check_dedupe(session_id: str, message_id: str | None) -> bool:
     return not set_success
 
 
-from app.core.telemetry import log_metric_background, record_metric
-import time
-
-
 @router.post("/api/chat")
+
 async def chat(request: ChatRequest):
     req_id = request.message_id or str(uuid.uuid4())
     t_start = time.monotonic()
-    
+
     # Check dedupe nếu có message_id
     if await _check_dedupe(request.session_id, request.message_id):
         return JSONResponse(
             status_code=409,
             content={"error": "Tin nhắn trùng lặp", "message_id": request.message_id}
         )
-    
+
     history, summary, session = await _prepare_request(request)
     agent = get_agent()
     result = await agent.run(
@@ -205,7 +204,7 @@ async def chat_stream(request: ChatRequest):
             status_code=409,
             content={"error": "Tin nhắn trùng lặp", "message_id": request.message_id}
         )
-    
+
     history, summary, session = await _prepare_request(request)
     agent = get_agent()
 
@@ -254,7 +253,7 @@ async def chat_stream(request: ChatRequest):
             t_end = time.monotonic()
             ttft_ms = int((t_first_token - t_start) * 1000) if t_first_token else int((t_end - t_start) * 1000)
             total_latency_ms = int((t_end - t_start) * 1000)
-            
+
             prompt_toks = estimate_tokens(request.message) + sum(estimate_tokens(str(m.get("content", ""))) for m in history)
             compl_toks = estimate_tokens("".join(accumulated_response))
 
@@ -291,10 +290,6 @@ async def chat_stream(request: ChatRequest):
     )
 
 
-
-from app.agent.decision import log_store
-
-
 @router.get("/api/logs")
 async def get_logs(run_id: str = None):
     if run_id:
@@ -310,7 +305,7 @@ async def export_logs(run_id: str = None):
         logs = log_store.get_by_run(run_id)
     else:
         logs = log_store.get_all()
-    lines = [json.dumps(l, ensure_ascii=False) for l in logs]
+    lines = [json.dumps(log_entry, ensure_ascii=False) for log_entry in logs]
     content = "\n".join(lines) + "\n" if lines else ""
     fname = "logs_" + (run_id or "all") + ".jsonl"
     return StreamingResponse(
@@ -318,3 +313,4 @@ async def export_logs(run_id: str = None):
         media_type="application/x-ndjson",
         headers={"Content-Disposition": "attachment; filename=" + fname},
     )
+

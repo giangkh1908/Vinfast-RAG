@@ -16,9 +16,10 @@ from typing import Any
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
-from app.agent.nodes.classify import classify_node
-from app.agent.graph_state import AgentState
-from app.agent.tools import get_specs, get_price
+from app.agent.nodes.classify import classify_node  # noqa: E402
+from app.agent.graph_state import AgentState  # noqa: E402
+from app.agent.tools import get_specs  # noqa: E402
+
 
 
 # 20 Test Cases cốt lõi bao phủ toàn bộ các nhóm tính năng AI
@@ -199,7 +200,7 @@ async def run_ai_smoke_evaluation() -> dict[str, Any]:
         try:
             cr = await classify_node(state)
             actual_decision = cr.get("decision", "answer")
-        except Exception as e:
+        except Exception:
             actual_decision = "error"
 
         # Check Decision
@@ -219,7 +220,7 @@ async def run_ai_smoke_evaluation() -> dict[str, Any]:
             specs_res = await get_specs(model_code=model_code)
             specs_text = str(specs_res)
 
-            
+
             for fact in case["expected_facts"]:
                 if fact.lower() not in specs_text.lower():
                     facts_match = False

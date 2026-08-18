@@ -1,4 +1,4 @@
-﻿import hashlib
+import hashlib
 import json
 import logging
 import os
@@ -302,7 +302,7 @@ class LogStore:
         return list(self._logs)
 
     def get_by_run(self, run_id: str) -> list[dict]:
-        return [l for l in self._logs if l.get("run_id") == run_id]
+        return [log_item for log_item in self._logs if log_item.get("run_id") == run_id]
 
     def export_jsonl(self, path: str | Path) -> int:
         path = Path(path)
@@ -317,6 +317,8 @@ class LogStore:
 
 
 log_store = LogStore()
+
+_DEFAULT_REPLY = "Xin lỗi, mình chưa có thông tin phù hợp. Bạn có thể hỏi lại bằng câu khác được không?"
 
 
 # ── Response Messages ──────────────────────────────────────────────────────
@@ -334,6 +336,7 @@ def get_clarify_messages() -> dict[str, str]:
         "model_code": _DEFAULT_REPLY,
         "topic": _DEFAULT_REPLY,
     }
+
 
 
 # ── Evidence Assessment ────────────────────────────────────────────────────
@@ -657,13 +660,13 @@ def _assess_evidence_impl(tool_results: list[dict], query: str) -> tuple[str, li
         return "direct_support", valid_sources
     if has_partial:
         return "partial_support", valid_sources
-    
+
     # Special case: get_specs returned data for the model (dù không match với query)
     # → coi như có partial evidence, LLM sẽ trả lời "không có thông tin về tính năng này"
     for tr in tool_results:
         if tr.get("tool") == "get_specs" and tr.get("result", {}).get("specs"):
             return "partial_support", valid_sources
-    
+
     return "insufficient", valid_sources
 
 
@@ -793,10 +796,9 @@ def build_retrieved_chunks(tool_results: list[dict], query: str = "", topic: str
 
         elif tool == "get_colors" and result.get("colors"):
             mc = result.get("model_code", "")
-            colors = result.get("colors", [])
-            interiors = result.get("interiors", [])
             variants = result.get("variants", [])
             # Build text representations and score by embedding
+
             variant_texts = []
             for v in variants[:10]:
                 variant_texts.append(f"{v.get('color', '')} {v.get('color_type', '')} {v.get('interior', '')}")

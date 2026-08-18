@@ -1,7 +1,7 @@
 import logging
 import re
 
-from app.agent.classifier import get_classifier, MODEL_RE
+from app.agent.classifier import get_classifier
 from app.agent.intent import (
     classify_intent,
     extract_spec_category,
@@ -203,7 +203,6 @@ async def classify_node(state: AgentState) -> dict:
 
     # ── Extract history context for multi-turn ──
     hist_ctx = _extract_history_context(history)
-    is_followup = _is_followup_to_clarify(history)
 
     # Merge history model/version into entities if current turn missing them
     if not cr.entities.get("model_code") and hist_ctx["model_code"]:
@@ -212,8 +211,8 @@ async def classify_node(state: AgentState) -> dict:
         cr.entities["version"] = hist_ctx["version"]
 
     has_model = bool(cr.entities.get("model_code"))
-    has_version = bool(cr.entities.get("version"))
     topic = _classify_topic(query)
+
 
     # Inherit topic from history if current query topic is general
     if topic == "general" and hist_ctx["topic"]:

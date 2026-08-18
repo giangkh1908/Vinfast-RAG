@@ -113,11 +113,11 @@ async def execute_tools_node(state: AgentState) -> dict:
     category = state.get("category", "general")
     _NEEDS_KB = {"an_toàn", "nội_thất", "ngoại_thất", "tính_năng_nổi_bật"}
     should_inject_kb = category in _NEEDS_KB
-    
+
     # Tạo tasks cho tool calls và KB search (nếu cần)
     tasks = [_execute_tools_parallel(tool_calls)]
     kb_task = None
-    
+
     if should_inject_kb:
         # Tìm model_code từ tool calls
         model_code = None
@@ -127,18 +127,18 @@ async def execute_tools_node(state: AgentState) -> dict:
                 model_code = args.get("model_code", "")
                 if model_code:
                     break
-        
+
         if model_code:
             from app.agent.tools import search_knowledge_base
             # Chạy KB search song song (sẽ quyết định skip_rerank sau)
             kb_task = search_knowledge_base(state.get("query", ""), model_id=model_code, skip_rerank=True)
             tasks.append(kb_task)
-    
+
     # Chạy tất cả tasks song song
     gathered = await asyncio.gather(*tasks, return_exceptions=True)
     results = gathered[0] if not isinstance(gathered[0], Exception) else []
     kb_result = gathered[1] if len(gathered) > 1 else None
-    
+
     # Thêm KB result vào tool_results (nếu có và thành công)
     if kb_result and not isinstance(kb_result, Exception):
         results.append({

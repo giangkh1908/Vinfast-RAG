@@ -8,7 +8,6 @@ Nguyên tắc:
   (cache in-memory 60s) — promote version → key tự đổi, không restart.
 """
 
-import asyncio
 import hashlib
 import json
 import logging
@@ -179,16 +178,16 @@ async def make_tool_price_key(model_code: str, version: str = None) -> str | Non
     return f"tool:price:{ver}:{_sha1(model_code, v)}"
 
 
-async def make_tool_specs_key(model_code: str, version: str = None, 
+async def make_tool_specs_key(model_code: str, version: str = None,
                                category: str = None, keys: list[str] = None) -> str | None:
     """Key cho cache get_specs.
-    
+
     Args:
         model_code: Mã model
         version: Phiên bản - optional
         category: Danh mục spec - optional
         keys: List các spec keys - optional
-    
+
     Returns:
         Key dạng 'tool:specs:{data_version}:{sha1(model|version|category|keys)}' hoặc None
     """
@@ -203,11 +202,11 @@ async def make_tool_specs_key(model_code: str, version: str = None,
 
 async def make_tool_colors_key(model_code: str, version: str = None) -> str | None:
     """Key cho cache get_colors.
-    
+
     Args:
         model_code: Mã model
         version: Phiên bản - optional
-    
+
     Returns:
         Key dạng 'tool:colors:{data_version}:{sha1(model|version)}' hoặc None
     """
@@ -220,7 +219,7 @@ async def make_tool_colors_key(model_code: str, version: str = None) -> str | No
 
 async def make_tool_models_key() -> str | None:
     """Key cho cache list_available_models.
-    
+
     Returns:
         Key dạng 'tool:models:{data_version}' hoặc None
     """
@@ -228,6 +227,7 @@ async def make_tool_models_key() -> str | None:
     if not _is_valid_version(ver):
         return None
     return f"tool:models:{ver}"
+
 
 
 # ── RedisCache wrapper ─────────────────────────────────────────────────────

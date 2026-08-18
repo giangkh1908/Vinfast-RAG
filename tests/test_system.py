@@ -4,7 +4,12 @@ Each test traces which step fails: classify → tools → generate → validate.
 
 Run: python tests/test_system.py
 """
-import sys, os, io, asyncio, time, json, traceback
+import sys
+import os
+import io
+import asyncio
+import time
+import traceback
 
 # Add project root to path so 'app' module is importable
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -408,7 +413,7 @@ async def test_full_pipeline():
 
             # Rate limit: wait between E2E tests (5 LLM calls/min = ~25s between tests)
             await asyncio.sleep(25)
-        except Exception as e:
+        except Exception:
             report(tid, False, "exception", f"{desc}: {traceback.format_exc()[-200:]}")
             await asyncio.sleep(25)
 

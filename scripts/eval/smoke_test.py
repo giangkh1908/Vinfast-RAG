@@ -44,17 +44,17 @@ def check_match(payload: dict, expected: dict) -> bool:
     if expected.get("collection"):
         if payload.get("collection") != expected["collection"]:
             return False
-    
+
     # Check model_id
     if expected.get("model_id"):
         if payload.get("model_id") != expected["model_id"]:
             return False
-    
+
     # Check edition_id
     if expected.get("edition_id"):
         if payload.get("edition_id") != expected["edition_id"]:
             return False
-    
+
     # Check keywords (tất cả phải có)
     keywords = expected.get("keywords", [])
     if keywords:
@@ -62,7 +62,7 @@ def check_match(payload: dict, expected: dict) -> bool:
         for kw in keywords:
             if kw.lower() not in text:
                 return False
-    
+
     return True
 
 
@@ -73,29 +73,29 @@ def run_smoke_test(version: str, top_k: int = 5) -> int:
         api_key=QDRANT_API_KEY or None,
         timeout=QDRANT_TIMEOUT
     )
-    
+
     # Verify collections exist
     for col in DENSE_COLLECTIONS:
         if not client.collection_exists(col):
             print(f"[smoke_test] collection {col} not found", file=sys.stderr)
             return 1
-    
+
     golden_set = load_golden_set()
     print(f"[smoke_test] version={version}  top_k={top_k}  queries={len(golden_set)}")
-    
+
     results = []
-    
+
     for i, item in enumerate(golden_set, 1):
         query = item["query"]
         expected = item["expected"]
-        
+
         # Embed query
         vectors = embed_texts([query])
         if not vectors:
             print(f"  [{i}/{len(golden_set)}] ✗ embed failed: {query[:50]}")
             results.append(0)
             continue
-        
+
         # Search on all dense collections
         all_hits = []
         for col in DENSE_COLLECTIONS:
@@ -107,30 +107,30 @@ def run_smoke_test(version: str, top_k: int = 5) -> int:
             )
             points = hits.points if hasattr(hits, 'points') else hits
             all_hits.extend(points)
-        
+
         # Sort by score and take top_k
         all_hits.sort(key=lambda x: x.score if hasattr(x, 'score') else 0, reverse=True)
         all_hits = all_hits[:top_k]
-        
+
         # Check matches
         matches = [check_match(h.payload, expected) for h in all_hits]
         hit_any = any(matches)
         precision = sum(matches) / len(matches) if matches else 0
-        
+
         status = "✓" if hit_any else "✗"
         print(f"  [{i}/{len(golden_set)}] {status} {query[:50]}  hit@{top_k}={hit_any}  prec@{top_k}={precision:.2f}")
-        
+
         results.append(1 if hit_any else 0)
-    
+
     # Summary
     hit_rate = sum(results) / len(results) if results else 0
     print(f"\n[smoke_test] hit@{top_k}={hit_rate:.2%}  ({sum(results)}/{len(results)})")
-    
+
     if hit_rate < 0.8:
-        print(f"[smoke_test] FAIL: hit rate < 80%", file=sys.stderr)
+        print("[smoke_test] FAIL: hit rate < 80%", file=sys.stderr)
         return 1
-    
-    print(f"[smoke_test] PASS")
+
+    print("[smoke_test] PASS")
     return 0
 
 
@@ -139,7 +139,7 @@ def main() -> int:
     parser.add_argument("--version", default="v2", help="Version label (chỉ để log)")
     parser.add_argument("--top-k", type=int, default=5, help="Số results để check (default: 5)")
     args = parser.parse_args()
-    
+
     return run_smoke_test(args.version, args.top_k)
 
 

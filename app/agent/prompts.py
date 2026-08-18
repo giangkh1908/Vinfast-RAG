@@ -1,9 +1,11 @@
 import hashlib
 import time
 
-from app.config import settings
+from app.core.prompt_manager import prompt_manager
+
 
 # TTL cache (5 minutes)
+
 _prompt_cache = None
 _prompt_cache_time = 0
 _prompt_hash = None
@@ -98,10 +100,8 @@ Câu hỏi: {query}
 """
 
 
-from app.core.prompt_manager import prompt_manager
-
-
 _active_system_version = "v1.0.0"
+
 
 
 async def get_system_prompt() -> str:
