@@ -107,7 +107,7 @@ _THANKS_ONLY_RE = re.compile(
     re.IGNORECASE,
 )
 _IDENTITY_RE = re.compile(
-    r"(bạn\s*là\s*ai|bạn\s*tên\s*gì|bạn\s*giúp\s*được\s*gì|chức\s*năng\s*của\s*bạn|giới\s*thiệu\s*bản\s*thân|em\s*là\s*ai|vivi\s*là\s*ai)",
+    r"(bạn\s*là\s*ai|bạn\s*tên\s*gì|bạn\s*giúp\s*được\s*gì|chức\s*năng\s*của\s*bạn|giới\s*thiệu\s*bản\s*thân|em\s*là\s*ai|vivu\s*là\s*ai|vivi\s*là\s*ai)",
     re.IGNORECASE,
 )
 _OUT_OF_SCOPE_RE = re.compile(
