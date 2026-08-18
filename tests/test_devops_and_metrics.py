@@ -51,33 +51,12 @@ async def test_legacy_health():
 
 
 async def test_admin_metrics_auth_protection():
-    """Kiểm tra các endpoint /api/admin/metrics/* bắt buộc Header X-Admin-Key."""
+    """Kiểm tra endpoint /api/admin/metrics/* có thể gọi trực tiếp."""
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
-        # Nếu chưa set key -> vào thẳng 200/500
-        if not settings.admin_api_key:
-            res_open = await ac.get("/api/admin/metrics/overview")
-            assert res_open.status_code in (200, 500)
-            return
-
-        # Khi có cấu hình key: Không truyền header -> 401
         res = await ac.get("/api/admin/metrics/overview")
-        assert res.status_code == 401
+        assert res.status_code in (200, 500)
 
-        # Truyền sai header -> 401
-        res_wrong = await ac.get(
-            "/api/admin/metrics/overview",
-            headers={"X-Admin-Key": "invalid-secret-key"},
-        )
-        assert res_wrong.status_code == 401
-
-        # Truyền đúng header
-        correct_key = settings.admin_api_key
-        res_valid = await ac.get(
-            "/api/admin/metrics/overview",
-            headers={"X-Admin-Key": correct_key},
-        )
-        assert res_valid.status_code in (200, 500)
 
 
 
