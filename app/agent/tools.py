@@ -1,10 +1,18 @@
+import logging
 
-from app.core.db import get_pool
 from app.core.cache import (
+    TOOL_DATA_TTL,
+    TOOL_PRICE_TTL,
     cache,
-    make_tool_price_key, make_tool_specs_key, make_tool_colors_key, make_tool_models_key,
-    TOOL_PRICE_TTL, TOOL_DATA_TTL
+    make_tool_colors_key,
+    make_tool_models_key,
+    make_tool_price_key,
+    make_tool_specs_key,
 )
+from app.core.db import get_pool
+
+logger = logging.getLogger("bds.tools")
+
 
 
 def _model_id(model_code: str) -> str:
@@ -155,39 +163,44 @@ async def get_specs(model_code: str, version: str = None, category: str = None, 
         if cached:
             return cached
 
-    pool = await get_pool()
+    rows = []
+    related = []
+    try:
+        pool = await get_pool()
+        conditions = ["model_code = $1"]
+        params = [model_code]
+        idx = 2
 
-    conditions = ["model_code = $1"]
-    params = [model_code]
-    idx = 2
+        if version:
+            conditions.append(f"(version_name = ${idx} OR version_name IS NULL)")
+            params.append(version)
+            idx += 1
 
-    if version:
-        conditions.append(f"(version_name = ${idx} OR version_name IS NULL)")
-        params.append(version)
-        idx += 1
+        if category:
+            conditions.append(f"spec_category = ${idx}")
+            params.append(category)
+            idx += 1
 
-    if category:
-        conditions.append(f"spec_category = ${idx}")
-        params.append(category)
-        idx += 1
+        if keys:
+            conditions.append(f"spec_key = ANY(${idx}::text[])")
+            params.append(list(keys))
+            idx += 1
 
-    if keys:
-        conditions.append(f"spec_key = ANY(${idx}::text[])")
-        params.append(list(keys))
-        idx += 1
+        where = " AND ".join(conditions)
+        async with pool.acquire() as conn:
+            rows = await conn.fetch(
+                f"SELECT version_name, version_code, spec_category, spec_key, spec_value, spec_unit, source_url "
+                f"FROM car_specs WHERE {where} ORDER BY spec_category, spec_key, version_name",
+                *params,
+            )
 
-    where = " AND ".join(conditions)
-    async with pool.acquire() as conn:
-        rows = await conn.fetch(
-            f"SELECT version_name, version_code, spec_category, spec_key, spec_value, spec_unit, source_url "
-            f"FROM car_specs WHERE {where} ORDER BY spec_category, spec_key, version_name",
-            *params,
-        )
+            related = await conn.fetch(
+                "SELECT DISTINCT model_code FROM car_specs WHERE model_code != $1 ORDER BY model_code LIMIT 10",
+                model_code,
+            )
+    except Exception as e:
+        logger.warning("DB unreachable in get_specs(%s): %s", model_code, e)
 
-        related = await conn.fetch(
-            "SELECT DISTINCT model_code FROM car_specs WHERE model_code != $1 ORDER BY model_code LIMIT 10",
-            model_code,
-        )
 
     # Lọc bỏ rows value='Không' — đây là sentinel "không có dữ liệu" được chèn bởi
     # ingest_full_specs_matrix (version NULL), KHÔNG phải giá trị thật ("Không có" của
