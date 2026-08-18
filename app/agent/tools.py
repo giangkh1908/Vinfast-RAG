@@ -1,4 +1,5 @@
 import logging
+import re
 
 from app.core.cache import (
     TOOL_DATA_TTL,
@@ -14,14 +15,25 @@ from app.core.db import get_pool
 logger = logging.getLogger("bds.tools")
 
 
-
 def _model_id(model_code: str) -> str:
     # Direct mapping for known mismatches between code and DB (case-insensitive)
     MODEL_ID_MAP = {
         "vf 8 all new": "VF8NEW",
         "vf8 all new": "VF8NEW",
+        "vf 8 the all new": "VF8NEW",
+        "vf8 the all new": "VF8NEW",
+        "vf 8 new": "VF8NEW",
+        "vf8 new": "VF8NEW",
+        "vf mpv 7": "VFMPV7",
+        "vf mpv7": "VFMPV7",
+        "vfmpv 7": "VFMPV7",
+        "vfmpv7": "VFMPV7",
     }
-    return MODEL_ID_MAP.get(model_code.lower().strip(), model_code.replace(" ", ""))
+    mc_clean = model_code.lower().strip()
+    if mc_clean in MODEL_ID_MAP:
+        return MODEL_ID_MAP[mc_clean]
+    # Chuẩn hóa về chữ in hoa không khoảng trắng: "vf 8" -> "VF8", "vf3" -> "VF3"
+    return re.sub(r"\s+", "", model_code).upper()
 
 
 async def get_price(model_code: str, version: str = None) -> dict:
@@ -32,28 +44,32 @@ async def get_price(model_code: str, version: str = None) -> dict:
         if cached:
             return cached
 
-    pool = await get_pool()
+    rows = []
+    related = []
     mid = _model_id(model_code)
+    try:
+        pool = await get_pool()
+        async with pool.acquire() as conn:
+            if version:
+                rows = await conn.fetch(
+                    "SELECT edition_id, price_list_vnd, price_promo_vnd, promo_label, source_url "
+                    "FROM price_list_active WHERE (model_id=$1 OR UPPER(model_id)=UPPER($1)) AND edition_id=$2 ORDER BY price_list_vnd",
+                    mid, version,
+                )
+            else:
+                rows = await conn.fetch(
+                    "SELECT edition_id, price_list_vnd, price_promo_vnd, promo_label, source_url "
+                    "FROM price_list_active WHERE (model_id=$1 OR UPPER(model_id)=UPPER($1)) ORDER BY price_list_vnd",
+                    mid,
+                )
 
-    async with pool.acquire() as conn:
-        if version:
-            rows = await conn.fetch(
-                "SELECT edition_id, price_list_vnd, price_promo_vnd, promo_label, source_url "
-                "FROM price_list_active WHERE model_id=$1 AND edition_id=$2 ORDER BY price_list_vnd",
-                mid, version,
-            )
-        else:
-            rows = await conn.fetch(
-                "SELECT edition_id, price_list_vnd, price_promo_vnd, promo_label, source_url "
-                "FROM price_list_active WHERE model_id=$1 ORDER BY price_list_vnd",
+            related = await conn.fetch(
+                "SELECT model_id, edition_id, price_list_vnd, price_promo_vnd "
+                "FROM price_list_active WHERE model_id != $1 AND UPPER(model_id) != UPPER($1) ORDER BY price_list_vnd LIMIT 10",
                 mid,
             )
-
-        related = await conn.fetch(
-            "SELECT model_id, edition_id, price_list_vnd, price_promo_vnd "
-            "FROM price_list_active WHERE model_id != $1 ORDER BY price_list_vnd LIMIT 10",
-            mid,
-        )
+    except Exception as e:
+        logger.warning("DB unreachable in get_price(%s): %s", model_code, e)
 
     source_url = rows[0]["source_url"] if rows and rows[0].get("source_url") else ""
     related_models = []
@@ -84,10 +100,11 @@ async def get_price(model_code: str, version: str = None) -> dict:
         "note": "Giá niêm yết chưa bao gồm chi phí lăn bánh. Khuyến mãi có thể thay đổi theo thời gian và khu vực.",
     }
 
-    # Set cache. Skip nếu cache_key=None (PG down)
-    if cache_key is not None:
+    # Set cache. Skip nếu cache_key=None hoặc không có prices (tránh cache lỗi rỗng)
+    if cache_key is not None and result.get("prices"):
         await cache.set_json(cache_key, result, TOOL_PRICE_TTL)
     return result
+
 
 
 async def get_colors(model_code: str, version: str = None) -> dict:
@@ -104,30 +121,31 @@ async def get_colors(model_code: str, version: str = None) -> dict:
         if cached:
             return cached
 
-    pool = await get_pool()
+    rows = []
     mid = _model_id(model_code)
-
-    async with pool.acquire() as conn:
-        if version:
-            rows = await conn.fetch(
-                "SELECT version_name, color_name, color_type, color_fee_vnd, interior_name, source_url "
-                "FROM car_colors WHERE model_id = $1 AND version_name = $2 "
-                "ORDER BY color_name, interior_name",
-                mid, version,
-            )
-        else:
-            rows = await conn.fetch(
-                "SELECT version_name, color_name, color_type, color_fee_vnd, interior_name, source_url "
-                "FROM car_colors WHERE model_id = $1 "
-                "ORDER BY version_name, color_name, interior_name",
-                mid,
-            )
+    try:
+        pool = await get_pool()
+        async with pool.acquire() as conn:
+            if version:
+                rows = await conn.fetch(
+                    "SELECT version_name, color_name, color_type, color_fee_vnd, interior_name, source_url "
+                    "FROM car_colors WHERE (model_id = $1 OR UPPER(model_id) = UPPER($1)) AND version_name = $2 "
+                    "ORDER BY color_name, interior_name",
+                    mid, version,
+                )
+            else:
+                rows = await conn.fetch(
+                    "SELECT version_name, color_name, color_type, color_fee_vnd, interior_name, source_url "
+                    "FROM car_colors WHERE (model_id = $1 OR UPPER(model_id) = UPPER($1)) "
+                    "ORDER BY version_name, color_name, interior_name",
+                    mid,
+                )
+    except Exception as e:
+        logger.warning("DB unreachable in get_colors(%s): %s", model_code, e)
 
     if not rows:
-        result = {"model_code": model_code, "source_url": "", "variants": [], "colors": [], "interiors": []}
-        if cache_key is not None:
-            await cache.set_json(cache_key, result, TOOL_DATA_TTL)
-        return result
+        return {"model_code": model_code, "source_url": "", "variants": [], "colors": [], "interiors": []}
+
 
     colors = sorted(set(r["color_name"] for r in rows if r["color_name"]))
     interiors = sorted(set(r["interior_name"] for r in rows if r["interior_name"]))
