@@ -2,12 +2,12 @@ import asyncio
 import logging
 import time
 
-from app.agent.graph import get_compiled_graph
-from app.agent.nodes.respond import AgentResult
-from app.agent.llm import USER_INPUT_MAX_TOKENS, truncate_text
-from app.core.cache import cache, make_answer_key, make_exact_io_key, ANS_TTL
 from app.agent.classifier import get_classifier
+from app.agent.graph import get_compiled_graph
 from app.agent.intent import classify_intent
+from app.agent.llm import USER_INPUT_MAX_TOKENS, truncate_text
+from app.agent.nodes.respond import AgentResult
+from app.core.storage.cache import ANS_TTL, cache, make_answer_key, make_exact_io_key
 
 logger = logging.getLogger("bds.agent")
 
@@ -176,10 +176,13 @@ class AgentLoop:
             if cached_io:
                 resp_text = cached_io if isinstance(cached_io, str) else cached_io.get("response", "")
                 yield {"type": "decision", "content": "answer"}
-                yield {"type": "classify", "content": {
-                    "specificity": "exact",
-                    "entities": {"cache": "exact_io_hit"},
-                }}
+                yield {
+                    "type": "classify",
+                    "content": {
+                        "specificity": "exact",
+                        "entities": {"cache": "exact_io_hit"},
+                    },
+                }
                 yield {"type": "token", "content": resp_text}
                 yield {"type": "done"}
                 return
@@ -218,10 +221,13 @@ class AgentLoop:
 
                     # Yield SSE events (không cần status "Đang tra cứu" vì đã có câu trả lời ngay)
                     yield {"type": "decision", "content": decision}
-                    yield {"type": "classify", "content": {
-                        "specificity": "exact",
-                        "entities": entities,
-                    }}
+                    yield {
+                        "type": "classify",
+                        "content": {
+                            "specificity": "exact",
+                            "entities": entities,
+                        },
+                    }
                     yield {"type": "token", "content": response}
                     yield {"type": "done"}
                     return
@@ -245,9 +251,7 @@ class AgentLoop:
         async def _producer():
             nonlocal graph_error
             try:
-                async for mode, payload in self.graph.astream(
-                    state, stream_mode=["updates", "custom"]
-                ):
+                async for mode, payload in self.graph.astream(state, stream_mode=["updates", "custom"]):
                     await queue.put((mode, payload))
             except Exception as e:
                 graph_error = e
@@ -260,7 +264,7 @@ class AgentLoop:
             while True:
                 try:
                     item = await asyncio.wait_for(queue.get(), timeout=_HEARTBEAT_S)
-                except asyncio.TimeoutError:
+                except TimeoutError:
                     # Heartbeat giữ kết nối SSE trong lúc chờ (tool exec, LLM...)
                     yield {"type": "ping"}
                     continue
@@ -281,10 +285,13 @@ class AgentLoop:
                 for node_name, node_output in payload.items():
                     if node_name == "classify":
                         yield {"type": "decision", "content": node_output.get("decision", "answer")}
-                        yield {"type": "classify", "content": {
-                            "specificity": node_output.get("specificity", ""),
-                            "entities": node_output.get("entities", {}),
-                        }}
+                        yield {
+                            "type": "classify",
+                            "content": {
+                                "specificity": node_output.get("specificity", ""),
+                                "entities": node_output.get("entities", {}),
+                            },
+                        }
                         # Cho client biết đang làm gì trong lúc chờ tool + LLM
                         if node_output.get("decision", "answer") == "answer":
                             yield {"type": "status", "content": "Đang tra cứu dữ liệu…"}
@@ -323,7 +330,11 @@ class AgentLoop:
                                 yield {"type": "token", "content": "\n\n🔗 Xem thêm: " + result.source_url}
                             else:
                                 from app.agent.nodes.respond import source_link_md
-                                yield {"type": "token", "content": "\n\n🔗 Xem thêm: " + source_link_md(result.source_url)}
+
+                                yield {
+                                    "type": "token",
+                                    "content": "\n\n🔗 Xem thêm: " + source_link_md(result.source_url),
+                                }
 
                         # Exact I/O Cache write: lưu input user -> output text cho mọi lần hỏi sau (bất kể single/multi-turn)
                         if cache.enabled and result.decision == "answer" and result.response:

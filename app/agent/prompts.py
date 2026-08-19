@@ -1,8 +1,7 @@
 import hashlib
 import time
 
-from app.core.prompt_manager import prompt_manager
-
+from app.core.rag.prompt_manager import prompt_manager
 
 # TTL cache (5 minutes)
 
@@ -103,23 +102,19 @@ Câu hỏi: {query}
 _active_system_version = "v1.0.0"
 
 
-
 async def get_system_prompt() -> str:
     global _prompt_cache, _prompt_cache_time, _prompt_hash, _active_system_version
     template, version = await prompt_manager.get_active_prompt("system")
     _active_system_version = version
 
-    cur_hash = hashlib.sha256(template.encode('utf-8')).hexdigest()[:12]
-    if (
-        _prompt_cache
-        and _prompt_hash == cur_hash
-        and (time.time() - _prompt_cache_time) < _CACHE_TTL
-    ):
+    cur_hash = hashlib.sha256(template.encode("utf-8")).hexdigest()[:12]
+    if _prompt_cache and _prompt_hash == cur_hash and (time.time() - _prompt_cache_time) < _CACHE_TTL:
         return _prompt_cache
 
     lines = []
     try:
-        from app.core.db import get_pool
+        from app.core.storage.db import get_pool
+
         pool = await get_pool()
         async with pool.acquire() as conn:
             rows = await conn.fetch(
@@ -179,11 +174,10 @@ async def build_system_message(summary: str | None = None) -> dict:
 def get_prompt_hash() -> str:
     global _prompt_hash
     if _prompt_hash is None:
-        _prompt_hash = hashlib.sha256(SYSTEM_PROMPT.encode('utf-8')).hexdigest()[:12]
+        _prompt_hash = hashlib.sha256(SYSTEM_PROMPT.encode("utf-8")).hexdigest()[:12]
     return _prompt_hash
 
 
 def get_active_system_version() -> str:
     """Trả về version của system prompt đang active."""
     return _active_system_version
-

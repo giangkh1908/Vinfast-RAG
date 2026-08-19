@@ -5,7 +5,6 @@ import uuid
 
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import JSONResponse, StreamingResponse
-from pydantic import BaseModel
 
 from app.agent.agent_loop import AgentLoop
 from app.agent.decision import log_store
@@ -13,10 +12,11 @@ from app.agent.history import MAX_HISTORY_TOKENS, sanitize_history
 from app.agent.llm import USER_INPUT_MAX_TOKENS, estimate_tokens
 from app.agent.nodes.summarize import SUMMARY_EVERY, summarize_conversation
 from app.agent.prompts import get_active_system_version
-from app.core.cache import DEDUP_TTL, cache, make_dedup_key
-from app.core.session_store import get_session, touch_session, update_summary
-from app.core.telemetry import log_metric_background, record_metric
-
+from app.core.storage.cache import DEDUP_TTL, cache, make_dedup_key
+from app.core.storage.session_store import get_session, touch_session, update_summary
+from app.core.telemetry.kafka_producer import produce_alert_bg, produce_telemetry_bg
+from app.core.telemetry.telemetry import build_metric_payload, log_metric_background, record_metric
+from app.schemas import ChatRequest, ChatResponse
 
 logger = logging.getLogger("bds.api")
 
@@ -30,6 +30,7 @@ def _get_client_ip(request: Request) -> str:
         return forwarded.split(",")[0].strip()
     return request.client.host if request.client else "unknown"
 
+
 _agent = None
 
 
@@ -38,21 +39,6 @@ def get_agent() -> AgentLoop:
     if _agent is None:
         _agent = AgentLoop()
     return _agent
-
-
-class ChatRequest(BaseModel):
-    session_id: str
-    message: str
-    history: list[dict] = []
-    message_id: str | None = None  # UUID để chống gửi trùng
-
-
-class ChatResponse(BaseModel):
-    response: str
-    needs_clarification: bool = False
-    classify: dict = {}
-    decision: str = "answer"
-    decision_log: dict = {}
 
 
 _INPUT_TOO_LONG_MSG = (
@@ -77,11 +63,7 @@ def _parse_session_id(session_id: str) -> str:
 
 def _check_history_size(history: list[dict]) -> None:
     """Defense in depth: từ chối request có history quá lớn (trước khi sanitize)."""
-    total = sum(
-        estimate_tokens(str(m.get("content", "")))
-        for m in history
-        if isinstance(m, dict)
-    )
+    total = sum(estimate_tokens(str(m.get("content", ""))) for m in history if isinstance(m, dict))
     if total > MAX_HISTORY_TOKENS:
         raise HTTPException(
             status_code=400,
@@ -122,9 +104,7 @@ async def _finish_turn(
         try:
             new_summary = await summarize_conversation(summary, history, message)
             if new_summary:
-                await update_summary(
-                    session_id, new_summary, estimate_tokens(new_summary)
-                )
+                await update_summary(session_id, new_summary, estimate_tokens(new_summary))
                 logger.info("session %s summarized at turn %d", session_id[:8], new_turn)
         except Exception:
             logger.exception("summarize failed (session %s)", session_id[:8])
@@ -162,16 +142,11 @@ async def chat(request: ChatRequest, raw_request: Request):
                 error_message="Tin nhắn trùng lặp (duplicate message_id)",
             )
         )
-        return JSONResponse(
-            status_code=409,
-            content={"error": "Tin nhắn trùng lặp", "message_id": request.message_id}
-        )
+        return JSONResponse(status_code=409, content={"error": "Tin nhắn trùng lặp", "message_id": request.message_id})
 
     history, summary, session = await _prepare_request(request)
     agent = get_agent()
-    result = await agent.run(
-        request.message, history, summary=summary, session_id=request.session_id
-    )
+    result = await agent.run(request.message, history, summary=summary, session_id=request.session_id)
     await _finish_turn(request.session_id, request.message, history, summary, session, decision=result.decision)
 
     t_end = time.monotonic()
@@ -184,8 +159,8 @@ async def chat(request: ChatRequest, raw_request: Request):
     compl_toks = estimate_tokens(result.response or "")
     intent_val = (result.classify_result or {}).get("entities", {}).get("intent") or "general"
 
-    log_metric_background(
-        record_metric(
+    produce_telemetry_bg(
+        build_metric_payload(
             request_id=req_id,
             session_id=request.session_id,
             client_ip=client_ip,
@@ -232,10 +207,7 @@ async def chat_stream(request: ChatRequest, raw_request: Request):
                 error_message="Tin nhắn trùng lặp (duplicate message_id)",
             )
         )
-        return JSONResponse(
-            status_code=409,
-            content={"error": "Tin nhắn trùng lặp", "message_id": request.message_id}
-        )
+        return JSONResponse(status_code=409, content={"error": "Tin nhắn trùng lặp", "message_id": request.message_id})
 
     history, summary, session = await _prepare_request(request)
     agent = get_agent()
@@ -286,11 +258,13 @@ async def chat_stream(request: ChatRequest, raw_request: Request):
             ttft_ms = int((t_first_token - t_start) * 1000) if t_first_token else int((t_end - t_start) * 1000)
             total_latency_ms = int((t_end - t_start) * 1000)
 
-            prompt_toks = estimate_tokens(request.message) + sum(estimate_tokens(str(m.get("content", ""))) for m in history)
+            prompt_toks = estimate_tokens(request.message) + sum(
+                estimate_tokens(str(m.get("content", ""))) for m in history
+            )
             compl_toks = estimate_tokens("".join(accumulated_response))
 
-            log_metric_background(
-                record_metric(
+            produce_telemetry_bg(
+                build_metric_payload(
                     request_id=req_id,
                     session_id=request.session_id,
                     client_ip=client_ip,
@@ -310,6 +284,21 @@ async def chat_stream(request: ChatRequest, raw_request: Request):
                     error_message=error_msg,
                 )
             )
+
+            if error_msg:
+                produce_alert_bg(
+                    alert_type="AI_SYSTEM_ERROR",
+                    severity="CRITICAL",
+                    title="Sự cố Lỗi AI / Chatbot Server (500)",
+                    message=f"Phát sinh lỗi xử lý turn chat: {error_msg}",
+                    details={
+                        "request_id": req_id,
+                        "session_id": str(request.session_id),
+                        "client_ip": client_ip,
+                        "query_snippet": request.message[:100],
+                        "error": error_msg,
+                    },
+                )
 
     return StreamingResponse(
         generate(),
@@ -346,4 +335,3 @@ async def export_logs(run_id: str = None):
         media_type="application/x-ndjson",
         headers={"Content-Disposition": "attachment; filename=" + fname},
     )
-

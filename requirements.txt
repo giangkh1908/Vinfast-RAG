@@ -20,3 +20,7 @@ qdrant-client>=1.10.0
 requests>=2.31.0
 beautifulsoup4>=4.12.0
 pymupdf>=1.24.0
+
+# Kafka & Asynchronous Email Alerts
+aiokafka>=0.11.0
+aiosmtplib>=3.0.0

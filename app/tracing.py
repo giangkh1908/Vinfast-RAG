@@ -29,8 +29,8 @@ def setup_tracing(project_name: str = "vivu"):
 
     try:
         import phoenix as px
-        from phoenix.otel import register
         from openinference.instrumentation.openai import OpenAIInstrumentor
+        from phoenix.otel import register
 
         # Launch Phoenix server
         px.launch_app()

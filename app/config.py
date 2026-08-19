@@ -32,7 +32,9 @@ class Settings:
         # DeepInfra chỉ host: Qwen/Qwen3-Reranker-{0.6B,4B,8B}, nvidia/llama-nemotron-rerank-vl-1b-v2
         self.rerank_model: str = _get_env("DEEPINFRA_RERANK_MODEL", "Qwen/Qwen3-Reranker-0.6B")
         # DB
-        self.postgres_url: str = _get_env("POSTGRES_URL") or _get_env("PG_DSN", "postgresql://vivu:vivu@localhost:5432/vivu")
+        self.postgres_url: str = _get_env("POSTGRES_URL") or _get_env(
+            "PG_DSN", "postgresql://vivu:vivu@localhost:5432/vivu"
+        )
         self.qdrant_url: str = _get_env("QDRANT_URL", "http://localhost:6333")
         self.qdrant_api_key: str = _get_env("QDRANT_API_KEY", "")
         # Redis cache (Upstash) — không có REDIS_URL → cache disabled (no-op, fail-safe)
@@ -59,8 +61,29 @@ class Settings:
         self.langfuse_public_key: str = _get_env("LANGFUSE_PUBLIC_KEY", "")
         self.langfuse_secret_key: str = _get_env("LANGFUSE_SECRET_KEY", "")
         self.langfuse_host: str = _get_env("LANGFUSE_HOST", "https://cloud.langfuse.com")
-        self.langfuse_enabled: bool = _get_env("LANGFUSE_ENABLED", "true").lower() == "true" and bool(self.langfuse_public_key and self.langfuse_secret_key)
-
+        self.langfuse_enabled: bool = _get_env("LANGFUSE_ENABLED", "true").lower() == "true" and bool(
+            self.langfuse_public_key and self.langfuse_secret_key
+        )
+        # Upstash Kafka Cloud Settings
+        self.kafka_bootstrap_servers: str = _get_env("KAFKA_BOOTSTRAP_SERVERS", "")
+        self.kafka_sasl_username: str = _get_env("KAFKA_SASL_USERNAME", "")
+        self.kafka_sasl_password: str = _get_env("KAFKA_SASL_PASSWORD", "")
+        self.kafka_telemetry_topic: str = _get_env("KAFKA_TELEMETRY_TOPIC", "vinfast.telemetry")
+        self.kafka_alerts_topic: str = _get_env("KAFKA_ALERTS_TOPIC", "vinfast.alerts")
+        self.kafka_enabled: bool = _get_env("KAFKA_ENABLED", "true").lower() == "true" and bool(
+            self.kafka_bootstrap_servers and self.kafka_sasl_username and self.kafka_sasl_password
+        )
+        # Email SMTP & Alerting Settings
+        self.smtp_host: str = _get_env("SMTP_HOST", "smtp.gmail.com")
+        self.smtp_port: int = int(_get_env("SMTP_PORT", "587"))
+        self.smtp_user: str = _get_env("SMTP_USER", "")
+        self.smtp_password: str = _get_env("SMTP_PASSWORD", "")
+        self.alert_email_recipient: str = _get_env("ALERT_EMAIL_RECIPIENT", "")
+        self.alert_email_enabled: bool = _get_env("ALERT_EMAIL_ENABLED", "true").lower() == "true" and bool(
+            self.smtp_host and self.smtp_user and self.smtp_password and self.alert_email_recipient
+        )
+        self.alert_spam_critical_threshold: int = int(_get_env("ALERT_SPAM_CRITICAL_THRESHOLD", "15"))
+        self.alert_cost_critical_threshold_vnd: float = float(_get_env("ALERT_COST_CRITICAL_THRESHOLD_VND", "100000.0"))
 
 
 def llm_extra_kwargs(model: str) -> dict:

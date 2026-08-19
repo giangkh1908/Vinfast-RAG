@@ -14,6 +14,7 @@ Thiết kế cho Neon Pooler (pgbouncer transaction mode):
 
 Monitor: exposes pool_stats() để check live connection count.
 """
+
 import asyncio
 import logging
 import time
@@ -69,10 +70,7 @@ async def get_pool() -> asyncpg.Pool:
                     statement_cache_size=0,
                 )
                 _stats["created_at"] = time.time()
-                logger.info(
-                    "PG pool created: min=5 max=30 statement_cache=0 "
-                    "(Neon pooler compatible)"
-                )
+                logger.info("PG pool created: min=5 max=30 statement_cache=0 (Neon pooler compatible)")
     return _pool
 
 

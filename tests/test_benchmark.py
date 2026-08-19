@@ -9,6 +9,7 @@ benchmark PASS = toàn bộ case pass (case pass rate 100%).
 
 Run: python tests/test_benchmark.py
 """
+
 import os
 import subprocess
 import sys

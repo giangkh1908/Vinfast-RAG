@@ -6,6 +6,7 @@ Triết lý: LLM KHÔNG bao giờ chọn tool / đoán tham số tool (category,
   1 LLM call strict-JSON (enum intent + entities), kết quả được VALIDATE trước khi dùng.
 - build_tool_plan: intent + entities → danh sách (tool_name, args) CHÍNH XÁC.
 """
+
 import logging
 import re
 
@@ -15,21 +16,21 @@ logger = logging.getLogger("bds.intent")
 
 # ── Các intent (enum) ──────────────────────────────────────────────────────
 INTENTS = (
-    "greeting",             # chào hỏi (xin chào, hello, hi...)
-    "thanks",               # cảm ơn, tạm biệt
-    "identity",             # bạn là ai, giới thiệu bot
-    "price",                # giá / giá niêm yết
-    "spec_query",           # hỏi thông số kỹ thuật (có topic)
-    "feature_presence",     # "X có Y không?"
+    "greeting",  # chào hỏi (xin chào, hello, hi...)
+    "thanks",  # cảm ơn, tạm biệt
+    "identity",  # bạn là ai, giới thiệu bot
+    "price",  # giá / giá niêm yết
+    "spec_query",  # hỏi thông số kỹ thuật (có topic)
+    "feature_presence",  # "X có Y không?"
     "cross_model_feature",  # "xe nào có Y?"
-    "compare",              # so sánh / hơn kém / vs
-    "versions_list",        # có mấy phiên bản
-    "models_list",          # danh sách xe
-    "colors",               # màu sắc
-    "utility",              # link / đặt lịch / showroom / trả góp...
-    "policy",               # bảo hành / bảo dưỡng / chính sách (nội dung)
-    "general",              # chưa xác định
-    "out_of_scope",         # không liên quan
+    "compare",  # so sánh / hơn kém / vs
+    "versions_list",  # có mấy phiên bản
+    "models_list",  # danh sách xe
+    "colors",  # màu sắc
+    "utility",  # link / đặt lịch / showroom / trả góp...
+    "policy",  # bảo hành / bảo dưỡng / chính sách (nội dung)
+    "general",  # chưa xác định
+    "out_of_scope",  # không liên quan
 )
 
 # Intent liên quan thông số → cần spec_category
@@ -42,59 +43,195 @@ MAIN_MODELS = ["VF 2", "VF 3", "VF 5", "VF 6", "VF 7", "VF 8", "VF 8 All New", "
 # Thứ tự quan trọng: pattern cụ thể trước. None = không lọc (trải nhiều category:
 # tiện nghi, giải trí, kết nối... theo prompt rule 5).
 _SPEC_CATEGORY_PATTERNS: list[tuple[str | None, tuple[str, ...]]] = [
-    ("battery", (
-        r"thời\s*gian\s*sạc", r"sạc\s*nhanh", r"sạc\s*chậm", r"sạc\s*đầy", r"nạp\s*pin",
-        r"dung\s*lượng\s*pin", r"dung\s*lượng", r"quãng\s*đường", r"đi\s*được", r"phạm\s*vi",
-        r"tầm\s*di\s*chuyển", r"tầm\s*hoạt\s*động", r"\brange\b", r"pin", r"\bkwh\b", r"\bsạc\b",
-        r"10\s*[-–]\s*70", r"10\s*%\s*[-–]\s*70",
-    )),
-    ("powertrain", (
-        r"công\s*suất", r"mã\s*lực", r"mô[\s-]*men", r"\btorque\b", r"tăng\s*tốc",
-        r"0\s*[-–]\s*100", r"tốc\s*độ\s*tối\s*đa", r"vận\s*tốc", r"dẫn\s*động",
-        r"\bawd\b", r"\bfwd\b", r"\brwd\b", r"động\s*cơ", r"\bmotor\b", r"\bhp\b",
-        r"\bkw\b", r"mô-men xoắn", r"cầu\s*trước", r"cầu\s*sau", r"2\s*cầu",
-    )),
-    ("dimension", (
-        r"kích\s*thước", r"chiều\s*dài", r"chiều\s*rộng", r"chiều\s*cao",
-        r"khoảng\s*sáng\s*gầm", r"trục\s*cơ\s*sở", r"\bwheelbase\b", r"trọng\s*lượng",
-        r"cân\s*nặng", r"dung\s*tích\s*cốp", r"thể\s*tích\s*cốp", r"khoang\s*hành\s*lý",
-        r"kích\s*thước\s*lốp",
-    )),
-    ("safety", (
-        r"túi\s*khí", r"\bairbag\b", r"phanh", r"\babs\b", r"\besc\b", r"an\s*toàn",
-        r"cảnh\s*báo", r"camera\s*360", r"camera\s*lùi", r"kiểm\s*soát\s*lực\s*kéo",
-        r"\btraction\b", r"phanh\s*khẩn\s*cấp", r"tự\s*động\s*phanh",
-    )),
-    ("interior", (
-        r"cửa\s*sổ\s*trời", r"kính\s*trần", r"\bsunroof\b", r"\bpanoramic\b",
-        r"nội\s*thất", r"ghế", r"số\s*chỗ", r"chỗ\s*ngồi", r"mấy\s*chỗ", r"bao\s*nhiêu\s*chỗ",
-        r"5\s*chỗ", r"7\s*chỗ",
-        r"màn\s*hình", r"\bloa\b", r"âm\s*thanh", r"điều\s*hòa",
-        r"vô\s*lăng", r"\bhud\b", r"sạc\s*không\s*dây", r"cửa\s*gió", r"hàng\s*ghế",
-        r"ghế\s*massage", r"thông\s*gió", r"sưởi", r"vật\s*liệu\s*ghế",
-    )),
-    ("exterior", (
-        r"ngoại\s*thất", r"đèn", r"mâm", r"la[\s-]*zăng", r"gương", r"kiểu\s*dáng",
-        r"màu\s*sơn", r"đèn\s*led", r"cốp", r"cửa\s*hít", r"cửa\s*hút", r"đèn\s*phía\s*trước",
-    )),
-    ("adas", (
-        r"\badas\b", r"\bcruise\b", r"ga\s*tự\s*động", r"giữ\s*làn", r"\blane\b",
-        r"va\s*chạm", r"\bcollision\b", r"\baeb\b", r"điểm\s*mù", r"blind\s*spot",
-        r"đỗ\s*xe", r"\bparking\b", r"cao\s*tốc", r"tắc\s*đường", r"biển\s*báo",
-        r"hỗ\s*trợ\s*lái", r"đèn\s*pha\s*tự\s*động",
-    )),
-    ("security", (
-        r"chống\s*trộm", r"\bimmobilizer\b", r"khóa\s*điện\s*tử", r"định\s*vị\s*xe",
-    )),
-    ("chassis", (
-        r"hệ\s*thống\s*treo", r"khung\s*gầm", r"chassis", r"đánh\s*lái", r"trợ\s*lực\s*lái",
-    )),
+    (
+        "battery",
+        (
+            r"thời\s*gian\s*sạc",
+            r"sạc\s*nhanh",
+            r"sạc\s*chậm",
+            r"sạc\s*đầy",
+            r"nạp\s*pin",
+            r"dung\s*lượng\s*pin",
+            r"dung\s*lượng",
+            r"quãng\s*đường",
+            r"đi\s*được",
+            r"phạm\s*vi",
+            r"tầm\s*di\s*chuyển",
+            r"tầm\s*hoạt\s*động",
+            r"\brange\b",
+            r"pin",
+            r"\bkwh\b",
+            r"\bsạc\b",
+            r"10\s*[-–]\s*70",
+            r"10\s*%\s*[-–]\s*70",
+        ),
+    ),
+    (
+        "powertrain",
+        (
+            r"công\s*suất",
+            r"mã\s*lực",
+            r"mô[\s-]*men",
+            r"\btorque\b",
+            r"tăng\s*tốc",
+            r"0\s*[-–]\s*100",
+            r"tốc\s*độ\s*tối\s*đa",
+            r"vận\s*tốc",
+            r"dẫn\s*động",
+            r"\bawd\b",
+            r"\bfwd\b",
+            r"\brwd\b",
+            r"động\s*cơ",
+            r"\bmotor\b",
+            r"\bhp\b",
+            r"\bkw\b",
+            r"mô-men xoắn",
+            r"cầu\s*trước",
+            r"cầu\s*sau",
+            r"2\s*cầu",
+        ),
+    ),
+    (
+        "dimension",
+        (
+            r"kích\s*thước",
+            r"chiều\s*dài",
+            r"chiều\s*rộng",
+            r"chiều\s*cao",
+            r"khoảng\s*sáng\s*gầm",
+            r"trục\s*cơ\s*sở",
+            r"\bwheelbase\b",
+            r"trọng\s*lượng",
+            r"cân\s*nặng",
+            r"dung\s*tích\s*cốp",
+            r"thể\s*tích\s*cốp",
+            r"khoang\s*hành\s*lý",
+            r"kích\s*thước\s*lốp",
+        ),
+    ),
+    (
+        "safety",
+        (
+            r"túi\s*khí",
+            r"\bairbag\b",
+            r"phanh",
+            r"\babs\b",
+            r"\besc\b",
+            r"an\s*toàn",
+            r"cảnh\s*báo",
+            r"camera\s*360",
+            r"camera\s*lùi",
+            r"kiểm\s*soát\s*lực\s*kéo",
+            r"\btraction\b",
+            r"phanh\s*khẩn\s*cấp",
+            r"tự\s*động\s*phanh",
+        ),
+    ),
+    (
+        "interior",
+        (
+            r"cửa\s*sổ\s*trời",
+            r"kính\s*trần",
+            r"\bsunroof\b",
+            r"\bpanoramic\b",
+            r"nội\s*thất",
+            r"ghế",
+            r"số\s*chỗ",
+            r"chỗ\s*ngồi",
+            r"mấy\s*chỗ",
+            r"bao\s*nhiêu\s*chỗ",
+            r"5\s*chỗ",
+            r"7\s*chỗ",
+            r"màn\s*hình",
+            r"\bloa\b",
+            r"âm\s*thanh",
+            r"điều\s*hòa",
+            r"vô\s*lăng",
+            r"\bhud\b",
+            r"sạc\s*không\s*dây",
+            r"cửa\s*gió",
+            r"hàng\s*ghế",
+            r"ghế\s*massage",
+            r"thông\s*gió",
+            r"sưởi",
+            r"vật\s*liệu\s*ghế",
+        ),
+    ),
+    (
+        "exterior",
+        (
+            r"ngoại\s*thất",
+            r"đèn",
+            r"mâm",
+            r"la[\s-]*zăng",
+            r"gương",
+            r"kiểu\s*dáng",
+            r"màu\s*sơn",
+            r"đèn\s*led",
+            r"cốp",
+            r"cửa\s*hít",
+            r"cửa\s*hút",
+            r"đèn\s*phía\s*trước",
+        ),
+    ),
+    (
+        "adas",
+        (
+            r"\badas\b",
+            r"\bcruise\b",
+            r"ga\s*tự\s*động",
+            r"giữ\s*làn",
+            r"\blane\b",
+            r"va\s*chạm",
+            r"\bcollision\b",
+            r"\baeb\b",
+            r"điểm\s*mù",
+            r"blind\s*spot",
+            r"đỗ\s*xe",
+            r"\bparking\b",
+            r"cao\s*tốc",
+            r"tắc\s*đường",
+            r"biển\s*báo",
+            r"hỗ\s*trợ\s*lái",
+            r"đèn\s*pha\s*tự\s*động",
+        ),
+    ),
+    (
+        "security",
+        (
+            r"chống\s*trộm",
+            r"\bimmobilizer\b",
+            r"khóa\s*điện\s*tử",
+            r"định\s*vị\s*xe",
+        ),
+    ),
+    (
+        "chassis",
+        (
+            r"hệ\s*thống\s*treo",
+            r"khung\s*gầm",
+            r"chassis",
+            r"đánh\s*lái",
+            r"trợ\s*lực\s*lái",
+        ),
+    ),
     # Tiện nghi / giải trí / kết nối → trải nhiều category → KHÔNG lọc
-    (None, (
-        r"tiện\s*nghi", r"giải\s*trí", r"kết\s*nối", r"trợ\s*lý\s*ảo", r"\bapp\b",
-        r"điều\s*khiển\s*từ\s*xa", r"gọi\s*thoại", r"cập\s*nhật\s*phần\s*mềm",
-        r"có\s*những\s*tính\s*năng", r"tính\s*năng\s*nổi\s*bật", r"trang\s*bị",
-    )),
+    (
+        None,
+        (
+            r"tiện\s*nghi",
+            r"giải\s*trí",
+            r"kết\s*nối",
+            r"trợ\s*lý\s*ảo",
+            r"\bapp\b",
+            r"điều\s*khiển\s*từ\s*xa",
+            r"gọi\s*thoại",
+            r"cập\s*nhật\s*phần\s*mềm",
+            r"có\s*những\s*tính\s*năng",
+            r"tính\s*năng\s*nổi\s*bật",
+            r"trang\s*bị",
+        ),
+    ),
 ]
 
 # ── Intent rules (thứ tự ưu tiên quan trọng) ───────────────────────────────
@@ -304,8 +441,10 @@ def _validate_llm_result(data: dict) -> dict | None:
 async def llm_classify_fallback(query: str, history: list[dict]) -> dict | None:
     """1 LLM call strict-JSON khi rule intent = general. Trả entities hoặc None."""
     from app.agent.llm import get_llm
+
     try:
         import json as _json
+
         client = get_llm()
         prompt = _LLM_CLASSIFY_PROMPT.format(
             intents="|".join(INTENTS),
@@ -315,8 +454,12 @@ async def llm_classify_fallback(query: str, history: list[dict]) -> dict | None:
         msgs = []
         if history:
             recent = history[-4:]
-            msgs.append({"role": "user", "content": "Hội thoại trước:\n" + "\n".join(
-                f"{m['role']}: {m['content'][:200]}" for m in recent)})
+            msgs.append(
+                {
+                    "role": "user",
+                    "content": "Hội thoại trước:\n" + "\n".join(f"{m['role']}: {m['content'][:200]}" for m in recent),
+                }
+            )
         msgs.append({"role": "user", "content": prompt})
         resp = await client.chat.completions.create(
             model="deepseek-ai/DeepSeek-V4-Flash",

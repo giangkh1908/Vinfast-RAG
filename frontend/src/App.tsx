@@ -1,28 +1,24 @@
 import { useState, useEffect } from 'react'
 import { useChat } from './hooks/useChat'
-import ChatHeader from './components/ChatHeader'
-import ChatPanel from './components/ChatPanel'
-import InputBar from './components/InputBar'
-import ChatFooter from './components/ChatFooter'
-import ChatLauncher from './components/ChatLauncher'
-import LandingPage from './components/LandingPage'
-import AdminDashboard from './components/AdminDashboard'
+import ChatHeader from './components/chat/ChatHeader'
+import ChatPanel from './components/chat/ChatPanel'
+import InputBar from './components/chat/InputBar'
+import ChatFooter from './components/chat/ChatFooter'
+import ChatLauncher from './components/chat/ChatLauncher'
+import LandingPage from './components/landing/LandingPage'
+import AdminDashboard from './components/admin/AdminDashboard'
 
 export default function App() {
   const chat = useChat()
   const [isOpen, setIsOpen] = useState(true)
-  const [isAdminOpen, setIsAdminOpen] = useState(false)
+  const [isAdminRoute, setIsAdminRoute] = useState(false)
 
   useEffect(() => {
     const checkAdminRoute = () => {
-      if (
+      const isAdm =
         window.location.pathname.includes('/admin') ||
         window.location.hash.toLowerCase().includes('admin')
-      ) {
-        setIsAdminOpen(true)
-      } else {
-        setIsAdminOpen(false)
-      }
+      setIsAdminRoute(isAdm)
     }
 
     checkAdminRoute()
@@ -35,13 +31,6 @@ export default function App() {
     }
   }, [])
 
-  const handleCloseAdmin = () => {
-    setIsAdminOpen(false)
-    if (window.location.hash.toLowerCase().includes('admin')) {
-      window.history.replaceState(null, '', window.location.pathname)
-    }
-  }
-
   const handleOpenWithPrompt = (initialPrompt?: string) => {
     setIsOpen(true)
     if (initialPrompt) {
@@ -49,13 +38,15 @@ export default function App() {
     }
   }
 
+  // CỔNG QUẢN TRỊ ADMIN ĐỘC LẬP (Không render landing hay chat widget)
+  if (isAdminRoute) {
+    return <AdminDashboard />
+  }
+
+  // TRANG KHÁCH HÀNG (Landing Page + Chatbot)
   return (
     <div className="vin-app-container mode-widget">
-      {/* VinFast Official Look Landing Page */}
       <LandingPage onOpenChat={handleOpenWithPrompt} />
-
-      {/* Admin Telemetry & Observability Modal (Chỉ mở qua URL: /admin hoặc #admin) */}
-      {isAdminOpen && <AdminDashboard onClose={handleCloseAdmin} />}
 
       {/* Main Chat Widget Window */}
       {isOpen && (

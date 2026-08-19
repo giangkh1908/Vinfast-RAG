@@ -3,15 +3,16 @@
 Kết quả cùng shape với execute_tools_node để validate/generate/respond
 dùng lại nguyên vẹn.
 """
+
 import asyncio
 import logging
 import time
 
 from app.agent.direct_plan import build_direct_plan, needs_kb
 from app.agent.graph_state import AgentState
+from app.agent.llm import INPUT_MAX_TOKENS, truncate_messages
 from app.agent.prompts import build_system_message
 from app.agent.tools import TOOL_REGISTRY
-from app.agent.llm import INPUT_MAX_TOKENS, truncate_messages
 
 logger = logging.getLogger("bds.graph.direct")
 
@@ -37,6 +38,7 @@ async def direct_fetch_node(state: AgentState) -> dict:
             model_code = entities.get("model_code", "")
             if model_code:
                 from app.agent.tools import search_knowledge_base
+
                 kb_task = search_knowledge_base(state.get("query", ""), model_id=model_code)
                 coros.append(kb_task)
 
@@ -44,7 +46,7 @@ async def direct_fetch_node(state: AgentState) -> dict:
         gathered = await asyncio.gather(*coros, return_exceptions=True)
 
         # Xử lý kết quả từ các tool chính
-        for (name, args), res in zip(names_args, gathered[:len(names_args)]):
+        for (name, args), res in zip(names_args, gathered[: len(names_args)], strict=False):
             if isinstance(res, Exception):
                 logger.warning("direct %s(%s) failed: %s", name, args, res)
                 tool_results.append({"tool": name, "result": {"error": str(res)}, "success": False})
@@ -57,12 +59,14 @@ async def direct_fetch_node(state: AgentState) -> dict:
             if isinstance(kb_result, Exception):
                 logger.warning("direct KB inject failed: %s", kb_result)
             else:
-                tool_results.append({
-                    "tool": "search_knowledge_base",
-                    "result": kb_result,
-                    "success": True,
-                    "auto_injected": True,
-                })
+                tool_results.append(
+                    {
+                        "tool": "search_knowledge_base",
+                        "result": kb_result,
+                        "success": True,
+                        "auto_injected": True,
+                    }
+                )
 
     # Build messages để generate_node có system prompt + lịch sử
     messages = [await build_system_message(state.get("summary"))]

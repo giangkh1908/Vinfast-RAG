@@ -3,15 +3,15 @@ app/api/admin_prompts.py — Admin REST API Endpoints for Prompt Registry & Vers
 
 Bảo mật: Yêu cầu Header `X-Admin-Key` khớp với `ADMIN_API_KEY` trong Settings.
 """
+
 import logging
-from typing import Optional
 
 from fastapi import APIRouter, HTTPException, Query, Security, status
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
 from app.api.metrics import verify_admin_key
-from app.core.prompt_manager import prompt_manager
+from app.core.rag.prompt_manager import prompt_manager
 
 logger = logging.getLogger("bds.prompts_api")
 
@@ -29,13 +29,13 @@ class CreatePromptRequest(BaseModel):
 
 class TestRenderRequest(BaseModel):
     prompt_type: str = Field(..., description="system | synthesize | classify | summarize")
-    version: Optional[str] = Field(None, description="Version cụ thể (None = lấy active version)")
+    version: str | None = Field(None, description="Version cụ thể (None = lấy active version)")
     variables: dict[str, str] = Field(default_factory=dict, description="Các biến truyền vào template")
 
 
 @router.get("", summary="Liệt kê toàn bộ Prompt và các phiên bản")
 async def list_prompts(
-    prompt_type: Optional[str] = Query(None, description="Lọc theo loại prompt (system, synthesize, ...)"),
+    prompt_type: str | None = Query(None, description="Lọc theo loại prompt (system, synthesize, ...)"),
     _: bool = Security(verify_admin_key),
 ):
     """Liệt kê danh sách tất cả các phiên bản prompt đã đăng ký."""

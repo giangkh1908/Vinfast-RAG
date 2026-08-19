@@ -1,4 +1,4 @@
-import type { Source } from '../types'
+import type { Source } from '../../types'
 
 export default function SourcesBox({ sources }: { sources?: Source[] }) {
   if (!sources || sources.length === 0) return null

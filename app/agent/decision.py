@@ -6,12 +6,12 @@ import re
 import subprocess
 import threading
 import time
-from collections import OrderedDict
 import unicodedata
 import uuid
-from dataclasses import dataclass, field, asdict
-from datetime import datetime, timezone
-from enum import Enum
+from collections import OrderedDict
+from dataclasses import asdict, dataclass, field
+from datetime import UTC, datetime
+from enum import StrEnum
 from pathlib import Path
 
 from app.config import settings
@@ -23,7 +23,7 @@ _cached_data_snapshot = None
 
 
 # ── Reason Code Enum (contract §5) ─────────────────────────────────────────
-class ReasonCode(str, Enum):
+class ReasonCode(StrEnum):
     # answer
     SUFFICIENT_DIRECT_EVIDENCE = "sufficient_direct_evidence"
     PARTIAL_DIRECT_EVIDENCE = "partial_direct_evidence"
@@ -117,7 +117,9 @@ def _get_build_version() -> str:
     try:
         result = subprocess.run(
             ["git", "rev-parse", "--short", "HEAD"],
-            capture_output=True, text=True, timeout=5,
+            capture_output=True,
+            text=True,
+            timeout=5,
             cwd=str(REPO_ROOT),
         )
         _cached_build_version = result.stdout.strip() or "unknown"
@@ -144,12 +146,11 @@ def _get_data_snapshot_id() -> str:
 
     try:
         import psycopg2
+
         pg_url = settings.postgres_url.replace("+asyncpg", "")
         conn = psycopg2.connect(pg_url, connect_timeout=5)
         cur = conn.cursor()
-        cur.execute(
-            "SELECT version, created_at FROM ingest_version WHERE is_current LIMIT 1"
-        )
+        cur.execute("SELECT version, created_at FROM ingest_version WHERE is_current LIMIT 1")
         row = cur.fetchone()
         conn.close()
         if row:
@@ -177,6 +178,7 @@ def _warm_snapshot_cache() -> None:
     if _cached_data_snapshot is not None:
         return
     import threading
+
     threading.Thread(target=_get_data_snapshot_id, daemon=True).start()
 
 
@@ -264,9 +266,14 @@ class DecisionLog:
         d = asdict(self)
         # Convert empty strings to null for nullable fields
         nullable_fields = [
-            "conversation_id", "turn_index", "previous_request_id",
-            "error_stage", "error_type", "error_message",
-            "test_id", "retrieval_config_version",
+            "conversation_id",
+            "turn_index",
+            "previous_request_id",
+            "error_stage",
+            "error_type",
+            "error_message",
+            "test_id",
+            "retrieval_config_version",
         ]
         for f in nullable_fields:
             if d.get(f) == "" or d.get(f) == 0:
@@ -285,7 +292,7 @@ class LogStore:
 
     def start_run(self) -> str:
         self._run_id = f"run_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:6]}"
-        self._run_timestamp = datetime.now(timezone.utc).isoformat()
+        self._run_timestamp = datetime.now(UTC).isoformat()
         return self._run_id
 
     def add(self, log: DecisionLog) -> None:
@@ -338,46 +345,183 @@ def get_clarify_messages() -> dict[str, str]:
     }
 
 
-
 # ── Evidence Assessment ────────────────────────────────────────────────────
 _SPEC_QUERY_KEYWORDS = {
     "công_suất": ["power_kw", "power", "công suất", "mã lực", "hp", "công suât"],
     "mômen_xoắn": ["torque_nm", "torque", "mô-men", "mô men", "xoắn", "mo men"],
     "tốc_độ": ["top_speed", "speed", "tốc độ", "tối đa", "tốc do"],
     "pin": ["battery_kwh", "battery", "battery_heater", "pin", "dung lượng", "dung luong", "kwh", "kWh", "gia nhiệt"],
-    "quãng_đường": ["range_km", "range", "quãng đường", "quãng đường", "phạm vi", "di chuyển",
-                     "đi được", "bao xa", "bao nhiêu km", "sạc đầy", "một lần sạc", "autonomy"],
-    "sạc": ["charge", "sạc", "charging", "charger", "charge_management", "charger_map",
-            "nạp pin", "thời gian sạc", "sạc nhanh", "sạc chậm", "phút", "10%", "70%",
-            "quản lý sạc", "trạm sạc", "bản đồ sạc"],
-    "kích_thước": ["length_mm", "width_mm", "height_mm", "wheelbase_mm", "ground_clearance_mm",
-                   "length", "width", "height", "wheelbase", "ground_clearance",
-                   "kích thước", "chiều dài", "chiều rộng", "chiều cao",
-                   "khoảng sáng gầm", "dài", "rộng", "cao"],
+    "quãng_đường": [
+        "range_km",
+        "range",
+        "quãng đường",
+        "quãng đường",
+        "phạm vi",
+        "di chuyển",
+        "đi được",
+        "bao xa",
+        "bao nhiêu km",
+        "sạc đầy",
+        "một lần sạc",
+        "autonomy",
+    ],
+    "sạc": [
+        "charge",
+        "sạc",
+        "charging",
+        "charger",
+        "charge_management",
+        "charger_map",
+        "nạp pin",
+        "thời gian sạc",
+        "sạc nhanh",
+        "sạc chậm",
+        "phút",
+        "10%",
+        "70%",
+        "quản lý sạc",
+        "trạm sạc",
+        "bản đồ sạc",
+    ],
+    "kích_thước": [
+        "length_mm",
+        "width_mm",
+        "height_mm",
+        "wheelbase_mm",
+        "ground_clearance_mm",
+        "length",
+        "width",
+        "height",
+        "wheelbase",
+        "ground_clearance",
+        "kích thước",
+        "chiều dài",
+        "chiều rộng",
+        "chiều cao",
+        "khoảng sáng gầm",
+        "dài",
+        "rộng",
+        "cao",
+    ],
     "trọng_lượng": ["curb_weight_kg", "curb_weight", "trọng lượng", "nặng", "kg"],
-    "an_toàn": ["airbag", "abs", "ebd", "esc", "tcs", "hsa", "aeb", "collision",
-                "túi khí", "an toàn", "phanh", "camera 360", "surround_view",
-                "rearview", "parking", "blind_spot", "lane_keep", "lane_departure",
-                "forward_collision", "emergency", "brake", "tpms", "rollover_mitigation",
-                "isofix", "ảnh suất lốp", "chống lật", "ghế trẻ em"],
-    "nội_thất": ["seat", "ghế", "leatherette", "speaker", "loa", "màn hình", "display",
-                 "nội thất", "HUD", "head-up", "khoang xe", "vô lăng", "điều hòa",
-                 "seats", "trunk_capacity", "trunk", "steering", "subwoofer", "cốp",
-                 "cabin_air_filter", "lọc không khí", "lọc bụi", "rear_ac_vents",
-                 "cửa gió", "loa trầm"],
-    "ngoại_thất": ["headlight", "đèn", "wheel", "la-zăng", "mâm", "mirror", "gương",
-                   "ngoại thất", "màu", "body", "design", "drl", "tail_light",
-                   "wheel_size_inch", "adaptive_headlights", "windshield", "kính chắn gió",
-                   "frunk_capacity", "privacy_glass", "kính tối màu", "cốp trước"],
+    "an_toàn": [
+        "airbag",
+        "abs",
+        "ebd",
+        "esc",
+        "tcs",
+        "hsa",
+        "aeb",
+        "collision",
+        "túi khí",
+        "an toàn",
+        "phanh",
+        "camera 360",
+        "surround_view",
+        "rearview",
+        "parking",
+        "blind_spot",
+        "lane_keep",
+        "lane_departure",
+        "forward_collision",
+        "emergency",
+        "brake",
+        "tpms",
+        "rollover_mitigation",
+        "isofix",
+        "ảnh suất lốp",
+        "chống lật",
+        "ghế trẻ em",
+    ],
+    "nội_thất": [
+        "seat",
+        "ghế",
+        "leatherette",
+        "speaker",
+        "loa",
+        "màn hình",
+        "display",
+        "nội thất",
+        "HUD",
+        "head-up",
+        "khoang xe",
+        "vô lăng",
+        "điều hòa",
+        "seats",
+        "trunk_capacity",
+        "trunk",
+        "steering",
+        "subwoofer",
+        "cốp",
+        "cabin_air_filter",
+        "lọc không khí",
+        "lọc bụi",
+        "rear_ac_vents",
+        "cửa gió",
+        "loa trầm",
+    ],
+    "ngoại_thất": [
+        "headlight",
+        "đèn",
+        "wheel",
+        "la-zăng",
+        "mâm",
+        "mirror",
+        "gương",
+        "ngoại thất",
+        "màu",
+        "body",
+        "design",
+        "drl",
+        "tail_light",
+        "wheel_size_inch",
+        "adaptive_headlights",
+        "windshield",
+        "kính chắn gió",
+        "frunk_capacity",
+        "privacy_glass",
+        "kính tối màu",
+        "cốp trước",
+    ],
     "giá": ["price", "giá", "giá niêm yết", "ưu đãi", "giá bán"],
-    "adas": ["adas", "cruise", "lane", "blind_spot", "parking", "camera", "adasi",
-             "highway", "traffic_jam", "lane_centering", "auto_lane_change",
-             "hỗ trợ lái", "tự lái", "cấp"],
+    "adas": [
+        "adas",
+        "cruise",
+        "lane",
+        "blind_spot",
+        "parking",
+        "camera",
+        "adasi",
+        "highway",
+        "traffic_jam",
+        "lane_centering",
+        "auto_lane_change",
+        "hỗ trợ lái",
+        "tự lái",
+        "cấp",
+    ],
     "phiên_bản": ["edition", "version", "phiên bản", "bản", "eco", "plus"],
-    "tính_năng": ["tính năng", "trang bị", "công nghệ", "thông minh", "tiện nghi",
-                  "ota", "navigation", "bluetooth", "carplay", "android", "gaming",
-                  "voice", "phone_app", "web_browser", "smartphone",
-                  "smart_key", "chìa khóa", "usb", "cổng sạc"],
+    "tính_năng": [
+        "tính năng",
+        "trang bị",
+        "công nghệ",
+        "thông minh",
+        "tiện nghi",
+        "ota",
+        "navigation",
+        "bluetooth",
+        "carplay",
+        "android",
+        "gaming",
+        "voice",
+        "phone_app",
+        "web_browser",
+        "smartphone",
+        "smart_key",
+        "chìa khóa",
+        "usb",
+        "cổng sạc",
+    ],
     "điều_hòa": ["ac_type", "điều hòa", "climate", "nhiệt độ", "lạnh", "máy lạnh"],
 }
 
@@ -437,13 +581,15 @@ def _rerank_texts(query: str, texts: list[str]) -> list[float] | None:
     if not texts:
         return None
     try:
-        from app.core.retrieval import _openrouter_embed
+        from app.core.rag.retrieval import _openrouter_embed
+
         all_texts = [query] + texts
         embeddings = _openrouter_embed(all_texts)
         if len(embeddings) < len(all_texts):
             return None
         query_emb = embeddings[0]
         import numpy as np
+
         query_arr = np.array(query_emb)
         query_norm = np.linalg.norm(query_arr)
         if query_norm == 0:
@@ -469,10 +615,7 @@ def _score_specs_rerank(query: str, specs: list[dict], qtokens: set[str]) -> lis
     Không gọi embedding — keyword score đủ cho answer generation.
     Embedding chỉ dùng trong background logging (make_decision_log).
     """
-    return [
-        _spec_relevance_score(qtokens, s.get("key", ""), s.get("value", ""))
-        for s in specs
-    ]
+    return [_spec_relevance_score(qtokens, s.get("key", ""), s.get("value", "")) for s in specs]
 
 
 def assess_evidence(tool_results: list[dict], query: str) -> tuple[str, list[dict]]:
@@ -540,15 +683,17 @@ def _assess_evidence_impl(tool_results: list[dict], query: str) -> tuple[str, li
                 score = scores[i] if i < len(scores) else 0.0
                 page = s.get("page", "")
                 page_str = f" (trang {page})" if page else ""
-                valid_sources.append({
-                    "tool": tool,
-                    "model_code": result.get("model_code", ""),
-                    "text": f"{s.get('key', '')}: {s.get('value', '')} {s.get('unit', '')}{page_str}",
-                    "source_url": result.get("source_url", ""),
-                    "source_type": "specs",
-                    "score": round(score, 4),
-                    "page": page,
-                })
+                valid_sources.append(
+                    {
+                        "tool": tool,
+                        "model_code": result.get("model_code", ""),
+                        "text": f"{s.get('key', '')}: {s.get('value', '')} {s.get('unit', '')}{page_str}",
+                        "source_url": result.get("source_url", ""),
+                        "source_type": "specs",
+                        "score": round(score, 4),
+                        "page": page,
+                    }
+                )
                 if score >= 0.5:
                     has_direct = True
                 elif score >= 0.2:
@@ -557,14 +702,16 @@ def _assess_evidence_impl(tool_results: list[dict], query: str) -> tuple[str, li
         elif tool == "get_price" and result.get("prices"):
             score = _price_relevance_score(qtokens)
             for p in result["prices"]:
-                valid_sources.append({
-                    "tool": tool,
-                    "model_code": result.get("model_code", ""),
-                    "text": f"{p.get('version_name', '')}: {p.get('price_vnd', '')}",
-                    "source_url": result.get("source_url", ""),
-                    "source_type": "pricing",
-                    "score": score,
-                })
+                valid_sources.append(
+                    {
+                        "tool": tool,
+                        "model_code": result.get("model_code", ""),
+                        "text": f"{p.get('version_name', '')}: {p.get('price_vnd', '')}",
+                        "source_url": result.get("source_url", ""),
+                        "source_type": "pricing",
+                        "score": score,
+                    }
+                )
             if score >= 0.7:
                 has_direct = True
             else:
@@ -578,17 +725,19 @@ def _assess_evidence_impl(tool_results: list[dict], query: str) -> tuple[str, li
                     page = r.get("page", "")
                     page_str = f" (trang {page})" if page else ""
                     text = r.get("text", "")[:200]
-                    valid_sources.append({
-                        "tool": tool,
-                        "text": f"{text}{page_str}",
-                        "source_url": r.get("source_url", ""),
-                        "source_type": r.get("source_type", ""),
-                        "score": score,
-                        "chunk_id": r.get("id", ""),
-                        "model_id": r.get("model_id", ""),
-                        "page": page,
-                        "supplementary": is_supplementary,
-                    })
+                    valid_sources.append(
+                        {
+                            "tool": tool,
+                            "text": f"{text}{page_str}",
+                            "source_url": r.get("source_url", ""),
+                            "source_type": r.get("source_type", ""),
+                            "score": score,
+                            "chunk_id": r.get("id", ""),
+                            "model_id": r.get("model_id", ""),
+                            "page": page,
+                            "supplementary": is_supplementary,
+                        }
+                    )
                     if is_supplementary:
                         # Auto-injected KB: supplementary only, never direct
                         has_partial = True
@@ -606,14 +755,16 @@ def _assess_evidence_impl(tool_results: list[dict], query: str) -> tuple[str, li
                 vers = ", ".join(m.get("versions", []))
                 if mentioned and mc_compact not in mentioned:
                     continue
-                valid_sources.append({
-                    "tool": tool,
-                    "model_code": mc,
-                    "text": f"{mc} — Phiên bản: {vers}",
-                    "source_url": m.get("source_url", ""),
-                    "source_type": "catalog",
-                    "score": 0.9,
-                })
+                valid_sources.append(
+                    {
+                        "tool": tool,
+                        "model_code": mc,
+                        "text": f"{mc} — Phiên bản: {vers}",
+                        "source_url": m.get("source_url", ""),
+                        "source_type": "catalog",
+                        "score": 0.9,
+                    }
+                )
                 found_any = True
             if found_any:
                 has_direct = True
@@ -626,19 +777,20 @@ def _assess_evidence_impl(tool_results: list[dict], query: str) -> tuple[str, li
             # Ưu tiên source_url thật từ DB; fallback trang sản phẩm VinFast
             model_slug = mc.lower().replace(" ", "")
             source_url = result.get("source_url") or f"https://shop.vinfastauto.com/vn_vi/dat-coc-xe-{model_slug}.html"
-            valid_sources.append({
-                "tool": tool,
-                "model_code": mc,
-                "text": text,
-                "source_url": source_url,
-                "source_type": "colors",
-                "score": 0.9,
-            })
+            valid_sources.append(
+                {
+                    "tool": tool,
+                    "model_code": mc,
+                    "text": text,
+                    "source_url": source_url,
+                    "source_type": "colors",
+                    "score": 0.9,
+                }
+            )
             has_direct = True
 
         # Catch-all: utility tools that return URLs (showroom, booking, loan, etc.)
-        elif tool not in ("get_specs", "get_price", "search_knowledge_base",
-                          "list_available_models", "get_colors"):
+        elif tool not in ("get_specs", "get_price", "search_knowledge_base", "list_available_models", "get_colors"):
             url = result.get("url", "")
             label = result.get("label", tool)
             # Handle tools that return links array
@@ -646,14 +798,16 @@ def _assess_evidence_impl(tool_results: list[dict], query: str) -> tuple[str, li
                 first = result["links"][0]
                 url = first.get("url") or first.get("source_url", "")
             if url:
-                valid_sources.append({
-                    "tool": tool,
-                    "model_code": "",
-                    "text": label,
-                    "source_url": url,
-                    "source_type": "utility",
-                    "score": 0.9,
-                })
+                valid_sources.append(
+                    {
+                        "tool": tool,
+                        "model_code": "",
+                        "text": label,
+                        "source_url": url,
+                        "source_type": "utility",
+                        "score": 0.9,
+                    }
+                )
                 has_direct = True
 
     if has_direct:
@@ -711,7 +865,21 @@ def build_retrieved_chunks(tool_results: list[dict], query: str = "", topic: str
     if topic and topic in _TOPIC_KEYWORDS:
         for pattern in _TOPIC_KEYWORDS[topic]:
             topic_keywords.update(_TOKEN_RE.findall(pattern.lower()))
-    topic_keywords |= qtokens - {"xe", "vinfast", "vf", "của", "và", "là", "cho", "tôi", "bạn", "có", "không", "nào", "gì"}
+    topic_keywords |= qtokens - {
+        "xe",
+        "vinfast",
+        "vf",
+        "của",
+        "và",
+        "là",
+        "cho",
+        "tôi",
+        "bạn",
+        "có",
+        "không",
+        "nào",
+        "gì",
+    }
 
     def _embed_score(texts: list[str]) -> list[float]:
         """Score texts vs query — keyword overlap ONLY (nhanh, không network).
@@ -744,30 +912,36 @@ def build_retrieved_chunks(tool_results: list[dict], query: str = "", topic: str
                 rank += 1
                 page = r.get("page", "")
                 page_str = f" (trang {page})" if page else ""
-                chunks.append(RetrievedChunk(
-                    rank=rank,
-                    chunk_id=r.get("id", f"kb_{rank}"),
-                    source_id=r.get("source_type", ""),
-                    source_title=r.get("source_type", ""),
-                    source_url=r.get("source_url", ""),
-                    document_name=r.get("document_name", ""),
-                    page=page,
-                    section=r.get("section", ""),
-                    content=f"{text[:500]}{page_str}",
-                    vehicle_model=r.get("model_id", "") or "",
-                    vehicle_version="all_versions",
-                    topic=topic or "",
-                    market="Vietnam",
-                    language="vi",
-                    approval_status="approved",
-                    retrieval_score=round(score, 4),
-                ).__dict__)
+                chunks.append(
+                    RetrievedChunk(
+                        rank=rank,
+                        chunk_id=r.get("id", f"kb_{rank}"),
+                        source_id=r.get("source_type", ""),
+                        source_title=r.get("source_type", ""),
+                        source_url=r.get("source_url", ""),
+                        document_name=r.get("document_name", ""),
+                        page=page,
+                        section=r.get("section", ""),
+                        content=f"{text[:500]}{page_str}",
+                        vehicle_model=r.get("model_id", "") or "",
+                        vehicle_version="all_versions",
+                        topic=topic or "",
+                        market="Vietnam",
+                        language="vi",
+                        approval_status="approved",
+                        retrieval_score=round(score, 4),
+                    ).__dict__
+                )
 
         elif tool == "get_specs" and result.get("specs"):
             specs = result["specs"]
             # Use keyword scoring for log (more granular than hybrid embedding).
             # Hybrid scoring is used in assess_evidence for validation decisions.
-            scores = [_spec_relevance_score(qtokens, s.get("key", ""), s.get("value", "")) for s in specs] if qtokens else [0.5] * len(specs)
+            scores = (
+                [_spec_relevance_score(qtokens, s.get("key", ""), s.get("value", "")) for s in specs]
+                if qtokens
+                else [0.5] * len(specs)
+            )
             for i, s in enumerate(specs):
                 score = scores[i] if i < len(scores) else 0.0
                 if score < MIN_SCORE:
@@ -775,24 +949,26 @@ def build_retrieved_chunks(tool_results: list[dict], query: str = "", topic: str
                 rank += 1
                 page = s.get("page", "")
                 page_str = f" (trang {page})" if page else ""
-                chunks.append(RetrievedChunk(
-                    rank=rank,
-                    chunk_id=f"spec_{result.get('model_code', '')}_{s.get('key', '')}",
-                    source_id="car_specs",
-                    source_title=f"Specs {result.get('model_code', '')}",
-                    source_url=result.get("source_url", ""),
-                    document_name=result.get("document_name", ""),
-                    page=page,
-                    section=s.get("category", ""),
-                    content=f"{s.get('key', '')}: {s.get('value', '')} {s.get('unit', '')}{page_str}",
-                    vehicle_model=result.get("model_code", ""),
-                    vehicle_version=s.get("version_name", "all_versions"),
-                    topic="thông_số_kỹ_thuật",
-                    market="Vietnam",
-                    language="vi",
-                    approval_status="approved",
-                    retrieval_score=round(score, 4),
-                ).__dict__)
+                chunks.append(
+                    RetrievedChunk(
+                        rank=rank,
+                        chunk_id=f"spec_{result.get('model_code', '')}_{s.get('key', '')}",
+                        source_id="car_specs",
+                        source_title=f"Specs {result.get('model_code', '')}",
+                        source_url=result.get("source_url", ""),
+                        document_name=result.get("document_name", ""),
+                        page=page,
+                        section=s.get("category", ""),
+                        content=f"{s.get('key', '')}: {s.get('value', '')} {s.get('unit', '')}{page_str}",
+                        vehicle_model=result.get("model_code", ""),
+                        vehicle_version=s.get("version_name", "all_versions"),
+                        topic="thông_số_kỹ_thuật",
+                        market="Vietnam",
+                        language="vi",
+                        approval_status="approved",
+                        retrieval_score=round(score, 4),
+                    ).__dict__
+                )
 
         elif tool == "get_colors" and result.get("colors"):
             mc = result.get("model_code", "")
@@ -804,28 +980,30 @@ def build_retrieved_chunks(tool_results: list[dict], query: str = "", topic: str
                 variant_texts.append(f"{v.get('color', '')} {v.get('color_type', '')} {v.get('interior', '')}")
             if variant_texts:
                 scores = _embed_score(variant_texts)
-                for i, (v, sc) in enumerate(zip(variants[:10], scores)):
+                for v, sc in zip(variants[:10], scores, strict=False):
                     if sc < MIN_SCORE:
                         continue
                     rank += 1
-                    chunks.append(RetrievedChunk(
-                        rank=rank,
-                        chunk_id=f"color_{mc}_{v.get('color', '')}_{v.get('interior', '')}",
-                        source_id="car_colors",
-                        source_title=f"Màu sắc {mc}",
-                        source_url="",
-                        document_name="",
-                        page="",
-                        section="colors",
-                        content=f"{v.get('color', '')} / {v.get('interior', '')}",
-                        vehicle_model=mc,
-                        vehicle_version=v.get("version", "all_versions"),
-                        topic="ngoại_thất",
-                        market="Vietnam",
-                        language="vi",
-                        approval_status="approved",
-                        retrieval_score=round(sc, 4),
-                    ).__dict__)
+                    chunks.append(
+                        RetrievedChunk(
+                            rank=rank,
+                            chunk_id=f"color_{mc}_{v.get('color', '')}_{v.get('interior', '')}",
+                            source_id="car_colors",
+                            source_title=f"Màu sắc {mc}",
+                            source_url="",
+                            document_name="",
+                            page="",
+                            section="colors",
+                            content=f"{v.get('color', '')} / {v.get('interior', '')}",
+                            vehicle_model=mc,
+                            vehicle_version=v.get("version", "all_versions"),
+                            topic="ngoại_thất",
+                            market="Vietnam",
+                            language="vi",
+                            approval_status="approved",
+                            retrieval_score=round(sc, 4),
+                        ).__dict__
+                    )
 
         elif tool == "get_price" and result.get("prices"):
             # Build text representations and score by embedding
@@ -839,24 +1017,26 @@ def build_retrieved_chunks(tool_results: list[dict], query: str = "", topic: str
                 if score < MIN_SCORE:
                     continue
                 rank += 1
-                chunks.append(RetrievedChunk(
-                    rank=rank,
-                    chunk_id=f"price_{result.get('model_code', '')}_{p.get('version_name', '')}",
-                    source_id="price_list",
-                    source_title=f"Giá {result.get('model_code', '')}",
-                    source_url=result.get("source_url", ""),
-                    document_name="",
-                    page="",
-                    section="pricing",
-                    content=f"{p.get('version_name', '')}: {p.get('price_vnd', '')}",
-                    vehicle_model=result.get("model_code", ""),
-                    vehicle_version=p.get("version_name", "all_versions"),
-                    topic="pricing",
-                    market="Vietnam",
-                    language="vi",
-                    approval_status="approved",
-                    retrieval_score=round(score, 4),
-                ).__dict__)
+                chunks.append(
+                    RetrievedChunk(
+                        rank=rank,
+                        chunk_id=f"price_{result.get('model_code', '')}_{p.get('version_name', '')}",
+                        source_id="price_list",
+                        source_title=f"Giá {result.get('model_code', '')}",
+                        source_url=result.get("source_url", ""),
+                        document_name="",
+                        page="",
+                        section="pricing",
+                        content=f"{p.get('version_name', '')}: {p.get('price_vnd', '')}",
+                        vehicle_model=result.get("model_code", ""),
+                        vehicle_version=p.get("version_name", "all_versions"),
+                        topic="pricing",
+                        market="Vietnam",
+                        language="vi",
+                        approval_status="approved",
+                        retrieval_score=round(score, 4),
+                    ).__dict__
+                )
 
     # Sort by score descending and limit
     chunks.sort(key=lambda x: x.get("retrieval_score", 0), reverse=True)
@@ -900,16 +1080,18 @@ def build_displayed_citations(citations: list[dict], retrieved_chunks: list[dict
         cids = chunk_ids_by_url.get(url, [])
         if not cids and c.get("chunk_id"):
             cids = [c["chunk_id"]]
-        result.append(DisplayedCitation(
-            citation_id=f"cit_{cit_counter:03d}",
-            display_text=text,
-            source_id=label,
-            chunk_ids=cids,
-            source_url=url,
-            document_name=c.get("document_name", ""),
-            page=page_str,
-            section=c.get("section", ""),
-        ).__dict__)
+        result.append(
+            DisplayedCitation(
+                citation_id=f"cit_{cit_counter:03d}",
+                display_text=text,
+                source_id=label,
+                chunk_ids=cids,
+                source_url=url,
+                document_name=c.get("document_name", ""),
+                page=page_str,
+                section=c.get("section", ""),
+            ).__dict__
+        )
     return result
 
 
@@ -948,13 +1130,17 @@ def make_decision_log(
     assessment, _ = assess_evidence(tool_results, scoring_query) if tool_results else ("not_run", [])
 
     reason_code = resolve_reason_code(classify_result.reason)
-    retrieval_status = "success" if tool_results else ("not_run" if classify_result.decision in ("clarify", "out_of_scope") else "no_result")
+    retrieval_status = (
+        "success"
+        if tool_results
+        else ("not_run" if classify_result.decision in ("clarify", "out_of_scope") else "no_result")
+    )
 
     retrieved_chunks = build_retrieved_chunks(tool_results, scoring_query, topic=detected_topic)
 
     return DecisionLog(
         request_id=f"req_{uuid.uuid4().hex[:12]}",
-        timestamp=datetime.now(timezone.utc).isoformat(),
+        timestamp=datetime.now(UTC).isoformat(),
         build_version=_get_build_version(),
         prompt_version=prompt_hash or _get_prompt_hash(""),
         data_snapshot_id=_get_data_snapshot_id(),

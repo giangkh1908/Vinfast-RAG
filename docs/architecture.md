@@ -1,4 +1,4 @@
-﻿# Vivu — Agentic RAG Architecture
+# Vivu — Agentic RAG Architecture
 
 ## Hệ thống tổng quan
 
@@ -128,18 +128,18 @@ flowchart LR
     D1 -->|Agent ready| D3
 ```
 
-## Module map (thêm từ 8/2026)
+## Module Map & Clean Domain-Driven Architecture
 
-| Module | Vai trò | Doc chi tiết |
+| Module | Phân vùng (Domain) | Vai trò chi tiết |
 |---|---|---|
-| `app/agent/intent.py` | Hybrid intent (12 intent) + spec_category/spec_key maps + LLM fallback strict-JSON | `docs/INTENT_PLANNING.md` |
-| `app/agent/direct_plan.py` | `build_tool_plan` — intent → tool calls deterministic | `docs/INTENT_PLANNING.md` |
-| `app/agent/nodes/classify.py` | Rule entity + topic + hybrid intent; clarify đúng lúc | `docs/INTENT_PLANNING.md` |
-| `app/agent/history.py` | Sanitize history (chống injection, window 7 turn) | `docs/MEMORY_PLAN.md` |
-| `app/core/session_store.py` | `chat_sessions` (summary, turn_count) + summarize | `docs/MEMORY_PLAN.md` |
-| `app/agent/nodes/summarize.py` | Running summary mỗi 7 turn | `docs/MEMORY_PLAN.md` |
-| `app/agent/llm.py` | Token limits (input 1000 reject / output 4000), `truncate_messages`, `get_llm` | `docs/MEMORY_PLAN.md` |
-| `frontend/` | React+TS chat (SSE, StatusBar, markdown, localStorage session) | `docs/FRONTEND_PLAN.md` |
+| `app/core/storage/` | **Storage Domain** | `db.py` (PG pooler), `session_store.py` (phiên chat), `cache.py` (Upstash Redis 2 tầng). |
+| `app/core/telemetry/` | **Telemetry Domain** | `telemetry.py` (KPI/token metrics), `kafka_producer.py` (Kafka Cloud), `email_alert.py` (HTML Email alert). |
+| `app/core/rag/` | **RAG Domain** | `retrieval.py` (Hybrid Search Qdrant + Rerank), `prompt_manager.py` (Dynamic Prompt Registry). |
+| `app/core/security/` | **Security Domain** | `rate_limit.py` (Token-Bucket 30 RPM & Backpressure 50 concurrent). |
+| `app/schemas/` | **Schemas Domain** | `db_schemas.py` (4 bảng DDL), `kafka_events.py` (Kafka DTOs), `chat_schemas.py` (Chat DTOs). |
+| `app/workers/` | **Workers Domain** | `kafka_worker.py` (Batch Ingestion Consumer & 30-day Retention Cron). |
+| `app/agent/` | **Agentic AI Engine** | `classifier.py`, `direct_plan.py`, `context_builder.py`, `llm.py`, `graph.py`. |
+| `frontend/src/` | **Frontend React** | `components/chat/`, `components/landing/`, `components/admin/`, `types/`. |
 
 ## Agent Loop chi tiết
 

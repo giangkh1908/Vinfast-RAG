@@ -8,6 +8,7 @@ thành danh sách message hợp lệ, sẵn sàng đưa vào prompt:
 - Giữ tối đa WINDOW_TURNS turn gần nhất (mặc định 7)
 - Cap tổng token (lớp phòng thủ thứ 2 sau check ở API)
 """
+
 from app.agent.llm import estimate_tokens
 
 # Window mặc định: số turn gần nhất được giữ (1 turn = 1 cặp user + assistant)
@@ -29,7 +30,7 @@ _ALLOWED_ROLES = {"user", "assistant"}
 def _cap_message(role: str, content: str) -> str:
     """Cắt content về tối đa số ký tự cho phép theo role."""
     if isinstance(content, str) and len(content) > _MAX_MSG_CHARS[role]:
-        return content[:_MAX_MSG_CHARS[role]] + _TRUNCATED
+        return content[: _MAX_MSG_CHARS[role]] + _TRUNCATED
     return content
 
 
@@ -85,10 +86,7 @@ def sanitize_history(
         merged = merged[-max_msgs:]
 
     # 5) Cap tổng token: drop dần turn cũ nhất (từ đầu) — luôn giữ trọn cặp
-    while (
-        len(merged) >= 2
-        and sum(estimate_tokens(m["content"]) for m in merged) > max_tokens
-    ):
+    while len(merged) >= 2 and sum(estimate_tokens(m["content"]) for m in merged) > max_tokens:
         merged = merged[2:]
 
     return merged

@@ -3,7 +3,7 @@ import MessageBubble from './MessageBubble'
 import StatusBar from './StatusBar'
 import TypingIndicator from './TypingIndicator'
 import WelcomeScreen from './WelcomeScreen'
-import type { ChatState } from '../hooks/useChat'
+import type { ChatState } from '../../hooks/useChat'
 
 interface Props extends ChatState {
   onStop: () => void

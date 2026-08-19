@@ -16,10 +16,11 @@ Cover các bug/sửa đổi trong session:
 
 Run: python tests/test_multi_turn.py
 """
-import sys
-import os
-import io
+
 import asyncio
+import io
+import os
+import sys
 import time
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -48,6 +49,7 @@ async def _no_llm(query, history):
 
 def _install_offline_stub():
     import app.agent.nodes.classify as cf
+
     cf.llm_classify_fallback = _no_llm
 
 
@@ -134,8 +136,8 @@ CONVERSATIONS = [
 
 
 async def main():
-    from app.agent.nodes.classify import classify_node
     from app.agent.classifier import normalize_model
+    from app.agent.nodes.classify import classify_node
 
     print("╔═══════════════════════════════════════════════════╗")
     print("║         VIVU MULTI-TURN MEMORY TESTS              ║")
@@ -185,7 +187,7 @@ async def main():
                     ok = False
                     detail += f", version={got_version} (exp {exp['version']})"
 
-            report(f"MT-{conv['name'].replace(' ','')[:12]}-T{turn_idx}", ok, "classify", detail)
+            report(f"MT-{conv['name'].replace(' ', '')[:12]}-T{turn_idx}", ok, "classify", detail)
 
             # build history (assistant placeholder — model/version đến từ user turn)
             history.append({"role": "user", "content": query})

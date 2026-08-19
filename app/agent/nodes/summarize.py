@@ -6,6 +6,7 @@ Kích hoạt ở biên turn (turn_count % SUMMARY_EVERY == 0): lấy window vừ
 KHÔNG phải node trong graph — được gọi từ `chat.py` SAU khi response đã xong
 (finally), nên không làm tăng latency của câu trả lời.
 """
+
 import logging
 
 from app.agent.history import WINDOW_TURNS
@@ -18,9 +19,7 @@ logger = logging.getLogger("bds.summarize")
 SUMMARY_EVERY = WINDOW_TURNS
 SUMMARY_MAX_TOKENS = 256
 
-_SUMMARIZE_SYSTEM = (
-    "Bạn là trợ lý tóm tắt hội thoại tư vấn xe VinFast, chính xác và ngắn gọn."
-)
+_SUMMARIZE_SYSTEM = "Bạn là trợ lý tóm tắt hội thoại tư vấn xe VinFast, chính xác và ngắn gọn."
 
 _SUMMARIZE_PROMPT = """Tóm tắt hội thoại tư vấn xe VinFast dưới đây. {extend}
 
@@ -49,8 +48,7 @@ async def summarize_conversation(
     convo = "\n".join(lines)
 
     extend = (
-        "Đây là tóm tắt cũ, hãy GHI TIẾP (giữ nguyên phần cũ, bổ sung phần mới):\n"
-        f"{prev_summary}\n"
+        f"Đây là tóm tắt cũ, hãy GHI TIẾP (giữ nguyên phần cũ, bổ sung phần mới):\n{prev_summary}\n"
         if prev_summary
         else "Đây là lần tóm tắt đầu tiên:"
     )
@@ -59,17 +57,13 @@ async def summarize_conversation(
         {"role": "system", "content": _SUMMARIZE_SYSTEM},
         {
             "role": "user",
-            "content": _SUMMARIZE_PROMPT.format(
-                extend=extend, max_tokens=SUMMARY_MAX_TOKENS
-            )
+            "content": _SUMMARIZE_PROMPT.format(extend=extend, max_tokens=SUMMARY_MAX_TOKENS)
             + f"\n\nHội thoại:\n{convo}",
         },
     ]
 
     try:
-        content, _, _ = await stream_chat_with_fallback(
-            get_llm(), messages, max_tokens=SUMMARY_MAX_TOKENS
-        )
+        content, _, _ = await stream_chat_with_fallback(get_llm(), messages, max_tokens=SUMMARY_MAX_TOKENS)
         summary = (content or "").strip()
         return summary or None
     except Exception as e:

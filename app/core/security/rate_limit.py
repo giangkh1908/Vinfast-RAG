@@ -10,6 +10,7 @@ Design decisions:
 - Backpressure: hard limit on concurrent requests to prevent overload.
   Returns 503 Service Unavailable when limit reached.
 """
+
 import asyncio
 import logging
 import time
@@ -28,6 +29,7 @@ logger = logging.getLogger("bds.ratelimit")
 @dataclass
 class _TokenBucket:
     """Token bucket for rate limiting."""
+
     tokens: float
     last_refill: float
     capacity: float
@@ -83,7 +85,8 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
             return
         self._last_cleanup = now
         stale_keys = [
-            ip for ip, bucket in self._buckets.items()
+            ip
+            for ip, bucket in self._buckets.items()
             if now - bucket.last_refill > 600  # 10 min idle
         ]
         for ip in stale_keys:
@@ -97,13 +100,8 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
 
         # Skip rate limiting for static files, health checks, and admin endpoints
         path = request.url.path
-        if (
-            path.startswith("/static")
-            or path in ("/api/health", "/healthz", "/ready")
-            or path.startswith("/api/admin")
-        ):
+        if path.startswith("/static") or path in ("/api/health", "/healthz", "/ready") or path.startswith("/api/admin"):
             return await call_next(request)
-
 
         # Extract client IP (respect X-Forwarded-For behind proxy)
         client_ip = request.client.host if request.client else "unknown"
@@ -120,22 +118,61 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
             retry = bucket.retry_after()
             logger.warning(
                 "Rate limit exceeded: ip=%s path=%s retry_after=%.1fs",
-                client_ip, path, retry,
+                client_ip,
+                path,
+                retry,
             )
             try:
                 import uuid
-                from app.core.telemetry import log_metric_background, record_metric
-                log_metric_background(
-                    record_metric(
-                        request_id=str(uuid.uuid4()),
-                        client_ip=client_ip,
-                        query_text=f"[BLOCKED: Rate limit on {path}]",
-                        intent="abuse_rate_limit",
-                        decision="refuse",
-                        status_code=429,
-                        error_message=f"Rate limit exceeded ({self.rpm} RPM, retry_after={retry:.1f}s)",
-                    )
+
+                from app.core.telemetry.kafka_producer import produce_alert_bg, produce_telemetry_bg
+                from app.core.telemetry.telemetry import build_metric_payload
+
+                # Ghi nhận metric qua Kafka
+                metric_data = build_metric_payload(
+                    request_id=str(uuid.uuid4()),
+                    client_ip=client_ip,
+                    query_text=f"[BLOCKED: Rate limit on {path}]",
+                    intent="abuse_rate_limit",
+                    decision="refuse",
+                    status_code=429,
+                    error_message=f"Rate limit exceeded ({self.rpm} RPM, retry_after={retry:.1f}s)",
                 )
+                produce_telemetry_bg(metric_data)
+
+                # Theo dõi số lần vi phạm
+                if not hasattr(self, "_ip_violations"):
+                    self._ip_violations = defaultdict(int)
+                self._ip_violations[client_ip] += 1
+                violation_count = self._ip_violations[client_ip]
+
+                crit_threshold = getattr(settings, "alert_spam_critical_threshold", 15)
+                if violation_count >= crit_threshold:
+                    produce_alert_bg(
+                        alert_type="SPAM_ATTACK",
+                        severity="CRITICAL",
+                        title=f"Phát hiện tấn công Spam từ IP {client_ip}",
+                        message=f"IP {client_ip} đã bị chặn {violation_count} lần liên tiếp (vượt ngưỡng Critical {crit_threshold}).",
+                        details={
+                            "client_ip": client_ip,
+                            "violation_count": violation_count,
+                            "endpoint": path,
+                            "rpm_limit": self.rpm,
+                            "action_taken": "HTTP 429 Blocked",
+                        },
+                    )
+                else:
+                    produce_alert_bg(
+                        alert_type="RATE_LIMIT_WARNING",
+                        severity="WARNING",
+                        title=f"Cảnh báo Rate Limit IP {client_ip}",
+                        message=f"IP {client_ip} vừa gửi request vượt ngưỡng RPM ({self.rpm} req/phút). Lần vi phạm thứ #{violation_count}.",
+                        details={
+                            "client_ip": client_ip,
+                            "violation_count": violation_count,
+                            "endpoint": path,
+                        },
+                    )
             except Exception:
                 pass
 
@@ -175,11 +212,14 @@ class BackpressureMiddleware(BaseHTTPMiddleware):
         if self._semaphore.locked():
             logger.warning(
                 "Backpressure: %d/%d in-flight requests, rejecting new one",
-                self._inflight, self._max,
+                self._inflight,
+                self._max,
             )
             try:
                 import uuid
-                from app.core.telemetry import log_metric_background, record_metric
+
+                from app.core.telemetry.telemetry import log_metric_background, record_metric
+
                 client_ip = request.client.host if request.client else "unknown"
                 forwarded = request.headers.get("x-forwarded-for")
                 if forwarded:
@@ -234,5 +274,7 @@ def setup_rate_limiting(app: FastAPI):
 
     logger.info(
         "Rate limiting: %d RPM per IP (burst=%d), backpressure: %d max concurrent",
-        rpm, burst, max_concurrent,
+        rpm,
+        burst,
+        max_concurrent,
     )

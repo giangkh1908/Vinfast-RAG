@@ -5,11 +5,11 @@ import time
 
 from openai import AsyncOpenAI
 
-from app.config import settings
+from app.agent.graph_state import AgentState
 from app.agent.llm import TOOL_CALL_MAX_TOKENS, stream_chat_with_fallback
 from app.agent.schemas import build_tool_schemas
 from app.agent.tools import TOOL_REGISTRY
-from app.agent.graph_state import AgentState
+from app.config import settings
 
 logger = logging.getLogger("bds.graph.tools")
 
@@ -25,6 +25,7 @@ class _ToolCall:
     def __init__(self, id: str, name: str, arguments: str):
         self.id = id
         import types
+
         self.function = types.SimpleNamespace(name=name, arguments=arguments)
 
 
@@ -130,6 +131,7 @@ async def execute_tools_node(state: AgentState) -> dict:
 
         if model_code:
             from app.agent.tools import search_knowledge_base
+
             # Chạy KB search song song (sẽ quyết định skip_rerank sau)
             kb_task = search_knowledge_base(state.get("query", ""), model_id=model_code, skip_rerank=True)
             tasks.append(kb_task)
@@ -141,14 +143,15 @@ async def execute_tools_node(state: AgentState) -> dict:
 
     # Thêm KB result vào tool_results (nếu có và thành công)
     if kb_result and not isinstance(kb_result, Exception):
-        results.append({
-            "tool": "search_knowledge_base",
-            "result": kb_result,
-            "success": True,
-            "auto_injected": True,  # Label: supplementary, not primary
-        })
-        logger.info("Auto-inject KB: topic=%s results=%d",
-                    category, len(kb_result.get("results", [])))
+        results.append(
+            {
+                "tool": "search_knowledge_base",
+                "result": kb_result,
+                "success": True,
+                "auto_injected": True,  # Label: supplementary, not primary
+            }
+        )
+        logger.info("Auto-inject KB: topic=%s results=%d", category, len(kb_result.get("results", [])))
     elif isinstance(kb_result, Exception):
         logger.warning("Auto-inject KB failed: %s", kb_result)
 
@@ -159,45 +162,61 @@ async def execute_tools_node(state: AgentState) -> dict:
     # context_builder) but NOT to new_messages — they don't have matching
     # tool_calls in the assistant message, so adding them as 'tool' role
     # breaks OpenAI API contract.
-    new_messages = messages + [{
-        "role": "assistant",
-        "content": final_content or None,
-        "tool_calls": [
-            {"id": tc.id, "type": "function",
-             "function": {"name": tc.function.name, "arguments": tc.function.arguments}}
-            for tc in tool_calls
-        ],
-    }]
-    for tc, res in zip(tool_calls, results[:len(tool_calls)]):
-        new_messages.append({
-            "role": "tool",
-            "tool_call_id": tc.id,
-            "content": json.dumps(res["result"], ensure_ascii=False),
-        })
+    new_messages = messages + [
+        {
+            "role": "assistant",
+            "content": final_content or None,
+            "tool_calls": [
+                {
+                    "id": tc.id,
+                    "type": "function",
+                    "function": {"name": tc.function.name, "arguments": tc.function.arguments},
+                }
+                for tc in tool_calls
+            ],
+        }
+    ]
+    for tc, res in zip(tool_calls, results[: len(tool_calls)], strict=False):
+        new_messages.append(
+            {
+                "role": "tool",
+                "tool_call_id": tc.id,
+                "content": json.dumps(res["result"], ensure_ascii=False),
+            }
+        )
 
     # Handle ask_clarification: override if classify already decided answer
     # with a version-independent topic
     _VERSION_INDEPENDENT = {
-        "kích_thước", "phiên_bản", "pin_và_sạc",
-        "tính_năng_nổi_bật", "an_toàn", "nội_thất", "ngoại_thất",
+        "kích_thước",
+        "phiên_bản",
+        "pin_và_sạc",
+        "tính_năng_nổi_bật",
+        "an_toàn",
+        "nội_thất",
+        "ngoại_thất",
     }
     category = state.get("category", "general")
 
-    for tc, res in zip(tool_calls, results):
+    for tc, res in zip(tool_calls, results, strict=False):
         if tc.function.name == "ask_clarification" and res.get("success"):
             if has_model and category in _VERSION_INDEPENDENT:
                 logger.info("ask_clarification overridden: version-independent topic=%s", category)
-                new_messages.append({
-                    "role": "user",
-                    "content": f"Thông tin '{category}' áp dụng cho cả hai phiên bản. Trả lời trực tiếp. KHÔNG gọi lại ask_clarification.",
-                })
+                new_messages.append(
+                    {
+                        "role": "user",
+                        "content": f"Thông tin '{category}' áp dụng cho cả hai phiên bản. Trả lời trực tiếp. KHÔNG gọi lại ask_clarification.",
+                    }
+                )
                 break
             elif has_model and has_version:
                 logger.info("ask_clarification overridden: model+version known")
-                new_messages.append({
-                    "role": "user",
-                    "content": "Câu hỏi đã có model và version rõ ràng. Trả lời trực tiếp bằng tool. KHÔNG gọi lại ask_clarification.",
-                })
+                new_messages.append(
+                    {
+                        "role": "user",
+                        "content": "Câu hỏi đã có model và version rõ ràng. Trả lời trực tiếp bằng tool. KHÔNG gọi lại ask_clarification.",
+                    }
+                )
                 break
             else:
                 clarify_msg = res["result"].get("message", "Bạn muốn tìm thông tin nào?")

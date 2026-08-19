@@ -2,13 +2,13 @@ import logging
 import re
 
 from app.agent.classifier import get_classifier
+from app.agent.graph_state import AgentState
 from app.agent.intent import (
     classify_intent,
     extract_spec_category,
     extract_spec_key,
     llm_classify_fallback,
 )
-from app.agent.graph_state import AgentState
 
 logger = logging.getLogger("bds.graph.classify")
 
@@ -40,59 +40,146 @@ _UTILITY_QUERY_RE = re.compile(
 
 _TOPIC_KEYWORDS = {
     "pin_và_sạc": [
-        r"sạc\s*nhanh", r"sạc\s*chậm", r"sạc\s*đầy", r"thời\s*gian\s*sạc",
-        r"trạm\s*sạc", r"charger", r"charging", r"ổ\s*điện",
-        r"pin\s*(lithium|lipo|LFP)", r"dung\s*lượng\s*pin",
-        r"sạc", r"nạp\s*pin", r"phút.*10.*70", r"10.*70.*phút",
+        r"sạc\s*nhanh",
+        r"sạc\s*chậm",
+        r"sạc\s*đầy",
+        r"thời\s*gian\s*sạc",
+        r"trạm\s*sạc",
+        r"charger",
+        r"charging",
+        r"ổ\s*điện",
+        r"pin\s*(lithium|lipo|LFP)",
+        r"dung\s*lượng\s*pin",
+        r"sạc",
+        r"nạp\s*pin",
+        r"phút.*10.*70",
+        r"10.*70.*phút",
     ],
     "phạm_vi_di_chuyển": [
-        r"đi\s*được\s*bao\s*xa", r"di\s*chuyển",
-        r"range", r"phạm\s*vi", r"đi\s*được\s*bao\s*nhiêu\s*km",
+        r"đi\s*được\s*bao\s*xa",
+        r"di\s*chuyển",
+        r"range",
+        r"phạm\s*vi",
+        r"đi\s*được\s*bao\s*nhiêu\s*km",
         r"quãng\s*đường",
     ],
     "an_toàn": [
-        r"túi\s*khí", r"airbag", r"ADAS", r"phanh", r"ABS", r"EBD", r"ESC",
-        r"collision", r"cảnh\s*báo", r"camera\s*lùi", r"camera\s*360",
-        r"an\s*toàn", r"an\s*toàn\s*không", r"có\s*an\s*toàn",
+        r"túi\s*khí",
+        r"airbag",
+        r"ADAS",
+        r"phanh",
+        r"ABS",
+        r"EBD",
+        r"ESC",
+        r"collision",
+        r"cảnh\s*báo",
+        r"camera\s*lùi",
+        r"camera\s*360",
+        r"an\s*toàn",
+        r"an\s*toàn\s*không",
+        r"có\s*an\s*toàn",
     ],
     "nội_thất": [
-        r"nội\s*thất", r"ghế", r"số\s*chỗ", r"chỗ\s*ngồi", r"mấy\s*chỗ",
-        r"5\s*chỗ", r"7\s*chỗ",
-        r"màn\s*hình", r"loa", r"âm\s*thanh",
-        r"điều\s*hòa", r"khoang\s*xe", r"vô\s*lăng", r"HUD",
-        r"leatherette", r"speaker", r"display",
+        r"nội\s*thất",
+        r"ghế",
+        r"số\s*chỗ",
+        r"chỗ\s*ngồi",
+        r"mấy\s*chỗ",
+        r"5\s*chỗ",
+        r"7\s*chỗ",
+        r"màn\s*hình",
+        r"loa",
+        r"âm\s*thanh",
+        r"điều\s*hòa",
+        r"khoang\s*xe",
+        r"vô\s*lăng",
+        r"HUD",
+        r"leatherette",
+        r"speaker",
+        r"display",
     ],
     "ngoại_thất": [
-        r"ngoại\s*thất", r"đèn", r"màu\s*xe", r"mâm", r"la-zăng",
-        r"gương", r"body", r"design", r"kiểu\s*dáng",
-        r"headlight", r"tail\s*light", r"DRL",
+        r"ngoại\s*thất",
+        r"đèn",
+        r"màu\s*xe",
+        r"mâm",
+        r"la-zăng",
+        r"gương",
+        r"body",
+        r"design",
+        r"kiểu\s*dáng",
+        r"headlight",
+        r"tail\s*light",
+        r"DRL",
     ],
     "tính_năng_nổi_bật": [
-        r"tính\s*năng", r"trang\s*bị", r"công\s*nghệ", r"thông\s*minh",
-        r"tiện\s*nghi", r"OTA", r"navigation", r"bluetooth",
-        r"apple\s*carplay", r"android\s*auto", r"gaming",
+        r"tính\s*năng",
+        r"trang\s*bị",
+        r"công\s*nghệ",
+        r"thông\s*minh",
+        r"tiện\s*nghi",
+        r"OTA",
+        r"navigation",
+        r"bluetooth",
+        r"apple\s*carplay",
+        r"android\s*auto",
+        r"gaming",
     ],
     "phiên_bản": [
-        r"phiên\s*bản", r"version", r"bản\s*nào", r"có\s*mấy\s*bản",
-        r"danh\s*sách", r"khác\s*nhau\s*giữa",
+        r"phiên\s*bản",
+        r"version",
+        r"bản\s*nào",
+        r"có\s*mấy\s*bản",
+        r"danh\s*sách",
+        r"khác\s*nhau\s*giữa",
     ],
     "kích_thước": [
-        r"kích\s*thước", r"chiều\s*dài", r"chiều\s*rộng", r"chiều\s*cao",
-        r"trọng\s*lượng", r"wheelbase", r"không\s*gian",
-        r"ốp\s*lưng", r"boot", r"cốp",
+        r"kích\s*thước",
+        r"chiều\s*dài",
+        r"chiều\s*rộng",
+        r"chiều\s*cao",
+        r"trọng\s*lượng",
+        r"wheelbase",
+        r"không\s*gian",
+        r"ốp\s*lưng",
+        r"boot",
+        r"cốp",
     ],
     "thông_số_kỹ_thuật": [
-        r"công\s*suất", r"mô[\s-]*men", r"xoắn", r"tốc\s*độ", r"tốc\s*tối\s*đa",
-        r"battery", r"kWh", r"pin(?!.*sạc)",
-        r"trọng\s*lượng", r"wheelbase", r"ground\s*clearance",
-        r"power", r"torque", r"speed", r"km/h", r"Nm", r"kW",
-        r"thông\s*số", r"specs", r"spec", r"trọng\s*tải",
-        r"tăng\s*tốc", r"gia\s*tốc", r"tốc\s*độ\s*tối\s*đa",
+        r"công\s*suất",
+        r"mô[\s-]*men",
+        r"xoắn",
+        r"tốc\s*độ",
+        r"tốc\s*tối\s*đa",
+        r"battery",
+        r"kWh",
+        r"pin(?!.*sạc)",
+        r"trọng\s*lượng",
+        r"wheelbase",
+        r"ground\s*clearance",
+        r"power",
+        r"torque",
+        r"speed",
+        r"km/h",
+        r"Nm",
+        r"kW",
+        r"thông\s*số",
+        r"specs",
+        r"spec",
+        r"trọng\s*tải",
+        r"tăng\s*tốc",
+        r"gia\s*tốc",
+        r"tốc\s*độ\s*tối\s*đa",
     ],
     "giá": [
-        r"giá\s*bao\s*nhiêu", r"giá\s*bán", r"giá\s*niêm\s*yết",
-        r"bao\s*nhiêu\s*tiền", r"chi\s*phí", r"ưu\s*đãi",
-        r"giá\s*(xe|VF)", r"price",
+        r"giá\s*bao\s*nhiêu",
+        r"giá\s*bán",
+        r"giá\s*niêm\s*yết",
+        r"bao\s*nhiêu\s*tiền",
+        r"chi\s*phí",
+        r"ưu\s*đãi",
+        r"giá\s*(xe|VF)",
+        r"price",
     ],
 }
 
@@ -173,9 +260,13 @@ def _is_followup_to_clarify(history: list[dict]) -> bool:
         if msg.get("role") == "assistant":
             content = msg.get("content", "").lower()
             clarify_indicators = [
-                "bạn muốn hỏi", "bạn muốn tìm", "phiên bản nào",
-                "vf 6 hay vf 8", "vf6 hay vf8",
-                "thông tin nào", "chủ đề nào",
+                "bạn muốn hỏi",
+                "bạn muốn tìm",
+                "phiên bản nào",
+                "vf 6 hay vf 8",
+                "vf6 hay vf8",
+                "thông tin nào",
+                "chủ đề nào",
             ]
             return any(ind in content for ind in clarify_indicators)
     return False
@@ -213,7 +304,6 @@ async def classify_node(state: AgentState) -> dict:
     has_model = bool(cr.entities.get("model_code"))
     topic = _classify_topic(query)
 
-
     # Inherit topic from history if current query topic is general
     if topic == "general" and hist_ctx["topic"]:
         topic = hist_ctx["topic"]
@@ -236,7 +326,17 @@ async def classify_node(state: AgentState) -> dict:
     spec_key = extract_spec_key(query) if intent in ("feature_presence", "cross_model_feature") else None
 
     # Intent KHÔNG cần model → đi thẳng (KB search, cross-model scan, danh sách, link...)
-    _NO_MODEL_INTENTS = {"greeting", "thanks", "identity", "cross_model_feature", "models_list", "policy", "general", "utility", "out_of_scope"}
+    _NO_MODEL_INTENTS = {
+        "greeting",
+        "thanks",
+        "identity",
+        "cross_model_feature",
+        "models_list",
+        "policy",
+        "general",
+        "utility",
+        "out_of_scope",
+    }
 
     # Xử lý các câu chào hỏi / cảm ơn / giới thiệu bot thân thiện như ViVu VinFast
     if intent == "greeting":
@@ -301,7 +401,6 @@ async def classify_node(state: AgentState) -> dict:
             "specificity": "unclear",
             "category": topic,
         }
-
 
     # Broad topic / Tổng quan: Nếu đã có model (VF 3, VF 8...) thì cho phép trả lời tổng quan (KB search) thay vì từ chối
     # Missing version → KHÔNG ngắt hỏi lại (UX kém). Chuyển decision=answer,

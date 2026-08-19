@@ -12,14 +12,13 @@ import requests
 from requests.adapters import HTTPAdapter
 
 from app.config import settings
-from app.core.cache import cache, make_embed_key, make_hs_key
-
+from app.core.storage.cache import cache, make_embed_key, make_hs_key
 
 logger = logging.getLogger("retrieval")
 
 # TTL cache
-EMB_CACHE_TTL = 7 * 86400      # embedding: deterministic theo (model, text)
-HS_CACHE_TTL = 2 * 3600        # hybrid_search: data_version key đã tự invalidate
+EMB_CACHE_TTL = 7 * 86400  # embedding: deterministic theo (model, text)
+HS_CACHE_TTL = 2 * 3600  # hybrid_search: data_version key đã tự invalidate
 
 _reranker = None
 _sparse_index = None
@@ -33,6 +32,7 @@ def _get_embed_client():
     global _embed_client
     if _embed_client is None:
         from openai import OpenAI
+
         _embed_client = OpenAI(
             api_key=settings.openrouter_api_key,
             base_url="https://openrouter.ai/api/v1",
@@ -41,20 +41,27 @@ def _get_embed_client():
         )
     return _embed_client
 
+
 # Collections to search. Override via QDRANT_DENSE_COLLECTIONS env var.
 _dense_env = _os.environ.get("QDRANT_DENSE_COLLECTIONS", "")
 
-DENSE_COLLECTIONS = [c.strip() for c in _dense_env.split(",") if c.strip()] if _dense_env else ["vivu_product_info", "vivu_policy", "vivu_maintenance"]
+DENSE_COLLECTIONS = (
+    [c.strip() for c in _dense_env.split(",") if c.strip()]
+    if _dense_env
+    else ["vivu_product_info", "vivu_policy", "vivu_maintenance"]
+)
 SPARSE_COLLECTION = "sparse"
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DATA_CLEAN_DIR = REPO_ROOT / "data" / "clean"
 
-STOPWORDS = set("""
+STOPWORDS = set(
+    """
 và của là đã đang sẽ được với cho từ đến tại cũng như hay hoặc nhưng nếu thì
 khi mà nên vì thế nên để lại vẫn còn rất chỉ mỗi này kia nào đó đây những các
 tất mọi người tôi bạn chúng ta họ nó ông bà anh chị em cùng thôi cần nếu đúng
-xin quý""".split())
+xin quý""".split()
+)
 
 TOKEN_RE = re.compile(r"[a-zà-ỹ0-9]+", re.UNICODE)
 
@@ -165,14 +172,14 @@ def _openrouter_embed(texts: list[str]) -> list[list[float]]:
 
     if to_embed:
         for j in range(0, len(to_embed), batch_size):
-            batch_idx = to_embed[j:j + batch_size]
+            batch_idx = to_embed[j : j + batch_size]
             batch_texts = [texts[i] for i in batch_idx]
             response = client.embeddings.create(
                 model=settings.openrouter_embed_model,
                 input=batch_texts,
             )
             sorted_data = sorted(response.data, key=lambda x: x.index)
-            for k, d in zip(batch_idx, sorted_data):
+            for k, d in zip(batch_idx, sorted_data, strict=False):
                 emb = d.embedding
                 all_embeddings[k] = emb
                 cache.sync_set_json(make_embed_key(texts[k]), emb, EMB_CACHE_TTL)
@@ -318,10 +325,12 @@ class DeepInfraReranker:
         self.model = model
         self.base_url = f"https://api.deepinfra.com/v1/inference/{model}"
         self.session = requests.Session()
-        self.session.headers.update({
-            "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json",
-        })
+        self.session.headers.update(
+            {
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json",
+            }
+        )
 
     def predict(self, pairs: list[tuple[str, str]]) -> list[float]:
         if not pairs:
@@ -399,6 +408,7 @@ def _embed_cosine_scores(query: str, texts: list[str]) -> list[float] | None:
         if len(embeddings) < len(texts) + 1:
             return None
         import numpy as np
+
         q = np.array(embeddings[0])
         qn = np.linalg.norm(q)
         if qn == 0:
@@ -485,6 +495,7 @@ async def hybrid_search(query: str, model_id: str = None, top_k: int = 5, skip_r
             return hit
 
     import asyncio
+
     loop = asyncio.get_running_loop()
     qdrant = get_qdrant()
     limit = top_k * 2
@@ -494,19 +505,19 @@ async def hybrid_search(query: str, model_id: str = None, top_k: int = 5, skip_r
     embed_fut = loop.run_in_executor(_pool, _openrouter_embed, [query])
     sparse_fut = (
         loop.run_in_executor(_pool, qdrant.search_sparse, SPARSE_COLLECTION, sparse_vec, model_id, limit)
-        if sparse_vec else None
+        if sparse_vec
+        else None
     )
 
     dense_vector = (await embed_fut)[0]
 
     # 2. Dense search SONG SONG across all collections (via aliases → active version)
     dense_futs = [
-        loop.run_in_executor(_pool, qdrant.search, col, dense_vector, model_id, limit)
-        for col in DENSE_COLLECTIONS
+        loop.run_in_executor(_pool, qdrant.search, col, dense_vector, model_id, limit) for col in DENSE_COLLECTIONS
     ]
     dense_results = await asyncio.gather(*dense_futs, return_exceptions=True)
     all_dense = []
-    for col, res in zip(DENSE_COLLECTIONS, dense_results):
+    for col, res in zip(DENSE_COLLECTIONS, dense_results, strict=False):
         if isinstance(res, Exception):
             logger.warning("search %s failed: %s", col, res)
         else:
@@ -550,7 +561,7 @@ async def hybrid_search(query: str, model_id: str = None, top_k: int = 5, skip_r
                 for j, (orig_idx, _, _) in enumerate(non_empty):
                     scores[orig_idx] = rerank_scores[j]
                 # Cập nhật fused: top 10 có rerank scores, phần còn lại giữ RRF score
-                fused_top = [(hit, float(score)) for (hit, _), score in zip(rerank_candidates, scores)]
+                fused_top = [(hit, float(score)) for (hit, _), score in zip(rerank_candidates, scores, strict=False)]
                 fused_rest = fused[10:]  # giữ nguyên RRF scores
                 fused = fused_top + fused_rest
                 fused.sort(key=lambda x: x[1], reverse=True)
@@ -560,7 +571,7 @@ async def hybrid_search(query: str, model_id: str = None, top_k: int = 5, skip_r
         texts = [hit.get("payload", {}).get("text", "") for hit, _ in fused]
         cos_scores = _embed_cosine_scores(query, texts)
         if cos_scores is not None and len(cos_scores) == len(fused):
-            fused = [(hit, s) for (hit, _), s in zip(fused, cos_scores)]
+            fused = [(hit, s) for (hit, _), s in zip(fused, cos_scores, strict=False)]
             fused.sort(key=lambda x: x[1], reverse=True)
         elif sparse_results:
             # Không embed được: chuẩn hóa RRF về (0,1] theo max để giữ thứ tự
@@ -574,18 +585,20 @@ async def hybrid_search(query: str, model_id: str = None, top_k: int = 5, skip_r
         text = payload.get("text", "")
         if not text or not text.strip():
             continue
-        results.append({
-            "id": hit.get("id", ""),
-            "text": text,
-            "model_id": payload.get("model_id"),
-            "edition_id": payload.get("edition_id"),
-            "text_type": payload.get("text_type", ""),
-            "source_type": payload.get("source_type", ""),
-            "source_url": payload.get("source_url", ""),
-            "page": payload.get("page", ""),
-            "section": payload.get("section_path", ""),
-            "score": round(score, 4),
-        })
+        results.append(
+            {
+                "id": hit.get("id", ""),
+                "text": text,
+                "model_id": payload.get("model_id"),
+                "edition_id": payload.get("edition_id"),
+                "text_type": payload.get("text_type", ""),
+                "source_type": payload.get("source_type", ""),
+                "source_url": payload.get("source_url", ""),
+                "page": payload.get("page", ""),
+                "section": payload.get("section_path", ""),
+                "score": round(score, 4),
+            }
+        )
         if len(results) >= top_k:
             break
 

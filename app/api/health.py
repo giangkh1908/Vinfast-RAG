@@ -6,6 +6,7 @@ Endpoints:
 - /ready: Readiness probe (sâu) — kiểm tra kết nối PostgreSQL, Qdrant, Cache, LLM Config.
 - /api/health: Backward compatibility alias cho frontend status bar.
 """
+
 import datetime
 import logging
 import time
@@ -15,7 +16,7 @@ from fastapi import APIRouter, Response, status
 from fastapi.responses import JSONResponse
 
 from app.config import settings
-from app.core.db import get_pool, pool_stats
+from app.core.storage.db import get_pool, pool_stats
 
 logger = logging.getLogger("bds.health")
 
@@ -30,7 +31,7 @@ async def healthz():
         content={
             "status": "alive",
             "app_version": settings.app_version,
-            "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+            "timestamp": datetime.datetime.now(datetime.UTC).isoformat(),
         },
     )
 
@@ -71,7 +72,8 @@ async def readiness_probe(response: Response):
     # 2. Check Qdrant Vector DB
     t0 = time.monotonic()
     try:
-        from app.core.retrieval import get_qdrant_client
+        from app.core.rag.retrieval import get_qdrant_client
+
         q_client = get_qdrant_client()
         if q_client:
             cols = await q_client.get_collections()
@@ -95,7 +97,8 @@ async def readiness_probe(response: Response):
 
     # 3. Check Cache (Redis / Upstash)
     try:
-        from app.core.cache import cache
+        from app.core.storage.cache import cache
+
         if cache.enabled:
             # Test cache ping / set-get
             test_key = "health:ping"
@@ -129,7 +132,7 @@ async def readiness_probe(response: Response):
         content={
             "status": "ready" if is_ready else "not_ready",
             "app_version": settings.app_version,
-            "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+            "timestamp": datetime.datetime.now(datetime.UTC).isoformat(),
             "checks": checks,
         },
     )

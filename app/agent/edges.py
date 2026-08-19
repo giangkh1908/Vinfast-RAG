@@ -1,5 +1,5 @@
-from app.agent.graph_state import AgentState
 from app.agent.direct_plan import build_direct_plan
+from app.agent.graph_state import AgentState
 
 MAX_ITERATIONS = 3
 
@@ -23,8 +23,10 @@ def route_after_tools(state: AgentState) -> str:
     if final:
         # Only re-generate if LLM refused without checking data
         refusal_phrases = (
-            "chưa thể xác nhận", "không có thông tin",
-            "hiện chưa có", "không có dữ liệu",
+            "chưa thể xác nhận",
+            "không có thông tin",
+            "hiện chưa có",
+            "không có dữ liệu",
         )
         if any(p in final.lower() for p in refusal_phrases):
             return "generate"

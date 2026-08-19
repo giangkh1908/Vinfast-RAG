@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react'
 import ReactMarkdown from 'react-markdown'
 import rehypeSanitize, { defaultSchema } from 'rehype-sanitize'
 import SourcesBox from './SourcesBox'
-import type { Message } from '../types'
+import type { Message } from '../../types'
 
 const _schema = {
   ...defaultSchema,

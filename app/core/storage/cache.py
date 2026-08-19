@@ -56,12 +56,11 @@ async def data_version() -> str | None:
         if _ver_cache["value"] is not None and now - _ver_cache["at"] < _VER_TTL:
             return _ver_cache["value"]
     try:
-        from app.core.db import get_pool
+        from app.core.storage.db import get_pool
+
         pool = await get_pool()
         async with pool.acquire() as conn:
-            row = await conn.fetchrow(
-                "SELECT version FROM ingest_version WHERE is_current LIMIT 1"
-            )
+            row = await conn.fetchrow("SELECT version FROM ingest_version WHERE is_current LIMIT 1")
         ver = row["version"] if row else None
     except Exception as e:  # noqa: BLE001
         logger.warning("data_version: PG unreachable -> skip cache: %s", e)
@@ -99,8 +98,7 @@ def _sha1(*parts: str) -> str:
 
 
 # ── Key builders ───────────────────────────────────────────────────────────
-async def make_hs_key(query: str, model_id: str | None = None, top_k: int = 5,
-                      skip_rerank: bool = False) -> str | None:
+async def make_hs_key(query: str, model_id: str | None = None, top_k: int = 5, skip_rerank: bool = False) -> str | None:
     ver = await data_version()
     if not _is_valid_version(ver):
         return None
@@ -114,8 +112,7 @@ def make_embed_key(text: str) -> str:
     return f"emb:{settings.openrouter_embed_model}:{_sha1(text)}"
 
 
-async def make_answer_key(entities: dict, query: str, prompt_hash: str = "",
-                          llm_model: str = "") -> str | None:
+async def make_answer_key(entities: dict, query: str, prompt_hash: str = "", llm_model: str = "") -> str | None:
     """Key cho ans: cache — gồm data_version + prompt_hash + llm_model + entities + query.
 
     Trả None khi PG unreachable (data_version=None) → skip cache để tránh stale.
@@ -126,6 +123,7 @@ async def make_answer_key(entities: dict, query: str, prompt_hash: str = "",
         return None
     if not prompt_hash:
         from app.agent.prompts import get_prompt_hash
+
         prompt_hash = get_prompt_hash()
     if not llm_model:
         llm_model = settings.llm_model.split("/")[-1]  # lấy tên model ngắn gọn
@@ -159,8 +157,6 @@ def make_exact_io_key(query: str) -> str:
     return f"io:{_sha1(normalize_query(query))}"
 
 
-
-
 async def make_tool_price_key(model_code: str, version: str = None) -> str | None:
     """Key cho cache get_price.
 
@@ -178,8 +174,9 @@ async def make_tool_price_key(model_code: str, version: str = None) -> str | Non
     return f"tool:price:{ver}:{_sha1(model_code, v)}"
 
 
-async def make_tool_specs_key(model_code: str, version: str = None,
-                               category: str = None, keys: list[str] = None) -> str | None:
+async def make_tool_specs_key(
+    model_code: str, version: str = None, category: str = None, keys: list[str] = None
+) -> str | None:
     """Key cho cache get_specs.
 
     Args:
@@ -227,7 +224,6 @@ async def make_tool_models_key() -> str | None:
     if not _is_valid_version(ver):
         return None
     return f"tool:models:{ver}"
-
 
 
 # ── RedisCache wrapper ─────────────────────────────────────────────────────
@@ -283,15 +279,21 @@ class RedisCache:
                     import redis as sync_redis
 
                     self._client = aioredis.from_url(
-                        settings.redis_url, decode_responses=True,
-                        socket_connect_timeout=5, socket_timeout=5,
-                        health_check_interval=30, retry_on_timeout=True,
+                        settings.redis_url,
+                        decode_responses=True,
+                        socket_connect_timeout=5,
+                        socket_timeout=5,
+                        health_check_interval=30,
+                        retry_on_timeout=True,
                         retry=Retry(ExponentialBackoff(base=0.1, cap=1.0), retries=2),
                     )
                     self._sync_client = sync_redis.Redis.from_url(
-                        settings.redis_url, decode_responses=True,
-                        socket_connect_timeout=5, socket_timeout=5,
-                        health_check_interval=30, retry_on_timeout=True,
+                        settings.redis_url,
+                        decode_responses=True,
+                        socket_connect_timeout=5,
+                        socket_timeout=5,
+                        health_check_interval=30,
+                        retry_on_timeout=True,
                     )
             except Exception as e:  # noqa: BLE001
                 logger.warning("Redis init fail → cache disabled: %s", e)
@@ -402,6 +404,7 @@ class RedisCache:
         else:
             # Request sau: chờ request đầu compute xong, rồi retry GET
             import asyncio as _aio
+
             for _ in range(5):  # retry max5 lần, mỗi lần2s = max10s
                 await _aio.sleep(2)
                 hit = await self.get_json(key)

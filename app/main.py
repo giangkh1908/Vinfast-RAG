@@ -1,18 +1,16 @@
 import logging
-
-from app.tracing import setup_tracing
-
 from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
+from app.api.admin_prompts import router as admin_prompts_router
 from app.api.chat import router as chat_router
 from app.api.health import router as health_router
 from app.api.metrics import router as metrics_router
-from app.api.admin_prompts import router as admin_prompts_router
-from app.core.rate_limit import setup_rate_limiting
+from app.core.security.rate_limit import setup_rate_limiting
+from app.tracing import setup_tracing
 
 # Configure logging so bds.* loggers appear in terminal
 logging.basicConfig(
@@ -56,16 +54,40 @@ async def _prewarm():
     try:
         from app.agent.prompts import get_system_prompt
         from app.agent.schemas import build_tool_schemas
-        from app.core.db import get_pool
-        from app.core.telemetry import ensure_telemetry_schema
-        from app.core.prompt_manager import prompt_manager
+        from app.core.rag.prompt_manager import prompt_manager
+        from app.core.storage.db import get_pool
+        from app.core.telemetry.telemetry import ensure_telemetry_schema
+
         # Pre-warm pool: tạo min_size connections ngay
         await get_pool()
         await ensure_telemetry_schema()
         await prompt_manager.ensure_schema()
         await get_system_prompt()
         await build_tool_schemas()
-        logging.getLogger("bds").info("Prewarm OK: pool + telemetry + prompt registry + system prompt + tool schemas")
+
+        # Khởi động Kafka Producer & Consumer Worker ngầm
+        from app.core.telemetry.kafka_producer import KafkaProducerService
+        from app.workers.kafka_worker import start_kafka_worker_background
+
+        await KafkaProducerService.get_instance()
+        await start_kafka_worker_background()
+
+        logging.getLogger("bds").info(
+            "Prewarm OK: pool + telemetry + Kafka + prompt registry + system prompt + tool schemas"
+        )
     except Exception as e:
         logging.getLogger("bds").warning("Prewarm failed (sẽ lazy-load): %s", e)
 
+
+@app.on_event("shutdown")
+async def _shutdown():
+    try:
+        from app.core.telemetry.kafka_producer import KafkaProducerService
+        from app.workers.kafka_worker import stop_kafka_worker_background
+
+        stop_kafka_worker_background()
+        producer = await KafkaProducerService.get_instance()
+        await producer.stop()
+        logging.getLogger("bds").info("Kafka Producer and Worker shutdown cleanly.")
+    except Exception:
+        pass

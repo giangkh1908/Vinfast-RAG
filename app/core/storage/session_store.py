@@ -10,33 +10,22 @@ Mỗi request tốn 2 thao tác nhỏ:
   1 SELECT (đọc summary) + 1 UPSERT (tăng turn_count, cập nhật summary nếu có)
 → ~1-3ms trên Neon, không đáng kể so với 1 LLM call.
 """
+
 import asyncio
 import logging
 import uuid
 from typing import Any
 
-from app.core.db import (
+from app.core.storage.db import (
     RETRYABLE_DB_ERRORS,
     get_pool,
     run_with_db_retry,
 )
+from app.schemas import CHAT_SESSIONS_SCHEMA_SQL
 
 logger = logging.getLogger("bds.session_store")
 
-_SCHEMA_SQL = """
-CREATE TABLE IF NOT EXISTS chat_sessions (
-    session_id      UUID PRIMARY KEY,           -- client tạo (uuid v4), lưu trong localStorage
-    created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
-    updated_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
-    turn_count      INT NOT NULL DEFAULT 0,     -- số lượt user đã gửi (analytics)
-    summary         TEXT,                       -- running summary (NULL khi chưa vượt ngưỡng)
-    summary_tokens  INT NOT NULL DEFAULT 0,     -- ước lượng token của summary (để tính budget)
-    last_message    TEXT,                       -- tin user cuối (debug/analytics nhanh)
-    meta            JSONB                       -- optional: user_agent, referrer, ...
-);
-
-CREATE INDEX IF NOT EXISTS idx_chat_sessions_updated ON chat_sessions(updated_at);
-"""
+_SCHEMA_SQL = CHAT_SESSIONS_SCHEMA_SQL
 
 _ensure_lock = asyncio.Lock()
 _schema_ready = False
@@ -50,6 +39,7 @@ async def ensure_schema() -> None:
     async with _ensure_lock:
         if _schema_ready:
             return
+
         async def _create_schema() -> None:
             pool = await get_pool()
             async with pool.acquire() as conn:
@@ -140,8 +130,7 @@ async def update_summary(session_id: str, summary: str | None, summary_tokens: i
         async def _update() -> None:
             pool = await get_pool()
             await pool.execute(
-                "UPDATE chat_sessions SET summary = $2, summary_tokens = $3, updated_at = now() "
-                "WHERE session_id = $1",
+                "UPDATE chat_sessions SET summary = $2, summary_tokens = $3, updated_at = now() WHERE session_id = $1",
                 parse_session_id(session_id),
                 summary,
                 summary_tokens,

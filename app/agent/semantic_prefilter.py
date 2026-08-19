@@ -5,9 +5,10 @@ No LLM call needed. Uses the same embedding model as retrieval.
 Deterministic: same query → same result every time.
 """
 
+from dataclasses import dataclass
+
 import numpy as np
 import requests
-from dataclasses import dataclass
 
 from app.config import settings
 
@@ -190,8 +191,12 @@ def classify_specificity(query: str) -> SpecificityResult:
 
     except Exception as e:
         import logging
+
         logging.getLogger("semantic_prefilter").warning("Failed: %s", e)
         return SpecificityResult(
-            specific=False, category=None,
-            top_score=0.0, gap=0.0, all_scores={},
+            specific=False,
+            category=None,
+            top_score=0.0,
+            gap=0.0,
+            all_scores={},
         )

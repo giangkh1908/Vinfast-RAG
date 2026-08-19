@@ -4,6 +4,7 @@ Intent + entities (từ classifier hybrid) → danh sách (tool, args) chính x�
 Thiếu dữ liệu bắt buộc (model) → trả None → classify đã xử lý clarify từ trước;
 route_after_classify sẽ đưa về build_messages (LLM loop) làm fallback cuối cùng.
 """
+
 import re
 
 from app.agent.classifier import MODEL_RE, normalize_model
@@ -29,8 +30,14 @@ _UTILITY_PATTERNS = [
     (re.compile(r"(lăn\s*bánh|onroad|đăng\s*ký\s*xe)", re.I), lambda m: [("get_onroad_cost_link", {})]),
     (re.compile(r"(trả\s*góp|vay|thẩm\s*định)", re.I), lambda m: [("get_loan_estimate_link", {})]),
     (re.compile(r"(showroom|trạm\s*sạc|đại\s*lý|chi\s*nhánh)", re.I), lambda m: [("get_showroom_charging_link", {})]),
-    (re.compile(r"(đặt\s*lịch|booking|lịch\s*hẹn|test\s*drive|lái\s*thử)", re.I), lambda m: [("get_booking_link", {"type": "test_drive"})]),
-    (re.compile(r"(link\s*bảo\s*dưỡng|lịch\s*bảo\s*dưỡng)", re.I), lambda m: [("get_maintenance_link", {"car_model": m or "VF 8"})]),
+    (
+        re.compile(r"(đặt\s*lịch|booking|lịch\s*hẹn|test\s*drive|lái\s*thử)", re.I),
+        lambda m: [("get_booking_link", {"type": "test_drive"})],
+    ),
+    (
+        re.compile(r"(link\s*bảo\s*dưỡng|lịch\s*bảo\s*dưỡng)", re.I),
+        lambda m: [("get_maintenance_link", {"car_model": m or "VF 8"})],
+    ),
     (re.compile(r"(khuyến\s*mãi|ưu\s*đãi|voucher)", re.I), lambda m: [("get_active_promotions", {"model_code": m})]),
     (re.compile(r"(hotline|liên\s*hệ|gặp\s*sales)", re.I), lambda m: [("get_showroom_charging_link", {})]),
 ]
@@ -94,19 +101,13 @@ def build_tool_plan(state) -> list[tuple[str, dict]] | None:
         args = {"version": None, "category": category}
         if entities.get("spec_key"):
             args["keys"] = [entities["spec_key"]]
-        return [
-            ("get_specs", {"model_code": m, **args})
-            for m in MAIN_MODELS
-        ]
+        return [("get_specs", {"model_code": m, **args}) for m in MAIN_MODELS]
 
     if intent == "compare":
         models = _models_in_query(query, model)
         if not models:
             return None
-        calls = [
-            ("get_specs", {"model_code": m, "version": None, "category": category})
-            for m in models
-        ]
+        calls = [("get_specs", {"model_code": m, "version": None, "category": category}) for m in models]
         if re.search(r"(giá|bao\s*nhiêu\s*tiền)", query, re.I):
             calls += [("get_price", {"model_code": m, "version": None}) for m in models]
         return calls

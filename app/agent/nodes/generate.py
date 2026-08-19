@@ -4,11 +4,11 @@ import time
 
 from openai import AsyncOpenAI
 
-from app.config import settings
-from app.agent.graph_state import AgentState
 from app.agent.context_builder import build_structured_context
+from app.agent.graph_state import AgentState
 from app.agent.llm import OUTPUT_MAX_TOKENS, stream_chat_with_fallback
 from app.agent.prompts import SYNTHESIZE_PROMPT
+from app.config import settings
 
 logger = logging.getLogger("bds.graph.generate")
 
@@ -46,9 +46,7 @@ async def generate_node(state: AgentState) -> dict:
     # Build history-aware query for multi-turn
     history = state.get("history", [])
     if history:
-        history_context = "\n".join(
-            f"{m['role']}: {m['content']}" for m in history[-4:]
-        )
+        history_context = "\n".join(f"{m['role']}: {m['content']}" for m in history[-4:])
         full_query = f"Lịch sử hội thoại:\n{history_context}\n\nCâu hỏi hiện tại: {query}"
     else:
         full_query = query

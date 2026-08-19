@@ -8,6 +8,7 @@ Thu thập và tổng hợp chỉ số vận hành của chatbot:
 - Cache Hit/Miss ratio
 - Intent & Tool call distribution
 """
+
 import asyncio
 import json
 import logging
@@ -15,9 +16,12 @@ import uuid
 from typing import Any
 
 from app.config import settings
-from app.core.db import get_pool, run_with_db_retry
+from app.core.storage.db import get_pool, run_with_db_retry
+from app.schemas import REQUEST_METRICS_SCHEMA_SQL
 
 logger = logging.getLogger("bds.telemetry")
+
+_SCHEMA_SQL = REQUEST_METRICS_SCHEMA_SQL
 
 # Bảng giá USD trên 1 triệu tokens (1M tokens) theo giá niêm yết nhà cung cấp
 MODEL_PRICING = {
@@ -56,42 +60,6 @@ def calculate_cost(model: str, prompt_tokens: int, completion_tokens: int) -> tu
     return round(total_usd, 6), round(total_vnd, 2)
 
 
-_SCHEMA_SQL = """
-CREATE TABLE IF NOT EXISTS request_metrics (
-    id                  BIGSERIAL PRIMARY KEY,
-    request_id          TEXT NOT NULL,
-    session_id          UUID,
-    client_ip           TEXT DEFAULT 'unknown',
-    created_at          TIMESTAMPTZ NOT NULL DEFAULT now(),
-    query_text          TEXT,
-    intent              TEXT,
-    decision            TEXT,
-    model_used          TEXT,
-    prompt_version      TEXT DEFAULT 'v1.0.0',
-    prompt_tokens       INT DEFAULT 0,
-    completion_tokens   INT DEFAULT 0,
-    total_tokens        INT DEFAULT 0,
-    cost_usd            NUMERIC(10, 6) DEFAULT 0.0,
-    cost_vnd            NUMERIC(12, 2) DEFAULT 0.0,
-    ttft_ms             INT DEFAULT 0,
-    total_latency_ms    INT DEFAULT 0,
-    cache_hit           BOOLEAN DEFAULT false,
-    cache_type          TEXT DEFAULT 'none',
-    tools_used          JSONB DEFAULT '[]'::jsonb,
-    status_code         INT DEFAULT 200,
-    error_message       TEXT
-);
-
-ALTER TABLE request_metrics ADD COLUMN IF NOT EXISTS prompt_version TEXT DEFAULT 'v1.0.0';
-ALTER TABLE request_metrics ADD COLUMN IF NOT EXISTS client_ip TEXT DEFAULT 'unknown';
-
-CREATE INDEX IF NOT EXISTS idx_req_metrics_created ON request_metrics(created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_req_metrics_intent ON request_metrics(intent);
-CREATE INDEX IF NOT EXISTS idx_req_metrics_cache ON request_metrics(cache_hit);
-CREATE INDEX IF NOT EXISTS idx_req_metrics_session ON request_metrics(session_id);
-CREATE INDEX IF NOT EXISTS idx_req_metrics_ip ON request_metrics(client_ip);
-"""
-
 _schema_ready = False
 _ensure_lock = asyncio.Lock()
 
@@ -104,6 +72,7 @@ async def ensure_telemetry_schema() -> None:
     async with _ensure_lock:
         if _schema_ready:
             return
+
         async def _create():
             pool = await get_pool()
             async with pool.acquire() as conn:
@@ -111,8 +80,64 @@ async def ensure_telemetry_schema() -> None:
                     stmt = stmt.strip()
                     if stmt:
                         await conn.execute(stmt)
+
         await run_with_db_retry(_create, label="ensure request_metrics schema")
         _schema_ready = True
+
+
+def build_metric_payload(
+    *,
+    request_id: str,
+    session_id: str | None = None,
+    client_ip: str = "unknown",
+    query_text: str = "",
+    intent: str = "general",
+    decision: str = "answer",
+    model_used: str = "",
+    prompt_version: str = "v1.0.0",
+    prompt_tokens: int = 0,
+    completion_tokens: int = 0,
+    ttft_ms: int = 0,
+    total_latency_ms: int = 0,
+    cache_hit: bool = False,
+    cache_type: str = "none",
+    tools_used: list[str] | None = None,
+    status_code: int = 200,
+    error_message: str | None = None,
+) -> dict[str, Any]:
+    """Tạo payload dictionary chuẩn hóa của 1 record telemetry."""
+    sess_uuid_str = None
+    if session_id:
+        try:
+            sess_uuid_str = str(uuid.UUID(str(session_id)))
+        except (ValueError, TypeError):
+            sess_uuid_str = None
+
+    total_tokens = prompt_tokens + completion_tokens
+    cost_usd, cost_vnd = calculate_cost(model_used, prompt_tokens, completion_tokens)
+
+    return {
+        "request_id": str(request_id),
+        "session_id": sess_uuid_str,
+        "client_ip": client_ip or "unknown",
+        "query_text": query_text or "",
+        "intent": str(intent),
+        "decision": str(decision),
+        "model_used": str(model_used),
+        "prompt_version": str(prompt_version),
+        "prompt_tokens": int(prompt_tokens),
+        "completion_tokens": int(completion_tokens),
+        "total_tokens": int(total_tokens),
+        "cost_usd": float(cost_usd),
+        "cost_vnd": float(cost_vnd),
+        "ttft_ms": int(ttft_ms),
+        "total_latency_ms": int(total_latency_ms),
+        "cache_hit": bool(cache_hit),
+        "cache_type": str(cache_type),
+        "tools_used": tools_used or [],
+        "status_code": int(status_code),
+        "error_message": error_message,
+    }
 
 
 async def record_metric(
@@ -134,27 +159,40 @@ async def record_metric(
     tools_used: list[str] | None = None,
     status_code: int = 200,
     error_message: str | None = None,
-) -> None:
-    """Ghi nhận metric của một request vào DB (non-blocking)."""
-    if not settings.metrics_enabled:
-        return
-
-    sess_uuid = None
-    if session_id:
-        try:
-            sess_uuid = uuid.UUID(session_id)
-        except (ValueError, TypeError):
-            sess_uuid = None
-
-    total_tokens = prompt_tokens + completion_tokens
-    cost_usd, cost_vnd = calculate_cost(model_used, prompt_tokens, completion_tokens)
-    tools_json = json.dumps(tools_used or [], ensure_ascii=False)
+) -> dict[str, Any]:
+    """Ghi nhận metric của một request vào DB hoặc trả về dict payload."""
+    payload = build_metric_payload(
+        request_id=request_id,
+        session_id=session_id,
+        client_ip=client_ip,
+        query_text=query_text,
+        intent=intent,
+        decision=decision,
+        model_used=model_used,
+        prompt_version=prompt_version,
+        prompt_tokens=prompt_tokens,
+        completion_tokens=completion_tokens,
+        ttft_ms=ttft_ms,
+        total_latency_ms=total_latency_ms,
+        cache_hit=cache_hit,
+        cache_type=cache_type,
+        tools_used=tools_used,
+        status_code=status_code,
+        error_message=error_message,
+    )
 
     try:
         await ensure_telemetry_schema()
 
         async def _insert():
             pool = await get_pool()
+            sess_uuid = None
+            if payload["session_id"]:
+                try:
+                    sess_uuid = uuid.UUID(payload["session_id"])
+                except (ValueError, TypeError):
+                    sess_uuid = None
+
             await pool.execute(
                 """
                 INSERT INTO request_metrics (
@@ -169,32 +207,33 @@ async def record_metric(
                     $16, $17, $18::jsonb, $19, $20
                 )
                 """,
-                request_id,
+                payload["request_id"],
                 sess_uuid,
-                client_ip or "unknown",
-                query_text[:500] if query_text else "",
-                intent,
-                decision,
-                model_used or settings.llm_model,
-                prompt_version or "v1.0.0",
-                prompt_tokens,
-                completion_tokens,
-                total_tokens,
-                cost_usd,
-                cost_vnd,
-                ttft_ms,
-                total_latency_ms,
-                cache_hit,
-                cache_type,
-                tools_json,
-                status_code,
-                error_message,
+                payload["client_ip"],
+                payload["query_text"][:500] if payload["query_text"] else "",
+                payload["intent"],
+                payload["decision"],
+                payload["model_used"] or settings.llm_model,
+                payload["prompt_version"] or "v1.0.0",
+                payload["prompt_tokens"],
+                payload["completion_tokens"],
+                payload["total_tokens"],
+                payload["cost_usd"],
+                payload["cost_vnd"],
+                payload["ttft_ms"],
+                payload["total_latency_ms"],
+                payload["cache_hit"],
+                payload["cache_type"],
+                json.dumps(payload["tools_used"], ensure_ascii=False),
+                payload["status_code"],
+                payload["error_message"],
             )
 
         await run_with_db_retry(_insert, label="record_metric")
     except Exception as exc:
         logger.warning("Failed to record metric (continuing): %s", exc)
 
+    return payload
 
 
 def log_metric_background(task_coro):
@@ -208,6 +247,7 @@ def log_metric_background(task_coro):
 
 
 # ── Analytics & Aggregation Queries for Admin API ────────────────────────────
+
 
 async def get_metrics_overview(hours: int = 24) -> dict[str, Any]:
     """Lấy số liệu KPI tổng quan trong N giờ qua."""
@@ -240,7 +280,6 @@ async def get_metrics_overview(hours: int = 24) -> dict[str, Any]:
     row = await run_with_db_retry(_fetch, label="get_metrics_overview")
     if not row:
         return {}
-
 
     total = row["total_requests"] or 0
     cache_hits = row["cache_hits"] or 0
@@ -288,6 +327,7 @@ async def get_metrics_timeseries(hours: int = 24) -> list[dict[str, Any]]:
     GROUP BY timestamp
     ORDER BY timestamp ASC
     """
+
     async def _fetch():
         pool = await get_pool()
         return await pool.fetch(query, str(hours))
@@ -324,6 +364,7 @@ async def get_metrics_intents(hours: int = 168) -> list[dict[str, Any]]:
     GROUP BY intent
     ORDER BY count DESC
     """
+
     async def _fetch():
         pool = await get_pool()
         return await pool.fetch(query, str(hours))
@@ -398,30 +439,32 @@ async def get_metrics_logs(
                 tools = json.loads(tools)
             except Exception:
                 tools = []
-        logs.append({
-            "id": r["id"],
-            "request_id": r["request_id"],
-            "session_id": str(r["session_id"]) if r["session_id"] else None,
-            "client_ip": r["client_ip"] or "unknown",
-            "created_at": r["created_at"].isoformat() if r["created_at"] else "",
-            "query_text": r["query_text"],
-            "intent": r["intent"],
-            "decision": r["decision"],
-            "model_used": r["model_used"],
-            "prompt_version": r["prompt_version"],
-            "prompt_tokens": r["prompt_tokens"],
-            "completion_tokens": r["completion_tokens"],
-            "total_tokens": r["total_tokens"],
-            "cost_usd": float(r["cost_usd"]),
-            "cost_vnd": float(r["cost_vnd"]),
-            "ttft_ms": r["ttft_ms"],
-            "total_latency_ms": r["total_latency_ms"],
-            "cache_hit": r["cache_hit"],
-            "cache_type": r["cache_type"],
-            "tools_used": tools,
-            "status_code": r["status_code"],
-            "error_message": r["error_message"],
-        })
+        logs.append(
+            {
+                "id": r["id"],
+                "request_id": r["request_id"],
+                "session_id": str(r["session_id"]) if r["session_id"] else None,
+                "client_ip": r["client_ip"] or "unknown",
+                "created_at": r["created_at"].isoformat() if r["created_at"] else "",
+                "query_text": r["query_text"],
+                "intent": r["intent"],
+                "decision": r["decision"],
+                "model_used": r["model_used"],
+                "prompt_version": r["prompt_version"],
+                "prompt_tokens": r["prompt_tokens"],
+                "completion_tokens": r["completion_tokens"],
+                "total_tokens": r["total_tokens"],
+                "cost_usd": float(r["cost_usd"]),
+                "cost_vnd": float(r["cost_vnd"]),
+                "ttft_ms": r["ttft_ms"],
+                "total_latency_ms": r["total_latency_ms"],
+                "cache_hit": r["cache_hit"],
+                "cache_type": r["cache_type"],
+                "tools_used": tools,
+                "status_code": r["status_code"],
+                "error_message": r["error_message"],
+            }
+        )
 
     return {"total": total_count, "limit": limit, "offset": offset, "logs": logs}
 
@@ -447,6 +490,7 @@ async def get_metrics_sessions(limit: int = 20, hours: int = 168) -> list[dict[s
     ORDER BY total_tokens DESC
     LIMIT $2
     """
+
     async def _fetch():
         pool = await get_pool()
         return await pool.fetch(query, str(hours), limit)
@@ -485,6 +529,7 @@ async def get_metrics_top_ips(limit: int = 20, hours: int = 24) -> list[dict[str
     ORDER BY total_requests DESC
     LIMIT $2
     """
+
     async def _fetch():
         pool = await get_pool()
         return await pool.fetch(query, str(hours), limit)
@@ -501,4 +546,3 @@ async def get_metrics_top_ips(limit: int = 20, hours: int = 24) -> list[dict[str
         }
         for r in rows
     ]
-

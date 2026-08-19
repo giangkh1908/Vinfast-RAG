@@ -7,13 +7,15 @@ Quản lý toàn bộ prompt templates của Vivu:
 - In-memory caching với cơ chế invalidation tức thì khi activate version mới
 - Seed tự động các default prompts (v1.0.0) khi khởi động hệ thống
 """
+
 import asyncio
 import hashlib
 import logging
 import time
-from typing import Any, Optional
+from typing import Any
 
-from app.core.db import get_pool, run_with_db_retry
+from app.core.storage.db import get_pool, run_with_db_retry
+from app.schemas import PROMPT_REGISTRY_SCHEMA_SQL
 
 logger = logging.getLogger("bds.prompts")
 
@@ -118,23 +120,7 @@ _INITIAL_PROMPTS = [
     },
 ]
 
-_SCHEMA_SQL = """
-CREATE TABLE IF NOT EXISTS prompt_registry (
-    id              SERIAL PRIMARY KEY,
-    prompt_type     VARCHAR(64) NOT NULL,
-    version         VARCHAR(32) NOT NULL,
-    template        TEXT NOT NULL,
-    description     TEXT DEFAULT '',
-    author          VARCHAR(128) DEFAULT 'system',
-    is_active       BOOLEAN DEFAULT false,
-    created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
-    updated_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
-    UNIQUE (prompt_type, version)
-);
-
-CREATE INDEX IF NOT EXISTS idx_prompt_registry_type ON prompt_registry(prompt_type);
-CREATE UNIQUE INDEX IF NOT EXISTS idx_prompt_active_unique ON prompt_registry(prompt_type) WHERE is_active = true;
-"""
+_SCHEMA_SQL = PROMPT_REGISTRY_SCHEMA_SQL
 
 _schema_ready = False
 _ensure_lock = asyncio.Lock()
@@ -190,9 +176,8 @@ class PromptManager:
             except Exception as e:
                 logger.warning("DB offline or unreachable during prompt ensure_schema: %s", e)
 
-
     @staticmethod
-    def invalidate_cache(prompt_type: Optional[str] = None) -> None:
+    def invalidate_cache(prompt_type: str | None = None) -> None:
         """Xoá cache in-memory khi có cập nhật hoặc chuyển đổi version."""
         global _active_cache
         if prompt_type:
@@ -244,7 +229,7 @@ class PromptManager:
         return "", "v1.0.0"
 
     @staticmethod
-    async def list_prompts(prompt_type: Optional[str] = None) -> list[dict[str, Any]]:
+    async def list_prompts(prompt_type: str | None = None) -> list[dict[str, Any]]:
         """Liệt kê danh sách tất cả prompt và các phiên bản."""
         await PromptManager.ensure_schema()
         query = """
@@ -279,7 +264,7 @@ class PromptManager:
         ]
 
     @staticmethod
-    async def get_prompt_detail(prompt_type: str, version: str) -> Optional[dict[str, Any]]:
+    async def get_prompt_detail(prompt_type: str, version: str) -> dict[str, Any] | None:
         """Lấy chi tiết và toàn bộ template của một version cụ thể."""
         await PromptManager.ensure_schema()
 
@@ -404,7 +389,6 @@ class PromptManager:
             logger.warning("Error fetching active versions map from DB: %s (using static fallback)", e)
 
         return {p["prompt_type"]: p["version"] for p in _INITIAL_PROMPTS if p.get("is_active")}
-
 
 
 prompt_manager = PromptManager()

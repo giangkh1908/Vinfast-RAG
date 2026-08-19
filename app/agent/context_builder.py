@@ -14,27 +14,70 @@ def _strip_urls(text: str) -> str:
     text = _BARE_URL_RE.sub("", text)
     return text
 
+
 # Query keywords → relevant spec categories
 _QUERY_TOPIC_MAP = {
-    "sạc": ["battery"], "pin": ["battery"], "charge": ["battery"], "kwh": ["battery"],
-    "range": ["battery"], "phạm vi": ["battery"], "đi được": ["battery"], "quãng đường": ["battery"],
-    "công suất": ["powertrain"], "power": ["powertrain"], "torque": ["powertrain"],
-    "mô-men": ["powertrain"], "xoắn": ["powertrain"], "tốc độ": ["powertrain"],
-    "tăng tốc": ["powertrain"], "acceleration": ["powertrain"], "drivetrain": ["powertrain"],
-    "kích thước": ["dimension"], "chiều dài": ["dimension"], "chiều rộng": ["dimension"],
-    "chiều cao": ["dimension"], "trọng lượng": ["dimension"], "wheelbase": ["dimension"],
-    "túi khí": ["safety"], "airbag": ["safety"], "phanh": ["safety"], "abs": ["safety"],
-    "esc": ["safety"], "an toàn": ["safety"],
-    "adas": ["adas"], "cruise": ["adas"], "lane": ["adas"], "collision": ["adas"],
-    "aeb": ["adas"], "blind spot": ["adas"], "parking": ["adas"],
-    "nội thất": ["interior"], "ghế": ["interior"], "chỗ ngồi": ["interior"], "số chỗ": ["interior"], "màn hình": ["interior"],
-    "loa": ["interior"], "điều hòa": ["interior"], "hud": ["interior"], "display": ["interior"],
-    "cửa sổ trời": ["interior"], "kính trần": ["interior"], "sunroof": ["interior"], "panoramic": ["interior"],
-    "ngoại thất": ["exterior"], "đèn": ["exterior"], "mâm": ["exterior"],
-    "wheel": ["exterior"], "la-zăng": ["exterior"], "headlight": ["exterior"],
-    "giá": ["price"], "price": ["price"],
-    "phiên bản": [], "version": [],  # All categories
-    "so sánh": [], "compare": [],  # All categories
+    "sạc": ["battery"],
+    "pin": ["battery"],
+    "charge": ["battery"],
+    "kwh": ["battery"],
+    "range": ["battery"],
+    "phạm vi": ["battery"],
+    "đi được": ["battery"],
+    "quãng đường": ["battery"],
+    "công suất": ["powertrain"],
+    "power": ["powertrain"],
+    "torque": ["powertrain"],
+    "mô-men": ["powertrain"],
+    "xoắn": ["powertrain"],
+    "tốc độ": ["powertrain"],
+    "tăng tốc": ["powertrain"],
+    "acceleration": ["powertrain"],
+    "drivetrain": ["powertrain"],
+    "kích thước": ["dimension"],
+    "chiều dài": ["dimension"],
+    "chiều rộng": ["dimension"],
+    "chiều cao": ["dimension"],
+    "trọng lượng": ["dimension"],
+    "wheelbase": ["dimension"],
+    "túi khí": ["safety"],
+    "airbag": ["safety"],
+    "phanh": ["safety"],
+    "abs": ["safety"],
+    "esc": ["safety"],
+    "an toàn": ["safety"],
+    "adas": ["adas"],
+    "cruise": ["adas"],
+    "lane": ["adas"],
+    "collision": ["adas"],
+    "aeb": ["adas"],
+    "blind spot": ["adas"],
+    "parking": ["adas"],
+    "nội thất": ["interior"],
+    "ghế": ["interior"],
+    "chỗ ngồi": ["interior"],
+    "số chỗ": ["interior"],
+    "màn hình": ["interior"],
+    "loa": ["interior"],
+    "điều hòa": ["interior"],
+    "hud": ["interior"],
+    "display": ["interior"],
+    "cửa sổ trời": ["interior"],
+    "kính trần": ["interior"],
+    "sunroof": ["interior"],
+    "panoramic": ["interior"],
+    "ngoại thất": ["exterior"],
+    "đèn": ["exterior"],
+    "mâm": ["exterior"],
+    "wheel": ["exterior"],
+    "la-zăng": ["exterior"],
+    "headlight": ["exterior"],
+    "giá": ["price"],
+    "price": ["price"],
+    "phiên bản": [],
+    "version": [],  # All categories
+    "so sánh": [],
+    "compare": [],  # All categories
     "tính năng": ["adas", "interior", "exterior", "safety", "infotainment"],
     "trang bị": ["adas", "interior", "exterior", "safety", "infotainment"],
 }
@@ -216,7 +259,7 @@ def _format_specs(result: dict, relevant_cats: set[str] | None = None) -> str:
 
 
 def _format_search_results(result: dict) -> str:
-    lines = [f"Kết quả tìm kiếm cho: \"{result['query']}\":"]
+    lines = [f'Kết quả tìm kiếm cho: "{result["query"]}":']
     for i, r in enumerate(result.get("results", []), 1):
         lines.append(f"\n  [{i}] ({r['source_type']}, score={r['score']})")
         # strip URL khỏi text — tránh LLM copy link inline
@@ -267,4 +310,3 @@ def _format_maintenance(result: dict) -> str:
     for item in links:
         lines.append(f"  - Năm {item['year']}: {item['source_url']}")
     return "\n".join(lines)
-

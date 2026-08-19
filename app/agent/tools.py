@@ -1,7 +1,7 @@
 import logging
 import re
 
-from app.core.cache import (
+from app.core.storage.cache import (
     TOOL_DATA_TTL,
     TOOL_PRICE_TTL,
     cache,
@@ -10,7 +10,7 @@ from app.core.cache import (
     make_tool_price_key,
     make_tool_specs_key,
 )
-from app.core.db import get_pool
+from app.core.storage.db import get_pool
 
 logger = logging.getLogger("bds.tools")
 
@@ -54,7 +54,8 @@ async def get_price(model_code: str, version: str = None) -> dict:
                 rows = await conn.fetch(
                     "SELECT edition_id, price_list_vnd, price_promo_vnd, promo_label, source_url "
                     "FROM price_list_active WHERE (model_id=$1 OR UPPER(model_id)=UPPER($1)) AND edition_id=$2 ORDER BY price_list_vnd",
-                    mid, version,
+                    mid,
+                    version,
                 )
             else:
                 rows = await conn.fetch(
@@ -78,11 +79,13 @@ async def get_price(model_code: str, version: str = None) -> dict:
         rm = r["model_id"]
         if rm not in seen:
             seen.add(rm)
-            related_models.append({
-                "model_code": rm,
-                "price_vnd": r["price_list_vnd"],
-                "version_name": r["edition_id"],
-            })
+            related_models.append(
+                {
+                    "model_code": rm,
+                    "price_vnd": r["price_list_vnd"],
+                    "version_name": r["edition_id"],
+                }
+            )
 
     result = {
         "model_code": model_code,
@@ -104,7 +107,6 @@ async def get_price(model_code: str, version: str = None) -> dict:
     if cache_key is not None and result.get("prices"):
         await cache.set_json(cache_key, result, TOOL_PRICE_TTL)
     return result
-
 
 
 async def get_colors(model_code: str, version: str = None) -> dict:
@@ -131,7 +133,8 @@ async def get_colors(model_code: str, version: str = None) -> dict:
                     "SELECT version_name, color_name, color_type, color_fee_vnd, interior_name, source_url "
                     "FROM car_colors WHERE (model_id = $1 OR UPPER(model_id) = UPPER($1)) AND version_name = $2 "
                     "ORDER BY color_name, interior_name",
-                    mid, version,
+                    mid,
+                    version,
                 )
             else:
                 rows = await conn.fetch(
@@ -146,9 +149,8 @@ async def get_colors(model_code: str, version: str = None) -> dict:
     if not rows:
         return {"model_code": model_code, "source_url": "", "variants": [], "colors": [], "interiors": []}
 
-
-    colors = sorted(set(r["color_name"] for r in rows if r["color_name"]))
-    interiors = sorted(set(r["interior_name"] for r in rows if r["interior_name"]))
+    colors = sorted({r["color_name"] for r in rows if r["color_name"]})
+    interiors = sorted({r["interior_name"] for r in rows if r["interior_name"]})
     source_url = next((r["source_url"] for r in rows if r["source_url"]), "")
 
     result = {
@@ -219,7 +221,6 @@ async def get_specs(model_code: str, version: str = None, category: str = None, 
     except Exception as e:
         logger.warning("DB unreachable in get_specs(%s): %s", model_code, e)
 
-
     # Lọc bỏ rows value='Không' — đây là sentinel "không có dữ liệu" được chèn bởi
     # ingest_full_specs_matrix (version NULL), KHÔNG phải giá trị thật ("Không có" của
     # brochure luôn được lưu dạng khác, VD 'Không có thông tin' hoặc không có dòng).
@@ -227,7 +228,7 @@ async def get_specs(model_code: str, version: str = None, category: str = None, 
     # (VD trả số ghế dù xe không ghi nhận) — vi phạm quy tắc "chưa có thông tin ≠ không có".
     rows = [r for r in rows if r["spec_value"] != "Không"]
 
-    source_urls = set(r["source_url"] for r in rows if r["source_url"])
+    source_urls = {r["source_url"] for r in rows if r["source_url"]}
     # Ưu tiên URL chứa tên model (tránh lấy nhầm brochure xe khác)
     primary_source = ""
     if source_urls:
@@ -267,7 +268,8 @@ async def get_specs(model_code: str, version: str = None, category: str = None, 
 
 
 async def search_knowledge_base(query: str, model_id: str = None, skip_rerank: bool = False) -> dict:
-    from app.core.retrieval import hybrid_search
+    from app.core.rag.retrieval import hybrid_search
+
     mid = _model_id(model_id) if model_id else None
     results = await hybrid_search(query, model_id=mid, top_k=5, skip_rerank=skip_rerank)
 
@@ -335,12 +337,24 @@ async def list_available_models() -> dict:
 
 
 UTILITY_LINKS = {
-    "onroad_cost": {"url": "https://shop.vinfastauto.com/vn_vi/du-toan-chi-phi-lan-banh", "label": "Dự toán chi phí lăn bánh"},
+    "onroad_cost": {
+        "url": "https://shop.vinfastauto.com/vn_vi/du-toan-chi-phi-lan-banh",
+        "label": "Dự toán chi phí lăn bánh",
+    },
     "loan_estimate": {"url": "https://shop.vinfastauto.com/vn_vi/du-toan-chi-phi-tra-gop", "label": "Dự toán trả góp"},
     "loan_appraisal": {"url": "https://shop.vinfastauto.com/vn_vi/tham-dinh-vay", "label": "Thẩm định vay"},
-    "showroom_charging": {"url": "https://vinfastauto.com/vn_vi/tim-kiem-showroom-tram-sac", "label": "Tìm Showroom & Trạm sạc"},
-    "maintenance_booking": {"url": "https://shop.vinfastauto.com/vn_vi/dat-lich-dich-vu-bao-duong.html", "label": "Đặt lịch bảo dưỡng"},
-    "test_drive_booking": {"url": "https://shop.vinfastauto.com/vn_vi/dang-ky-lai-thu.html", "label": "Đăng ký lái thử"},
+    "showroom_charging": {
+        "url": "https://vinfastauto.com/vn_vi/tim-kiem-showroom-tram-sac",
+        "label": "Tìm Showroom & Trạm sạc",
+    },
+    "maintenance_booking": {
+        "url": "https://shop.vinfastauto.com/vn_vi/dat-lich-dich-vu-bao-duong.html",
+        "label": "Đặt lịch bảo dưỡng",
+    },
+    "test_drive_booking": {
+        "url": "https://shop.vinfastauto.com/vn_vi/dang-ky-lai-thu.html",
+        "label": "Đăng ký lái thử",
+    },
     "promotions": {"url": "https://shop.vinfastauto.com/vn_vi", "label": "Khuyến mãi đang áp dụng"},
 }
 
@@ -380,9 +394,15 @@ async def get_maintenance_link(car_model: str, year: int = None) -> dict:
 async def ask_clarification(model_id: str = None, suggested_categories: list[str] = None) -> dict:
     """LLM calls this when query is too broad or missing version. Returns available categories for the model."""
     categories = suggested_categories or [
-        "phiên_bản", "thông_số_kỹ_thuật", "kích_thước",
-        "pin_sạc", "phạm_vi_di_chuyển", "an_toàn",
-        "nội_thất", "ngoại_thất", "tính_năng"
+        "phiên_bản",
+        "thông_số_kỹ_thuật",
+        "kích_thước",
+        "pin_sạc",
+        "phạm_vi_di_chuyển",
+        "an_toàn",
+        "nội_thất",
+        "ngoại_thất",
+        "tính_năng",
     ]
     if model_id:
         return {

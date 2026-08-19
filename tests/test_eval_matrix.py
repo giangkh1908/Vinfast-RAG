@@ -15,12 +15,13 @@ Chạy OFFLINE (không cần LLM/network cho phần routing):
 
 Run: python tests/test_eval_matrix.py
 """
-import sys
-import os
-import io
+
 import asyncio
-import time
 import csv
+import io
+import os
+import sys
+import time
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 if sys.platform == "win32":
@@ -58,14 +59,15 @@ async def _no_llm(query, history):
 
 def _install_offline_stub():
     import app.agent.nodes.classify as cf
+
     cf.llm_classify_fallback = _no_llm
 
 
 # State deterministic (không LLM) cho regression unit tests
 def build_deterministic_state(query: str, history: list[dict] = None) -> dict:
     from app.agent.classifier import get_classifier
-    from app.agent.nodes.classify import _classify_topic, _extract_history_context
     from app.agent.intent import classify_intent, extract_spec_category
+    from app.agent.nodes.classify import _classify_topic, _extract_history_context
 
     history = history or []
     cr = get_classifier().classify(query, history)
@@ -79,8 +81,7 @@ def build_deterministic_state(query: str, history: list[dict] = None) -> dict:
         hc = _extract_history_context(history)
         entities.setdefault("model_code", hc.get("model_code"))
         entities.setdefault("version", hc.get("version"))
-    return {"query": query, "history": history, "intent": intent,
-            "category": topic, "entities": entities}
+    return {"query": query, "history": history, "intent": intent, "category": topic, "entities": entities}
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -98,15 +99,14 @@ KNOWN_DRIFT = {
 
 
 def _load_smoke_csv() -> list[dict]:
-    path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-                        "eval", "smoke_test.csv")
+    path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "eval", "smoke_test.csv")
     with open(path, encoding="utf-8-sig") as f:
         return list(csv.DictReader(f))
 
 
 async def test_golden_matrix():
-    from app.agent.nodes.classify import classify_node
     from app.agent.classifier import normalize_model
+    from app.agent.nodes.classify import classify_node
 
     print("\n═══ 1. GOLDEN MATRIX (eval/smoke_test.csv) ═══")
     rows = _load_smoke_csv()
@@ -149,10 +149,17 @@ async def test_golden_matrix():
             model_ok = normalize_model(got_model) == normalize_model(exp_model)
 
         passed = decision_ok and reason_ok and model_ok
-        model_shown = got_model if exp_model and exp_model.lower() in ("unknown", "multiple") else f"{got_model} (exp {exp_model})"
-        report(f"{tid}", passed, "evaluate",
-               f"exp={eff_exp}/{eff_reason} got={got_decision}/{got_reason} "
-               f"model={model_shown}" + (note or ""))
+        model_shown = (
+            got_model
+            if exp_model and exp_model.lower() in ("unknown", "multiple")
+            else f"{got_model} (exp {exp_model})"
+        )
+        report(
+            f"{tid}",
+            passed,
+            "evaluate",
+            f"exp={eff_exp}/{eff_reason} got={got_decision}/{got_reason} model={model_shown}" + (note or ""),
+        )
         return st
 
     # Single-turn
@@ -160,7 +167,7 @@ async def test_golden_matrix():
         await run_case(case, [])
 
     # Multi-turn
-    for cid, turns in convs.items():
+    for _cid, turns in convs.items():
         turns.sort(key=lambda x: int(x.get("turn_index") or 1))
         history = []
         for case in turns:
@@ -190,28 +197,39 @@ def test_model_naming():
     ]
     for q, exp in cases:
         got = get_classifier().classify(q).entities.get("model_code")
-        report(f"NM-{exp.replace(' ', '')}-{q[:12]}", normalize_model(got) == normalize_model(exp),
-               "classify", f"{q!r} → {got!r} (exp {exp!r})")
+        report(
+            f"NM-{exp.replace(' ', '')}-{q[:12]}",
+            normalize_model(got) == normalize_model(exp),
+            "classify",
+            f"{q!r} → {got!r} (exp {exp!r})",
+        )
 
 
 def test_seats_category():
+    from app.agent.direct_plan import build_tool_plan
     from app.agent.intent import extract_spec_category
     from app.agent.nodes.classify import _classify_topic
-    from app.agent.direct_plan import build_tool_plan
 
     print("\n═══ 3. REGRESSION: SỐ CHỖ NGỒI → INTERIOR ═══")
     for q in ["VF 6 có mấy chỗ ngồi", "VF 9 mấy chỗ", "VF 8 có mấy chỗ ngồi"]:
         cat = extract_spec_category(q)
         topic = _classify_topic(q)
-        report(f"SE-{q[:16]}", cat == "interior" and topic == "nội_thất",
-               "route", f"spec_category={cat}, topic={topic} (exp interior/nội_thất)")
+        report(
+            f"SE-{q[:16]}",
+            cat == "interior" and topic == "nội_thất",
+            "route",
+            f"spec_category={cat}, topic={topic} (exp interior/nội_thất)",
+        )
 
     # Plan cho "VF 6 có mấy chỗ ngồi" → get_specs(model VF 6, category interior)
     st = build_deterministic_state("VF 6 có mấy chỗ ngồi")
     plan = build_tool_plan(st)
-    ok = (plan and plan[0][0] == "get_specs"
-          and plan[0][1].get("model_code") == "VF 6"
-          and plan[0][1].get("category") == "interior")
+    ok = (
+        plan
+        and plan[0][0] == "get_specs"
+        and plan[0][1].get("model_code") == "VF 6"
+        and plan[0][1].get("category") == "interior"
+    )
     report("SE-PLAN", ok, "plan", f"plan={plan} (exp get_specs(VF 6, interior))")
 
 
@@ -229,24 +247,33 @@ def test_memory_recency():
     ]
     ctx = _extract_history_context(history)
     # follow-up "pin xe bao nhiêu" không nhắc model → phải kế thừa VF 8 (mới nhất)
-    report("MEM-01", ctx.get("model_code") == "VF 8",
-           "history", f"model={ctx.get('model_code')} (exp VF 8 — mới nhất, không phải VF 6)")
+    report(
+        "MEM-01",
+        ctx.get("model_code") == "VF 8",
+        "history",
+        f"model={ctx.get('model_code')} (exp VF 8 — mới nhất, không phải VF 6)",
+    )
 
     # Trường hợp chưa đổi model → vẫn VF 6
     hist2 = history[:4]
     ctx2 = _extract_history_context(hist2)
-    report("MEM-02", ctx2.get("model_code") == "VF 6",
-           "history", f"model={ctx2.get('model_code')} (exp VF 6)")
+    report("MEM-02", ctx2.get("model_code") == "VF 6", "history", f"model={ctx2.get('model_code')} (exp VF 6)")
 
 
 def test_source_link():
-    from app.agent.nodes.respond import source_link_md, _source_link_label
+    from app.agent.nodes.respond import _source_link_label, source_link_md
 
     print("\n═══ 5. REGRESSION: SHORTLINK 'XEM THÊM' ═══")
     urls = [
-        ("https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf", "VF 6"),
+        (
+            "https://storage.googleapis.com/vinfast-data-01/brochure/14052026/VF%206_Brochure_Final_130526%20(12AM)_compressed.pdf",
+            "VF 6",
+        ),
         (".../VF8_Brochure_03022026.pdf", None),  # không parse hostname vì URL fake → chỉ check không crash
-        ("https://static-cms-prod.vinfastauto.com/brochure/26052026/VF%208%20The%20he%20moi_Brochure_final%2020.05.pdf", "VF 8 All New"),
+        (
+            "https://static-cms-prod.vinfastauto.com/brochure/26052026/VF%208%20The%20he%20moi_Brochure_final%2020.05.pdf",
+            "VF 8 All New",
+        ),
         ("https://storage.googleapis.com/vinfast-data-01/brochure/VF_MPV%207_Brochure_2026.02.03.pdf", "VF MPV 7"),
     ]
     for url, exp in urls:
@@ -254,8 +281,7 @@ def test_source_link():
         ok = (exp is None) or (label == exp)
         report(f"LINK-{exp or 'noop'}", ok, "label", f"{label!r} (exp {exp!r})")
         md = source_link_md(url)
-        report(f"MD-{exp or 'noop'}", exp is None or f"[{exp}](" in md,
-               "markdown", f"{md[:60]}...")
+        report(f"MD-{exp or 'noop'}", exp is None or f"[{exp}](" in md, "markdown", f"{md[:60]}...")
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -265,10 +291,16 @@ def _db_reachable() -> bool:
     try:
         import os
         from pathlib import Path
-        for line in Path(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env")).read_text(encoding="utf-8").splitlines():
+
+        for line in (
+            Path(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env"))
+            .read_text(encoding="utf-8")
+            .splitlines()
+        ):
             if line.startswith("PG_DSN="):
                 os.environ["PG_DSN"] = line.split("=", 1)[1].strip()
         import psycopg2
+
         conn = psycopg2.connect(os.environ["PG_DSN"])
         conn.close()
         return True
@@ -288,31 +320,31 @@ async def test_data_correctness():
     r = await get_specs("VF 6", category="interior", keys=["seats", "driver_seat_type", "leatherette_seats"])
     khong = [x for x in r["specs"] if x["value"] == "Không"]
     fake_seats = [x for x in r["specs"] if x["key"] == "seats"]
-    report("DATA-VF6", len(khong) == 0 and len(fake_seats) == 0,
-           "specs", f"VF 6 interior: {len(r['specs'])} rows, 'Không'={len(khong)}, seats={fake_seats}")
+    report(
+        "DATA-VF6",
+        len(khong) == 0 and len(fake_seats) == 0,
+        "specs",
+        f"VF 6 interior: {len(r['specs'])} rows, 'Không'={len(khong)}, seats={fake_seats}",
+    )
 
     # VF 8: có seat thật cho cả 2 bản
     r = await get_specs("VF 8", category="interior", keys=["seats"])
     seats = {x["version_name"]: x["value"] for x in r["specs"] if x["key"] == "seats"}
-    report("DATA-VF8", seats.get("Eco") == "5" and seats.get("Plus") == "5",
-           "specs", f"VF 8 seats={seats}")
+    report("DATA-VF8", seats.get("Eco") == "5" and seats.get("Plus") == "5", "specs", f"VF 8 seats={seats}")
 
     # VF 9: Eco 7, Plus 7 hoặc 6
     r = await get_specs("VF 9", category="interior", keys=["seats"])
     seats9 = {x["version_name"]: x["value"] for x in r["specs"] if x["key"] == "seats"}
-    report("DATA-VF9", seats9.get("Eco") == "7",
-           "specs", f"VF 9 seats={seats9}")
+    report("DATA-VF9", seats9.get("Eco") == "7", "specs", f"VF 9 seats={seats9}")
 
     # VF MPV 7: 7 chỗ (fix viết hoa MPV)
     r = await get_specs("VF MPV 7", category="interior", keys=["seats"])
     seats7 = [x["value"] for x in r["specs"] if x["key"] == "seats"]
-    report("DATA-VFMPV7", seats7 == ["7"],
-           "specs", f"VF MPV 7 seats={seats7}")
+    report("DATA-VFMPV7", seats7 == ["7"], "specs", f"VF MPV 7 seats={seats7}")
 
     # VF 8 All New có dữ liệu (không mất)
     r = await get_specs("VF 8 All New")
-    report("DATA-ALLNEW", len(r.get("specs", [])) > 0,
-           "specs", f"VF 8 All New: {len(r.get('specs', []))} rows")
+    report("DATA-ALLNEW", len(r.get("specs", [])) > 0, "specs", f"VF 8 All New: {len(r.get('specs', []))} rows")
 
 
 async def main():

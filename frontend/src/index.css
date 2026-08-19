@@ -1492,36 +1492,13 @@ body,
    ADMIN TELEMETRY & OBSERVABILITY DASHBOARD STYLES
    ========================================================================== */
 
-.admin-modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(15, 23, 42, 0.75);
-  backdrop-filter: blur(8px);
-  z-index: 9999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
-  animation: adminFadeIn 0.2s ease-out;
-}
-
-@keyframes adminFadeIn {
-  from { opacity: 0; transform: scale(0.98); }
-  to { opacity: 1; transform: scale(1); }
-}
-
-.admin-modal-container {
-  width: 100%;
-  max-width: 1320px;
-  height: 92vh;
+.admin-page-container {
+  width: 100vw;
+  min-height: 100vh;
   background: #0f172a;
   color: #f8fafc;
-  border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
   display: flex;
   flex-direction: column;
-  overflow: hidden;
 }
 
 /* Header */
@@ -1955,9 +1932,9 @@ body,
   color: #f87171;
 }
 
-.status-pill.neutral {
-  background: rgba(148, 163, 184, 0.15);
-  color: #94a3b8;
+.status-pill.warning {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
 }
 
 .badge-turn {
@@ -1967,4 +1944,100 @@ body,
   border-radius: 4px;
   font-size: 11px;
   font-weight: 600;
+}
+
+/* Alert Filter Pills & Action Buttons */
+.filter-pill {
+  background: #1e293b;
+  color: #94a3b8;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filter-pill:hover {
+  background: #334155;
+  color: #f8fafc;
+}
+
+.filter-pill.active {
+  background: #38bdf8;
+  color: #0f172a;
+  border-color: #38bdf8;
+}
+
+.filter-pill.danger.active {
+  background: #ef4444;
+  color: #ffffff;
+  border-color: #ef4444;
+}
+
+.filter-pill.warning.active {
+  background: #f59e0b;
+  color: #0f172a;
+  border-color: #f59e0b;
+}
+
+.admin-action-btn {
+  background: #1e293b;
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.admin-action-btn:hover:not(:disabled) {
+  background: rgba(56, 189, 248, 0.15);
+  border-color: #38bdf8;
+}
+
+.admin-action-btn.danger {
+  color: #f87171;
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+.admin-action-btn.danger:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: #ef4444;
+}
+
+.admin-action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 13px;
+}
+
+.admin-table th {
+  background: #0f172a;
+  color: #94a3b8;
+  font-weight: 600;
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.admin-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  color: #e2e8f0;
+}
+
+.admin-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.02);
 }

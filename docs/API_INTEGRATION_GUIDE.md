@@ -217,6 +217,43 @@ Dùng cho tích hợp nhanh (Webhook / Test API).
     }
   ]
 }
+### 4.4. Danh Sách Sự Cố & Cảnh Báo Hệ Thống (`GET /api/admin/metrics/alerts`)
+- **Query Params:**
+  - `limit` (int, default: 50, max: 200)
+  - `severity` (optional: `WARNING` hoặc `CRITICAL`)
+- **Response `200 OK`:**
+```json
+{
+  "status": "success",
+  "count": 2,
+  "alerts": [
+    {
+      "id": 2,
+      "alert_type": "SPAM_ATTACK",
+      "severity": "CRITICAL",
+      "title": "Cảnh báo Tấn công Spam DDoS",
+      "message": "IP 1.2.3.4 vượt ngưỡng rate limit (>= 15 blocks/min)",
+      "details": {
+        "client_ip": "1.2.3.4",
+        "violations": 15,
+        "action": "429_BLOCKED"
+      },
+      "email_sent": true,
+      "created_at": "2026-08-19T03:17:50.918Z"
+    }
+  ]
+}
+```
+
+### 4.5. Test Bắn Cảnh Báo Thử Nghiệm (`POST /api/admin/metrics/alerts/test`)
+- **Query Params:** `severity` (`WARNING` hoặc `CRITICAL`)
+- **Response `200 OK`:**
+```json
+{
+  "status": "success",
+  "message": "Đã bắn cảnh báo thử nghiệm vào Kafka Cloud!",
+  "kafka_sent": true
+}
 ```
 
 ---

@@ -1,6 +1,6 @@
-from app.agent.prompts import build_system_message
 from app.agent.graph_state import AgentState
 from app.agent.llm import INPUT_MAX_TOKENS, truncate_messages
+from app.agent.prompts import build_system_message
 
 
 async def build_messages_node(state: AgentState) -> dict:

@@ -1,7 +1,6 @@
 import re
 from dataclasses import dataclass, field
 
-
 # Matches any VinFast model pattern (including multi-word like "VF 8 All New")
 # Lưu ý: cho phép "VF 8 New" / "VF 8 The New" / "vf8 the all new" — người dùng
 # thường gọi thế hệ mới là "VF 8 New" thay vì "VF 8 All New" (tên DB).
@@ -36,17 +35,32 @@ def normalize_model(raw: str) -> str:
             norm.append(p.capitalize())
     return " ".join(norm)
 
+
 VERSION_ALIASES = {
-    "eco": "Eco", "bản eco": "Eco", "ban eco": "Eco",
-    "plus": "Plus", "bản plus": "Plus", "ban plus": "Plus",
-    "tiêu chuẩn": "TieuChuan", "tieuchuan": "TieuChuan", "tiêu_chuẩn": "TieuChuan",
-    "nâng cao": "NangCao", "nangcao": "NangCao",
-    "cao cấp": "CaoCap", "caocap": "CaoCap",
-    "pluscaptain": "PlusCaptain", "plus captain": "PlusCaptain",
-    "the all new": "The All New", "all new": "The All New", "thenew": "The All New",
-    "the new": "The All New", "new": "The All New",
-    "thế hệ mới": "The All New", "the he moi": "The All New",
-    "plus awd": "Plus AWD", "plusawd": "Plus AWD",
+    "eco": "Eco",
+    "bản eco": "Eco",
+    "ban eco": "Eco",
+    "plus": "Plus",
+    "bản plus": "Plus",
+    "ban plus": "Plus",
+    "tiêu chuẩn": "TieuChuan",
+    "tieuchuan": "TieuChuan",
+    "tiêu_chuẩn": "TieuChuan",
+    "nâng cao": "NangCao",
+    "nangcao": "NangCao",
+    "cao cấp": "CaoCap",
+    "caocap": "CaoCap",
+    "pluscaptain": "PlusCaptain",
+    "plus captain": "PlusCaptain",
+    "the all new": "The All New",
+    "all new": "The All New",
+    "thenew": "The All New",
+    "the new": "The All New",
+    "new": "The All New",
+    "thế hệ mới": "The All New",
+    "the he moi": "The All New",
+    "plus awd": "Plus AWD",
+    "plusawd": "Plus AWD",
 }
 
 
@@ -90,7 +104,8 @@ class QueryClassifier:
             r"Cao\s*[Cc][ấấ]?p|CaoCap|"
             r"Th[ếế]\s*h[ệệ]\s*m[ớớ]i|The\s*he\s*moi|"
             r"The\s*All\s*New|All\s*New|The\s*New|\bNew\b)",
-            query, re.IGNORECASE,
+            query,
+            re.IGNORECASE,
         )
         if version_match:
             nv = _normalize_version(version_match.group(1))

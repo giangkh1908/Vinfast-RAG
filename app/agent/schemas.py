@@ -1,7 +1,7 @@
 import logging
 import time
 
-from app.core.db import get_pool
+from app.core.storage.db import get_pool
 
 logger = logging.getLogger("bds.schemas")
 
@@ -21,6 +21,7 @@ async def _pg_fetch(sql: str, *params, retries: int = 2) -> list:
             if attempt < retries:
                 logger.warning("PG fetch retry %d/%d: %s", attempt + 1, retries, e)
                 import asyncio
+
                 await asyncio.sleep(0.5 * (attempt + 1))
             else:
                 raise
@@ -87,8 +88,16 @@ async def build_tool_schemas() -> list[dict]:
                     "properties": {
                         "model_code": {"type": "string", "enum": models, "description": "Mã xe VinFast"},
                         "version": {"type": "string", "enum": versions, "description": "Phiên bản. Để trống = tất cả."},
-                        "category": {"type": "string", "enum": categories, "description": "Loại thông số. Để trống = tất cả."},
-                        "keys": {"type": "array", "items": {"type": "string"}, "description": "Chỉ lấy các spec_key cụ thể (VD: sunroof_type). Để trống = tất cả."},
+                        "category": {
+                            "type": "string",
+                            "enum": categories,
+                            "description": "Loại thông số. Để trống = tất cả.",
+                        },
+                        "keys": {
+                            "type": "array",
+                            "items": {"type": "string"},
+                            "description": "Chỉ lấy các spec_key cụ thể (VD: sunroof_type). Để trống = tất cả.",
+                        },
                     },
                     "required": ["model_code"],
                 },
@@ -178,7 +187,11 @@ async def build_tool_schemas() -> list[dict]:
                 "parameters": {
                     "type": "object",
                     "properties": {
-                        "type": {"type": "string", "enum": ["maintenance", "test_drive"], "description": "Loại booking"},
+                        "type": {
+                            "type": "string",
+                            "enum": ["maintenance", "test_drive"],
+                            "description": "Loại booking",
+                        },
                     },
                     "required": ["type"],
                 },

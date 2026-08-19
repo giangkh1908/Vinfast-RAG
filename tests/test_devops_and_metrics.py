@@ -1,11 +1,12 @@
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from httpx import AsyncClient, ASGITransport
+from httpx import ASGITransport, AsyncClient
 
 from app.config import settings
-from app.core.telemetry import (
+from app.core.telemetry.telemetry import (
     calculate_cost,
 )
 from app.main import app
@@ -58,8 +59,6 @@ async def test_admin_metrics_auth_protection():
         assert res.status_code in (200, 500)
 
 
-
-
 async def test_prompt_registry_and_admin_api():
     """Kiểm tra Admin Prompt APIs: List, Get Detail, Test Render, Create & Activate."""
     transport = ASGITransport(app=app)
@@ -109,6 +108,5 @@ async def main():
 
 if __name__ == "__main__":
     import asyncio
+
     asyncio.run(main())
-
-

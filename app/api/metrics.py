@@ -3,13 +3,13 @@ app/api/metrics.py — Admin Metrics REST API Endpoints for Monitoring & Stakeho
 
 Bảo mật: Yêu cầu Header `X-Admin-Key` khớp với `ADMIN_API_KEY` trong Settings.
 """
+
 import logging
-from typing import Optional
 
 from fastapi import APIRouter, Header, HTTPException, Query, Security
 from fastapi.responses import JSONResponse
 
-from app.core.telemetry import (
+from app.core.telemetry.telemetry import (
     get_metrics_intents,
     get_metrics_logs,
     get_metrics_overview,
@@ -23,13 +23,9 @@ logger = logging.getLogger("bds.metrics_api")
 router = APIRouter(prefix="/api/admin/metrics", tags=["Admin & Telemetry"])
 
 
-async def verify_admin_key(
-    x_admin_key: Optional[str] = Header(None, alias="X-Admin-Key")
-) -> bool:
+async def verify_admin_key(x_admin_key: str | None = Header(None, alias="X-Admin-Key")) -> bool:
     """Mở trực tiếp toàn bộ API không cần kiểm tra Admin Key (phục vụ test và dev nhanh)."""
     return True
-
-
 
 
 @router.get("/overview", summary="Tổng quan KPI vận hành")
@@ -80,15 +76,13 @@ async def metrics_intents(
 async def metrics_logs(
     limit: int = Query(50, ge=1, le=200, description="Số lượng bản ghi mỗi trang"),
     offset: int = Query(0, ge=0, description="Vị trí bắt đầu phân trang"),
-    intent: Optional[str] = Query(None, description="Lọc theo intent"),
-    cache_hit: Optional[bool] = Query(None, description="Lọc theo trạng thái cache hit"),
+    intent: str | None = Query(None, description="Lọc theo intent"),
+    cache_hit: bool | None = Query(None, description="Lọc theo trạng thái cache hit"),
     _: bool = Security(verify_admin_key),
 ):
     """Truy vấn danh sách request logs chi tiết có phân trang và bộ lọc."""
     try:
-        data = await get_metrics_logs(
-            limit=limit, offset=offset, intent=intent, cache_hit=cache_hit
-        )
+        data = await get_metrics_logs(limit=limit, offset=offset, intent=intent, cache_hit=cache_hit)
         return JSONResponse(content={"status": "success", "data": data})
     except Exception as e:
         logger.exception("Failed to fetch metrics logs: %s", e)
@@ -124,3 +118,91 @@ async def metrics_top_ips(
         logger.exception("Failed to fetch top IPs metrics: %s", e)
         raise HTTPException(status_code=500, detail=f"Internal error: {str(e)}")
 
+
+@router.get("/alerts", summary="Danh sách sự kiện cảnh báo hệ thống (System Alerts)")
+async def metrics_alerts(
+    limit: int = Query(50, ge=1, le=200, description="Số lượng cảnh báo trả về"),
+    severity: str | None = Query(None, description="Lọc theo mức độ: WARNING hoặc CRITICAL"),
+    _: bool = Security(verify_admin_key),
+):
+    """Lấy danh sách cảnh báo hệ thống từ bảng system_alerts."""
+    try:
+        from app.core.storage.db import get_pool
+        from app.core.telemetry.email_alert import ensure_alerts_schema
+
+        await ensure_alerts_schema()
+        pool = await get_pool()
+        async with pool.acquire() as conn:
+            if severity:
+                rows = await conn.fetch(
+                    """
+                    SELECT id, alert_type, severity, title, message, details, email_sent, created_at
+                    FROM system_alerts
+                    WHERE UPPER(severity) = UPPER($1)
+                    ORDER BY created_at DESC
+                    LIMIT $2
+                    """,
+                    severity,
+                    limit,
+                )
+            else:
+                rows = await conn.fetch(
+                    """
+                    SELECT id, alert_type, severity, title, message, details, email_sent, created_at
+                    FROM system_alerts
+                    ORDER BY created_at DESC
+                    LIMIT $1
+                    """,
+                    limit,
+                )
+
+        alerts = [
+            {
+                "id": r["id"],
+                "alert_type": r["alert_type"],
+                "severity": r["severity"],
+                "title": r["title"],
+                "message": r["message"],
+                "details": r["details"],
+                "email_sent": r["email_sent"],
+                "created_at": r["created_at"].isoformat() if r["created_at"] else "",
+            }
+            for r in rows
+        ]
+        return JSONResponse(content={"status": "success", "count": len(alerts), "alerts": alerts})
+    except Exception as e:
+        logger.exception("Failed to fetch alerts: %s", e)
+        raise HTTPException(status_code=500, detail=f"Internal error: {str(e)}")
+
+
+@router.post("/alerts/test", summary="Gửi thử nghiệm cảnh báo Email qua Kafka")
+async def trigger_test_alert(
+    severity: str = Query("CRITICAL", description="Mức độ cảnh báo: WARNING hoặc CRITICAL"),
+    _: bool = Security(verify_admin_key),
+):
+    """Bắn thử nghiệm 1 cảnh báo qua Kafka Cloud và Email để kiểm tra hệ thống."""
+    try:
+        from app.core.telemetry.kafka_producer import KafkaProducerService
+
+        producer = await KafkaProducerService.get_instance()
+        sent = await producer.send_alert(
+            alert_type="MANUAL_TEST_ALERT",
+            severity=severity,
+            title="Thử nghiệm Cảnh báo Hệ thống VinFast",
+            message="Đây là cảnh báo thử nghiệm được gửi từ Admin Dashboard để kiểm tra Kafka Cloud & Email Dispatcher.",
+            details={
+                "triggered_by": "Admin User",
+                "severity": severity,
+                "kafka_enabled": True,
+            },
+        )
+        return JSONResponse(
+            content={
+                "status": "success",
+                "message": "Đã bắn cảnh báo thử nghiệm vào Kafka Cloud!",
+                "kafka_sent": sent,
+            }
+        )
+    except Exception as e:
+        logger.exception("Failed to trigger test alert: %s", e)
+        raise HTTPException(status_code=500, detail=f"Internal error: {str(e)}")

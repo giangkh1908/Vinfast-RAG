@@ -1,12 +1,12 @@
+import asyncio
 import logging
 import time
-import asyncio
 from dataclasses import dataclass, field
 from urllib.parse import unquote, urlparse
 
-from app.agent.decision import make_decision_log, log_store
-from app.agent.graph_state import AgentState
 from app.agent.classifier import MODEL_RE, normalize_model
+from app.agent.decision import log_store, make_decision_log
+from app.agent.graph_state import AgentState
 
 logger = logging.getLogger("bds.graph.respond")
 
@@ -42,7 +42,7 @@ def format_source_links(tool_results: list[dict], default_model: str | None = No
     seen_urls = set()
     links = []
 
-    tool_priority = ['get_specs', 'get_price', 'get_colors', 'search_knowledge_base']
+    tool_priority = ["get_specs", "get_price", "get_colors", "search_knowledge_base"]
 
     # Ưu tiên các tool lấy dữ liệu theo model
     for priority_tool in tool_priority:
@@ -80,6 +80,7 @@ def source_link_md(url: str, model_code: str | None = None) -> str:
     """Trả markdown link click được với nhãn ngắn: '[VF 6](url)'."""
     return f"[{_source_link_label(url, model_code)}]({url})"
 
+
 # Câu trả lời mặc định cho các case không trả lời được
 _DEFAULT_REPLY = "Xin lỗi, mình chưa có thông tin phù hợp. Bạn có thể hỏi lại bằng câu khác được không?"
 
@@ -114,8 +115,9 @@ async def respond_node(state: AgentState) -> dict:
     entities = state.get("entities", {})
     assessment = state.get("assessment", "")
 
-    logger.info("RESPOND: decision=%s reason=%s assessment=%s tools=%d",
-                decision, reason_code, assessment, len(tool_results))
+    logger.info(
+        "RESPOND: decision=%s reason=%s assessment=%s tools=%d", decision, reason_code, assessment, len(tool_results)
+    )
 
     # Debug: check tool_results for source_url
     for i, tr in enumerate(tool_results):
@@ -161,6 +163,7 @@ async def respond_node(state: AgentState) -> dict:
 
     try:
         from app.agent.classifier import ClassifyResult
+
         cr = ClassifyResult(
             decision=decision,
             reason=reason_code,
@@ -177,7 +180,11 @@ async def respond_node(state: AgentState) -> dict:
                 dlog = await loop.run_in_executor(
                     None,
                     lambda: make_decision_log(
-                        state["query"], cr, tool_results, answer, citations,
+                        state["query"],
+                        cr,
+                        tool_results,
+                        answer,
+                        citations,
                         latency_ms=latency_ms,
                         latency_retrieval_ms=latency_retrieval_ms,
                         latency_generation_ms=latency_generation_ms,
