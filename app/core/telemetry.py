@@ -61,6 +61,7 @@ CREATE TABLE IF NOT EXISTS request_metrics (
     id                  BIGSERIAL PRIMARY KEY,
     request_id          TEXT NOT NULL,
     session_id          UUID,
+    client_ip           TEXT DEFAULT 'unknown',
     created_at          TIMESTAMPTZ NOT NULL DEFAULT now(),
     query_text          TEXT,
     intent              TEXT,
@@ -82,11 +83,13 @@ CREATE TABLE IF NOT EXISTS request_metrics (
 );
 
 ALTER TABLE request_metrics ADD COLUMN IF NOT EXISTS prompt_version TEXT DEFAULT 'v1.0.0';
+ALTER TABLE request_metrics ADD COLUMN IF NOT EXISTS client_ip TEXT DEFAULT 'unknown';
 
 CREATE INDEX IF NOT EXISTS idx_req_metrics_created ON request_metrics(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_req_metrics_intent ON request_metrics(intent);
 CREATE INDEX IF NOT EXISTS idx_req_metrics_cache ON request_metrics(cache_hit);
 CREATE INDEX IF NOT EXISTS idx_req_metrics_session ON request_metrics(session_id);
+CREATE INDEX IF NOT EXISTS idx_req_metrics_ip ON request_metrics(client_ip);
 """
 
 _schema_ready = False
@@ -116,6 +119,7 @@ async def record_metric(
     *,
     request_id: str,
     session_id: str | None = None,
+    client_ip: str = "unknown",
     query_text: str = "",
     intent: str = "general",
     decision: str = "answer",
@@ -154,19 +158,20 @@ async def record_metric(
             await pool.execute(
                 """
                 INSERT INTO request_metrics (
-                    request_id, session_id, query_text, intent, decision,
+                    request_id, session_id, client_ip, query_text, intent, decision,
                     model_used, prompt_version, prompt_tokens, completion_tokens, total_tokens,
                     cost_usd, cost_vnd, ttft_ms, total_latency_ms,
                     cache_hit, cache_type, tools_used, status_code, error_message
                 ) VALUES (
-                    $1, $2, $3, $4, $5,
-                    $6, $7, $8, $9, $10,
-                    $11, $12, $13, $14,
-                    $15, $16, $17::jsonb, $18, $19
+                    $1, $2, $3, $4, $5, $6,
+                    $7, $8, $9, $10, $11,
+                    $12, $13, $14, $15,
+                    $16, $17, $18::jsonb, $19, $20
                 )
                 """,
                 request_id,
                 sess_uuid,
+                client_ip or "unknown",
                 query_text[:500] if query_text else "",
                 intent,
                 decision,
@@ -364,7 +369,7 @@ async def get_metrics_logs(
 
     query = f"""
     SELECT
-        id, request_id, session_id, created_at, query_text, intent, decision,
+        id, request_id, session_id, client_ip, created_at, query_text, intent, decision,
         model_used, COALESCE(prompt_version, 'v1.0.0') as prompt_version,
         prompt_tokens, completion_tokens, total_tokens,
         cost_usd, cost_vnd, ttft_ms, total_latency_ms, cache_hit, cache_type,
@@ -397,6 +402,7 @@ async def get_metrics_logs(
             "id": r["id"],
             "request_id": r["request_id"],
             "session_id": str(r["session_id"]) if r["session_id"] else None,
+            "client_ip": r["client_ip"] or "unknown",
             "created_at": r["created_at"].isoformat() if r["created_at"] else "",
             "query_text": r["query_text"],
             "intent": r["intent"],
@@ -418,4 +424,81 @@ async def get_metrics_logs(
         })
 
     return {"total": total_count, "limit": limit, "offset": offset, "logs": logs}
+
+
+async def get_metrics_sessions(limit: int = 20, hours: int = 168) -> list[dict[str, Any]]:
+    """Tổng hợp chỉ số theo từng session (top session tốn token/tiền nhất)."""
+    await ensure_telemetry_schema()
+
+    query = """
+    SELECT
+        session_id,
+        COUNT(*) AS total_turns,
+        COALESCE(SUM(total_tokens), 0) AS total_tokens,
+        COALESCE(SUM(cost_vnd), 0.0) AS total_cost_vnd,
+        COALESCE(SUM(cost_usd), 0.0) AS total_cost_usd,
+        MIN(created_at) AS first_seen,
+        MAX(created_at) AS last_seen,
+        COALESCE(MAX(client_ip), 'unknown') AS client_ip
+    FROM request_metrics
+    WHERE session_id IS NOT NULL
+      AND created_at >= now() - ($1 || ' hours')::interval
+    GROUP BY session_id
+    ORDER BY total_tokens DESC
+    LIMIT $2
+    """
+    async def _fetch():
+        pool = await get_pool()
+        return await pool.fetch(query, str(hours), limit)
+
+    rows = await run_with_db_retry(_fetch, label="get_metrics_sessions")
+    return [
+        {
+            "session_id": str(r["session_id"]),
+            "total_turns": r["total_turns"],
+            "total_tokens": int(r["total_tokens"]),
+            "total_cost_vnd": float(r["total_cost_vnd"]),
+            "total_cost_usd": float(r["total_cost_usd"]),
+            "first_seen": r["first_seen"].isoformat() if r["first_seen"] else "",
+            "last_seen": r["last_seen"].isoformat() if r["last_seen"] else "",
+            "client_ip": r["client_ip"],
+        }
+        for r in rows
+    ]
+
+
+async def get_metrics_top_ips(limit: int = 20, hours: int = 24) -> list[dict[str, Any]]:
+    """Thống kê top IP gọi API nhiều nhất và số lượng request bị 429/lỗi (phát hiện abuse/spam)."""
+    await ensure_telemetry_schema()
+
+    query = """
+    SELECT
+        client_ip,
+        COUNT(*) AS total_requests,
+        COALESCE(COUNT(*) FILTER (WHERE status_code = 429), 0) AS blocked_429,
+        COALESCE(COUNT(*) FILTER (WHERE status_code >= 400 AND status_code != 429), 0) AS error_requests,
+        COALESCE(SUM(cost_vnd), 0.0) AS total_cost_vnd,
+        MAX(created_at) AS last_request
+    FROM request_metrics
+    WHERE created_at >= now() - ($1 || ' hours')::interval
+    GROUP BY client_ip
+    ORDER BY total_requests DESC
+    LIMIT $2
+    """
+    async def _fetch():
+        pool = await get_pool()
+        return await pool.fetch(query, str(hours), limit)
+
+    rows = await run_with_db_retry(_fetch, label="get_metrics_top_ips")
+    return [
+        {
+            "client_ip": r["client_ip"] or "unknown",
+            "total_requests": r["total_requests"],
+            "blocked_429": r["blocked_429"],
+            "error_requests": r["error_requests"],
+            "total_cost_vnd": float(r["total_cost_vnd"]),
+            "last_request": r["last_request"].isoformat() if r["last_request"] else "",
+        }
+        for r in rows
+    ]
 

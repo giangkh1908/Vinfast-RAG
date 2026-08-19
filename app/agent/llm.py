@@ -19,13 +19,30 @@ logger = logging.getLogger("bds.llm")
 _llm_client: "AsyncOpenAI | None" = None
 
 
-def get_llm() -> AsyncOpenAI:
+def get_llm():
     """Client chat chính (DeepInfra, OpenAI-compatible) — dùng chung toàn app."""
     global _llm_client
     if _llm_client is None:
-        _llm_client = AsyncOpenAI(
-            api_key=settings.deepinfra_api_key, base_url=settings.deepinfra_base_url
-        )
+        if settings.langfuse_enabled:
+            try:
+                from langfuse.openai import AsyncOpenAI as LangfuseAsyncOpenAI
+                _llm_client = LangfuseAsyncOpenAI(
+                    api_key=settings.deepinfra_api_key,
+                    base_url=settings.deepinfra_base_url,
+                    public_key=settings.langfuse_public_key,
+                    secret_key=settings.langfuse_secret_key,
+                    host=settings.langfuse_host,
+                )
+                logger.info("Langfuse AsyncOpenAI wrapper enabled (host=%s)", settings.langfuse_host)
+            except Exception as exc:
+                logger.warning("Could not initialize Langfuse AsyncOpenAI (%s), fallback to native AsyncOpenAI", exc)
+                _llm_client = AsyncOpenAI(
+                    api_key=settings.deepinfra_api_key, base_url=settings.deepinfra_base_url
+                )
+        else:
+            _llm_client = AsyncOpenAI(
+                api_key=settings.deepinfra_api_key, base_url=settings.deepinfra_base_url
+            )
     return _llm_client
 
 # ── Token limits (có thể override qua .env) ───────────────────────────────

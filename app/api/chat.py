@@ -3,7 +3,7 @@ import logging
 import time
 import uuid
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel
 
@@ -21,6 +21,14 @@ from app.core.telemetry import log_metric_background, record_metric
 logger = logging.getLogger("bds.api")
 
 router = APIRouter()
+
+
+def _get_client_ip(request: Request) -> str:
+    """Lấy IP của client (xử lý proxy x-forwarded-for)."""
+    forwarded = request.headers.get("x-forwarded-for")
+    if forwarded:
+        return forwarded.split(",")[0].strip()
+    return request.client.host if request.client else "unknown"
 
 _agent = None
 
@@ -136,13 +144,24 @@ async def _check_dedupe(session_id: str, message_id: str | None) -> bool:
 
 
 @router.post("/api/chat")
-
-async def chat(request: ChatRequest):
+async def chat(request: ChatRequest, raw_request: Request):
     req_id = request.message_id or str(uuid.uuid4())
+    client_ip = _get_client_ip(raw_request)
     t_start = time.monotonic()
 
     # Check dedupe nếu có message_id
     if await _check_dedupe(request.session_id, request.message_id):
+        log_metric_background(
+            record_metric(
+                request_id=req_id,
+                session_id=request.session_id,
+                client_ip=client_ip,
+                query_text=request.message,
+                intent="abuse_duplicate",
+                status_code=409,
+                error_message="Tin nhắn trùng lặp (duplicate message_id)",
+            )
+        )
         return JSONResponse(
             status_code=409,
             content={"error": "Tin nhắn trùng lặp", "message_id": request.message_id}
@@ -169,6 +188,7 @@ async def chat(request: ChatRequest):
         record_metric(
             request_id=req_id,
             session_id=request.session_id,
+            client_ip=client_ip,
             query_text=request.message,
             intent=str(intent_val),
             decision=result.decision,
@@ -194,12 +214,24 @@ async def chat(request: ChatRequest):
 
 
 @router.post("/api/chat/stream")
-async def chat_stream(request: ChatRequest):
+async def chat_stream(request: ChatRequest, raw_request: Request):
     req_id = request.message_id or str(uuid.uuid4())
+    client_ip = _get_client_ip(raw_request)
     t_start = time.monotonic()
 
     # Check dedupe nếu có message_id
     if await _check_dedupe(request.session_id, request.message_id):
+        log_metric_background(
+            record_metric(
+                request_id=req_id,
+                session_id=request.session_id,
+                client_ip=client_ip,
+                query_text=request.message,
+                intent="abuse_duplicate",
+                status_code=409,
+                error_message="Tin nhắn trùng lặp (duplicate message_id)",
+            )
+        )
         return JSONResponse(
             status_code=409,
             content={"error": "Tin nhắn trùng lặp", "message_id": request.message_id}
@@ -261,6 +293,7 @@ async def chat_stream(request: ChatRequest):
                 record_metric(
                     request_id=req_id,
                     session_id=request.session_id,
+                    client_ip=client_ip,
                     query_text=request.message,
                     intent=intent_val,
                     decision=decision,

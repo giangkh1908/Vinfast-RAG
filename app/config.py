@@ -55,6 +55,11 @@ class Settings:
         self.metrics_enabled: bool = _get_env("METRICS_ENABLED", "true").lower() == "true"
         self.usd_vnd_rate: float = float(_get_env("USD_VND_EXCHANGE_RATE", "25400.0"))
         self.app_version: str = _get_env("APP_VERSION", "v1.0.0")
+        # Langfuse Observability
+        self.langfuse_public_key: str = _get_env("LANGFUSE_PUBLIC_KEY", "")
+        self.langfuse_secret_key: str = _get_env("LANGFUSE_SECRET_KEY", "")
+        self.langfuse_host: str = _get_env("LANGFUSE_HOST", "https://cloud.langfuse.com")
+        self.langfuse_enabled: bool = _get_env("LANGFUSE_ENABLED", "true").lower() == "true" and bool(self.langfuse_public_key and self.langfuse_secret_key)
 
 
 

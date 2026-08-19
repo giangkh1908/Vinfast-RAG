@@ -1,18 +1,28 @@
 import { useEffect, useRef } from 'react'
 import MessageBubble from './MessageBubble'
 import StatusBar from './StatusBar'
+import TypingIndicator from './TypingIndicator'
+import WelcomeScreen from './WelcomeScreen'
 import type { ChatState } from '../hooks/useChat'
 
 interface Props extends ChatState {
   onStop: () => void
   onRetry: () => void
+  onSelectPrompt: (prompt: string) => void
 }
 
-export default function ChatPanel({ phase, messages, statusText, hasTokens, onStop, onRetry }: Props) {
+export default function ChatPanel({
+  phase,
+  messages,
+  statusText,
+  hasTokens,
+  onStop,
+  onRetry,
+  onSelectPrompt,
+}: Props) {
   const scrollRef = useRef<HTMLDivElement>(null)
   const nearBottomRef = useRef(true)
 
-  // Theo dõi user có đang ở gần đáy không — chỉ auto-scroll khi ở đáy
   const onScroll = () => {
     const el = scrollRef.current
     if (!el) return
@@ -26,22 +36,38 @@ export default function ChatPanel({ phase, messages, statusText, hasTokens, onSt
     }
   }, [messages, statusText, phase])
 
+  const isEmpty = messages.length === 0
+
   return (
-    <div className="chat" id="chat" ref={scrollRef} onScroll={onScroll}>
-      {messages.map((m) => (
-        <MessageBubble key={m.id} msg={m} />
-      ))}
+    <div id="chat_screen" className="cw_body is-visible">
+      {isEmpty ? (
+        <WelcomeScreen onSelectPrompt={onSelectPrompt} />
+      ) : (
+        <div id="chat_history" className="chat_conversion" ref={scrollRef} onScroll={onScroll}>
+          <div id="chat_log" className="chat_log">
+            {messages.map((m) => (
+              <MessageBubble key={m.id} msg={m} />
+            ))}
 
-      {/* Tiến độ khi đang xử lý — bỏ khi token đã chảy */}
-      {(phase === 'sending' || (phase === 'streaming' && !hasTokens)) && (
-        <StatusBar text={statusText} onStop={onStop} />
-      )}
+            {/* Status progress bar khi backend đang chạy tool */}
+            {statusText && !hasTokens && (
+              <StatusBar text={statusText} onStop={onStop} />
+            )}
 
-      {phase === 'error' && (
-        <div className="retry-bar">
-          <button className="retry-btn" onClick={onRetry}>
-            ↻ Thử lại
-          </button>
+            {/* Hiệu ứng gõ khi đang sending và chưa có text */}
+            {(phase === 'sending' || (phase === 'streaming' && !hasTokens)) && !statusText && (
+              <TypingIndicator />
+            )}
+
+            {/* Nút Thử lại khi gặp lỗi kết nối */}
+            {phase === 'error' && (
+              <div className="retry-bar">
+                <button className="retry-btn" onClick={onRetry}>
+                  <i className="mdi mdi-refresh"></i> Thử lại
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>

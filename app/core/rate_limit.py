@@ -122,6 +122,23 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
                 "Rate limit exceeded: ip=%s path=%s retry_after=%.1fs",
                 client_ip, path, retry,
             )
+            try:
+                import uuid
+                from app.core.telemetry import log_metric_background, record_metric
+                log_metric_background(
+                    record_metric(
+                        request_id=str(uuid.uuid4()),
+                        client_ip=client_ip,
+                        query_text=f"[BLOCKED: Rate limit on {path}]",
+                        intent="abuse_rate_limit",
+                        decision="refuse",
+                        status_code=429,
+                        error_message=f"Rate limit exceeded ({self.rpm} RPM, retry_after={retry:.1f}s)",
+                    )
+                )
+            except Exception:
+                pass
+
             return JSONResponse(
                 status_code=429,
                 content={
@@ -160,6 +177,27 @@ class BackpressureMiddleware(BaseHTTPMiddleware):
                 "Backpressure: %d/%d in-flight requests, rejecting new one",
                 self._inflight, self._max,
             )
+            try:
+                import uuid
+                from app.core.telemetry import log_metric_background, record_metric
+                client_ip = request.client.host if request.client else "unknown"
+                forwarded = request.headers.get("x-forwarded-for")
+                if forwarded:
+                    client_ip = forwarded.split(",")[0].strip()
+                log_metric_background(
+                    record_metric(
+                        request_id=str(uuid.uuid4()),
+                        client_ip=client_ip,
+                        query_text=f"[BLOCKED: Backpressure on {request.url.path}]",
+                        intent="system_overload",
+                        decision="refuse",
+                        status_code=503,
+                        error_message="Backpressure overload limit reached",
+                    )
+                )
+            except Exception:
+                pass
+
             return JSONResponse(
                 status_code=503,
                 content={

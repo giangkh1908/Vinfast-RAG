@@ -13,7 +13,9 @@ from app.core.telemetry import (
     get_metrics_intents,
     get_metrics_logs,
     get_metrics_overview,
+    get_metrics_sessions,
     get_metrics_timeseries,
+    get_metrics_top_ips,
 )
 
 logger = logging.getLogger("bds.metrics_api")
@@ -91,3 +93,34 @@ async def metrics_logs(
     except Exception as e:
         logger.exception("Failed to fetch metrics logs: %s", e)
         raise HTTPException(status_code=500, detail=f"Internal error: {str(e)}")
+
+
+@router.get("/sessions", summary="Thống kê theo Session (Top token/chi phí)")
+async def metrics_sessions(
+    hours: int = Query(168, ge=1, le=720, description="Khoảng thời gian tính theo giờ (mặc định 7 ngày)"),
+    limit: int = Query(20, ge=1, le=100, description="Số lượng session trả về"),
+    _: bool = Security(verify_admin_key),
+):
+    """Lấy danh sách các session tốn nhiều token và chi phí nhất."""
+    try:
+        data = await get_metrics_sessions(limit=limit, hours=hours)
+        return JSONResponse(content={"status": "success", "data": data})
+    except Exception as e:
+        logger.exception("Failed to fetch session metrics: %s", e)
+        raise HTTPException(status_code=500, detail=f"Internal error: {str(e)}")
+
+
+@router.get("/top-ips", summary="Thống kê Top IP và phát hiện Spam/Abuse")
+async def metrics_top_ips(
+    hours: int = Query(24, ge=1, le=720, description="Khoảng thời gian tính theo giờ (mặc định 24h)"),
+    limit: int = Query(20, ge=1, le=100, description="Số lượng IP trả về"),
+    _: bool = Security(verify_admin_key),
+):
+    """Thống kê các IP gọi nhiều nhất, số lượt bị chặn 429 và tỷ lệ lỗi."""
+    try:
+        data = await get_metrics_top_ips(limit=limit, hours=hours)
+        return JSONResponse(content={"status": "success", "data": data})
+    except Exception as e:
+        logger.exception("Failed to fetch top IPs metrics: %s", e)
+        raise HTTPException(status_code=500, detail=f"Internal error: {str(e)}")
+

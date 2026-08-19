@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [react()],
   base: './', // relative — serve từ bất kỳ path nào (FastAPI mount /)
   build: {
-    outDir: '../app/static', // build thẳng vào chỗ FastAPI serve sẵn
+    outDir: 'dist',
     emptyOutDir: true,
   },
   server: {

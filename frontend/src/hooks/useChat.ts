@@ -280,7 +280,7 @@ export function useChat() {
           : m,
       ),
     }))
-  }, [])
+  }, [clearFlushTimer])
 
   /** Thử lại: xoá turn lỗi (user + assistant error) khỏi state & storage, gửi lại */
   const retry = useCallback(() => {
@@ -310,7 +310,7 @@ export function useChat() {
     flushRef.current = () => {}
     clearSession()
     setState({ phase: 'idle', messages: [], statusText: '', hasTokens: false })
-  }, [])
+  }, [clearFlushTimer])
 
   return { ...state, busy, send, stop, retry, clearChat }
 }
