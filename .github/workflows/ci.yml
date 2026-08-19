@@ -1,4 +1,4 @@
-name: Vivu Backend CI/CD Pipeline
+name: ViVu Full-Stack CI/CD Pipeline
 
 on:
   push:
@@ -7,8 +7,9 @@ on:
     branches: [ "main", "master" ]
 
 jobs:
-  lint-and-test:
-    name: Lint, Test & Validate Backend
+  # ── 1. BACKEND CI ────────────────────────────────────────────────────────
+  backend-ci:
+    name: Backend Lint, Test & AI Gate
     runs-on: ubuntu-latest
 
     steps:
@@ -27,14 +28,14 @@ jobs:
           pip install -r requirements.txt
           pip install ruff pytest pytest-asyncio httpx
 
-      - name: Code Quality & Linting (Ruff)
+      - name: Code Quality & Linting (Ruff Check & Format)
         run: |
-          ruff check app/ scripts/ tests/ --select E,F,W --ignore E501
+          ruff check app/ tests/
+          ruff format --check app/ tests/
 
       - name: Run Decision Log Schema Tests
         run: |
           python tests/test_log_schema.py
-
 
       - name: Run AI Quality & Zero-Hallucination Smoke Eval (AI CI Gate)
         env:
@@ -43,12 +44,40 @@ jobs:
         run: |
           python tests/test_ai_smoke_eval.py
 
-
-
-  docker-build:
-    name: Build & Verify Docker Image
+  # ── 2. FRONTEND CI ───────────────────────────────────────────────────────
+  frontend-ci:
+    name: Frontend Lint, TypeCheck & Vite Build
     runs-on: ubuntu-latest
-    needs: lint-and-test
+
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install Frontend Dependencies
+        run: npm ci
+
+      - name: Lint Frontend Code (oxlint)
+        run: npm run lint
+
+      - name: TypeCheck & Production Build (Vite + TypeScript)
+        run: npm run build
+
+  # ── 3. DOCKER BUILD VERIFICATION ──────────────────────────────────────────
+  docker-build:
+    name: Build & Verify Production Container
+    runs-on: ubuntu-latest
+    needs: [backend-ci, frontend-ci]
 
     steps:
       - name: Checkout Code
