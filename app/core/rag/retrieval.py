@@ -21,19 +21,28 @@ EMB_CACHE_TTL = 7 * 86400  # embedding: deterministic theo (model, text)
 HS_CACHE_TTL = 2 * 3600  # hybrid_search: data_version key đã tự invalidate
 
 _reranker = None
-_sparse_index = None
-_sparse_index_loaded_at = 0.0
-_SPARSE_INDEX_TTL = 300  # re-check disk mỗi 5 phút để nhận version mới sau promote
+_sparse_index: dict | None = None
+_sparse_index_path: Path | None = None
+_sparse_index_mtime: float = 0.0
+_sparse_index_checked_at = 0.0
+# Full rescan (glob + đọc JSON) khi file cũ không đổi quá lâu — bắt version
+# mới hơn xuất hiện ở thư mục khác (VD promote v2 khi v1 vẫn tồn tại).
+_SPARSE_RESCAN_INTERVAL = 60
 _embed_client = None
 
 
 def _get_embed_client():
-    """OpenAI-compatible client for embeddings with built-in retry + connection pooling."""
+    """Async OpenAI-compatible client for embeddings with built-in retry + connection pooling.
+
+    Dùng AsyncOpenAI để `_openrouter_embed` await trực tiếp trên event loop —
+    không chiếm thread pool (trước đây chạy sync trong executor, mỗi call
+    2-3s giữ 1 worker).
+    """
     global _embed_client
     if _embed_client is None:
-        from openai import OpenAI
+        from openai import AsyncOpenAI
 
-        _embed_client = OpenAI(
+        _embed_client = AsyncOpenAI(
             api_key=settings.openrouter_api_key,
             base_url="https://openrouter.ai/api/v1",
             max_retries=3,
@@ -73,8 +82,11 @@ def tokenize(text: str) -> list[str]:
 
 # ── Sparse index auto-detection ──────────────────────────────────────────────
 def _find_latest_sparse_index() -> Path | None:
-    """Scan data/clean/*/sparse_index.json, return path with highest version number."""
-    global _sparse_index
+    """Scan data/clean/*/sparse_index.json, return path with highest version number.
+
+    Chỉ đọc file JSON khi cần (mtime đổi / rescan định kỳ) — kết quả được
+    cache theo (path, mtime) trong `_load_sparse_index`.
+    """
     if not DATA_CLEAN_DIR.exists():
         return None
     best_num = -1
@@ -95,26 +107,41 @@ def _find_latest_sparse_index() -> Path | None:
 
 
 def _load_sparse_index() -> dict:
-    """Load sparse index, reload mỗi _SPARSE_INDEX_TTL giây.
+    """Load sparse index, reload khi file đổi (mtime) — nhận version mới gần
+    như tức thì sau promote, thay vì chờ TTL 300s như trước.
 
     Quan trọng: sau khi pipeline promote version mới, file sparse_index.json
-    mới xuất hiện trên disk. Nếu cache vĩnh viễn (check `is None`), process
+    mới xuất hiện trên disk. Nếu cache vĩnh viễn (chỉ check `is None`), process
     đang chạy sẽ kẹt vocab version cũ → sparse vector sai lệch âm thầm.
+
+    Chi phí hot path: 1 stat() syscall (~ns). Full rescan (glob + đọc JSON)
+    chỉ chạy khi mtime file đổi, hoặc mỗi _SPARSE_RESCAN_INTERVAL giây để bắt
+    version mới hơn nằm ở thư mục khác.
     """
-    global _sparse_index, _sparse_index_loaded_at
+    global _sparse_index, _sparse_index_path, _sparse_index_mtime, _sparse_index_checked_at
     now = time.time()
-    if _sparse_index is not None and (now - _sparse_index_loaded_at) <= _SPARSE_INDEX_TTL:
-        return _sparse_index or {}
+    if _sparse_index is not None and _sparse_index_path is not None:
+        try:
+            cur_mtime = _sparse_index_path.stat().st_mtime
+        except OSError:
+            cur_mtime = -1.0
+        if cur_mtime == _sparse_index_mtime and (now - _sparse_index_checked_at) < _SPARSE_RESCAN_INTERVAL:
+            return _sparse_index or {}
 
     old_ver = (_sparse_index or {}).get("version")
     path = _find_latest_sparse_index()
     if path is None and _sparse_index is None:
         _sparse_index = {}
     elif path is not None:
+        _sparse_index_path = path
+        try:
+            _sparse_index_mtime = path.stat().st_mtime
+        except OSError:
+            _sparse_index_mtime = 0.0
         logger.info("Loaded sparse index from %s (version=%s)", path, _sparse_index.get("version"))
     if (_sparse_index or {}).get("version") != old_ver:
         logger.info("Sparse index version change: %s -> %s", old_ver, (_sparse_index or {}).get("version"))
-    _sparse_index_loaded_at = now
+    _sparse_index_checked_at = now
     return _sparse_index or {}
 
 
@@ -152,19 +179,23 @@ def _query_to_sparse(query: str) -> dict | None:
     return {"indices": [indices[i] for i in order], "values": [values[i] for i in order]}
 
 
-def _openrouter_embed(texts: list[str]) -> list[list[float]]:
-    """Embed texts using OpenAI SDK with built-in retry + connection pooling.
+async def _openrouter_embed(texts: list[str]) -> list[list[float]]:
+    """Embed texts using AsyncOpenAI SDK with built-in retry + connection pooling.
 
     Cache theo (model, text thô) — TTL 7 ngày, deterministic nên zero-risk.
-    Chạy trong executor thread → dùng sync redis client.
+    Chạy async trực tiếp trên event loop (không chiếm thread pool như sync
+    client trong executor trước đây). Redis cache dùng async client.
     """
+    import time as _time
+
+    _t0 = _time.perf_counter()
     client = _get_embed_client()
     batch_size = 100
     all_embeddings: dict[int, list[float]] = {}
     to_embed: list[int] = []
     for i, t in enumerate(texts):
         key = make_embed_key(t)
-        hit = cache.sync_get_json(key)
+        hit = await cache.get_json(key)
         if hit is not None:
             all_embeddings[i] = hit
         else:
@@ -174,7 +205,7 @@ def _openrouter_embed(texts: list[str]) -> list[list[float]]:
         for j in range(0, len(to_embed), batch_size):
             batch_idx = to_embed[j : j + batch_size]
             batch_texts = [texts[i] for i in batch_idx]
-            response = client.embeddings.create(
+            response = await client.embeddings.create(
                 model=settings.openrouter_embed_model,
                 input=batch_texts,
             )
@@ -182,7 +213,14 @@ def _openrouter_embed(texts: list[str]) -> list[list[float]]:
             for k, d in zip(batch_idx, sorted_data, strict=False):
                 emb = d.embedding
                 all_embeddings[k] = emb
-                cache.sync_set_json(make_embed_key(texts[k]), emb, EMB_CACHE_TTL)
+                await cache.set_json(make_embed_key(texts[k]), emb, EMB_CACHE_TTL)
+
+    try:
+        from app.core.telemetry.prometheus import record_embedding
+
+        record_embedding(_time.perf_counter() - _t0)
+    except Exception:
+        pass
 
     # Giữ thứ tự gốc
     return [all_embeddings[i] for i in range(len(texts))]
@@ -398,13 +436,13 @@ def _dedup_fused(fused: list[tuple]) -> list[tuple]:
     return out
 
 
-def _embed_cosine_scores(query: str, texts: list[str]) -> list[float] | None:
+async def _embed_cosine_scores(query: str, texts: list[str]) -> list[float] | None:
     """Fallback relevance score (0..1) bằng embedding cosine — dùng khi reranker
     không khả dụng, để score luôn cùng thang [0,1] với ngưỡng evidence (0.3/0.5)."""
     if not texts:
         return []
     try:
-        embeddings = _openrouter_embed([query] + texts)
+        embeddings = await _openrouter_embed([query] + texts)
         if len(embeddings) < len(texts) + 1:
             return None
         import numpy as np
@@ -500,16 +538,17 @@ async def hybrid_search(query: str, model_id: str = None, top_k: int = 5, skip_r
     qdrant = get_qdrant()
     limit = top_k * 2
 
-    # 1. Song song: embed query (OpenRouter ~2-3s) + sparse BM25 (local + Qdrant ~0.3s)
+    # 1. Song song: embed query (OpenRouter ~2-3s, async client — không chiếm
+    # thread pool) + sparse BM25 (local + Qdrant ~0.3s)
     sparse_vec = _query_to_sparse(query)
-    embed_fut = loop.run_in_executor(_pool, _openrouter_embed, [query])
+    embed_task = asyncio.create_task(_openrouter_embed([query]))
     sparse_fut = (
         loop.run_in_executor(_pool, qdrant.search_sparse, SPARSE_COLLECTION, sparse_vec, model_id, limit)
         if sparse_vec
         else None
     )
 
-    dense_vector = (await embed_fut)[0]
+    dense_vector = (await embed_task)[0]
 
     # 2. Dense search SONG SONG across all collections (via aliases → active version)
     dense_futs = [
@@ -569,7 +608,7 @@ async def hybrid_search(query: str, model_id: str = None, top_k: int = 5, skip_r
 
     if not scored and fused:
         texts = [hit.get("payload", {}).get("text", "") for hit, _ in fused]
-        cos_scores = _embed_cosine_scores(query, texts)
+        cos_scores = await _embed_cosine_scores(query, texts)
         if cos_scores is not None and len(cos_scores) == len(fused):
             fused = [(hit, s) for (hit, _), s in zip(fused, cos_scores, strict=False)]
             fused.sort(key=lambda x: x[1], reverse=True)

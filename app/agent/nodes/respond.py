@@ -171,8 +171,8 @@ async def respond_node(state: AgentState) -> dict:
             specificity=state.get("specificity", "unknown"),
         )
         # make_decision_log gọi assess_evidence + build_retrieved_chunks
-        # (cả 2 đều sync + có thể gọi _openrouter_embed → block event loop 2-3s).
-        # KHÔNG await để response trả ngay — log chạy nền (fire-and-forget).
+        # (cả 2 đều keyword-only — không gọi embedding network nên không
+        # block event loop). Chạy nền (fire-and-forget) để response trả ngay.
         loop = asyncio.get_running_loop()
 
         async def _background_log():
