@@ -80,18 +80,26 @@ sequenceDiagram
 
 ---
 
-## 5. Mẫu Email Cảnh Báo Nhận Diện Thương Hiệu VinFast
+## 5. Mẫu Email Cảnh Báo Nhận Diện Thương Hiệu VinFast AI
 
-Email cảnh báo được render dưới dạng HTML hiện đại:
+Email cảnh báo được render dưới dạng HTML hiện đại và định dạng người gửi chuẩn RFC 5322:
+* **Tên người gửi (From Name):** `VinFast AI Alerts <quangvu1922@gmail.com>` (Tùy biến qua biến môi trường `SMTP_FROM_NAME`).
 * **Header:** Logo VinFast + Tiêu đề màu Đỏ cảnh báo khẩn cấp.
-* **Metadata Table:** Hiển thị Mã sự cố, Thời gian chính xác, IP thủ phạm, Tóm tắt lỗi.
+* **Metadata Table:** Hiển thị Mã sự cố, Thời gian chính xác (Giờ VN), IP thủ phạm, Tóm tắt lỗi.
 * **JSON Payload Box:** Chi tiết kỹ thuật của request để DevOps có thể debug ngay lập tức.
-* **Footer:** Thông tin hệ thống tự động ViVu VinFast.
+* **Footer:** Thông tin hệ thống tự động ViVu VinFast Chatbot.
 
 ---
 
-## 6. Kiểm Thử Trực Tiếp Từ Admin Dashboard
+## 6. Cơ Chế Ghi Nhận Tức Thì & Kiểm Thử Admin Dashboard
 
+### A. Ghi Nhận Song Song Tức Thì (Zero Latency Logging)
+* Khi mỗi turn chat hoặc cảnh báo phát sinh, hệ thống thực hiện đồng thời:
+  1. Ghi trực tiếp bản ghi vào Neon PostgreSQL (`request_metrics` / `system_alerts`) qua background task (<5ms) -> Admin Dashboard thấy ngay lập tức.
+  2. Bắn Message Event vào Aiven Kafka Cloud để phục vụ streaming phân tích dữ liệu mở rộng.
+  3. Sử dụng `ON CONFLICT (request_id) DO NOTHING` để đảm bảo chống trùng lặp dữ liệu tuyệt đối (Zero Duplication).
+
+### B. Kiểm Thử Trực Tiếp Từ Giao Diện Admin
 Quản trị viên có thể truy cập `http://localhost:5173/#admin` -> Tab **`🔔 Cảnh Báo Hệ Thống`**:
-* Bấm **"Test Warning Event"**: Gửi sự kiện giả lập Warning qua Kafka Cloud -> Xem hiển thị trên bảng.
-* Bấm **"Test Gửi Email Critical"**: Gửi sự kiện Critical qua Kafka Cloud -> Kiểm tra hòm thư `giangkh1908@gmail.com` để nhận Email HTML thực tế!
+* Bấm **"Test Warning Event"**: Gửi sự kiện giả lập Warning -> Bảng hiển thị ngay dòng màu vàng.
+* Bấm **"Test Gửi Email Critical"**: Gửi sự kiện Critical (tự động bỏ qua cooldown) -> Ghi bảng + **Gửi Email HTML tức thì với tên `VinFast AI Alerts` tới `giangkh1908@gmail.com`**.
