@@ -39,12 +39,19 @@ export default function ChatPanel({
   const isEmpty = messages.length === 0
 
   return (
-    <div id="chat_screen" className="cw_body is-visible">
+    <main id="chat_screen" className="cw_body is-visible" role="region" aria-label="Nội dung cuộc hội thoại">
       {isEmpty ? (
         <WelcomeScreen onSelectPrompt={onSelectPrompt} />
       ) : (
-        <div id="chat_history" className="chat_conversion" ref={scrollRef} onScroll={onScroll}>
-          <div id="chat_log" className="chat_log">
+        <div
+          id="chat_history"
+          className="chat_conversion"
+          ref={scrollRef}
+          onScroll={onScroll}
+          tabIndex={0}
+          aria-label="Lịch sử tin nhắn"
+        >
+          <div id="chat_log" className="chat_log" role="log" aria-live="polite" aria-atomic="false">
             {messages.map((m) => (
               <MessageBubble key={m.id} msg={m} />
             ))}
@@ -62,14 +69,19 @@ export default function ChatPanel({
             {/* Nút Thử lại khi gặp lỗi kết nối */}
             {phase === 'error' && (
               <div className="retry-bar">
-                <button className="retry-btn" onClick={onRetry}>
-                  <i className="mdi mdi-refresh"></i> Thử lại
+                <button
+                  type="button"
+                  className="retry-btn"
+                  onClick={onRetry}
+                  aria-label="Thử lại câu trả lời vừa rồi"
+                >
+                  <i className="mdi mdi-refresh" aria-hidden="true"></i> Thử lại
                 </button>
               </div>
             )}
           </div>
         </div>
       )}
-    </div>
+    </main>
   )
 }
