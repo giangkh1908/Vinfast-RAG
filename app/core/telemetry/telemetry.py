@@ -236,12 +236,71 @@ async def record_metric(
     return payload
 
 
-def log_metric_background(task_coro):
-    """Tiện ích fire-and-forget chạy background task."""
+async def insert_metric_payload(payload: dict[str, Any]) -> None:
+    """Ghi trực tiếp dict metric payload vào PostgreSQL (dùng cho Fallback và Direct logging)."""
     try:
-        loop = asyncio.get_event_loop()
-        if loop.is_running():
-            asyncio.create_task(task_coro)
+        await ensure_telemetry_schema()
+
+        async def _insert():
+            pool = await get_pool()
+            sess_uuid = None
+            if payload.get("session_id"):
+                try:
+                    sess_uuid = uuid.UUID(str(payload["session_id"]))
+                except (ValueError, TypeError):
+                    sess_uuid = None
+
+            await pool.execute(
+                """
+                INSERT INTO request_metrics (
+                    request_id, session_id, client_ip, query_text, intent, decision,
+                    model_used, prompt_version, prompt_tokens, completion_tokens, total_tokens,
+                    cost_usd, cost_vnd, ttft_ms, total_latency_ms,
+                    cache_hit, cache_type, tools_used, status_code, error_message
+                ) VALUES (
+                    $1, $2, $3, $4, $5, $6,
+                    $7, $8, $9, $10, $11,
+                    $12, $13, $14, $15,
+                    $16, $17, $18::jsonb, $19, $20
+                )
+                """,
+                payload.get("request_id", ""),
+                sess_uuid,
+                payload.get("client_ip", "unknown"),
+                (payload.get("query_text") or "")[:500],
+                payload.get("intent", "general"),
+                payload.get("decision", "answer"),
+                payload.get("model_used") or settings.llm_model,
+                payload.get("prompt_version") or "v1.0.0",
+                int(payload.get("prompt_tokens") or 0),
+                int(payload.get("completion_tokens") or 0),
+                int(payload.get("total_tokens") or 0),
+                float(payload.get("cost_usd") or 0.0),
+                float(payload.get("cost_vnd") or 0.0),
+                int(payload.get("ttft_ms") or 0),
+                int(payload.get("total_latency_ms") or 0),
+                bool(payload.get("cache_hit", False)),
+                payload.get("cache_type", "none"),
+                json.dumps(payload.get("tools_used") or [], ensure_ascii=False),
+                int(payload.get("status_code") or 200),
+                payload.get("error_message"),
+            )
+
+        await run_with_db_retry(_insert, label="insert_metric_payload")
+    except Exception as exc:
+        logger.warning("Failed to insert metric payload (continuing): %s", exc)
+
+
+def log_metric_background(task_or_payload: Any) -> None:
+    """Tiện ích fire-and-forget chạy background task hoặc ghi payload."""
+    try:
+        loop = asyncio.get_running_loop()
+        if isinstance(task_or_payload, dict):
+            loop.create_task(insert_metric_payload(task_or_payload))
+        elif asyncio.iscoroutine(task_or_payload):
+            loop.create_task(task_or_payload)
+    except RuntimeError:
+        pass
     except Exception as e:
         logger.warning("Error scheduling background metric task: %s", e)
 

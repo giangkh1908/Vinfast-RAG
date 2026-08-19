@@ -138,8 +138,14 @@ def produce_telemetry_bg(payload: dict[str, Any]) -> None:
     """Helper gọi background task không block coroutine hiện tại."""
 
     async def _task():
-        producer = await KafkaProducerService.get_instance()
-        await producer.send_telemetry(payload)
+        try:
+            producer = await KafkaProducerService.get_instance()
+            await producer.send_telemetry(payload)
+        except Exception as e:
+            logger.warning("produce_telemetry_bg error: %s. Using direct DB fallback.", e)
+            from app.core.telemetry.telemetry import log_metric_background
+
+            log_metric_background(payload)
 
     try:
         loop = asyncio.get_running_loop()
@@ -158,8 +164,20 @@ def produce_alert_bg(
     """Helper gọi background task bắn cảnh báo."""
 
     async def _task():
-        producer = await KafkaProducerService.get_instance()
-        await producer.send_alert(alert_type, severity, title, message, details)
+        try:
+            producer = await KafkaProducerService.get_instance()
+            await producer.send_alert(alert_type, severity, title, message, details)
+        except Exception as e:
+            logger.warning("produce_alert_bg error: %s. Using direct alert fallback.", e)
+            from app.core.telemetry.email_alert import record_alert_direct
+
+            await record_alert_direct(
+                alert_type=alert_type,
+                severity=severity,
+                title=title,
+                message=message,
+                details=details,
+            )
 
     try:
         loop = asyncio.get_running_loop()

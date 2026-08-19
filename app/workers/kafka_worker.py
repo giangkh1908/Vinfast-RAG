@@ -11,6 +11,7 @@ import asyncio
 import json
 import logging
 import ssl
+import uuid
 from typing import Any
 
 from aiokafka import AIOKafkaConsumer
@@ -28,8 +29,8 @@ class KafkaConsumerWorker:
         self._running = False
         self._telemetry_buffer: list[dict[str, Any]] = []
         self._buffer_lock = asyncio.Lock()
-        self._flush_interval_seconds = 5
-        self._batch_size = 50
+        self._flush_interval_seconds = 2
+        self._batch_size = 20
 
     async def _flush_telemetry_batch(self) -> None:
         """Ghi batch telemetry vào bảng request_metrics trong PostgreSQL."""
@@ -43,10 +44,18 @@ class KafkaConsumerWorker:
             await ensure_telemetry_schema()
             pool = await get_pool()
 
+            def _to_uuid(val):
+                if not val:
+                    return None
+                try:
+                    return uuid.UUID(str(val))
+                except (ValueError, TypeError):
+                    return None
+
             records_tuples = [
                 (
                     r.get("request_id", ""),
-                    r.get("session_id"),
+                    _to_uuid(r.get("session_id")),
                     r.get("client_ip", "unknown"),
                     r.get("query_text", ""),
                     r.get("intent", "general"),

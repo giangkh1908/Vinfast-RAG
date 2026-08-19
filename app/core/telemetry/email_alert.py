@@ -166,15 +166,27 @@ async def send_email_alert(
         return False
 
 
-async def record_alert_direct(payload: dict[str, Any]) -> None:
+async def record_alert_direct(
+    payload: dict[str, Any] | None = None,
+    *,
+    alert_type: str = "UNKNOWN",
+    severity: str = "WARNING",
+    title: str = "Cảnh báo hệ thống",
+    message: str = "",
+    details: dict[str, Any] | None = None,
+) -> None:
     """Lưu cảnh báo vào DB và gửi email nếu là CRITICAL (Dùng cho Fallback và Worker)."""
     await ensure_alerts_schema()
 
-    alert_type = str(payload.get("alert_type", "UNKNOWN"))
-    severity = str(payload.get("severity", "WARNING")).upper()
-    title = str(payload.get("title", "Cảnh báo hệ thống"))
-    message = str(payload.get("message", ""))
-    details = payload.get("details", {})
+    if payload is not None:
+        alert_type = str(payload.get("alert_type", alert_type))
+        severity = str(payload.get("severity", severity)).upper()
+        title = str(payload.get("title", title))
+        message = str(payload.get("message", message))
+        details = payload.get("details", details or {})
+    else:
+        details = details or {}
+        severity = severity.upper()
 
     email_sent = False
     if severity == "CRITICAL":
