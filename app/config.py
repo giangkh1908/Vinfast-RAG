@@ -78,6 +78,7 @@ class Settings:
         self.smtp_port: int = int(_get_env("SMTP_PORT", "587"))
         self.smtp_user: str = _get_env("SMTP_USER", "")
         self.smtp_password: str = _get_env("SMTP_PASSWORD", "")
+        self.smtp_from_name: str = _get_env("SMTP_FROM_NAME", "VinFast AI Alerts")
         self.alert_email_recipient: str = _get_env("ALERT_EMAIL_RECIPIENT", "")
         self.alert_email_enabled: bool = _get_env("ALERT_EMAIL_ENABLED", "true").lower() == "true" and bool(
             self.smtp_host and self.smtp_user and self.smtp_password and self.alert_email_recipient

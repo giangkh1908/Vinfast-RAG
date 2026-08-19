@@ -14,6 +14,7 @@ import logging
 import time
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from email.utils import formataddr
 from typing import Any
 
 import aiosmtplib
@@ -141,7 +142,8 @@ async def send_email_alert(
     subject = f"[VinFast AI - {severity}] {title}"
 
     msg = MIMEMultipart("alternative")
-    msg["From"] = settings.smtp_user
+    from_name = getattr(settings, "smtp_from_name", "VinFast AI Alerts")
+    msg["From"] = formataddr((from_name, settings.smtp_user))
     msg["To"] = settings.alert_email_recipient
     msg["Subject"] = subject
 
@@ -192,7 +194,9 @@ async def record_alert_direct(
 
     email_sent = False
     if severity == "CRITICAL":
-        email_sent = await send_email_alert(severity, title, message, details, alert_type, ignore_cooldown=ignore_cooldown)
+        email_sent = await send_email_alert(
+            severity, title, message, details, alert_type, ignore_cooldown=ignore_cooldown
+        )
 
     async def _insert():
         pool = await get_pool()
