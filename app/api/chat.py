@@ -3,7 +3,7 @@ import logging
 import time
 import uuid
 
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import JSONResponse, StreamingResponse
 
 from app.agent.agent_loop import AgentLoop
@@ -16,6 +16,7 @@ from app.core.storage.cache import DEDUP_TTL, cache, make_dedup_key
 from app.core.storage.session_store import get_session, touch_session, update_summary
 from app.core.telemetry.kafka_producer import produce_alert_bg, produce_telemetry_bg
 from app.core.telemetry.telemetry import build_metric_payload, log_metric_background, record_metric
+from app.dependencies import get_chat_agent
 from app.schemas import ChatRequest, ChatResponse
 
 logger = logging.getLogger("bds.api")
@@ -31,14 +32,8 @@ def _get_client_ip(request: Request) -> str:
     return request.client.host if request.client else "unknown"
 
 
-_agent = None
-
-
 def get_agent() -> AgentLoop:
-    global _agent
-    if _agent is None:
-        _agent = AgentLoop()
-    return _agent
+    return get_chat_agent()
 
 
 _INPUT_TOO_LONG_MSG = (
@@ -124,7 +119,7 @@ async def _check_dedupe(session_id: str, message_id: str | None) -> bool:
 
 
 @router.post("/api/chat")
-async def chat(request: ChatRequest, raw_request: Request):
+async def chat(request: ChatRequest, raw_request: Request, agent: AgentLoop = Depends(get_chat_agent)):
     req_id = request.message_id or str(uuid.uuid4())
     client_ip = _get_client_ip(raw_request)
     t_start = time.monotonic()
@@ -145,7 +140,6 @@ async def chat(request: ChatRequest, raw_request: Request):
         return JSONResponse(status_code=409, content={"error": "Tin nhắn trùng lặp", "message_id": request.message_id})
 
     history, summary, session = await _prepare_request(request)
-    agent = get_agent()
     result = await agent.run(request.message, history, summary=summary, session_id=request.session_id)
     await _finish_turn(request.session_id, request.message, history, summary, session, decision=result.decision)
 
@@ -189,7 +183,7 @@ async def chat(request: ChatRequest, raw_request: Request):
 
 
 @router.post("/api/chat/stream")
-async def chat_stream(request: ChatRequest, raw_request: Request):
+async def chat_stream(request: ChatRequest, raw_request: Request, agent: AgentLoop = Depends(get_chat_agent)):
     req_id = request.message_id or str(uuid.uuid4())
     client_ip = _get_client_ip(raw_request)
     t_start = time.monotonic()
@@ -210,7 +204,6 @@ async def chat_stream(request: ChatRequest, raw_request: Request):
         return JSONResponse(status_code=409, content={"error": "Tin nhắn trùng lặp", "message_id": request.message_id})
 
     history, summary, session = await _prepare_request(request)
-    agent = get_agent()
 
     async def generate():
         decision = "answer"  # default, sẽ được cập nhật từ SSE event

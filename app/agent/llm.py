@@ -134,6 +134,9 @@ def _models_chain() -> list[str]:
 
 async def _stream_chat(llm, model: str, messages: list, writer, **kwargs) -> tuple[str, dict]:
     """Stream 1 call, accumulate content + tool-call deltas. Trả (content, acc)."""
+    import time as _time
+
+    _t0 = _time.perf_counter()
     content_parts: list[str] = []
     tool_calls_acc: dict[int, dict] = {}
     got_chunk = False
@@ -183,6 +186,13 @@ async def _stream_chat(llm, model: str, messages: list, writer, **kwargs) -> tup
         if got_chunk:
             raise PartialStreamError(str(e)) from e
         raise
+    finally:
+        try:
+            from app.core.telemetry.prometheus import record_llm
+
+            record_llm(model=model, duration_s=_time.perf_counter() - _t0)
+        except Exception:
+            pass
     return "".join(content_parts), tool_calls_acc
 
 

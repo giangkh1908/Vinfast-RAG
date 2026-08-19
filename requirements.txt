@@ -2,11 +2,12 @@
 fastapi>=0.110.0
 uvicorn[standard]>=0.28.0
 pydantic>=2.6.0
+pydantic-settings>=2.2.0
 python-dotenv>=1.0.0
 
 # LLM & Agent
 openai>=1.14.0
-langgraph>=0.0.26
+langgraph>=1.2.0
 langfuse>=2.0.0
 
 # Database & Cache
@@ -24,3 +25,6 @@ pymupdf>=1.24.0
 # Kafka & Asynchronous Email Alerts
 aiokafka>=0.11.0
 aiosmtplib>=3.0.0
+
+# Observability
+prometheus-client>=0.20.0

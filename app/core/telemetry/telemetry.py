@@ -57,6 +57,14 @@ def calculate_cost(model: str, prompt_tokens: int, completion_tokens: int) -> tu
     output_cost = (completion_tokens / 1_000_000.0) * pricing["output_per_m"]
     total_usd = input_cost + output_cost
     total_vnd = total_usd * settings.usd_vnd_rate
+
+    try:
+        from app.core.telemetry.prometheus import record_llm_cost
+
+        record_llm_cost(total_usd)
+    except Exception:
+        pass
+
     return round(total_usd, 6), round(total_vnd, 2)
 
 

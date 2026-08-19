@@ -24,6 +24,17 @@ from app.config import settings
 
 logger = logging.getLogger("bds.cache")
 
+
+def _cache_metric(kind: str, hit: bool) -> None:
+    """Ghi Prometheus cache hit/miss (no-op khi Prometheus tắt/chưa cài)."""
+    try:
+        from app.core.telemetry.prometheus import record_cache
+
+        record_cache(kind=kind, hit=hit)
+    except Exception:
+        pass
+
+
 # ── Data version (chống stale-data) ────────────────────────────────────────
 _ver_cache: dict = {"value": None, "at": 0.0}
 _VER_TTL = 60.0  # promote lan toả ≤60s
@@ -332,8 +343,10 @@ class RedisCache:
         try:
             raw = await self._client.get(key)  # type: ignore[union-attr]
             if raw is None:
+                _cache_metric(kind="redis", hit=False)
                 return None
             self._reset_errors()
+            _cache_metric(kind="redis", hit=True)
             return json.loads(raw)
         except Exception as e:  # noqa: BLE001
             self._mark_down(e)
@@ -422,8 +435,10 @@ class RedisCache:
         try:
             raw = self._sync_client.get(key)  # type: ignore[union-attr]
             if raw is None:
+                _cache_metric(kind="redis", hit=False)
                 return None
             self._reset_errors()
+            _cache_metric(kind="redis", hit=True)
             return json.loads(raw)
         except Exception as e:  # noqa: BLE001
             self._mark_down(e)

@@ -202,39 +202,6 @@ Results saved to `eval/ragas_results.jsonl` + `eval/ragas_results.summary.json`.
 
 ---
 
-## 8. Phoenix Tracing (Optional)
-
-### Enable Phoenix
-
-Trong `.env`:
-
-```
-PHOENIX_ENABLED=true
-```
-
-### Start Phoenix UI
-
-```bash
-python -m phoenix.server.main serve
-```
-
-Mo http://localhost:6006
-
-### Chay app voi Phoenix
-
-```bash
-uvicorn app.main:app --reload --port 8000
-```
-
-Phoenix tu dong capture:
-
-- OpenAI API calls (LLM + Embedding)
-- Latency per call
-- Token usage
-- Input/Output messages
-
----
-
 ## 9. Test Queries
 
 | Query                         | Decision mong doi           | Tool                    |
@@ -264,9 +231,8 @@ vivu/
 ├── GUIDE.md                          # This file
 │
 ├── app/
-│   ├── main.py                       # FastAPI + Phoenix tracing
+│   ├── main.py                       # FastAPI app
 │   ├── config.py                     # Settings (load .env)
-│   ├── tracing.py                    # Phoenix instrumentation
 │   ├── agent/
 │   │   ├── agent_loop.py            # Agent loop + eval logging
 │   │   ├── classifier.py            # BDS classifier (topic, scope)
@@ -306,4 +272,3 @@ vivu/
 | `403 Forbidden` OpenAI          | Sai API key          | Check`.env` OPENAI_API_KEY                                       |
 | `ModuleNotFoundError: ragas`    | Chua install         | `pip install ragas datasets`                                     |
 | `RAGAS scoring failed`          | Thieu ground_truth   | CSV phai co cot`expected_answer`                                 |
-| `Phoenix not installed`         | Chua install         | `pip install arize-phoenix openinference-instrumentation-openai` |

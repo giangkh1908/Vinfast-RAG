@@ -113,7 +113,12 @@ class AgentLoop:
             "session_id": session_id,
             "t0": time.time(),
         }
-        final = await self.graph.ainvoke(state)
+        from app.core.telemetry.langfuse_trace import langfuse_chain
+
+        async with langfuse_chain(
+            "chat_request", input=query, session_id=session_id, multi_turn=bool(history)
+        ) as _span:
+            final = await self.graph.ainvoke(state)
         result = final.get("result")
         if result is None:
             return AgentResult(
@@ -251,8 +256,13 @@ class AgentLoop:
         async def _producer():
             nonlocal graph_error
             try:
-                async for mode, payload in self.graph.astream(state, stream_mode=["updates", "custom"]):
-                    await queue.put((mode, payload))
+                from app.core.telemetry.langfuse_trace import langfuse_chain
+
+                async with langfuse_chain(
+                    "chat_request_stream", input=query, session_id=session_id, multi_turn=bool(history)
+                ):
+                    async for mode, payload in self.graph.astream(state, stream_mode=["updates", "custom"]):
+                        await queue.put((mode, payload))
             except Exception as e:
                 graph_error = e
             finally:

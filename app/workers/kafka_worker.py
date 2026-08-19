@@ -36,9 +36,11 @@ class KafkaConsumerWorker:
         """Ghi batch telemetry vào bảng request_metrics trong PostgreSQL."""
         async with self._buffer_lock:
             if not self._telemetry_buffer:
+                self._set_buffer_metric(0)
                 return
             records_to_flush = list(self._telemetry_buffer)
             self._telemetry_buffer.clear()
+        self._set_buffer_metric(len(records_to_flush))
 
         try:
             await ensure_telemetry_schema()
@@ -99,9 +101,29 @@ class KafkaConsumerWorker:
                     )
 
             await run_with_db_retry(_batch_insert, label="batch_insert_metrics")
+            self._record_batch(ok=True)
             logger.info("Successfully flushed batch of %d telemetry records to Neon DB.", len(records_to_flush))
         except Exception as e:
+            self._record_batch(ok=False)
             logger.exception("Failed to flush telemetry batch to database: %s", e)
+
+    def _set_buffer_metric(self, depth: int) -> None:
+        """Export Kafka consumer buffer depth (Prometheus gauge)."""
+        try:
+            from app.core.telemetry.prometheus import set_kafka_buffer
+
+            set_kafka_buffer(depth)
+        except Exception:
+            pass
+
+    def _record_batch(self, ok: bool) -> None:
+        """Export Kafka batch flush result (Prometheus counter)."""
+        try:
+            from app.core.telemetry.prometheus import record_kafka_batch
+
+            record_kafka_batch(ok)
+        except Exception:
+            pass
 
     async def _handle_alert_message(self, data: dict[str, Any]) -> None:
         """Xử lý gói tin cảnh báo: lưu bảng system_alerts và bắn Email nếu CRITICAL."""
