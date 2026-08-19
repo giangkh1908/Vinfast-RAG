@@ -132,6 +132,18 @@ npm run dev
 
 ---
 
+### 3. Chạy Toàn Bộ Test Suite (Automated Testing)
+
+```bash
+# Chạy 230 Backend Unit & Integration Tests (100% offline with FakeRedis & Mock DB)
+pytest tests/unit/ tests/integration/ -v
+
+# Chạy 20 Frontend Unit & Component Tests (Vitest + React Testing Library)
+npm --prefix frontend test
+```
+
+---
+
 ## 📖 Danh Mục Tài Liệu Kỹ Thuật (Documentation)
 
 | Tài liệu | Nội dung chi tiết |

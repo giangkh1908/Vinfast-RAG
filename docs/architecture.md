@@ -132,14 +132,18 @@ flowchart LR
 
 | Module | Phân vùng (Domain) | Vai trò chi tiết |
 |---|---|---|
+| `app/config.py` | **Config Domain** | Pydantic `BaseSettings` với type-safety, auto validation, và field validators. |
+| `app/dependencies.py` | **Dependency Injection** | FastAPI `Depends` providers (`get_chat_agent`, `get_db_pool`, `get_redis_cache`). |
+| `app/core/exceptions.py`| **Exception Hierarchy** | Custom domain errors: `AppError`, `DBConnectionError`, `LLMProviderError`, `InvalidSessionIdError`... |
 | `app/core/storage/` | **Storage Domain** | `db.py` (PG pooler), `session_store.py` (phiên chat), `cache.py` (Upstash Redis 2 tầng). |
 | `app/core/telemetry/` | **Telemetry Domain** | `telemetry.py` (KPI/token metrics), `kafka_producer.py` (Kafka Cloud), `email_alert.py` (HTML Email alert). |
 | `app/core/rag/` | **RAG Domain** | `retrieval.py` (Hybrid Search Qdrant + Rerank), `prompt_manager.py` (Dynamic Prompt Registry). |
 | `app/core/security/` | **Security Domain** | `rate_limit.py` (Token-Bucket 30 RPM & Backpressure 50 concurrent). |
 | `app/schemas/` | **Schemas Domain** | `db_schemas.py` (4 bảng DDL), `kafka_events.py` (Kafka DTOs), `chat_schemas.py` (Chat DTOs). |
 | `app/workers/` | **Workers Domain** | `kafka_worker.py` (Batch Ingestion Consumer & 30-day Retention Cron). |
-| `app/agent/` | **Agentic AI Engine** | `classifier.py`, `direct_plan.py`, `context_builder.py`, `llm.py`, `graph.py`. |
-| `frontend/src/` | **Frontend React** | `components/chat/`, `components/landing/`, `components/admin/`, `types/`. |
+| `app/agent/` | **Agentic AI Engine** | `classifier.py`, `direct_plan.py`, `context_builder.py`, `llm.py`, `graph.py` (LangGraph 1.2+ StateGraph). |
+| `frontend/src/` | **Frontend React** | `components/chat/`, `components/landing/`, `components/admin/`, `types/`, `hooks/`. |
+| `tests/` | **Testing Suite** | 230 Backend Pytest cases (`tests/unit/`, `tests/integration/`) + 20 Frontend Vitest cases. |
 
 ## Agent Loop chi tiết
 

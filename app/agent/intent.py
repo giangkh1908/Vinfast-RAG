@@ -236,15 +236,15 @@ _SPEC_CATEGORY_PATTERNS: list[tuple[str | None, tuple[str, ...]]] = [
 
 # ── Intent rules (thứ tự ưu tiên quan trọng) ───────────────────────────────
 _GREETING_ONLY_RE = re.compile(
-    r"^(xin\s*chào|chào\s*(bạn|em|ad|admin|vivu|vinfast|mình|nhé|nha)?|hello|hi\b|helo|alo|hế\s*lô|chào\s*buổi\s*(sáng|trưa|chiều|tối))\b[\s!.,?~😊👋❤️]*$",
+    r"^(xin\s*chào(\s*(bạn|em|ad|admin|vivu|vinfast|mình|nhé|nha))?|chào\s*(bạn|em|ad|admin|vivu|vinfast|mình|nhé|nha)?|hello(\s*(vivu|vinfast|bạn|ad))?|hi(\s*(vivu|vinfast|bạn|ad))?\b|helo|alo|hế\s*lô|chào\s*buổi\s*(sáng|trưa|chiều|tối))\b[\s!.,?~😊👋❤️]*$",
     re.IGNORECASE,
 )
 _THANKS_ONLY_RE = re.compile(
-    r"^(cảm\s*ơn|cam\s*on|cám\s*ơn|thank\s*you|thanks|tks|tạm\s*biệt|bye\b|bai\s*bai)\b[\s!.,?~😊👋❤️]*$",
+    r"^(cảm\s*ơn(\s*(bạn|em|ad|admin|vivu|vinfast|mình))?(\s*(nhé|nha|ạ|nhiều|rất\s*nhiều))?|cam\s*on|cám\s*ơn|thank\s*you(\s*so\s*much)?|thanks(\s*a\s*lot)?|tks|tạm\s*biệt|bye\b|bai\s*bai)\b[\s!.,?~😊👋❤️]*$",
     re.IGNORECASE,
 )
 _IDENTITY_RE = re.compile(
-    r"(bạn\s*là\s*ai|bạn\s*tên\s*gì|bạn\s*giúp\s*được\s*gì|chức\s*năng\s*của\s*bạn|giới\s*thiệu\s*bản\s*thân|em\s*là\s*ai|vivu\s*là\s*ai|vivi\s*là\s*ai)",
+    r"(bạn\s*là\s*ai|bạn\s*tên\s*gì|bạn\s*giúp\s*được\s*gì|chức\s*năng\s*(của\s*bạn|gì)|giới\s*thiệu\s*bản\s*thân|em\s*là\s*ai|vivu\s*là\s*ai|vivi\s*là\s*ai)",
     re.IGNORECASE,
 )
 _OUT_OF_SCOPE_RE = re.compile(

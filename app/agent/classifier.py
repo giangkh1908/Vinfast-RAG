@@ -21,6 +21,8 @@ def normalize_model(raw: str) -> str:
     - 'vf 8 thế hệ mới' / 'vf 8 the he moi' → 'VF 8 All New'.
     """
     clean = re.sub(r"(VF)\s*(\d+)", r"\1 \2", raw, flags=re.IGNORECASE).strip()
+    clean = re.sub(r"(VF)\s*MPV\s*(\d+)", r"\1 MPV \2", clean, flags=re.IGNORECASE).strip()
+    clean = re.sub(r"(VF)\s*(e34)", r"\1 \2", clean, flags=re.IGNORECASE).strip()
     # Model họ VF8 có hậu tố New / thế hệ mới → luôn là 'VF 8 All New'
     if re.match(r"^VF\s*\d+", clean, re.I) and re.search(r"(new|m[ớớ]i|moi)", clean, re.I):
         return "VF 8 All New"

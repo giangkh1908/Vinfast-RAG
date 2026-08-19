@@ -26,12 +26,16 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install ruff pytest pytest-asyncio httpx
+          pip install -r requirements-dev.txt
 
       - name: Code Quality & Linting (Ruff Check & Format)
         run: |
           ruff check app/ tests/
           ruff format --check app/ tests/
+
+      - name: Run Backend Unit & Integration Tests (Pytest Suite)
+        run: |
+          pytest tests/unit/ tests/integration/ -v
 
       - name: Run Decision Log Schema Tests
         run: |
@@ -66,6 +70,9 @@ jobs:
 
       - name: Install Frontend Dependencies
         run: npm ci
+
+      - name: Run Frontend Unit & Component Tests (Vitest)
+        run: npm test
 
       - name: Lint Frontend Code (oxlint)
         run: npm run lint
