@@ -58,7 +58,7 @@ async def ensure_alerts_schema() -> None:
 def _render_email_html(severity: str, title: str, message: str, details: dict[str, Any]) -> str:
     """Tạo nội dung Email HTML chuyên nghiệp phong cách VinFast."""
     badge_color = "#dc2626" if severity == "CRITICAL" else "#f59e0b"
-    time_str = time.strftime("%H:%M:%S - %d/%m/%Y (Giờ VN)")
+    time_str = time.strftime("%H:%M:%S - %d/%m/%Y") + " (Giờ VN)"
 
     details_rows = ""
     for k, v in details.items():
@@ -121,14 +121,15 @@ async def send_email_alert(
     message: str,
     details: dict[str, Any] | None = None,
     alert_type: str = "general",
+    ignore_cooldown: bool = False,
 ) -> bool:
-    """Gửi email cảnh báo khẩn cấp tới Quản trị viên (có kiểm tra Cooldown)."""
+    """Gửi email cảnh báo khẩn cấp tới Quản trị viên (có kiểm tra Cooldown trừ khi ignore_cooldown=True)."""
     if not settings.alert_email_enabled:
         return False
 
     now = time.monotonic()
     last_sent = _cooldown_tracker.get(alert_type, 0.0)
-    if (now - last_sent) < COOLDOWN_SECONDS:
+    if not ignore_cooldown and (now - last_sent) < COOLDOWN_SECONDS:
         logger.info(
             "Alert %s is in cooldown (%.1fs remaining). Suppressing email.",
             alert_type,
@@ -174,7 +175,8 @@ async def record_alert_direct(
     title: str = "Cảnh báo hệ thống",
     message: str = "",
     details: dict[str, Any] | None = None,
-) -> None:
+    ignore_cooldown: bool = False,
+) -> bool:
     """Lưu cảnh báo vào DB và gửi email nếu là CRITICAL (Dùng cho Fallback và Worker)."""
     await ensure_alerts_schema()
 
@@ -190,7 +192,7 @@ async def record_alert_direct(
 
     email_sent = False
     if severity == "CRITICAL":
-        email_sent = await send_email_alert(severity, title, message, details, alert_type)
+        email_sent = await send_email_alert(severity, title, message, details, alert_type, ignore_cooldown=ignore_cooldown)
 
     async def _insert():
         pool = await get_pool()
@@ -212,3 +214,5 @@ async def record_alert_direct(
         await run_with_db_retry(_insert)
     except Exception as e:
         logger.error("Failed to record alert to database: %s", e)
+
+    return email_sent

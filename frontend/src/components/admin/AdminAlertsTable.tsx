@@ -9,11 +9,18 @@ interface Props {
 export default function AdminAlertsTable({ alerts, onRefresh }: Props) {
   const [filter, setFilter] = useState<'ALL' | 'CRITICAL' | 'WARNING'>('ALL')
   const [testing, setTesting] = useState<boolean>(false)
+  const [testMessage, setTestMessage] = useState<string | null>(null)
 
   const handleTestAlert = async (severity: 'WARNING' | 'CRITICAL') => {
     try {
       setTesting(true)
-      await fetch(`/api/admin/metrics/alerts/test?severity=${severity}`, { method: 'POST' })
+      setTestMessage(null)
+      const res = await fetch(`/api/admin/metrics/alerts/test?severity=${severity}`, { method: 'POST' })
+      const data = await res.json().catch(() => null)
+      if (data?.message) {
+        setTestMessage(data.message)
+        setTimeout(() => setTestMessage(null), 7000)
+      }
       await onRefresh()
     } finally {
       setTesting(false)
@@ -27,6 +34,27 @@ export default function AdminAlertsTable({ alerts, onRefresh }: Props) {
 
   return (
     <div className="admin-table-container">
+      {testMessage && (
+        <div
+          style={{
+            background: '#ecfdf5',
+            border: '1px solid #10b981',
+            color: '#065f46',
+            padding: '10px 16px',
+            borderRadius: 8,
+            marginBottom: 16,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            fontSize: '13px',
+            fontWeight: 600,
+          }}
+        >
+          <i className="mdi mdi-check-circle" style={{ fontSize: '18px', color: '#10b981' }}></i>
+          <span>{testMessage}</span>
+        </div>
+      )}
+
       <div
         style={{
           display: 'flex',
@@ -63,15 +91,15 @@ export default function AdminAlertsTable({ alerts, onRefresh }: Props) {
             className="admin-action-btn"
             disabled={testing}
             onClick={() => handleTestAlert('WARNING')}
-            title="Gửi sự kiện Warning giả lập vào Kafka"
+            title="Gửi sự kiện Warning giả lập vào hệ thống"
           >
-            <i className="mdi mdi-bell-alert-outline"></i> Test Warning Event
+            <i className="mdi mdi-bell-alert-outline"></i> {testing ? 'Đang gửi...' : 'Test Warning Event'}
           </button>
           <button
             className="admin-action-btn danger"
             disabled={testing}
             onClick={() => handleTestAlert('CRITICAL')}
-            title="Bắn sự kiện Critical qua Kafka và kích hoạt gửi Email"
+            title="Bắn sự kiện Critical và kích hoạt gửi Email HTML khẩn cấp"
           >
             <i className="mdi mdi-email-alert-outline"></i> {testing ? 'Đang gửi...' : 'Test Gửi Email Critical'}
           </button>

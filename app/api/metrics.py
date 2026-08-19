@@ -182,25 +182,53 @@ async def trigger_test_alert(
 ):
     """Bắn thử nghiệm 1 cảnh báo qua Kafka Cloud và Email để kiểm tra hệ thống."""
     try:
+        from app.core.telemetry.email_alert import record_alert_direct
         from app.core.telemetry.kafka_producer import KafkaProducerService
 
-        producer = await KafkaProducerService.get_instance()
-        sent = await producer.send_alert(
+        sev = severity.upper()
+        # 1. Ghi nhận trực tiếp DB và gửi email tức thì (bỏ qua cooldown khi test)
+        email_sent = await record_alert_direct(
             alert_type="MANUAL_TEST_ALERT",
-            severity=severity,
-            title="Thử nghiệm Cảnh báo Hệ thống VinFast",
+            severity=sev,
+            title=f"Thử nghiệm Cảnh báo Hệ thống VinFast ({sev})",
             message="Đây là cảnh báo thử nghiệm được gửi từ Admin Dashboard để kiểm tra Kafka Cloud & Email Dispatcher.",
             details={
                 "triggered_by": "Admin User",
-                "severity": severity,
+                "severity": sev,
                 "kafka_enabled": True,
             },
+            ignore_cooldown=True,
         )
+
+        # 2. Phát event vào Kafka topic vinfast.alerts
+        kafka_sent = False
+        try:
+            producer = await KafkaProducerService.get_instance()
+            kafka_sent = await producer.send_alert(
+                alert_type="MANUAL_TEST_ALERT",
+                severity=sev,
+                title=f"Thử nghiệm Cảnh báo Hệ thống VinFast ({sev})",
+                message="Đây là cảnh báo thử nghiệm được gửi từ Admin Dashboard để kiểm tra Kafka Cloud & Email Dispatcher.",
+                details={
+                    "triggered_by": "Admin User",
+                    "severity": sev,
+                    "kafka_enabled": True,
+                },
+            )
+        except Exception as k_err:
+            logger.warning("Kafka test alert publish failed: %s", k_err)
+
+        msg_detail = "Đã lưu cảnh báo vào hệ thống."
+        if sev == "CRITICAL":
+            msg_detail += " Email khẩn cấp đã được gửi tới Quản trị viên!" if email_sent else " (Chưa gửi được email)"
+
         return JSONResponse(
             content={
                 "status": "success",
-                "message": "Đã bắn cảnh báo thử nghiệm vào Kafka Cloud!",
-                "kafka_sent": sent,
+                "message": msg_detail,
+                "severity": sev,
+                "email_sent": email_sent,
+                "kafka_sent": kafka_sent,
             }
         )
     except Exception as e:
