@@ -546,7 +546,7 @@ async def get_metrics_sessions(limit: int = 20, hours: int = 168) -> list[dict[s
     WHERE session_id IS NOT NULL
       AND created_at >= now() - ($1 || ' hours')::interval
     GROUP BY session_id
-    ORDER BY total_tokens DESC
+    ORDER BY last_seen DESC
     LIMIT $2
     """
 

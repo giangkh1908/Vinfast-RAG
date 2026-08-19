@@ -57,6 +57,7 @@ CREATE INDEX IF NOT EXISTS idx_req_metrics_intent ON request_metrics(intent);
 CREATE INDEX IF NOT EXISTS idx_req_metrics_cache ON request_metrics(cache_hit);
 CREATE INDEX IF NOT EXISTS idx_req_metrics_session ON request_metrics(session_id);
 CREATE INDEX IF NOT EXISTS idx_req_metrics_ip ON request_metrics(client_ip);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_req_metrics_req_id ON request_metrics(request_id);
 """
 
 SYSTEM_ALERTS_SCHEMA_SQL = """

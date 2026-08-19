@@ -135,17 +135,23 @@ class KafkaProducerService:
 
 
 def produce_telemetry_bg(payload: dict[str, Any]) -> None:
-    """Helper gọi background task không block coroutine hiện tại."""
+    """Helper gọi background task: ghi DB tức thì + đẩy Kafka Cloud."""
 
     async def _task():
+        # 1. Ghi trực tiếp PostgreSQL ngay lập tức (0 latency cho Admin Dashboard)
+        try:
+            from app.core.telemetry.telemetry import insert_metric_payload
+
+            await insert_metric_payload(payload)
+        except Exception as e:
+            logger.warning("Direct DB metric insert failed: %s", e)
+
+        # 2. Đẩy vào Kafka Cloud cho event-driven streaming
         try:
             producer = await KafkaProducerService.get_instance()
             await producer.send_telemetry(payload)
         except Exception as e:
-            logger.warning("produce_telemetry_bg error: %s. Using direct DB fallback.", e)
-            from app.core.telemetry.telemetry import log_metric_background
-
-            log_metric_background(payload)
+            logger.warning("Kafka telemetry send failed: %s", e)
 
     try:
         loop = asyncio.get_running_loop()
